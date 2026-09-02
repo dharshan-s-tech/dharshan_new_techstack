@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { dataManager } from '@/lib/dataManager';
@@ -54,15 +54,13 @@ const HINDI_TRANSLATIONS: Record<string, { title: string; label: string; desc: s
 };
 
 export default function LatestReports() {
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const carouselRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const [reportCards, setReportCards] = useState<any[]>([]);
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
 
   useEffect(() => {
-    setReportCards(dataManager.getReports().filter(r => r.isFeatured));
+    setReportCards(dataManager.getReports().filter(r => r.isFeatured).slice(0, 3));
     setLang(dataManager.getLanguage());
 
     const handleLangChange = () => {
@@ -72,28 +70,7 @@ export default function LatestReports() {
     return () => window.removeEventListener('languageChange', handleLangChange);
   }, []);
 
-  const totalPages = Math.ceil(reportCards.length / 3) || 1;
   const isHindi = lang === 'हिन्दी';
-
-  const scrollCarousel = (direction: 'next' | 'prev') => {
-    let nextIndex = carouselIndex;
-    if (direction === 'next' && carouselIndex < totalPages - 1) {
-      nextIndex = carouselIndex + 1;
-    } else if (direction === 'prev' && carouselIndex > 0) {
-      nextIndex = carouselIndex - 1;
-    }
-
-    setCarouselIndex(nextIndex);
-    if (carouselRef.current) {
-      const firstCard = carouselRef.current.children[0] as HTMLElement;
-      const cardWidth = firstCard?.offsetWidth || 380;
-      const gap = 24;
-      carouselRef.current.scrollTo({
-        left: nextIndex * 3 * (cardWidth + gap),
-        behavior: 'smooth'
-      });
-    }
-  };
 
   return (
     <section className="reports" data-node-id="356:17046" aria-labelledby="reports-heading">
@@ -114,7 +91,7 @@ export default function LatestReports() {
           </Link>
         </div>
 
-        <div className="reports__cards flex overflow-x-auto gap-6 scroll-smooth" ref={carouselRef} data-node-id="356:17054">
+        <div className="reports__cards" data-node-id="356:17054">
           {reportCards.map((report) => {
             const details = isHindi && HINDI_TRANSLATIONS[report.id] ? HINDI_TRANSLATIONS[report.id] : {
               title: report.title,
@@ -125,7 +102,7 @@ export default function LatestReports() {
             return (
               <article 
                 key={report.id} 
-                className="report-card min-w-[340px] md:min-w-[400px] shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-1 hover:shadow-md" 
+                className="report-card cursor-pointer" 
                 data-node-id={report.id}
                 onClick={() => router.push(`/Reports/${report.id}`)}
               >
@@ -147,27 +124,6 @@ export default function LatestReports() {
               </article>
             );
           })}
-        </div>
-
-        <div className="reports__arrows" data-node-id="356:17070">
-          <button 
-            type="button" 
-            className={`icon-btn ${carouselIndex === 0 ? 'icon-btn--disabled' : 'icon-btn--active'}`} 
-            id="reports-prev" 
-            aria-label="Previous report"
-            onClick={() => scrollCarousel('prev')}
-          >
-            <img src="/assets/d6f4300fc7bb0f95db3f0a71deca3971ad7fb2b0.svg" alt="" />
-          </button>
-          <button 
-            type="button" 
-            className={`icon-btn ${carouselIndex === totalPages - 1 ? 'icon-btn--disabled' : 'icon-btn--active'}`} 
-            id="reports-next" 
-            aria-label="Next report"
-            onClick={() => scrollCarousel('next')}
-          >
-            <img src="/assets/11a76f1021f08f4444d42b12bb6eb2a8f465b4e7.svg" alt="" className="icon-btn__arrow-right" />
-          </button>
         </div>
       </div>
     </section>

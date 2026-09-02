@@ -55,7 +55,7 @@ export default function WhoWeAre() {
           </Link>
           <a href="#" className="quick-link" onClick={(e) => handleLinkClick(e, 'Audit Portal')} data-node-id="356:17096">
             <div className="quick-link__icon-wrap">
-              <img src="/assets/cc1decfb4423f0096b55936dbe8a624546486542.svg" alt="Audit Portal icon" className="quick-link__icon" />
+              <img src="/assets/audit-portal.svg" alt="Audit Portal icon" className="quick-link__icon quick-link__icon--audit" />
             </div>
             <p className="quick-link__label" data-node-id="356:17113">
               {isHindi ? 'लेखा परीक्षा पोर्टल' : 'Audit Portal'}
@@ -63,7 +63,7 @@ export default function WhoWeAre() {
           </a>
           <Link href="/Reports/accounts" className="quick-link" data-node-id="356:17114">
             <div className="quick-link__icon-wrap">
-              <img src="/assets/d891fa3e1a3c57c16d710f6ccac59f61f2c5f70e.svg" alt="Accounts icon" className="quick-link__icon" />
+              <img src="/assets/accounts.svg" alt="Accounts icon" className="quick-link__icon" />
             </div>
             <p className="quick-link__label" data-node-id="356:17118">
               {isHindi ? 'लेखा' : 'Accounts'}

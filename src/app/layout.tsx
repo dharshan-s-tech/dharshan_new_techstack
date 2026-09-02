@@ -1,21 +1,13 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
-import { Noto_Sans, DM_Sans } from 'next/font/google';
 import { siteConfig } from '@/config/site';
 import RootLayoutWrapper from './RootLayoutWrapper';
 
-const notoSans = Noto_Sans({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  weight: ['200', '300', '400', '500', '600', '700', '800', '900'],
-  variable: '--font-noto',
-});
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500', '600'],
-  variable: '--font-dm',
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
@@ -23,18 +15,17 @@ export const metadata: Metadata = {
   description: siteConfig.tagline,
 };
 
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${notoSans.variable} ${dmSans.variable}`}>
-      <body className={`${notoSans.className} min-h-screen`}>
+    <html lang="en" className={inter.variable}>
+      <body className={`${inter.className} min-h-screen flex flex-col justify-between antialiased`}>
         <RootLayoutWrapper>{children}</RootLayoutWrapper>
       </body>
     </html>
   );
 }
-
+ 

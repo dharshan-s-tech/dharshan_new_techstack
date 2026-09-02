@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import Header from '@/Components/Header/Header';
-import Footer from '@/Components/Footer/Footer';
-import Breadcrumb from '@/Components/Breadcrumb/Breadcrumb';
+import Header from '@/components/Header/Header';
+import Footer from '@/components/Footer/Footer';
+import Breadcrumb from '@/components/Breadcrumb/Breadcrumb';
 
 export default function RootLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
