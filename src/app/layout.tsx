@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Noto_Sans } from 'next/font/google';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import RootLayoutWrapper from './RootLayoutWrapper';
 
-const inter = Inter({
-  subsets: ['latin'],
+const notoSans = Noto_Sans({
+  subsets: ['latin', 'devanagari'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-noto-sans',
 });
 
 export const metadata: Metadata = {
@@ -21,11 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={`${inter.className} min-h-screen flex flex-col justify-between antialiased`}>
+    <html lang="en" className={notoSans.variable}>
+      <body className={`${notoSans.className} min-h-screen flex flex-col justify-between antialiased font-['Noto_Sans',sans-serif]`}>
         <RootLayoutWrapper>{children}</RootLayoutWrapper>
       </body>
     </html>
   );
 }
- 

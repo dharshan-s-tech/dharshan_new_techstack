@@ -2,18 +2,38 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boolean; language?: 'English' | 'हिन्दी' }) {
   const [activeMega, setActiveMega] = useState<'about' | 'global' | 'presence' | 'resources' | 'careers' | null>(null);
+  const [pinnedMega, setPinnedMega] = useState<'about' | 'global' | 'presence' | 'resources' | 'careers' | null>(null);
+  const pathname = usePathname() || '';
+
+  // Active route detection for top navbar highlight
+  const isGlobalActive = pathname.toLowerCase().includes('global-relations');
+  const isReportsActive = pathname.startsWith('/Reports');
+  const isPresenceActive = pathname.startsWith('/Our-Presence');
+  const isResourcesActive = pathname.startsWith('/Resources');
+  const isCareersActive = pathname.startsWith('/Career-Engagement');
+  const isAboutActive = pathname.startsWith('/About') && !isGlobalActive;
+
+  const closeAll = () => {
+    setActiveMega(null);
+    setPinnedMega(null);
+  };
 
   const handleTopicClick = (e: React.MouseEvent, type: 'about' | 'global' | 'presence' | 'resources' | 'careers') => {
-    // Keep it open when clicked
     e.stopPropagation();
-    setActiveMega(type);
+    if (pinnedMega === type) {
+      closeAll();
+    } else {
+      setPinnedMega(type);
+      setActiveMega(type);
+    }
   };
 
   useEffect(() => {
-    if (!activeMega) return;
+    if (!activeMega && !pinnedMega) return;
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (
@@ -21,11 +41,11 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         !target.closest('.about-menu') &&
         !target.closest('.global-relations-menu')
       ) {
-        setActiveMega(null);
+        closeAll();
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActiveMega(null);
+      if (e.key === 'Escape') closeAll();
     };
     document.addEventListener('click', handleOutsideClick);
     document.addEventListener('keydown', handleKeyDown);
@@ -33,7 +53,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
       document.removeEventListener('click', handleOutsideClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeMega]);
+  }, [activeMega, pinnedMega]);
 
   const isHindi = language === 'हिन्दी';
   const labelReports = isHindi ? 'रिपोर्ट' : 'Reports';
@@ -43,19 +63,40 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
   const labelCareers = isHindi ? 'करियर और जुड़ाव' : 'Careers & Engagement';
   const labelAbout = isHindi ? 'हमारे बारे में' : 'About Us';
 
+  const activeLinkStyle: React.CSSProperties = {
+    color: '#751639',
+    fontWeight: 600,
+    textDecoration: 'underline',
+    textDecorationColor: '#751639',
+    textUnderlineOffset: '4px'
+  };
+
   return (
     <nav className={`primary-nav ${mobileMenuOpen ? 'is-open' : ''}`} aria-label="Primary" id="primary-nav">
-      <div className="nav-item">
-        <Link href="/Reports" onClick={() => setActiveMega(null)}>{labelReports}</Link>
+      {/* Reports */}
+      <div className={`nav-item ${isReportsActive ? 'nav-item--active' : ''}`}>
+        <Link 
+          href="/Reports" 
+          onClick={() => setActiveMega(null)}
+          style={isReportsActive ? activeLinkStyle : undefined}
+        >
+          {labelReports}
+        </Link>
       </div>
       
       {/* Our Presence dropdown */}
       <div 
-        className="nav-item relative cursor-pointer" 
+        className={`nav-item relative cursor-pointer ${isPresenceActive ? 'nav-item--active' : ''}`} 
         onMouseEnter={() => setActiveMega('presence')}
         onMouseLeave={() => setActiveMega(null)}
       >
-        <Link href="/Our-Presence/Index-Menu/State-Level-Offices?filter=audit" onClick={(e) => handleTopicClick(e, 'presence')}>{labelPresence}</Link>
+        <Link 
+          href="/Our-Presence/Index-Menu/State-Level-Offices?filter=audit" 
+          onClick={(e) => handleTopicClick(e, 'presence')}
+          style={isPresenceActive ? activeLinkStyle : undefined}
+        >
+          {labelPresence}
+        </Link>
         <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
         {activeMega === 'presence' && (
           <div className="absolute top-[80%] left-0 pt-3 w-56 z-50">
@@ -79,31 +120,34 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
 
       {/* Global Relations mega-menu trigger */}
       <div 
-        className="nav-item cursor-pointer"
+        className={`nav-item cursor-pointer ${isGlobalActive ? 'nav-item--active' : ''}`}
         onMouseEnter={() => setActiveMega('global')}
-        onMouseLeave={() => setActiveMega(null)}
+        onMouseLeave={() => {
+          if (!pinnedMega) setActiveMega(null);
+        }}
       >
-        <a 
-          href="#" 
+        <Link 
+          href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" 
           id="global-relations-trigger"
           onClick={(e) => handleTopicClick(e, 'global')}
           aria-expanded={activeMega === 'global'}
+          style={isGlobalActive ? activeLinkStyle : undefined}
         >
           {labelGlobal}
-        </a>
+        </Link>
         <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
         
         {activeMega === 'global' && (
           <div className="global-relations-menu" id="global-relations-menu" role="menu">
-            <h2 className="grm-title text-left">{isHindi ? 'वैश्विक संबंध' : 'Global-relations'}</h2>
+            <h2 className="grm-title text-left">{isHindi ? 'वैश्विक संबंध' : 'Global relations'}</h2>
             <div className="grm-divider" aria-hidden="true"></div>
             <div className="grm-columns">
               <div className="grm-column">
                 <p className="grm-column__heading text-left">{isHindi ? 'अंतर्राष्ट्रीय निकाय' : 'International Bodies'}</p>
                 <div className="grm-link-group">
-                  <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'INTOSAI के साथ जुड़ाव' : 'Association with INTOSAI'}</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20ASOSAI" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'ASOSAI के साथ जुड़ाव' : 'Association with ASOSAI'}</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/Multilateral%20Engagement" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'बहुपक्षीय सहभागिता' : 'Multilateral Engagement'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" className="grm-link-box" onClick={closeAll}>{isHindi ? 'INTOSAI के साथ जुड़ाव' : 'Association with INTOSAI'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20ASOSAI" className="grm-link-box" onClick={closeAll}>{isHindi ? 'ASOSAI के साथ जुड़ाव' : 'Association with ASOSAI'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/Multilateral%20Engagement" className="grm-link-box" onClick={closeAll}>{isHindi ? 'बहुपक्षीय सहभागिता' : 'Multilateral Engagement'}</Link>
                 </div>
               </div>
               <div className="grm-column">
@@ -114,7 +158,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
                       ? 'SAI भारत की द्विपक्षीय साझेदारी और अन्य देशों के लेखा परीक्षा संस्थानों के साथ अंतर्राष्ट्रीय सहयोग का पता लगाएं' 
                       : 'Explore SAI India\'s bilateral partnerships and international cooperation with audit institutions across countries'}
                   </p>
-                  <Link href="/About/Index-Menu-About/Global-relations/Bilateral%20Relations" className="grm-desc-box__cta text-left" onClick={() => setActiveMega(null)}>
+                  <Link href="/About/Index-Menu-About/Global-relations/Bilateral%20Relations" className="grm-desc-box__cta text-left" onClick={closeAll}>
                     {isHindi ? 'सभी देश देखें' : 'View all countries'} &rarr;
                   </Link>
                 </div>
@@ -122,19 +166,19 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
               <div className="grm-column">
                 <p className="grm-column__heading text-left">{isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements'}</p>
                 <div className="grm-link-group">
-                  <Link href="/About/Index-Menu-About/Global-relations/UN%20Panel%20of%20External%20Auditors" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'बाह्य लेखा परीक्षकों का संयुक्त राष्ट्र पैनल' : 'UN Panel of External Auditors'}</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/Present%20International%20Audits" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'वर्तमान अंतर्राष्ट्रीय लेखा परीक्षा' : 'Present International Audits'}</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/Past%20International%20Audits" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'विगत अंतर्राष्ट्रीय लेखा परीक्षा' : 'Past International Audits'}</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/Overseas%20Audit%20Offices" className="grm-link-box" onClick={() => setActiveMega(null)}>{isHindi ? 'विदेशी लेखा परीक्षा कार्यालय' : 'Overseas Audit Offices'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/UN%20Panel%20of%20External%20Auditors" className="grm-link-box" onClick={closeAll}>{isHindi ? 'बाह्य लेखा परीक्षकों का संयुक्त राष्ट्र पैनल' : 'UN Panel of External Auditors'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/Present%20International%20Audits" className="grm-link-box" onClick={closeAll}>{isHindi ? 'वर्तमान अंतर्राष्ट्रीय लेखा परीक्षा' : 'Present International Audits'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/Past%20International%20Audits" className="grm-link-box" onClick={closeAll}>{isHindi ? 'विगत अंतर्राष्ट्रीय लेखा परीक्षा' : 'Past International Audits'}</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/Overseas%20Audit%20Offices" className="grm-link-box" onClick={closeAll}>{isHindi ? 'विदेशी लेखा परीक्षा कार्यालय' : 'Overseas Audit Offices'}</Link>
                 </div>
               </div>
               <div className="grm-column">
                 <p className="grm-column__heading text-left">{isHindi ? 'प्रशिक्षण संस्थान' : 'Training Institutes'}</p>
                 <div className="grm-link-group">
-                  <Link href="/About/Index-Menu-About/Global-relations/iCED" className="grm-link-box" onClick={() => setActiveMega(null)}>iCED</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/iCISA" className="grm-link-box" onClick={() => setActiveMega(null)}>iCISA</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/NAAA" className="grm-link-box" onClick={() => setActiveMega(null)}>NAAA</Link>
-                  <Link href="/About/Index-Menu-About/Global-relations/iCAL" className="grm-link-box" onClick={() => setActiveMega(null)}>iCAL</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/iCED" className="grm-link-box" onClick={closeAll}>iCED</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/iCISA" className="grm-link-box" onClick={closeAll}>iCISA</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/NAAA" className="grm-link-box" onClick={closeAll}>NAAA</Link>
+                  <Link href="/About/Index-Menu-About/Global-relations/iCAL" className="grm-link-box" onClick={closeAll}>iCAL</Link>
                 </div>
               </div>
               <div className="grm-column">
@@ -143,10 +187,10 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
                   <p className="grm-desc-box__text text-left">
                     {isHindi 
                       ? 'वैश्विक साझेदारी और पहलों पर जानकारी के लिए अंतर्राष्ट्रीय संबंध विंग से जुड़ें' 
-                      : 'Connect with the International Relations Wing for information on global partnerships and initiatives'}
+                      : 'Connect with the International Relations Wing for information on global partnerships, engagements and international initiative'}
                   </p>
-                  <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="grm-desc-box__cta text-left" onClick={() => setActiveMega(null)}>
-                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग से संपर्क करें' : 'Contact IR Wing'} &rarr;
+                  <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="grm-desc-box__cta text-left" onClick={closeAll}>
+                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग से संपर्क करें' : 'Contact Intl. Relations Wing'} &rarr;
                   </Link>
                 </div>
               </div>
@@ -157,11 +201,17 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
 
       {/* Resources dropdown */}
       <div 
-        className="nav-item relative cursor-pointer"
+        className={`nav-item relative cursor-pointer ${isResourcesActive ? 'nav-item--active' : ''}`}
         onMouseEnter={() => setActiveMega('resources')}
         onMouseLeave={() => setActiveMega(null)}
       >
-        <Link href="/Resources" onClick={(e) => handleTopicClick(e, 'resources')}>{labelResources}</Link>
+        <Link 
+          href="/Resources" 
+          onClick={(e) => handleTopicClick(e, 'resources')}
+          style={isResourcesActive ? activeLinkStyle : undefined}
+        >
+          {labelResources}
+        </Link>
         <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
         {activeMega === 'resources' && (
           <div className="absolute top-[80%] left-0 pt-3 w-64 z-50">
@@ -185,11 +235,17 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
       
       {/* Careers dropdown */}
       <div 
-        className="nav-item relative cursor-pointer"
+        className={`nav-item relative cursor-pointer ${isCareersActive ? 'nav-item--active' : ''}`}
         onMouseEnter={() => setActiveMega('careers')}
         onMouseLeave={() => setActiveMega(null)}
       >
-        <Link href="/Career-Engagement" onClick={(e) => handleTopicClick(e, 'careers')}>{labelCareers}</Link>
+        <Link 
+          href="/Career-Engagement" 
+          onClick={(e) => handleTopicClick(e, 'careers')}
+          style={isCareersActive ? activeLinkStyle : undefined}
+        >
+          {labelCareers}
+        </Link>
         <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
         {activeMega === 'careers' && (
           <div className="absolute top-[80%] left-0 pt-3 w-64 z-50">
@@ -210,18 +266,19 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
 
       {/* About Us mega-menu trigger */}
       <div 
-        className="nav-item cursor-pointer"
+        className={`nav-item cursor-pointer ${isAboutActive ? 'nav-item--active' : ''}`}
         onMouseEnter={() => setActiveMega('about')}
         onMouseLeave={() => setActiveMega(null)}
       >
-        <a 
-          href="#" 
+        <Link 
+          href="/About/About-Us/Cag-Of-India" 
           id="about-us-trigger"
           onClick={(e) => handleTopicClick(e, 'about')}
           aria-expanded={activeMega === 'about'}
+          style={isAboutActive ? activeLinkStyle : undefined}
         >
           {labelAbout}
-        </a>
+        </Link>
         <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
 
         {activeMega === 'about' && (
