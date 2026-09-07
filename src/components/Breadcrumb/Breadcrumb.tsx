@@ -15,7 +15,8 @@ const ROUTE_MAPPINGS: Record<string, string> = {
 
 export default function Breadcrumb() {
   const pathname = usePathname();
-  if (pathname === '/') return null;
+  if (pathname === '/' || pathname.toLowerCase().includes('global-relations')) return null;
+
 
   const paths = pathname.split('/').filter(Boolean);
 

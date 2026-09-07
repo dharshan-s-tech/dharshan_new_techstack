@@ -19,11 +19,8 @@ export default function WhoWeAre() {
     setActivePopup({ title, text });
   };
 
-  // Determine active item: index 0 (Latest Reports) is active by default unless hovering another card
+  // Determine active item: active only when hovered
   const isItemActive = (index: number) => {
-    if (hoveredIndex === null) {
-      return index === 0;
-    }
     return hoveredIndex === index;
   };
 
@@ -58,7 +55,7 @@ export default function WhoWeAre() {
             data-node-id="356:17114"
           >
             <div className="quick-link__icon-wrap">
-              <img src="/assets/accounts.svg" alt="Accounts icon" className="quick-link__icon" />
+              <img src="/assets/accounts-report.png" alt="Accounts icon" className="quick-link__icon" />
             </div>
             <p className="quick-link__label" data-node-id="356:17118">Accounts</p>
           </Link>
