@@ -1,0 +1,24 @@
+<svg width="978" height="200" viewBox="0 0 978 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="blurFilter" x="500" y="-100" width="700" height="600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="35" />
+    </filter>
+  </defs>
+
+  <!-- Ellipse 775 Blur Glow -->
+  <ellipse cx="1013" cy="231.5" rx="199.28" ry="189.5" fill="rgba(222, 222, 222, 0.7)" stroke="rgba(215, 215, 215, 0.5)" filter="url(#blurFilter)" />
+
+  <!-- Group 1000005440 Slanted Bands -->
+  <g transform="skewX(-25)">
+    <!-- Rectangle 34625704 -->
+    <rect x="760" y="-60" width="220.84" height="320" fill="#D9D9D9" fill-opacity="0.2" stroke="rgba(215, 215, 215, 0.5)" stroke-width="1" />
+    <!-- Rectangle 34625703 -->
+    <rect x="818" y="-60" width="220.84" height="320" fill="#FFFFFF" fill-opacity="1.0" stroke="rgba(215, 215, 215, 0.5)" stroke-width="1" />
+    <!-- Rectangle 34625702 -->
+    <rect x="876" y="-60" width="220.84" height="320" fill="#D9D9D9" fill-opacity="0.4" stroke="rgba(215, 215, 215, 0.5)" stroke-width="1" />
+    <!-- Rectangle 34625701 -->
+    <rect x="934" y="-60" width="220.84" height="320" fill="#FFFFFF" fill-opacity="1.0" stroke="rgba(215, 215, 215, 0.5)" stroke-width="1" />
+    <!-- Rectangle 34625700 -->
+    <rect x="992" y="-60" width="220.84" height="320" fill="#D9D9D9" fill-opacity="0.6" stroke="rgba(215, 215, 215, 0.5)" stroke-width="1" />
+  </g>
+</svg>

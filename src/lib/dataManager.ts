@@ -70,6 +70,110 @@ export interface CircularItem {
   is_active: boolean;
 }
 
+export interface CagProfileItem {
+  name_en: string;
+  name_hi?: string;
+  designation_en: string;
+  designation_hi?: string;
+  photo_url?: string;
+  bio_paragraphs_en: string[];
+  bio_paragraphs_hi?: string[];
+}
+
+export interface VisionMissionItem {
+  vision_title_en: string;
+  vision_title_hi?: string;
+  vision_sub_en: string;
+  vision_sub_hi?: string;
+  vision_desc_en: string;
+  vision_desc_hi?: string;
+  mission_title_en: string;
+  mission_title_hi?: string;
+  mission_sub_en: string;
+  mission_sub_hi?: string;
+  mission_desc_en: string;
+  mission_desc_hi?: string;
+  values_title_en: string;
+  values_title_hi?: string;
+  values_sub_en: string;
+  values_sub_hi?: string;
+  values_desc_en: string;
+  values_desc_hi?: string;
+}
+
+export interface OrgOfficerItem {
+  id: string;
+  nameEn: string;
+  nameHi: string;
+  desigEn: string;
+  desigHi: string;
+  subEn: string;
+  subHi: string;
+  email: string;
+  phone: string;
+  reportingEn: string;
+  reportingHi: string;
+  roleLevel?: 'cag' | 'secretary' | 'left_dai' | 'right_dai';
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export interface HistoryDocumentItem {
+  id: string;
+  title: string;
+  title_hi?: string;
+  category: 'analytical' | 'thematic-1' | 'thematic-2';
+  size?: string;
+  pdf_url?: string;
+  display_order?: number;
+  is_active?: boolean;
+}
+
+export interface DutiesPowersChapterItem {
+  id: string;
+  chapterNo: string;
+  titleEn: string;
+  titleHi: string;
+  sectionsEn: string[];
+  sectionsHi: string[];
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export interface AuditRegulationItem {
+  id: string;
+  titleEn: string;
+  titleHi: string;
+  descEn?: string;
+  descHi?: string;
+  pdfUrl?: string;
+  size?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export interface ConstitutionalProvisionItem {
+  id: string;
+  articleNo: string;
+  articleTitleEn: string;
+  articleTitleHi: string;
+  clausesEn: string[];
+  clausesHi: string[];
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export interface AuditAdvisoryMemberItem {
+  id: string;
+  nameEn: string;
+  nameHi: string;
+  desigEn: string;
+  desigHi: string;
+  category: 'Chairman' | 'External Members' | 'Internal Members';
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
 export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
   {
     id: 'andhra-pradesh',
@@ -530,7 +634,7 @@ const DEFAULT_OFFICES: Office[] = [
     lng: 72.8264,
     type: 'state'
   },
-  
+
   // Central Audit Offices
   {
     id: 'c-def',
@@ -961,12 +1065,25 @@ export const dataManager = {
     if (typeof window === 'undefined') return DEFAULT_FORMER_CAGS;
     try {
       const stored = localStorage.getItem('cag_former_cags');
+      let items: FormerCAGItem[];
       if (!stored) {
         localStorage.setItem('cag_former_cags', JSON.stringify(DEFAULT_FORMER_CAGS));
-        return DEFAULT_FORMER_CAGS;
+        items = DEFAULT_FORMER_CAGS;
+      } else {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          items = DEFAULT_FORMER_CAGS.map(def => {
+            const found = parsed.find(p => p.id === def.id);
+            return found ? { ...found, image_url: def.image_url || found.image_url } : def;
+          });
+        } else {
+          items = DEFAULT_FORMER_CAGS;
+        }
       }
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : DEFAULT_FORMER_CAGS;
+      return items.map(item => ({
+        ...item,
+        tenure: item.tenure ? item.tenure.replace(/\((\d{4})\s*-\s*(\d{4})\)/, '($1 - $2)') : item.tenure
+      }));
     } catch (e) {
       return DEFAULT_FORMER_CAGS;
     }
@@ -1039,6 +1156,238 @@ export const dataManager = {
     if (typeof window === 'undefined') return;
     localStorage.setItem('cag_site_settings', JSON.stringify(settings));
     window.dispatchEvent(new Event('siteSettingsChange'));
+  },
+
+  getCagProfile(): CagProfileItem {
+    if (typeof window === 'undefined') return DEFAULT_CAG_PROFILE;
+    try {
+      const stored = localStorage.getItem('cag_profile_data');
+      if (!stored) {
+        localStorage.setItem('cag_profile_data', JSON.stringify(DEFAULT_CAG_PROFILE));
+        return DEFAULT_CAG_PROFILE;
+      }
+      return JSON.parse(stored);
+    } catch (e) {
+      return DEFAULT_CAG_PROFILE;
+    }
+  },
+
+  saveCagProfile(item: CagProfileItem) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('cag_profile_data', JSON.stringify(item));
+    window.dispatchEvent(new Event('cagProfileChange'));
+  },
+
+  getVisionMission(): VisionMissionItem {
+    if (typeof window === 'undefined') return DEFAULT_VISION_MISSION;
+    try {
+      const stored = localStorage.getItem('cag_vision_mission');
+      if (!stored) {
+        localStorage.setItem('cag_vision_mission', JSON.stringify(DEFAULT_VISION_MISSION));
+        return DEFAULT_VISION_MISSION;
+      }
+      return JSON.parse(stored);
+    } catch (e) {
+      return DEFAULT_VISION_MISSION;
+    }
+  },
+
+  saveVisionMission(item: VisionMissionItem) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('cag_vision_mission', JSON.stringify(item));
+    window.dispatchEvent(new Event('visionMissionChange'));
+  },
+
+  getOrganisationOfficers(): OrgOfficerItem[] {
+    if (typeof window === 'undefined') return DEFAULT_ORG_OFFICERS;
+    try {
+      const stored = localStorage.getItem('cag_org_officers');
+      if (!stored) {
+        localStorage.setItem('cag_org_officers', JSON.stringify(DEFAULT_ORG_OFFICERS));
+        return DEFAULT_ORG_OFFICERS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ORG_OFFICERS;
+    } catch (e) {
+      return DEFAULT_ORG_OFFICERS;
+    }
+  },
+
+  saveOrganisationOfficer(item: OrgOfficerItem) {
+    if (typeof window === 'undefined') return;
+    const list = this.getOrganisationOfficers();
+    const idx = list.findIndex(o => o.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_org_officers', JSON.stringify(list));
+    window.dispatchEvent(new Event('organisationOfficersChange'));
+  },
+
+  deleteOrganisationOfficer(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getOrganisationOfficers().filter(o => o.id !== id);
+    localStorage.setItem('cag_org_officers', JSON.stringify(list));
+    window.dispatchEvent(new Event('organisationOfficersChange'));
+  },
+
+  getHistoryDocuments(): HistoryDocumentItem[] {
+    if (typeof window === 'undefined') return DEFAULT_HISTORY_DOCUMENTS;
+    try {
+      const stored = localStorage.getItem('cag_history_documents');
+      if (!stored) {
+        localStorage.setItem('cag_history_documents', JSON.stringify(DEFAULT_HISTORY_DOCUMENTS));
+        return DEFAULT_HISTORY_DOCUMENTS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_HISTORY_DOCUMENTS;
+    } catch (e) {
+      return DEFAULT_HISTORY_DOCUMENTS;
+    }
+  },
+
+  saveHistoryDocument(item: HistoryDocumentItem) {
+    if (typeof window === 'undefined') return;
+    const list = this.getHistoryDocuments();
+    const idx = list.findIndex(h => h.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_history_documents', JSON.stringify(list));
+    window.dispatchEvent(new Event('historyDocumentsChange'));
+  },
+
+  deleteHistoryDocument(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getHistoryDocuments().filter(h => h.id !== id);
+    localStorage.setItem('cag_history_documents', JSON.stringify(list));
+    window.dispatchEvent(new Event('historyDocumentsChange'));
+  },
+
+  getDutiesPowersChapters(): DutiesPowersChapterItem[] {
+    if (typeof window === 'undefined') return DEFAULT_DUTIES_POWERS_CHAPTERS;
+    try {
+      const stored = localStorage.getItem('cag_duties_powers');
+      if (!stored) {
+        localStorage.setItem('cag_duties_powers', JSON.stringify(DEFAULT_DUTIES_POWERS_CHAPTERS));
+        return DEFAULT_DUTIES_POWERS_CHAPTERS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_DUTIES_POWERS_CHAPTERS;
+    } catch (e) {
+      return DEFAULT_DUTIES_POWERS_CHAPTERS;
+    }
+  },
+
+  saveDutiesPowersChapter(item: DutiesPowersChapterItem) {
+    if (typeof window === 'undefined') return;
+    const list = this.getDutiesPowersChapters();
+    const idx = list.findIndex(d => d.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_duties_powers', JSON.stringify(list));
+    window.dispatchEvent(new Event('dutiesPowersChange'));
+  },
+
+  deleteDutiesPowersChapter(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getDutiesPowersChapters().filter(d => d.id !== id);
+    localStorage.setItem('cag_duties_powers', JSON.stringify(list));
+    window.dispatchEvent(new Event('dutiesPowersChange'));
+  },
+
+  getAuditRegulations(): AuditRegulationItem[] {
+    if (typeof window === 'undefined') return DEFAULT_AUDIT_REGULATIONS;
+    try {
+      const stored = localStorage.getItem('cag_audit_regulations');
+      if (!stored) {
+        localStorage.setItem('cag_audit_regulations', JSON.stringify(DEFAULT_AUDIT_REGULATIONS));
+        return DEFAULT_AUDIT_REGULATIONS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_AUDIT_REGULATIONS;
+    } catch (e) {
+      return DEFAULT_AUDIT_REGULATIONS;
+    }
+  },
+
+  saveAuditRegulation(item: AuditRegulationItem) {
+    if (typeof window === 'undefined') return;
+    const list = this.getAuditRegulations();
+    const idx = list.findIndex(r => r.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_audit_regulations', JSON.stringify(list));
+    window.dispatchEvent(new Event('auditRegulationsChange'));
+  },
+
+  deleteAuditRegulation(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getAuditRegulations().filter(r => r.id !== id);
+    localStorage.setItem('cag_audit_regulations', JSON.stringify(list));
+    window.dispatchEvent(new Event('auditRegulationsChange'));
+  },
+
+  getConstitutionalProvisions(): ConstitutionalProvisionItem[] {
+    if (typeof window === 'undefined') return DEFAULT_CONSTITUTIONAL_PROVISIONS;
+    try {
+      const stored = localStorage.getItem('cag_constitutional_provisions');
+      if (!stored) {
+        localStorage.setItem('cag_constitutional_provisions', JSON.stringify(DEFAULT_CONSTITUTIONAL_PROVISIONS));
+        return DEFAULT_CONSTITUTIONAL_PROVISIONS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_CONSTITUTIONAL_PROVISIONS;
+    } catch (e) {
+      return DEFAULT_CONSTITUTIONAL_PROVISIONS;
+    }
+  },
+
+  saveConstitutionalProvision(item: ConstitutionalProvisionItem) {
+    if (typeof window === 'undefined') return;
+    const list = this.getConstitutionalProvisions();
+    const idx = list.findIndex(c => c.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_constitutional_provisions', JSON.stringify(list));
+    window.dispatchEvent(new Event('constitutionalProvisionsChange'));
+  },
+
+  deleteConstitutionalProvision(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getConstitutionalProvisions().filter(c => c.id !== id);
+    localStorage.setItem('cag_constitutional_provisions', JSON.stringify(list));
+    window.dispatchEvent(new Event('constitutionalProvisionsChange'));
+  },
+
+  getAuditAdvisoryMembers(): AuditAdvisoryMemberItem[] {
+    if (typeof window === 'undefined') return DEFAULT_AUDIT_ADVISORY_MEMBERS;
+    try {
+      const stored = localStorage.getItem('cag_audit_advisory_members');
+      if (!stored) {
+        localStorage.setItem('cag_audit_advisory_members', JSON.stringify(DEFAULT_AUDIT_ADVISORY_MEMBERS));
+        return DEFAULT_AUDIT_ADVISORY_MEMBERS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_AUDIT_ADVISORY_MEMBERS;
+    } catch (e) {
+      return DEFAULT_AUDIT_ADVISORY_MEMBERS;
+    }
+  },
+
+  saveAuditAdvisoryMember(item: AuditAdvisoryMemberItem) {
+    if (typeof window === 'undefined') return;
+    const list = this.getAuditAdvisoryMembers();
+    const idx = list.findIndex(m => m.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_audit_advisory_members', JSON.stringify(list));
+    window.dispatchEvent(new Event('auditAdvisoryMembersChange'));
+  },
+
+  deleteAuditAdvisoryMember(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getAuditAdvisoryMembers().filter(m => m.id !== id);
+    localStorage.setItem('cag_audit_advisory_members', JSON.stringify(list));
+    window.dispatchEvent(new Event('auditAdvisoryMembersChange'));
   }
 };
 
@@ -1083,12 +1432,35 @@ export interface GlobalRelationItem {
 }
 
 export const DEFAULT_FORMER_CAGS: FormerCAGItem[] = [
-  { id: 'fc-1', name: 'Girish Chandra Murmu', tenure: '(2020-2024)', image_url: '/assets/12e6d254adf33bbd46537f45eb8f9ecd50a15e55.png' },
-  { id: 'fc-2', name: 'Rajiv Mehrishi', tenure: '(2017-2020)', image_url: '/assets/269d11ffce72c4343f0fa24955e0dc48a33d8255.png' },
-  { id: 'fc-3', name: 'Shashi Kant Sharma', tenure: '(2013-2017)', image_url: '/assets/4c1eaa81c93edbe02d6f7d5437565571dcec4b04.png' },
-  { id: 'fc-4', name: 'Vinod Rai', tenure: '(2008-2013)', image_url: '/assets/6574e2c9289333c9bdf86fe596a04b3f1c0238c3.png' },
-  { id: 'fc-5', name: 'Vijayendra N. Kaul', tenure: '(2002-2008)', image_url: '/assets/cc8a1a5614f48c98f397dcafcf38e8f22843dc2a.png' },
-  { id: 'fc-6', name: 'V.K. Shunglu', tenure: '(1996-2002)', image_url: '/assets/d14889fd29ae93bd23d9b51c4dad883e07f826bf.png' }
+  { id: 'fc-1', name: 'Girish Chandra Murmu', tenure: '(2020 - 2024)', image_url: '/assets/Images/former cag/image 1.svg' },
+  { id: 'fc-2', name: 'Rajiv Mehrishi', tenure: '(2017 - 2020)', image_url: '/assets/Images/former cag/image 2.svg' },
+  { id: 'fc-3', name: 'Shashi Kant Sharma', tenure: '(2013 - 2017)', image_url: '/assets/Images/former cag/image 3.svg' },
+  { id: 'fc-4', name: 'Vinod Rai', tenure: '(2008 - 2013)', image_url: '/assets/Images/former cag/image 4.svg' },
+  { id: 'fc-5', name: 'V.N. Kaul', tenure: '(2002 - 2008)', image_url: '/assets/Images/former cag/image 5.svg' },
+  { id: 'fc-6', name: 'V.K. Shunglu', tenure: '(1996 - 2002)', image_url: '/assets/Images/former cag/image 6.svg' },
+  { id: 'fc-7', name: 'C.G. Somiah', tenure: '(1990 - 1996)', image_url: '/assets/Images/former cag/image 7.svg' },
+  { id: 'fc-8', name: 'T.N. Chaturvedi', tenure: '(1984 - 1990)', image_url: '/assets/Images/former cag/image 8.svg' },
+  { id: 'fc-9', name: 'Gian Prakash', tenure: '(1978 - 1984)', image_url: '/assets/Images/former cag/image 9.svg' },
+  { id: 'fc-10', name: 'A. Baksi', tenure: '(1972 - 1978)', image_url: '/assets/Images/former cag/image 10.svg' },
+  { id: 'fc-11', name: 'S. Ranganathan', tenure: '(1966 - 1972)', image_url: '/assets/Images/former cag/image 11.svg' },
+  { id: 'fc-12', name: 'A.K. Roy', tenure: '(1960 - 1966)', image_url: '/assets/Images/former cag/image 12.svg' },
+  { id: 'fc-13', name: 'A.K. Chanda', tenure: '(1954 - 1960)', image_url: '/assets/Images/former cag/image 13.svg' },
+  { id: 'fc-14', name: 'V. Narahari Rao', tenure: '(1948 - 1954)', image_url: '/assets/Images/former cag/image 14.svg' },
+  { id: 'fc-15', name: 'Sir Bertie Staig', tenure: '(1945 - 1948)', image_url: '/assets/Images/former cag/image 15.svg' },
+  { id: 'fc-16', name: 'Sir. Alexander Cameron Badenoch', tenure: '(1940 - 1945)', image_url: '/assets/Images/former cag/image 16.svg' },
+  { id: 'fc-17', name: 'Sir. Ernest Burdon', tenure: '(1929 - 1940)', image_url: '/assets/Images/former cag/image 17.svg' },
+  { id: 'fc-18', name: 'Sir Frederic Gauntlett', tenure: '(1918 - 1929)', image_url: '/assets/Images/former cag/image 18.svg' },
+  { id: 'fc-19', name: 'Sir R.A. Gamble', tenure: '(1914 - 1918)', image_url: '/assets/Images/former cag/image 19.svg' },
+  { id: 'fc-20', name: 'R.W. Gillan', tenure: '(1910 - 1912)', image_url: '/assets/Images/former cag/image 20.svg' },
+  { id: 'fc-21', name: 'O. J. Barrow', tenure: '(1906 - 1910)', image_url: '/assets/Images/former cag/image 21.svg' },
+  { id: 'fc-22', name: 'A.F. Cox', tenure: '(1898 - 1906)', image_url: '/assets/Images/former cag/image 22.svg' },
+  { id: 'fc-23', name: 'S. Jacob', tenure: '(1891 - 1898)', image_url: '/assets/Images/former cag/no image.svg' },
+  { id: 'fc-24', name: 'E. Gay', tenure: '(1889 - 1891)', image_url: '/assets/Images/former cag/no image.svg' },
+  { id: 'fc-25', name: 'James Westland', tenure: '(1881 - 1889)', image_url: '/assets/Images/former cag/no image.svg' },
+  { id: 'fc-26', name: 'W. Waterfield', tenure: '(1879 - 1881)', image_url: '/assets/Images/former cag/no image.svg' },
+  { id: 'fc-27', name: 'E. F. Harrison', tenure: '(1867 - 1879)', image_url: '/assets/Images/former cag/no image.svg' },
+  { id: 'fc-28', name: 'R. P. Harrison', tenure: '(1862 - 1867)', image_url: '/assets/Images/former cag/no image.svg' },
+  { id: 'fc-29', name: 'Hon. Edmund Drummond', tenure: '(1860 - 1862)', image_url: '/assets/Images/former cag/no image.svg' }
 ];
 
 export const DEFAULT_GLOBAL_RELATIONS: GlobalRelationItem[] = [

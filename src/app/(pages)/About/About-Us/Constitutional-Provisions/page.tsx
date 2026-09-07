@@ -1,52 +1,395 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import AboutLayout from '@/app/(pages)/About/AboutLayout';
+import { dataManager } from '@/lib/dataManager';
 
 export default function ConstitutionalProvisionsPage() {
+  const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+
+  useEffect(() => {
+    setLang(dataManager.getLanguage());
+    const handleLangChange = () => setLang(dataManager.getLanguage());
+    window.addEventListener('languageChange', handleLangChange);
+    return () => window.removeEventListener('languageChange', handleLangChange);
+  }, []);
+
+  const isHindi = lang === 'हिन्दी';
+
   return (
-    <AboutLayout title="Constitutional-Provisions">
-      <div className="space-y-8">
-        <section className="border-b border-[#e6e6e6] pb-6">
-          <h3 className="text-xl font-bold text-[#751639] mb-4">Article 148 — Comptroller and Auditor-General of India</h3>
-          <ul className="list-disc pl-5 space-y-3 text-zinc-700 text-sm leading-relaxed">
-            <li>There shall be a Comptroller and Auditor-General of India who shall be appointed by the President by warrant under his hand and seal and shall only be removed from office in like manner and on like grounds as a Judge of the Supreme Court.</li>
-            <li>Every person appointed to be the Comptroller and Auditor-General of India shall, before he enters upon his office, make and subscribe before the President or some person appointed in that behalf by him, an oath or affirmation according to the form set out for the purpose in the Third Schedule.</li>
-            <li>The salary and other conditions of service of the Comptroller and Auditor-General shall be such as may be determined by Parliament by law and, until they are so determined, shall be as specified in the Second Schedule: Provided that neither the salary of a Comptroller and Auditor-General nor his rights in respect of leave of absence, pension or age of retirement shall be varied to his disadvantage after his appointment.</li>
-            <li>The Comptroller and Auditor-General shall not be eligible for further office either under the Government of India or under the Government of any State after he has ceased to hold his office.</li>
-            <li>Subject to the provisions of this Constitution and of any law made by parliament, the conditions of service of persons serving in the Indian Audit and Accounts Department and the administrative powers of the Comptroller and Auditor-General shall be such as may be prescribed by rules made by the President after consultation with the Comptroller and Auditor-General.</li>
-            <li>The administrative expenses of the office of the Comptroller and Auditor-General including all salaries, allowances and pensions payable to or in respect of persons serving in that office, shall be charged upon the Consolidated Fund of India.</li>
-          </ul>
-        </section>
+    <AboutLayout title={isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional Provisions'}>
+      <div className="flex flex-col items-start w-full max-w-[978px]">
+        {/* Page Title matching Figma CSS */}
+        <h1 
+          className="text-2xl font-bold mb-6 text-left self-start"
+          style={{
+            fontFamily: 'Noto Sans, sans-serif',
+            fontWeight: 700,
+            fontSize: '24px',
+            lineHeight: '160%',
+            color: '#751639'
+          }}
+        >
+          {isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional Provisions'}
+        </h1>
 
-        <section className="border-b border-[#e6e6e6] pb-6">
-          <h3 className="text-xl font-bold text-[#751639] mb-4">Article 149 — Duties and Powers of the Comptroller and Auditor-General</h3>
-          <p className="text-zinc-700 text-sm leading-relaxed">
-            The Comptroller and Auditor-General shall perform such duties and exercise such powers in relation to the accounts of the Union and of the States and of any other authority or body as may be prescribed by or under any law made by Parliament and, until provision in that behalf is so made, shall perform such duties and exercise such powers in relation to the accounts of the Union and of the States as were conferred on or exercisable by the Auditor-General of India immediately before the commencement of this Constitution in relation to the accounts of the Dominion of India and of the provinces respectively.
-          </p>
-        </section>
+        {/* Content Container */}
+        <div className="flex flex-col gap-8 w-full text-left">
+          
+          {/* Article 148 */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'अनुच्छेद 148 - भारत के नियंत्रक और महालेखापरीक्षक' : 'Article 148 - Comptroller and Auditor-General of India'}
+            </h2>
+            <ul 
+              className="space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A',
+                listStyleType: 'disc',
+                paddingLeft: '24px'
+              }}
+            >
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'भारत का एक नियंत्रक और महालेखापरीक्षक होगा जिसे राष्ट्रपति द्वारा अपने हस्ताक्षर और मुद्रा सहित अधिपत्र द्वारा नियुक्त किया जाएगा और उसे केवल उसी रीति से और उन्हीं आधारों पर हटाया जाएगा जिस रीति से और जिन आधारों पर उच्चतम न्यायालय के न्यायाधीश को हटाया जाता है।'
+                  : 'There shall be a Comptroller and Auditor-General of India who shall be appointed by the President by warrant under his hand and seal and shall only be removed from office in like manner and on like grounds as a Judge of the Supreme Court.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'भारत के नियंत्रक और महालेखापरीक्षक के रूप में नियुक्त प्रत्येक व्यक्ति अपना पद ग्रहण करने से पहले राष्ट्रपति या उसके द्वारा इस निमित्त नियुक्त व्यक्ति के समक्ष तीसरी अनुसूची में इस प्रयोजन के लिए दिए गए प्रपत्र के अनुसार शपथ लेगा या प्रतिज्ञान करेगा और उस पर हस्ताक्षर करेगा।'
+                  : 'Every person appointed to be the Comptroller and Auditor-General of India shall, before he enters upon his office, make and subscribe before the President or some person appointed in that behalf by him, an oath or affirmation according to the form set out for the purpose in the Third Schedule.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'नियंत्रक और महालेखापरीक्षक का वेतन और सेवा की अन्य शर्तें ऐसी होंगी जो संसद द्वारा विधि द्वारा अवधारित की जाएं और, जब तक वे इस प्रकार अवधारित नहीं की जाती हैं, तब तक वैसी होंगी जैसी दूसरी अनुसूची में विनिर्दिष्ट हैं: परन्तु नियंत्रक और महालेखापरीक्षक के वेतन में तथा अनुपस्थिति की छुट्टी, पेंशन या सेवानिवृत्ति की आयु के संबंध में उसके अधिकारों में उसकी नियुक्ति के पश्चात उसके लिए अलाभकारी परिवर्तन नहीं किया जाएगा।'
+                  : 'The salary and other conditions of service of the Comptroller and Auditor-General shall be such as may be determined by Parliament by law and, until they are so determined, shall be as specified in the Second Schedule: Provided that neither the salary of a Comptroller and Auditor-General nor his rights in respect of leave of absence, pension or age of retirement shall be varied to his disadvantage after his appointment.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'नियंत्रक और महालेखापरीक्षक अपने पद पर न रहने के पश्चात भारत सरकार के या किसी राज्य की सरकार के अधीन किसी और पद का पात्र नहीं होगा।'
+                  : 'The Comptroller and Auditor-General shall not be eligible for further office either under the Government of India or under the Government of any State after he has ceased to hold his office.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'इस संविधान के और संसद द्वारा बनाई गई किसी विधि के उपबंधों के अधीन रहते हुए, भारतीय लेखापरीक्षा और लेखा विभाग में सेवा करने वाले व्यक्तियों की सेवा की शर्तें और नियंत्रक और महालेखापरीक्षक की प्रशासनिक शक्तियां ऐसी होंगी जो नियंत्रक और महालेखापरीक्षक से परामर्श करने के पश्चात राष्ट्रपति द्वारा बनाए गए नियमों द्वारा विहित की जाएं।'
+                  : 'Subject to the provisions of this Constitution and of any law made by parliament, the conditions of service of persons serving in the Indian Audit and Accounts Department and the administrative powers of the Comptroller and Auditor-General shall be such as may be prescribed by rules made by the President after consultation with the Comptroller and Auditor-General.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'नियंत्रक और महालेखापरीक्षक के कार्यालय के प्रशासनिक व्यय, जिनके अंतर्गत उस कार्यालय में सेवा करने वाले व्यक्तियों को या उनके संबंध में संदेह सभी वेतन, भत्ते और पेंशन हैं, भारत की संचित निधि पर भारित होंगे।'
+                  : 'The administrative expenses of the office of the Comptroller and Auditor-General including all salaries, allowances and pensions payable to or in respect of persons serving in that office, shall be charged upon the Consolidated Fund of India.'}
+              </li>
+            </ul>
+          </section>
 
-        <section className="border-b border-[#e6e6e6] pb-6">
-          <h3 className="text-xl font-bold text-[#751639] mb-4">Article 150 — Form of Accounts of The Union and of The States</h3>
-          <p className="text-zinc-700 text-sm leading-relaxed">
-            The accounts of the Union and of the States shall be kept in such form as the President may, on the advice of the Comptroller and Auditor-General of India, prescribe.
-          </p>
-        </section>
+          {/* Article 149 */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'अनुच्छेद 149 - नियंत्रक और महालेखापरीक्षक के कर्तव्य और शक्तियां' : 'Article 149 - Duties and Powers of the Comptroller and Auditor-General'}
+            </h2>
+            <ul 
+              className="space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A',
+                listStyleType: 'disc',
+                paddingLeft: '24px'
+              }}
+            >
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'नियंत्रक और महालेखापरीक्षक संघ के और राज्यों के तथा किसी अन्य प्राधिकारी या निकाय के लेखाओं के संबंध में ऐसे कर्तव्यों का पालन और ऐसी शक्तियों का प्रयोग करेगा जो संसद द्वारा बनाई गई किसी विधि द्वारा या उसके अधीन विहित किए जाएं और, जब तक इस निमित्त उपबंध इस प्रकार नहीं किया जाता है तब तक, संघ के और राज्यों के लेखाओं के संबंध में ऐसे कर्तव्यों का पालन और ऐसी शक्तियों का प्रयोग करेगा जो इस संविधान के प्रारंभ से ठीक पहले क्रमशः भारत डोमिनियन के और प्रांतों के लेखाओं के संबंध में भारत के महालेखापरीक्षक को प्रदत्त थीं या उसके द्वारा प्रयोक्तव्य थीं।'
+                  : 'The Comptroller and Auditor-General shall perform such duties and exercise such powers in relation to the accounts of the Union and of the States and of any other authority or body as may be prescribed by or under any law made by Parliament and, until provision in that behalf is so made, shall perform such duties and exercise such powers in relation to the accounts of the Union and of the States as were conferred on or exercisable by the Auditor-General of India immediately before the commencement of this Constitution in relation to the accounts of the Dominion of India and of the provinces respectively.'}
+              </li>
+            </ul>
+          </section>
 
-        <section className="border-b border-[#e6e6e6] pb-6">
-          <h3 className="text-xl font-bold text-[#751639] mb-4">Article 151 — Audit Reports</h3>
-          <ul className="list-disc pl-5 space-y-3 text-zinc-700 text-sm leading-relaxed">
-            <li>The reports of the Comptroller and Auditor-General of India relating to the accounts of the Union shall be submitted to the president, who shall cause them to be laid before each House of Parliament.</li>
-            <li>The reports of the Comptroller and Auditor-General of India relating to the accounts of a State shall be submitted to the Governor of the State, who shall cause them to be laid before the Legislature of the State.</li>
-          </ul>
-        </section>
+          {/* Article 150 */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'अनुच्छेद 150 - संघ के और राज्यों के लेखाओं का प्ररूप' : 'Article 150 - Form of Accounts of The Union and of The States'}
+            </h2>
+            <ul 
+              className="space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A',
+                listStyleType: 'disc',
+                paddingLeft: '24px'
+              }}
+            >
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'संघ के और राज्यों के लेखाओं को ऐसे प्ररूप में रखा जाएगा जो राष्ट्रपति, भारत के नियंत्रक और महालेखापरीक्षक की सलाह पर विहित करे।'
+                  : 'The accounts of the Union and of the States shall be kept in such form as the President may, on the advice of the Comptroller and Auditor-General of India, prescribe.'}
+              </li>
+            </ul>
+          </section>
 
-        <section className="pb-4">
-          <h3 className="text-xl font-bold text-[#751639] mb-4">Article 279 — Calculation of "net proceeds", etc.</h3>
-          <ol className="list-decimal pl-5 space-y-3 text-zinc-700 text-sm leading-relaxed">
-            <li>In the foregoing provisions of this Chapter, &ldquo;net proceeds&rdquo; means in relation to any tax or duty the proceeds thereof reduced by the cost of collection, and for the purposes of those provisions the net proceeds of any tax or duty, or of any part of any tax or duty, in or attributable to any area shall be ascertained and certified by the Comptroller and Auditor-General of India, whose certificate shall be final.</li>
-            <li>Subject as aforesaid, and to any other express provision of this Chapter, a law made by Parliament or an order of the President may, in any case where under this Part the proceeds of any duty or tax are, or may be, assigned to any State, provide for the manner in which the proceeds are to be calculated, for the time from or at which and the manner in which any payments are to be made, for the making of adjustments between one financial year and another, and for any other incidental or ancillary matters.</li>
-          </ol>
-        </section>
+          {/* Article 151 */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'अनुच्छेद 151 - लेखापरीक्षा प्रतिवेदन' : 'Article 151 - Audit Reports'}
+            </h2>
+            <ul 
+              className="space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A',
+                listStyleType: 'disc',
+                paddingLeft: '24px'
+              }}
+            >
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'भारत के नियंत्रक और महालेखापरीक्षक के संघ के लेखाओं से संबंधित प्रतिवेदनों को राष्ट्रपति के समक्ष प्रस्तुत किया जाएगा, जो उनको संसद के प्रत्येक सदन के समक्ष रखवाएगा।'
+                  : 'The reports of the Comptroller and Auditor-General of India relating to the accounts of the Union shall be submitted to the president, who shall cause them to be laid before each House of Parliament.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? 'भारत के नियंत्रक और महालेखापरीक्षक के किसी राज्य के लेखाओं से संबंधित प्रतिवेदनों को राज्य के राज्यपाल के समक्ष प्रस्तुत किया जाएगा, जो उनको राज्य के विधान-मंडल के समक्ष रखवाएगा।'
+                  : 'The reports of the Comptroller and Auditor-General of India relating to the accounts of a State shall be submitted to the Governor of the State, who shall cause them to be laid before the Legislature of the State.'}
+              </li>
+            </ul>
+          </section>
+
+          {/* Article 279 */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'अनुच्छेद 279 - "शुद्ध आगम" आदि की गणना' : 'Article 279 - Calculation of "net proceeds", etc.'}
+            </h2>
+            <ol 
+              className="list-decimal pl-6 space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A'
+              }}
+            >
+              <li>
+                {isHindi
+                  ? 'इस अध्याय के पूर्वगामी उपबंधों में "शुद्ध आगम" से किसी कर या शुल्क के संबंध में उसका वह आगम अभिप्रेत है जो उसके संग्रहण के खर्चों को घटाकर आए और उन उपबंधों के प्रयोजनों के लिए किसी क्षेत्र में या उससे अंतर्भूत किसी कर या शुल्क का अथवा उसके किसी भाग का शुद्ध आगम भारत के नियंत्रक और महालेखापरीक्षक द्वारा अवधारित और प्रमाणित किया जाएगा और उसका प्रमाण-पत्र अंतिम होगा।'
+                  : 'In the foregoing provisions of this Chapter, "net proceeds" means in relation to any tax or duty the proceeds thereof reduced by the cost of collection, and for the purposes of those provisions the net proceeds of any tax or duty, or of any part of any tax or duty, in or attributable to any area shall be ascertained and certified by the Comptroller and Auditor-General of India, whose certificate shall be final.'}
+              </li>
+              <li>
+                {isHindi
+                  ? 'जैसा कि ऊपर कहा गया है उसके और इस अध्याय के किसी अन्य स्पष्ट उपबंध के अधीन रहते हुए, संसद द्वारा बनाई गई किसी विधि द्वारा या राष्ट्रपति के किसी आदेश द्वारा, ऐसे किसी भी मामले में जहां इस भाग के अधीन किसी शुल्क या कर का आगम किसी राज्य को सौंपा गया है या सौंपा जा सकता है, उस रीति का उपबंध किया जा सकता है जिसमें आगम की गणना की जानी है, उस समय का उपबंध किया जा सकता है जिससे या जिस पर तथा उस रीति का उपबंध किया जा सकता है जिसमें कोई संदाय किए जाने हैं, एक वित्तीय वर्ष और दूसरे वित्तीय वर्ष के बीच समायोजन करने का और किसी अन्य प्रासंगिक या आनुषंगिक विषय का उपबंध किया जा सकता है।'
+                  : 'Subject as aforesaid, and to any other express provision of this Chapter, a law made by Parliament or an order of the President may, in any case where under this Part the proceeds of any duty or tax are, or may be, assigned to any State, provide for the manner in which the proceeds are to be calculated, for the time from or at which and the manner in which any payments are to be made, for the making of adjustments between one financial year and another, and for any other incidental or ancillary matters.'}
+              </li>
+            </ol>
+          </section>
+
+          {/* Third Schedule */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'तीसरी अनुसूची' : 'Third Schedule'}
+            </h2>
+            <p 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '24px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi
+                ? 'भारत के संविधान की तीसरी अनुसूची का खंड IV उच्चतम न्यायालय के न्यायाधीशों और भारत के नियंत्रक और महालेखापरीक्षक द्वारा पद ग्रहण के समय ली जाने वाली शपथ या प्रतिज्ञान का निम्नलिखित प्रपत्र विहित करता है:'
+                : 'Section IV of the Third Schedule of the Constitution of India prescribes the following form of oath or affirmation to be made by the Judges of the Supreme Court and the Comptroller and Auditor-General of India at the time of assumption of office:'}
+            </p>
+            <ul 
+              className="space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A',
+                listStyleType: 'disc',
+                paddingLeft: '24px'
+              }}
+            >
+              <li style={{ display: 'list-item', listStyleType: 'disc' }}>
+                {isHindi
+                  ? '“मैं, अ.ब., जो भारत के उच्चतम न्यायालय का मुख्य न्यायाधीश (या न्यायाधीश) (या भारत का नियंत्रक और महालेखापरीक्षक) नियुक्त हुआ हूँ, ईश्वर की शपथ लेता हूँ (या सत्यनिष्ठा से प्रतिज्ञान करता हूँ) कि मैं विधि द्वारा स्थापित भारत के संविधान के प्रति सच्ची श्रद्धा और निष्ठा रखूँगा, मैं भारत की प्रभुता और अखंडता को अक्षुण्ण रखूँगा तथा मैं भय या पक्षपात, अनुराग या द्वेष के बिना, अपनी पूरी योग्यता, ज्ञान और विवेक से अपने पद के कर्तव्यों का श्रद्धापूर्वक और शुद्ध अंतःकरण से पालन करूँगा तथा मैं संविधान और विधियों की मर्यादा बनाए रखूँगा।”'
+                  : '“I, A.B., having been appointed Chief Justice (or a Judge) of the Supreme Court of India (or Comptroller and Auditor-General of India) do swear in the name of God (or solemnly affirm) that I will bear true faith and allegiance to the Constitution of India as by law established, that I will uphold the sovereignty and integrity of India, that I will duly and faithfully and to the best of my ability, knowledge and judgment perform the duties of my office without fear or favour, affection or ill-will and that I will uphold the Constitution and the laws.”'}
+              </li>
+            </ul>
+          </section>
+
+          {/* Sixth Schedule */}
+          <section className="flex flex-col gap-3">
+            <h2 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '18px',
+                lineHeight: '28px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi ? 'छठी अनुसूची' : 'Sixth Schedule'}
+            </h2>
+            <p 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '24px',
+                color: '#751639',
+                margin: 0
+              }}
+            >
+              {isHindi
+                ? '[अनुच्छेद 244(2) और 275(1)] असम, मेघालय, त्रिपुरा और मिजोरम राज्यों के जनजातीय क्षेत्रों के प्रशासन के बारे में उपबंध'
+                : '[Articles 244(2) and 275(1)]Provisions as to the Administration of Tribal Areas in [1][ the States of Assam, Meghalaya, Tripura and Mizoram'}
+            </p>
+            
+            <h3 
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: '#751639',
+                margin: 0,
+                marginTop: '4px'
+              }}
+            >
+              {isHindi ? '7. जिला और क्षेत्रीय निधियां।' : '7.District and Regional Funds.'}
+            </h3>
+
+            <ol 
+              className="space-y-3 m-0"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '28px',
+                color: '#2A2A2A',
+                listStyleType: 'decimal',
+                paddingLeft: '24px'
+              }}
+            >
+              <li style={{ display: 'list-item', listStyleType: 'decimal' }}>
+                {isHindi
+                  ? 'प्रत्येक स्वायत्त जिले के लिए एक जिला निधि और प्रत्येक स्वायत्त क्षेत्र के लिए एक क्षेत्रीय निधि गठित की जाएगी, जिसमें यथास्थिति उस जिले की जिला परिषद या उस क्षेत्र की क्षेत्रीय परिषद द्वारा उस जिले या क्षेत्र के प्रशासन के दौरान इस संविधान के उपबंधों के अनुसार प्राप्त सभी धन जमा किए जाएंगे।'
+                  : 'There shall be constituted for each autonomous district, a District Fund and for each autonomous region, a Regional Fund to which shall be credited all moneys received respectively by the District Council for that district and the Regional Council for that region in the course of the administration of such district or region, as the case may be, in accordance with the provisions of this Constitution.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'decimal' }}>
+                {isHindi
+                  ? 'राज्यपाल, यथास्थिति, जिला निधि या क्षेत्रीय निधि के प्रबंध के लिए और उक्त निधि में धन के संदाय के संबंध में, उससे धन निकालने, उसमें रखे धन की अभिरक्षा और पूर्वोक्त विषयों से संबंधित या आनुषंगिक किसी अन्य विषय के संबंध में अनुसरण की जाने वाली प्रक्रिया के लिए नियम बना सकेगा।'
+                  : 'The Governor may make rules for the management of the District Fund, or, as the case may be, the Regional Fund and for the procedure to be followed in respect of payment of money into the said Fund, the withdrawal of moneys therefrom, the custody of moneys therein and any other matter connected with or ancillary to the matters aforesaid.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'decimal' }}>
+                {isHindi
+                  ? 'यथास्थिति, जिला परिषद या क्षेत्रीय परिषद के लेखा ऐसे प्ररूप में रखे जाएंगे जो भारत का नियंत्रक और महालेखापरीक्षक, राष्ट्रपति के अनुमोदन से, विहित करे।'
+                  : 'The accounts of the District Council or, as the case may be, the Regional Council shall be kept in such form as the Comptroller and Auditor General of India may, with the approval of the President, prescribe.'}
+              </li>
+              <li style={{ display: 'list-item', listStyleType: 'decimal' }}>
+                {isHindi
+                  ? 'नियंत्रक और महालेखापरीक्षक जिला और क्षेत्रीय परिषदों के लेखाओं की लेखापरीक्षा ऐसी रीति से करवाएगा जो वह ठीक समझे, और ऐसे लेखाओं से संबंधित नियंत्रक और महालेखापरीक्षक के प्रतिवेदनों को राज्यपाल के समक्ष प्रस्तुत किया जाएगा जो उनको परिषद के समक्ष रखवाएगा।'
+                  : 'The Comptroller and Auditor-General shall cause the accounts of the District and Regional Councils to be audited in such manner as he may think fit, and the reports of the Comptroller and Auditor-General relating to such accounts shall be submitted to the Governor who shall cause them to be laid before the Council.'}
+              </li>
+            </ol>
+
+            {/* Footnotes matching Figma screenshot */}
+            <div 
+              className="mt-6 flex flex-col gap-3"
+              style={{
+                fontFamily: 'Noto Sans, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '24px',
+                color: '#2A2A2A'
+              }}
+            >
+              <p className="m-0">
+                1. Subs. by the State of Mizoram Act, 1986 (34 of 1986), s. 39, for certain words (w.e.f. 20-2-1987).
+              </p>
+              <p className="m-0">
+                2. Subs. by the Assam Reorganisation (Meghalaya) Act, 1969 (55 of 1969), s. 74 and Fourth Sch., for sub-paragraph
+              </p>
+              <p className="m-0">
+                3. (w.e.f. 2-4-1970).
+              </p>
+            </div>
+          </section>
+
+        </div>
       </div>
     </AboutLayout>
   );
 }
+

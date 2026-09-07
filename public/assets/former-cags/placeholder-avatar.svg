@@ -1,0 +1,12 @@
+<svg width="270" height="276" viewBox="0 0 270 276" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="270" height="276" fill="#FFFFFF"/>
+  <!-- Head silhouette -->
+  <path d="M135 128C159.301 128 179 108.301 179 84C179 59.6995 159.301 40 135 40C110.699 40 91 59.6995 91 84C91 108.301 110.699 128 135 128Z" fill="#C4C4C4"/>
+  <!-- Neck and Shoulders with suit collar and tie silhouette -->
+  <path d="M45 250C45 195 85 155 135 155C185 155 225 195 225 250V256H45V250Z" fill="#C4C4C4"/>
+  <!-- V-neck shirt cutout -->
+  <path d="M120 155L135 190L150 155H120Z" fill="#FFFFFF"/>
+  <!-- Tie silhouette -->
+  <path d="M131 172L135 228L139 172H131Z" fill="#C4C4C4"/>
+  <path d="M130 166L135 174L140 166H130Z" fill="#B3B3B3"/>
+</svg>
