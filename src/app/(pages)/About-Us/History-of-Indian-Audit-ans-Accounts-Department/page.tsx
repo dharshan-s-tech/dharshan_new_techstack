@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import AboutLayout from '@/components/layout/AboutLayout';
+import Link from 'next/link';
 import { dataManager } from '@/lib/dataManager';
+import PdfIcon from '@/components/common/PdfIcon';
 
 interface VolumeItem {
   id: string;
@@ -288,11 +290,7 @@ export default function HistoryPage() {
                         {/* PDF Action block */}
                         <div className="flex items-center gap-3 flex-shrink-0">
                           {/* File PDF graphic */}
-                          <svg width="24" height="30" viewBox="0 0 24 32" fill="none" className="text-red-600 flex-shrink-0" aria-hidden="true">
-                            <path d="M4 2 H14 L20 8 V30 H4 Z" fill="#F4F4F4" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
-                            <path d="M14 2 V8 H20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
-                            <text x="12" y="22" fill="currentColor" fontSize="8" fontWeight="bold" textAnchor="middle" fontFamily="sans-serif">PDF</text>
-                          </svg>
+                          <PdfIcon className="w-6 h-7.5" />
                           
                           {/* Size & Action triggers */}
                           <div className="flex flex-col items-start gap-0.5">
@@ -302,6 +300,7 @@ export default function HistoryPage() {
                             <button
                               onClick={() => setPreviewVolume(vol)}
                               className="text-xs text-[#0D61AE] underline font-normal bg-transparent border-none p-0 cursor-pointer hover:text-blue-800 focus:outline-none"
+                              style={{ color: '#0d61ae', textDecoration: 'underline' }}
                             >
                               {isHindi ? 'पीडीएफ देखें' : 'View PDF'}
                             </button>

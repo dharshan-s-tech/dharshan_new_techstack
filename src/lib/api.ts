@@ -1,9 +1,28 @@
 import { dataManager } from './dataManager';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
+/**
+ * Browser must not call http://localhost when the page is opened via a public IP
+ * (Private Network Access blocks that). Prefer an explicit env URL, otherwise:
+ * - in the browser: same hostname on :8000 (or same-origin if unset and relative)
+ * - on the server: loopback for Next → FastAPI
+ */
 export function getApiBaseUrl(): string {
-  return API_BASE_URL;
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:8000';
+    }
+    return `${protocol}//${hostname}:8000`;
+  }
+
+  return (
+    process.env.API_INTERNAL_URL ||
+    'http://127.0.0.1:8000'
+  ).replace(/\/$/, '');
 }
 
 export function getMockData(path: string): any {
@@ -74,7 +93,7 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T | nu
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
+    const res = await fetch(`${getApiBaseUrl()}${path}`, {
       cache: 'no-store',
       ...options,
     });

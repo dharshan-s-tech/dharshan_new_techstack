@@ -63,7 +63,7 @@ export default function WhoWeAre() {
           </a>
           <Link href="/Reports/accounts" className="quick-link" data-node-id="356:17114">
             <div className="quick-link__icon-wrap">
-              <img src="/assets/accounts.svg" alt="Accounts icon" className="quick-link__icon" />
+              <img src="/assets/accounts-report.png" alt="Accounts icon" className="quick-link__icon" />
             </div>
             <p className="quick-link__label" data-node-id="356:17118">
               {isHindi ? 'लेखा' : 'Accounts'}

@@ -5,14 +5,25 @@ import Link from 'next/link';
 
 export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boolean; language?: 'English' | 'हिन्दी' }) {
   const [activeMega, setActiveMega] = useState<'about' | 'global' | 'presence' | 'resources' | 'careers' | null>(null);
+  const [pinnedMega, setPinnedMega] = useState<'about' | 'global' | 'presence' | 'resources' | 'careers' | null>(null);
+
+  const closeAll = () => {
+    setActiveMega(null);
+    setPinnedMega(null);
+  };
 
   const handleTopicClick = (e: React.MouseEvent, type: 'about' | 'global' | 'presence' | 'resources' | 'careers') => {
     e.stopPropagation();
-    setActiveMega(type);
+    if (pinnedMega === type) {
+      closeAll();
+    } else {
+      setPinnedMega(type);
+      setActiveMega(type);
+    }
   };
 
   useEffect(() => {
-    if (!activeMega) return;
+    if (!activeMega && !pinnedMega) return;
     const handleOutsideClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (
@@ -20,11 +31,11 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         !target.closest('.about-menu') &&
         !target.closest('.global-relations-menu')
       ) {
-        setActiveMega(null);
+        closeAll();
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActiveMega(null);
+      if (e.key === 'Escape') closeAll();
     };
     document.addEventListener('click', handleOutsideClick);
     document.addEventListener('keydown', handleKeyDown);
@@ -32,7 +43,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
       document.removeEventListener('click', handleOutsideClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeMega]);
+  }, [activeMega, pinnedMega]);
 
   const isHindi = language === 'हिन्दी';
   const labelReports = isHindi ? 'रिपोर्ट' : 'Reports';
@@ -77,7 +88,9 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
       <div 
         className="nav-item cursor-pointer"
         onMouseEnter={() => setActiveMega('global')}
-        onMouseLeave={() => setActiveMega(null)}
+        onMouseLeave={() => {
+          if (!pinnedMega) setActiveMega(null);
+        }}
       >
         <a 
           href="#" 
@@ -91,7 +104,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         
         {activeMega === 'global' && (
           <div className="global-relations-menu" id="global-relations-menu" role="menu">
-            <h2 className="grm-title text-left">{isHindi ? 'वैश्विक संबंध' : 'Global-relations'}</h2>
+            <h2 className="grm-title text-left">{isHindi ? 'वैश्विक संबंध' : 'Global relations'}</h2>
             <div className="grm-divider" aria-hidden="true"></div>
             <div className="grm-columns">
               <div className="grm-column">
@@ -110,7 +123,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
                       ? 'SAI भारत की द्विपक्षीय साझेदारी और अन्य देशों के लेखा परीक्षा संस्थानों के साथ अंतर्राष्ट्रीय सहयोग का पता लगाएं' 
                       : 'Explore SAI India\'s bilateral partnerships and international cooperation with audit institutions across countries'}
                   </p>
-                  <Link href="/About/Index-Menu-About/Global-relations/Bilateral%20Relations" className="grm-desc-box__cta text-left" onClick={() => setActiveMega(null)}>
+                  <Link href="/About/Index-Menu-About/Global-relations/Bilateral%20Relations" className="grm-desc-box__cta text-right" onClick={() => setActiveMega(null)}>
                     {isHindi ? 'सभी देश देखें' : 'View all countries'} &rarr;
                   </Link>
                 </div>
@@ -139,10 +152,10 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
                   <p className="grm-desc-box__text text-left">
                     {isHindi 
                       ? 'वैश्विक साझेदारी और पहलों पर जानकारी के लिए अंतर्राष्ट्रीय संबंध विंग से जुड़ें' 
-                      : 'Connect with the International Relations Wing for information on global partnerships and initiatives'}
+                      : 'Connect with the International Relations Wing for information on global partnerships, engagements and international initiative'}
                   </p>
-                  <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="grm-desc-box__cta text-left" onClick={() => setActiveMega(null)}>
-                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग से संपर्क करें' : 'Contact IR Wing'} &rarr;
+                  <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="grm-desc-box__cta text-right" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग से संपर्क करें' : 'Contact Intl. Relations Wing'} &rarr;
                   </Link>
                 </div>
               </div>

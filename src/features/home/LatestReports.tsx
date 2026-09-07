@@ -56,21 +56,51 @@ const HINDI_TRANSLATIONS: Record<string, { title: string; label: string; desc: s
 export default function LatestReports() {
   const router = useRouter();
 
-  const [reportCards, setReportCards] = useState<any[]>([]);
+  const [allReports, setAllReports] = useState<any[]>([]);
+  const [startIndex, setStartIndex] = useState(0);
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
 
   useEffect(() => {
-    setReportCards(dataManager.getReports().filter(r => r.isFeatured).slice(0, 3));
+    const loadReportsData = () => {
+      const reports = dataManager.getReports().filter(r => r.isFeatured);
+      setAllReports(reports);
+    };
+
+    loadReportsData();
     setLang(dataManager.getLanguage());
 
-    const handleLangChange = () => {
-      setLang(dataManager.getLanguage());
-    };
+    const handleLangChange = () => setLang(dataManager.getLanguage());
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    window.addEventListener('reportsChange', loadReportsData);
+
+    return () => {
+      window.removeEventListener('languageChange', handleLangChange);
+      window.removeEventListener('reportsChange', loadReportsData);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+
+  const handlePrev = () => {
+    setStartIndex((prev) => {
+      if (allReports.length <= 3) return 0;
+      return prev === 0 ? allReports.length - 3 : Math.max(0, prev - 1);
+    });
+  };
+
+  const handleNext = () => {
+    setStartIndex((prev) => {
+      if (allReports.length <= 3) return 0;
+      return prev + 3 >= allReports.length ? 0 : prev + 1;
+    });
+  };
+
+  const visibleReports = allReports.slice(startIndex, startIndex + 3);
+  const displayReports = visibleReports.length === 3 
+    ? visibleReports 
+    : (allReports.length > 3 
+        ? [...visibleReports, ...allReports.slice(0, 3 - visibleReports.length)]
+        : allReports);
 
   return (
     <section className="reports" data-node-id="356:17046" aria-labelledby="reports-heading">
@@ -86,13 +116,13 @@ export default function LatestReports() {
                 : 'Explore recently published audit reports, financial statements, and accountability reviews from the Comptroller and Auditor General of India.'}
             </p>
           </div>
-          <Link href="/Reports" className="btn btn--outline-white" data-node-id="356:17053">
+          <Link href="/Reports" className="btn btn--outline-white reports__view-all" data-node-id="356:17053">
             {isHindi ? 'सभी देखें' : 'View All'}
           </Link>
         </div>
 
         <div className="reports__cards" data-node-id="356:17054">
-          {reportCards.map((report) => {
+          {displayReports.map((report) => {
             const details = isHindi && HINDI_TRANSLATIONS[report.id] ? HINDI_TRANSLATIONS[report.id] : {
               title: report.title,
               label: report.label || report.sector,
@@ -106,24 +136,85 @@ export default function LatestReports() {
                 data-node-id={report.id}
                 onClick={() => router.push(`/Reports/${report.id}`)}
               >
+                {/* 1. Card image: 50% */}
                 <div className="report-card__banner" data-node-id="I356:17059;907:255">
-                  <img src={typeof report.image === 'string' ? report.image : report.image.src} alt={details.title} className="report-card__photo" />
-                  <span className="report-card__tag" data-node-id="I356:17059;907:256">{report.tag}</span>
+                  <img 
+                    src={typeof report.image === 'string' ? report.image : report.image.src} 
+                    alt={details.title} 
+                    className="report-card__photo" 
+                  />
+                  <span className="report-card__tag" data-node-id="I356:17059;907:256">
+                    {report.tag || 'Text'}
+                  </span>
                 </div>
+
+                {/* 2. Card body: 50% */}
                 <div className="report-card__body" data-node-id="I356:17059;906:237">
-                  <div className="report-card__cta" data-node-id="I356:17059;906:215">
-                    <img src="/assets/f4586c72b30ba1fa242261cad9173e42bd219139.svg" alt="" className="report-card__arrow" />
-                    <span className="report-card__label" data-node-id="I356:17059;906:221">{details.label}</span>
-                    <span className="report-card__date" data-node-id="I356:17059;1217:10557">{report.date}</span>
+                  {/* Meta row: 5% (Arrow + Category/State + Date) */}
+                  <div className="report-card__meta" data-node-id="I356:17059;906:215">
+                    <div className="report-card__meta-left">
+                      <svg 
+                        className="report-card__arrow-svg" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                      <span className="report-card__label" data-node-id="I356:17059;906:221">
+                        {details.label}
+                      </span>
+                    </div>
+                    <span className="report-card__date" data-node-id="I356:17059;1217:10557">
+                      {report.date}
+                    </span>
                   </div>
+
+                  {/* Header: 30% (Title in bold) */}
                   <h3 className="report-card__title" data-node-id="I356:17059;906:234">
-                    <Link href={`/Reports/${report.id}`} onClick={(e) => e.stopPropagation()}>{details.title}</Link>
+                    <Link href={`/Reports/${report.id}`} onClick={(e) => e.stopPropagation()}>
+                      {details.title}
+                    </Link>
                   </h3>
-                  <p className="report-card__desc" data-node-id="I356:17059;906:235">{details.desc}</p>
+
+                  {/* Sub heading: 15% (Description) */}
+                  <p className="report-card__desc" data-node-id="I356:17059;906:235">
+                    {details.desc}
+                  </p>
                 </div>
               </article>
             );
           })}
+        </div>
+
+        {/* Carousel controls matching Image 2 bottom-right */}
+        <div className="reports__nav-controls">
+          <button 
+            type="button" 
+            className="reports__nav-btn" 
+            onClick={handlePrev} 
+            aria-label={isHindi ? 'पिछली रिपोर्ट' : 'Previous reports'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
+          <button 
+            type="button" 
+            className="reports__nav-btn" 
+            onClick={handleNext} 
+            aria-label={isHindi ? 'अगली रिपोर्ट' : 'Next reports'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
         </div>
       </div>
     </section>

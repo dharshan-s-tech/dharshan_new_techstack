@@ -73,7 +73,7 @@ export default function Header() {
             href="/admin" 
             target="_blank"
             rel="noopener noreferrer"
-            className="utility-link font-semibold hover:underline"
+            className="utility-link hover:underline"
             onClick={(e) => {
               e.preventDefault();
               window.open('/admin', '_blank');

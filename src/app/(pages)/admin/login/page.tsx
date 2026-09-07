@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getApiBaseUrl } from '@/lib/api';
 
 const ADMIN_USERS: Record<string, string> = {
   'tkeerthana_admin': 'Keerthana@123',
@@ -67,44 +66,30 @@ export default function AdminLogin() {
     }
 
     try {
-      const formData = new URLSearchParams();
-      formData.append('username', username);
-      formData.append('password', password);
-
-      const res = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
+      // Same-origin Next.js proxy → FastAPI (avoids browser localhost / CORS PNA errors)
+      const res = await fetch('/api/admin/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
-        if (!expectedPass) {
-          setError('Invalid username or password. Please check your credentials.');
-          setLoading(false);
-          generateCaptcha();
-          return;
-        }
-        localStorage.setItem('cag_admin_token', 'demo_admin_token');
-        localStorage.setItem('cag_admin_last_activity', Date.now().toString());
-        router.push('/admin/offices');
+        setError('Invalid username or password. Please check your credentials.');
+        setLoading(false);
+        generateCaptcha();
         return;
       }
 
       const data = await res.json();
-      localStorage.setItem('cag_admin_token', data.access_token || 'demo_admin_token');
+      localStorage.setItem(
+        'cag_admin_token',
+        data.access_token || data.id || `token_${inputUser}_${Date.now()}`
+      );
       localStorage.setItem('cag_admin_last_activity', Date.now().toString());
       router.push('/admin/offices');
-    } catch (err: any) {
-      if (expectedPass && expectedPass === password) {
-        localStorage.setItem('cag_admin_token', 'demo_admin_token');
-        localStorage.setItem('cag_admin_last_activity', Date.now().toString());
-        router.push('/admin/offices');
-      } else {
-        setError('Invalid username or password. Please check your credentials.');
-        generateCaptcha();
-      }
+    } catch {
+      setError('Unable to reach the login service. Please try again.');
+      generateCaptcha();
     } finally {
       setLoading(false);
     }
