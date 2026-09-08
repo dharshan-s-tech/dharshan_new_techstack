@@ -6,7 +6,7 @@ import RootLayoutWrapper from './RootLayoutWrapper';
 
 const notoSans = Noto_Sans({
   subsets: ['latin', 'devanagari'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
   display: 'swap',
   variable: '--font-noto-sans',
 });

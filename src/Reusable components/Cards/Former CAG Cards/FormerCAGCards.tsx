@@ -26,36 +26,67 @@ export default function FormerCAGCards() {
     };
   }, []);
 
+  const isHindi = lang === 'हिन्दी';
+
   return (
-    <div className="former-generals-grid" data-name="Former Generals">
+    <div 
+      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-[978px]" 
+      data-name="Former Generals"
+    >
       {list.map((cag, idx) => (
-        <div key={`${cag.id}-${idx}`} className="former-cag-card" data-name="Former CAG Card">
-          <div className="former-cag-card__content" data-name="Frame 1000005458">
-            <div className="former-cag-card__photo-placeholder overflow-hidden flex items-center justify-center bg-zinc-100" data-name="Mask group">
-              {cag.image_url ? (
-                <img src={cag.image_url} alt={cag.name} className="w-full h-full object-cover" />
-              ) : (
-                <svg 
-                  className="w-16 h-16 text-zinc-300" 
-                  fill="currentColor" 
-                  viewBox="0 0 24 24" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-              )}
-            </div>
-            
-            <div className="former-cag-card__footer" data-name="Frame 1000005457">
-              <div className="former-cag-card__text-wrapper" data-name="Frame 1000005456">
-                <span className="former-cag-card__name">{cag.name}</span>
-                <span className="former-cag-card__tenure">{cag.tenure}</span>
+        <div 
+          key={`${cag.id}-${idx}`} 
+          className="w-full max-w-[310px] h-[404px] bg-white border border-[#EFEFEF] shadow-[0px_1px_14px_rgba(0,0,0,0.08)] rounded-lg p-[20px] flex flex-col justify-between items-center shrink-0 mx-auto" 
+          data-name="Former CAG Card"
+        >
+          {/* Photo Frame 270px x 276px */}
+          <div 
+            className="w-full h-[276px] rounded-lg overflow-hidden bg-white border border-[#EAEAEA] relative flex items-center justify-center shrink-0" 
+            data-name="Mask group"
+          >
+            {cag.image_url ? (
+              <img 
+                src={cag.image_url} 
+                alt={cag.name} 
+                className="w-full h-full object-cover object-top rounded-lg"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/assets/former-cags/placeholder-avatar.svg';
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-white flex items-center justify-center rounded-lg">
+                <img 
+                  src="/assets/former-cags/placeholder-avatar.svg" 
+                  alt={cag.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
               </div>
-            </div>
+            )}
           </div>
+          
+          {/* Bottom Info Banner 270px x 68px */}
+          <div 
+            className="w-full h-[68px] bg-[#EFEFEF] rounded-lg p-[12px] flex flex-col items-center justify-center gap-[4px] shrink-0" 
+            data-name="Frame 1000005457"
+          >
+            <span 
+              className="text-xs font-semibold text-black text-center block"
+              style={{ fontFamily: 'Noto Sans, sans-serif', fontSize: '12px', lineHeight: '18px', fontWeight: 600, color: '#000000' }}
+            >
+              {cag.name}
+            </span>
+            <span 
+              className="text-[10px] font-normal text-center block"
+              style={{ fontFamily: 'Noto Sans, sans-serif', fontSize: '10px', lineHeight: '18px', fontWeight: 400, color: '#696868' }}
+            >
+              {cag.tenure}
+            </span>
+          </div>
+
         </div>
       ))}
     </div>
   );
 }
+
+
