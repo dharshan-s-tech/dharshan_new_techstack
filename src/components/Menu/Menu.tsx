@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boolean; language?: 'English' | 'हिन्दी' }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const [activeMega, setActiveMega] = useState<'about' | 'global' | 'presence' | 'resources' | 'careers' | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -127,12 +127,14 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         >
           {labelPresence}
         </Link>
-        {!isPresenceActive && (
-          <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
-        )}
+        <img 
+          src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
+          alt="" 
+          className={`chevron ${isPresenceActive ? 'rotate-180' : ''}`} 
+        />
         {activeMega === 'presence' && (
           <div 
-            className="absolute top-[80%] left-0 pt-3 w-56 z-50"
+            className="absolute top-[80%] left-0 pt-3 w-56 z-[1050]"
             onMouseEnter={() => handleNavEnter('presence')}
             onMouseLeave={handleNavLeave}
           >
@@ -170,9 +172,11 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         >
           {labelGlobal}
         </Link>
-        {!isGlobalActive && (
-          <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
-        )}
+        <img 
+          src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
+          alt="" 
+          className={`chevron ${isGlobalActive ? 'rotate-180' : ''}`} 
+        />
         
         {activeMega === 'global' && (
           <div 
@@ -182,7 +186,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
             onMouseEnter={() => handleNavEnter('global')}
             onMouseLeave={handleNavLeave}
           >
-            <h2 className="grm-title text-left">{isHindi ? 'वैश्विक संबंध' : 'Global-relations'}</h2>
+            <h2 className="grm-title text-left">{isHindi ? 'वैश्विक संबंध' : 'Global Relations'}</h2>
             <div className="grm-divider" aria-hidden="true"></div>
             <div className="grm-columns">
               <div className="grm-column">
@@ -230,10 +234,10 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
                   <p className="grm-desc-box__text text-left">
                     {isHindi 
                       ? 'वैश्विक साझेदारी और पहलों पर जानकारी के लिए अंतर्राष्ट्रीय संबंध विंग से जुड़ें' 
-                      : 'Connect with the International Relations Wing for information on global partnerships and initiatives'}
+                      : 'Connect with the International Relations Wing for information on global partnerships, engagements and international initiative'}
                   </p>
                   <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="grm-desc-box__cta text-left" onClick={() => setActiveMega(null)}>
-                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग से संपर्क करें' : 'Contact IR Wing'} &rarr;
+                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग से संपर्क करें' : 'Contact Intl. Relations Wing'} &rarr;
                   </Link>
                 </div>
               </div>
@@ -256,12 +260,14 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         >
           {labelResources}
         </Link>
-        {!isResourcesActive && (
-          <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
-        )}
+        <img 
+          src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
+          alt="" 
+          className={`chevron ${isResourcesActive ? 'rotate-180' : ''}`} 
+        />
         {activeMega === 'resources' && (
           <div 
-            className="absolute top-[80%] left-0 pt-3 w-64 z-50"
+            className="absolute top-[80%] left-0 pt-3 w-64 z-[1050]"
             onMouseEnter={() => handleNavEnter('resources')}
             onMouseLeave={handleNavLeave}
           >
@@ -297,12 +303,14 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         >
           {labelCareers}
         </Link>
-        {!isCareersActive && (
-          <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
-        )}
+        <img 
+          src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
+          alt="" 
+          className={`chevron ${isCareersActive ? 'rotate-180' : ''}`} 
+        />
         {activeMega === 'careers' && (
           <div 
-            className="absolute top-[80%] left-0 pt-3 w-64 z-50"
+            className="absolute top-[80%] left-0 pt-3 w-64 z-[1050]"
             onMouseEnter={() => handleNavEnter('careers')}
             onMouseLeave={handleNavLeave}
           >
@@ -333,12 +341,15 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
           className={isAboutActive ? activeLinkClass : inactiveLinkClass}
           style={{ color: isAboutActive ? '#751639' : '#4d4d4d', textDecoration: isAboutActive ? 'underline' : 'none' }}
           onClick={(e) => handleTopicClick(e, 'about')}
+          aria-expanded={activeMega === 'about'}
         >
           {labelAbout}
         </Link>
-        {!isAboutActive && (
-          <img src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" alt="" className="chevron" />
-        )}
+        <img 
+          src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
+          alt="" 
+          className={`chevron ${isAboutActive ? 'rotate-180' : ''}`} 
+        />
 
         {activeMega === 'about' && (
           <div 

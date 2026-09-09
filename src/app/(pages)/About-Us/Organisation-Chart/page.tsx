@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import AboutLayout from '@/components/layout/AboutLayout';
+import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager } from '@/lib/dataManager';
 
 interface OfficerData {
@@ -443,11 +443,12 @@ export default function OrganisationChartPage() {
             background: 'linear-gradient(85.72deg, #FFFFFF 1.04%, #FFFFFF 99.26%)',
           }}
         >
-          {/* Vector User Avatar Icon */}
-          <div className="w-8 h-8 rounded-full border border-[#D7D7D7] bg-white flex items-center justify-center flex-shrink-0" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#686868" strokeWidth="1.5">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
+          {/* Clean Vector Face Icon matching user design */}
+          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="16" cy="16" r="14.5" stroke="#565656" strokeWidth="1.3" />
+              <circle cx="16" cy="11.5" r="4.5" stroke="#565656" strokeWidth="1.3" />
+              <path d="M8 25C9.2 20.8 12.2 19 16 19C19.8 19 22.8 20.8 24 25" stroke="#565656" strokeWidth="1.3" strokeLinecap="round" />
             </svg>
           </div>
           
@@ -455,14 +456,20 @@ export default function OrganisationChartPage() {
           <div className="flex flex-col gap-1 flex-grow">
             <span 
               className="text-base font-bold m-0 block underline hover:text-[#500c25]" 
-              style={{ color: '#751639', fontFamily: 'Noto Sans' }}
+              style={{ color: '#751639', fontFamily: 'Noto Sans, sans-serif', fontWeight: 700, fontSize: '16px', lineHeight: '22px' }}
             >
               {name}
             </span>
-            <span className="text-sm font-semibold block" style={{ color: '#686868', fontFamily: 'Noto Sans' }}>
+            <span 
+              className="text-sm font-semibold block" 
+              style={{ color: '#686868', fontFamily: 'Noto Sans, sans-serif', fontWeight: 600, fontSize: '14px', lineHeight: '19px' }}
+            >
               {desig}
             </span>
-            <span className="text-xs font-normal block mt-0.5" style={{ color: '#7A7A7A', fontFamily: 'Noto Sans' }}>
+            <span 
+              className="text-xs font-normal block mt-0.5" 
+              style={{ color: '#7A7A7A', fontFamily: 'Noto Sans, sans-serif', fontWeight: 400, fontSize: '12px', lineHeight: '16px' }}
+            >
               {sub}
             </span>
           </div>
@@ -470,7 +477,7 @@ export default function OrganisationChartPage() {
 
         {/* Hover details popover card */}
         <div 
-          className={`absolute ${detailsPopupPosition} top-0 z-30 hidden group-hover:flex flex-col w-[440px] max-h-[300px] bg-white border border-[#D7D7D7] rounded-lg p-5 shadow-[2px_2px_14px_rgba(0,0,0,0.08)]`}
+          className={`absolute ${detailsPopupPosition} top-0 z-30 hidden group-hover:flex flex-col w-[466px] min-h-[322px] bg-white border border-[#D7D7D7] rounded-lg p-6 shadow-[2px_2px_14px_rgba(0,0,0,0.08)] [filter:drop-shadow(2px_2px_14px_rgba(0,0,0,0.08))]`}
           style={{ cursor: 'default' }}
           role="tooltip"
         >
@@ -486,30 +493,46 @@ export default function OrganisationChartPage() {
           )}
 
           {/* Contact Details */}
-          <div className="flex flex-col gap-2.5 text-left text-sm">
+          <div className="flex flex-col gap-2 text-left text-sm">
             <div className="flex flex-row items-center gap-2">
-              <strong className="text-zinc-800 font-semibold" style={{ width: '90px', minWidth: '90px' }}>
+              <strong 
+                className="font-semibold" 
+                style={{ width: '90px', minWidth: '90px', color: '#2A2A2A', fontFamily: 'Noto Sans, sans-serif', fontSize: '14px', lineHeight: '19px' }}
+              >
                 {isHindi ? 'ईमेल:' : 'Email:'}
               </strong>
-              <span className="text-zinc-600 break-all select-all font-sans">{officer.email}</span>
+              <span className="break-all select-all" style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '14px', lineHeight: '19px' }}>
+                {officer.email}
+              </span>
             </div>
             <div className="flex flex-row items-center gap-2">
-              <strong className="text-zinc-800 font-semibold" style={{ width: '90px', minWidth: '90px' }}>
+              <strong 
+                className="font-semibold" 
+                style={{ width: '90px', minWidth: '90px', color: '#2A2A2A', fontFamily: 'Noto Sans, sans-serif', fontSize: '14px', lineHeight: '19px' }}
+              >
                 {isHindi ? 'संपर्क नंबर:' : 'Contact No.:'}
               </strong>
-              <span className="text-zinc-600 select-all font-sans">{officer.phone}</span>
+              <span className="select-all" style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '14px', lineHeight: '19px' }}>
+                {officer.phone}
+              </span>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="w-full h-[1px] bg-[#D7D7D7] my-3.5" aria-hidden="true" />
+          {/* Divider line 1592 */}
+          <div className="w-full h-[1px] bg-[#D7D7D7] my-4" aria-hidden="true" />
 
           {/* Reporting Offices (Scrollable) */}
-          <div className="flex flex-col gap-1.5 text-left flex-grow overflow-y-auto pr-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block">
+          <div className="flex flex-col gap-1 text-left flex-grow overflow-y-auto pr-1">
+            <span 
+              className="font-semibold block mb-1" 
+              style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '12px', lineHeight: '16px' }}
+            >
               {isHindi ? 'रिपोर्टिंग कार्यालय/अधिकारी:' : 'Offices/Officers Reporting:'}
             </span>
-            <p className="text-xs leading-relaxed text-zinc-600 m-0 whitespace-pre-line" style={{ fontFamily: 'Noto Sans' }}>
+            <p 
+              className="m-0 whitespace-pre-line leading-relaxed" 
+              style={{ color: '#7A7A7A', fontFamily: 'Noto Sans, sans-serif', fontSize: '12px', lineHeight: '16px' }}
+            >
               {isHindi ? officer.reportingHi : officer.reportingEn}
             </p>
           </div>
@@ -522,96 +545,151 @@ export default function OrganisationChartPage() {
 
   return (
     <AboutLayout title={isHindi ? 'संगठन चार्ट' : 'Organisation Chart'}>
-      <div className="relative w-full flex flex-col items-center">
-        <p className="text-sm text-zinc-600 self-start mb-8 text-left leading-relaxed">
+      <div className="relative w-full flex flex-col items-start">
+        {/* Main Title Heading matching Figma */}
+        <h1 
+          className="text-2xl font-bold mb-4 text-left self-start"
+          style={{
+            fontFamily: 'Noto Sans, sans-serif',
+            fontWeight: 700,
+            fontSize: '24px',
+            lineHeight: '160%',
+            color: '#751639'
+          }}
+        >
+          {isHindi ? 'संगठन चार्ट' : 'Organisation Chart'}
+        </h1>
+
+        <p className="text-sm text-zinc-600 self-start mb-8 text-left leading-relaxed" style={{ fontFamily: 'Noto Sans, sans-serif' }}>
           {isHindi 
             ? 'भारत के नियंत्रक और महालेखापरीक्षक विभाग का नेतृत्व करते हैं। संगठन लेखापरीक्षा क्षेत्रों की देखरेख करने वाले वरिष्ठ अधिकारियों के पदानुक्रम के माध्यम से कार्य करता है:'
             : 'The Comptroller and Auditor General of India leads the department. The organization functions through a hierarchy of senior executives overseeing audit fields:'}
         </p>
 
-        {/* Horizontal scroll wrap container to guarantee center-line math alignment on all viewports */}
+        {/* Horizontal scroll wrap container to guarantee 100% straight line math alignment */}
         <div className="w-full overflow-x-auto pb-6 custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
           
-          <div className="min-w-[800px] flex flex-col items-center gap-0 relative px-4">
+          {/* Fixed 792px Tree Container: 356px left + 80px middle + 356px right = 792px. Center line is ALWAYS at 396px */}
+          <div className="w-[792px] mx-auto flex flex-col items-center gap-0 relative px-0">
             
-            {/* Tier 1: CAG (Centered, hover lifts z-index stack context) */}
-            <div className="w-full md:w-[356px] relative z-20 flex justify-center hover:z-50">
-              {renderOfficerCardWithDetails(OFFICERS_DATA.cag, 'center')}
+            {/* Tier 1: CAG (Centered at 396px) */}
+            <div className="w-[792px] relative z-20 flex justify-center hover:z-50">
+              <div className="w-[356px]">
+                {renderOfficerCardWithDetails(OFFICERS_DATA.cag, 'center')}
+              </div>
             </div>
 
-            {/* Connect Trunk segment between CAG and Secretary */}
-            <div className="hidden md:block w-[2px] h-[32px] bg-[#D7D7D7]" aria-hidden="true" />
+            {/* Vector 602 Connector Area between CAG and Secretary */}
+            <div className="w-[792px] h-[60px] relative pointer-events-none" aria-hidden="true">
+              {/* Laser-straight Vertical Center Trunk line at exactly 396px */}
+              <div className="absolute left-[396px] top-0 bottom-0 w-[1.5px] bg-[#D7D7D7] -translate-x-1/2" />
 
-            {/* Tier 2: Secretary to CAG (Row-formatted, hover lifts z-index) */}
-            <div className="flex flex-col md:flex-row items-center justify-center relative w-full gap-4 md:gap-0 z-10 hover:z-50">
-              {/* Left Spacer */}
-              <div className="hidden md:block w-[356px] h-1" aria-hidden="true" />
-              
-              {/* Trunk Line Segment with right branch and right-pointing arrowhead */}
-              <div className="hidden md:flex items-center justify-center relative w-[80px] self-stretch" aria-hidden="true">
-                <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-[#D7D7D7] -translate-x-1/2" />
-                <div className="absolute left-1/2 w-[40px] h-[2px] bg-[#D7D7D7] ml-[1px] top-1/2 -translate-y-1/2" />
-                
-                {/* Arrowhead pointing to Secretary card */}
-                <svg width="8" height="12" viewBox="0 0 8 12" className="absolute right-0 top-1/2 -translate-y-1/2" fill="none">
-                  <path d="M2 2 L6 6 L2 10" stroke="#D7D7D7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Vector 602 SVG: Starts from 396px center line, curves right, runs to 614px (Secretary card center), curves down with arrowhead */}
+              <div className="absolute left-[396px] top-0 w-[225px] h-[60px]">
+                <svg width="225" height="60" viewBox="0 0 225 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
+                  {/* Path from center (0,0) -> Down 16 -> Corner Radius 8 Right -> Horizontal 210 -> Corner Radius 8 Down -> Down 58 */}
+                  <path 
+                    d="M 0 0 V 16 Q 0 24 8 24 H 210 Q 218 24 218 32 V 58" 
+                    stroke="#D7D7D7" 
+                    strokeWidth="1.5" 
+                    fill="none" 
+                  />
+                  {/* Vector 602 Downward Arrowhead pointing cleanly into Secretary card top border */}
+                  <path 
+                    d="M 213 52 L 218 59 L 223 52" 
+                    stroke="#D7D7D7" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    fill="none" 
+                  />
                 </svg>
               </div>
+            </div>
 
-              {/* Secretary Card */}
-              <div className="w-full md:w-[356px] flex justify-start">
+            {/* Tier 2: Secretary to CAG (Positioned on right side of 792px container, aligned with right column) */}
+            <div className="w-[792px] flex flex-row items-center relative z-10 hover:z-50">
+              {/* Left Spacer: 356px */}
+              <div className="w-[356px] h-1" aria-hidden="true" />
+              
+              {/* Center Trunk Connector segment: 80px (Center line at offset 40px = 396px) */}
+              <div className="w-[80px] flex items-center justify-center relative self-stretch" aria-hidden="true">
+                <div className="absolute left-1/2 top-0 bottom-0 w-[1.5px] bg-[#D7D7D7] -translate-x-1/2" />
+              </div>
+
+              {/* Secretary Card: 356px (Left aligned at x = 436px, matching right column) */}
+              <div className="w-[356px] flex justify-start">
                 {renderOfficerCardWithDetails(OFFICERS_DATA.secretary, 'right')}
               </div>
             </div>
 
-            {/* Connect Trunk segment between Secretary and Grid */}
-            <div className="hidden md:block w-[2px] h-[32px] bg-[#D7D7D7]" aria-hidden="true" />
+            {/* Straight Trunk segment between Secretary and Reportees Grid */}
+            <div className="w-[792px] h-[36px] relative" aria-hidden="true">
+              <div className="absolute left-[396px] top-0 bottom-0 w-[1.5px] bg-[#D7D7D7] -translate-x-1/2" />
+            </div>
 
-            {/* Tier 3: Dual Column Grid of Rows (Rows 1 to 14, hover lifts z-index stack context) */}
-            {OFFICERS_DATA.rows.map((row, index) => (
-              <div 
-                key={index} 
-                className="flex flex-col md:flex-row items-center justify-center relative w-full gap-4 md:gap-0 z-10 hover:z-50"
-              >
-                
-                {/* Left Side: Card (shifted up using pb-12 on desktop) */}
-                <div className="w-full md:w-[356px] flex justify-end md:pb-12">
-                  {row.left ? renderOfficerCardWithDetails(row.left, 'left') : <div className="hidden md:block w-[356px] h-1" aria-hidden="true" />}
-                </div>
+            {/* Tier 3: Vector 603 Main Trunk and Dual Column Grid of Reportee Rows */}
+            {OFFICERS_DATA.rows.map((row, index) => {
+              const isLastRow = index === OFFICERS_DATA.rows.length - 1;
+              const trunkLineStyle = isLastRow
+                ? row.right !== null
+                  ? 'top-0 h-[calc(50%+24px)]'
+                  : 'top-0 h-[calc(50%-24px)]'
+                : 'top-0 bottom-0';
 
-                {/* Central Trunk connector with staggered branches and arrowheads */}
-                <div className="hidden md:flex items-center justify-center relative w-[80px] self-stretch" aria-hidden="true">
-                  {/* Vertical center trunk */}
-                  <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-[#D7D7D7] -translate-x-1/2" />
+              return (
+                <div 
+                  key={index} 
+                  className="w-[792px] flex flex-row items-center relative z-10 hover:z-50"
+                >
                   
-                  {/* Left Staggered Connection Branch (Higher, top-[calc(50%-24px)]) */}
-                  {row.left && (
-                    <>
-                      <div className="absolute right-1/2 w-[40px] h-[2px] bg-[#D7D7D7] mr-[1px] top-[calc(50%-24px)] -translate-y-1/2" />
-                      <svg width="8" height="12" viewBox="0 0 8 12" className="absolute left-0 top-[calc(50%-24px)] -translate-y-1/2" fill="none">
-                        <path d="M6 2 L2 6 L6 10" stroke="#D7D7D7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </>
-                  )}
-                  
-                  {/* Right Staggered Connection Branch (Lower, top-[calc(50%+24px)]) */}
-                  {row.right && (
-                    <>
-                      <div className="absolute left-1/2 w-[40px] h-[2px] bg-[#D7D7D7] ml-[1px] top-[calc(50%+24px)] -translate-y-1/2" />
-                      <svg width="8" height="12" viewBox="0 0 8 12" className="absolute right-0 top-[calc(50%+24px)] -translate-y-1/2" fill="none">
-                        <path d="M2 2 L6 6 L2 10" stroke="#D7D7D7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </>
-                  )}
-                </div>
+                  {/* Left Side: Card (356px, shifted up using pb-12) */}
+                  <div className="w-[356px] flex justify-end pb-12">
+                    {row.left ? renderOfficerCardWithDetails(row.left, 'left') : <div className="w-[356px] h-1" aria-hidden="true" />}
+                  </div>
 
-                {/* Right Side: Card (shifted down using pt-12 on desktop) */}
-                <div className="w-full md:w-[356px] flex justify-start md:pt-12">
-                  {row.right ? renderOfficerCardWithDetails(row.right, 'right') : <div className="hidden md:block w-[356px] h-1" aria-hidden="true" />}
-                </div>
+                  {/* Central Trunk connector (Vector 603 segment): 80px (Center line at 396px) */}
+                  <div className="w-[80px] flex items-center justify-center relative self-stretch" aria-hidden="true">
+                    {/* Vertical center trunk line terminating at the final officer branch */}
+                    <div className={`absolute left-1/2 w-[1.5px] bg-[#D7D7D7] -translate-x-1/2 ${trunkLineStyle}`} />
+                    
+                    {/* Left Staggered Connection Branch with Left Arrowhead (←) */}
+                    {row.left && (
+                      <svg 
+                        width="40" 
+                        height="12" 
+                        viewBox="0 0 40 12" 
+                        className="absolute right-1/2 top-[calc(50%-24px)] -translate-y-1/2 overflow-visible" 
+                        fill="none"
+                      >
+                        <path d="M 40 6 L 5 6" stroke="#D7D7D7" strokeWidth="1.5" />
+                        <path d="M 5 2 L 0.5 6 L 5 10" stroke="#D7D7D7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                      </svg>
+                    )}
+                    
+                    {/* Right Staggered Connection Branch with Right Arrowhead (→) */}
+                    {row.right && (
+                      <svg 
+                        width="40" 
+                        height="12" 
+                        viewBox="0 0 40 12" 
+                        className="absolute left-1/2 top-[calc(50%+24px)] -translate-y-1/2 overflow-visible" 
+                        fill="none"
+                      >
+                        <path d="M 0 6 L 35 6" stroke="#D7D7D7" strokeWidth="1.5" />
+                        <path d="M 35 2 L 39.5 6 L 35 10" stroke="#D7D7D7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                      </svg>
+                    )}
+                  </div>
 
-              </div>
-            ))}
+                  {/* Right Side: Card (356px, shifted down using pt-12) */}
+                  <div className="w-[356px] flex justify-start pt-12">
+                    {row.right ? renderOfficerCardWithDetails(row.right, 'right') : <div className="w-[356px] h-1" aria-hidden="true" />}
+                  </div>
+
+                </div>
+              );
+            })}
 
           </div>
           
@@ -620,3 +698,4 @@ export default function OrganisationChartPage() {
     </AboutLayout>
   );
 }
+

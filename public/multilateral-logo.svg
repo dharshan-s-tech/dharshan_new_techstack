@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103 103" width="103" height="103">
+  <circle cx="51.5" cy="51.5" r="49.5" fill="#0D61AE" stroke="#FFFFFF" stroke-width="2"/>
+  <circle cx="51.5" cy="51.5" r="42" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="2">
+    <circle cx="51.5" cy="45" r="16"/>
+    <path d="M35.5 45 H67.5 M51.5 29 V61 M39.5 37 Q51.5 45 63.5 37 M39.5 53 Q51.5 45 63.5 53"/>
+  </g>
+  <path id="textPath" d="M 15 51.5 A 36.5 36.5 0 1 1 88 51.5" fill="none"/>
+  <text font-family="'Noto Sans', sans-serif" font-weight="700" font-size="6.5" fill="#FFFFFF" letter-spacing="0.5">
+    <textPath href="#textPath" startOffset="50%" text-anchor="middle">
+      MULTILATERAL COOPERATION &amp; ENGAGEMENT
+    </textPath>
+  </text>
+  <text x="51.5" y="78" font-family="'Noto Sans', sans-serif" font-weight="700" font-size="10" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
+    IAF / G20
+  </text>
+</svg>

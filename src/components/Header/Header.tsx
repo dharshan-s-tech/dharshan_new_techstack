@@ -147,7 +147,7 @@ export default function Header() {
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              placeholder={isHindi ? 'रिपोर्ट खोजें...' : 'Search reports...'}
+              placeholder={isHindi ? 'खोजें...' : 'Search...'}
               style={{
                 position: 'relative',
                 opacity: 1,
