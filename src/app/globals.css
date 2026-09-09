@@ -1,4 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import "tailwindcss";
+
+body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, a, div, li, td, th {
+  font-family: 'Noto Sans', var(--font-noto-sans), sans-serif !important;
+}
 
 :root {
   --background: #ffffff;
@@ -3239,7 +3244,7 @@ button {
   font-weight: 600;
 }
 
-.nav-item--active a {
+.nav-item--active > a {
   color: var(--maroon);
   text-decoration: underline;
 }
@@ -4978,10 +4983,22 @@ button {
   z-index: 50;
   width: 798px;
   max-width: calc(100vw - 32px);
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.15);
+  height: 282px;
+  background: #FFFFFF;
+  border-top: 0.5px solid #AAAAAA;
+  border-radius: 0px 0px 4px 4px;
+  box-shadow: 0px 22px 30px 10px rgba(0, 0, 0, 0.1);
   padding: 24px;
+}
+
+.about-menu::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: transparent;
 }
 
 .about-menu[hidden] {
@@ -4989,35 +5006,46 @@ button {
 }
 
 .about-menu__title {
+  font-family: 'Noto Sans', sans-serif;
   font-size: 20px;
-  font-weight: 700;
-  color: #000;
+  font-weight: 600;
+  line-height: 27px;
+  color: #000000;
   margin: 0 0 24px;
 }
 
 .about-menu__divider {
-  border-top: 1px solid var(--border-grey);
+  border-top: 1px solid #B0B0B0;
   margin: 0 0 24px;
 }
 
 .about-menu__columns {
   display: flex;
   gap: 16px;
+  width: 750px;
+  height: 159px;
 }
 
 .about-menu__column {
   flex: 1 0 0;
   min-width: 0;
+  width: 240px;
+  height: 159px;
   background: #FAFAFA;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .about-menu__heading {
+  font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: var(--maroon);
-  margin: 0 0 16px;
+  line-height: 19px;
+  color: #751639;
+  margin: 0;
 }
 
 .about-menu__list {
@@ -5028,15 +5056,18 @@ button {
 
 .about-menu__list a {
   display: block;
+  font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
-  color: #2e2e31;
+  font-weight: 400;
+  line-height: 19px;
+  color: #565656;
   text-decoration: none;
   text-align: left;
 }
 
 .about-menu__list a:hover,
 .about-menu__list a:focus-visible {
-  color: var(--maroon);
+  color: #751639;
   text-decoration: underline;
 }
 
@@ -5068,15 +5099,25 @@ button {
   padding: 24px 32px;
 }
 
+.global-relations-menu::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: transparent;
+}
+
 .global-relations-menu[hidden] {
   display: none;
 }
 
 .grm-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #000;
-  margin: 0 0 16px;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #000000 !important;
+  margin: 0 0 16px !important;
 }
 
 .grm-divider {
@@ -5098,35 +5139,39 @@ button {
 }
 
 .grm-column__heading {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--maroon-text);
-  margin: 0 0 12px;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #751639 !important;
+  margin: 0 0 12px !important;
 }
 
 .grm-link-group {
   flex: 1 0 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  background: #f5f5f5;
+  gap: 12px;
+  background: #f8f8f8;
   border-radius: 6px;
   padding: 14px;
 }
 
-.grm-link-box {
+.global-relations-menu .grm-link-box,
+a.grm-link-box {
   display: block;
-  font-size: 14px;
-  color: #2e2e31;
-  text-decoration: none;
-  line-height: 1.4;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #565656 !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
   text-align: left;
 }
 
-.grm-link-box:hover,
-.grm-link-box:focus-visible {
-  color: var(--maroon);
-  text-decoration: underline;
+.global-relations-menu .grm-link-box:hover,
+.global-relations-menu .grm-link-box:focus-visible,
+a.grm-link-box:hover,
+a.grm-link-box:focus-visible {
+  color: #2A2A2A !important;
+  text-decoration: none !important;
 }
 
 .grm-desc-box {
@@ -5135,30 +5180,35 @@ button {
   flex-direction: column;
   justify-content: space-between;
   gap: 16px;
-  background: #f5f5f5;
+  background: #f8f8f8;
   border-radius: 6px;
   padding: 14px;
 }
 
 .grm-desc-box__text {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #2e2e31;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: #565656 !important;
 }
 
-.grm-desc-box__cta {
-  align-self: flex-end;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--maroon-text);
-  text-decoration: none;
+.global-relations-menu .grm-desc-box__cta,
+a.grm-desc-box__cta {
+  align-self: flex-start;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #751639 !important;
+  text-decoration: none !important;
   white-space: nowrap;
 }
 
-.grm-desc-box__cta:hover,
-.grm-desc-box__cta:focus-visible {
-  text-decoration: underline;
+.global-relations-menu .grm-desc-box__cta:hover,
+.global-relations-menu .grm-desc-box__cta:focus-visible,
+a.grm-desc-box__cta:hover,
+a.grm-desc-box__cta:focus-visible {
+  color: #5a102b !important;
+  text-decoration: none !important;
 }
 
 @media (max-width: 1100px) {
@@ -5336,6 +5386,20 @@ button {
   color: var(--maroon);
 }
 
+/* CAG Page Heading Title */
+.cag-heading-title {
+  font-family: 'Noto Sans', sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 160%;
+  letter-spacing: 0%;
+  color: #751639;
+  height: 38px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
 /* CAG Profile Card & Bio Styles from Version 2 */
 .cag-profile-card {
   position: relative;
@@ -5343,23 +5407,26 @@ button {
   align-items: center;
   gap: 24px;
   padding: 24px;
-  background: #fff;
+  width: 978px;
+  max-width: 100%;
+  height: 200px;
+  background: #ffffff;
   border: 1px solid #eaeaea;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(102, 138, 227, 0.08);
+  box-shadow: 0px 0px 10px 10px rgba(102, 138, 227, 0.05);
   overflow: hidden;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .cag-profile-card__decoration {
   position: absolute;
   top: 0;
-  right: -100px;
-  width: 300px;
+  right: 0;
+  width: 538px;
   height: 100%;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.15;
+  overflow: hidden;
 }
 
 .cag-profile-card__decoration img {
@@ -5372,11 +5439,12 @@ button {
   position: relative;
   z-index: 1;
   flex-shrink: 0;
-  width: 200px;
+  width: 210px;
   height: 150px;
   border-radius: 6px;
+  border: 1px solid #eaeaea;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .cag-profile-card__photo img {
@@ -5391,36 +5459,63 @@ button {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   text-align: left;
 }
 
 .cag-profile-card__name {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  color: var(--maroon);
+  color: #751639;
   margin: 0;
+  line-height: 40px;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 .cag-profile-card__title {
-  font-size: 15px;
-  color: #2a2a2a;
+  font-size: 16px;
+  color: #333333;
   margin: 0;
-  font-weight: 500;
+  font-weight: 400;
+  line-height: 24px;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 .cag-bio {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  font-size: 15px;
-  line-height: 1.6;
+  gap: 20px;
+  width: 978px;
+  max-width: 100%;
+  font-family: 'Noto Sans', sans-serif;
+  font-style: normal;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0%;
   color: #2e2e31;
   text-align: left;
 }
 
 .cag-bio p {
   margin: 0;
+  font-family: 'Noto Sans', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0%;
+  color: #2e2e31;
+}
+
+.cag-bio strong,
+.cag-bio b {
+  font-family: 'Noto Sans', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0%;
+  color: #2e2e31;
 }
 
 @media (max-width: 640px) {

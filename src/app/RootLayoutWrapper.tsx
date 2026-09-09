@@ -15,13 +15,17 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
     return <main className="min-h-screen bg-white">{children}</main>;
   }
 
+  const showGlobalBreadcrumbWrapper = pathname !== '/' && !pathname?.toLowerCase().includes('global-relations');
+
   return (
     <div className="min-h-screen flex flex-col justify-between">
       <div>
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Breadcrumb />
-        </div>
+        {showGlobalBreadcrumbWrapper && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <Breadcrumb />
+          </div>
+        )}
         <main className="flex-grow">{children}</main>
       </div>
       <Footer />

@@ -122,10 +122,10 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[64px] pt-2 pb-[96px] font-sans tracking-normal" style={{ fontFamily: "var(--font-noto-sans), 'Noto Sans', sans-serif" }}>
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[64px] pt-2 pb-[96px] font-['Noto_Sans'] tracking-normal">
       {/* Dynamic Breadcrumbs */}
       <nav className="breadcrumbs mb-4" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-2 text-[12px] leading-[16px] font-sans tracking-normal">
+        <ol className="flex items-center gap-2 text-[12px] leading-[16px] font-['Noto_Sans'] tracking-normal">
           <li>
             <Link href="/" className="text-[#565656] hover:text-[#751639] transition-colors">
               {isHindi ? 'गृह' : 'Home'}
@@ -156,7 +156,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
         /* BILATERAL RELATIONS PAGE FULL WIDTH LAYOUT (1312px) */
         <main className="w-full">
           {/* Top Heading */}
-          <h1 className="font-sans font-semibold text-[16px] leading-[22px] text-[#000000] mb-6">
+          <h1 className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#000000] mb-6">
             {isHindi 
               ? 'वर्तमान में SAI भारत के 29 सर्वोच्च लेखा परीक्षा संस्थानों के साथ समझौता ज्ञापन/जुड़वां व्यवस्थाएं हैं:' 
               : 'Presently SAI India has MoUs/twinning arrangements with 29 Supreme Audit Institutions viz.'}
@@ -179,14 +179,14 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
 
             {/* Special Card: INTOSAI Development Initiative (IDI) */}
             <div className="bg-white border border-[#E6E6E6] rounded-[8px] p-4 flex flex-col items-center justify-center shadow-[4px_4px_4px_rgba(0,0,0,0.02)] min-h-[186px] h-full transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer">
-              <p className="font-sans font-semibold text-[16px] leading-[22px] text-[#2A2A2A] text-center">
+              <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#2A2A2A] text-center">
                 INTOSAI<br />Development<br />Initiative (IDI)
               </p>
             </div>
           </div>
 
           {/* Bottom Closing Paragraph */}
-          <p className="font-sans font-semibold text-[16px] leading-[24px] text-[#000000]">
+          <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[24px] text-[#000000]">
             {isHindi 
               ? 'इन व्यवस्थाओं के तहत द्विपक्षीय सेमिनार, प्रशिक्षण कार्यक्रम, प्रतिनियुक्ति, क्षमता निर्माण कार्यशालाएं, विशिष्ट लेखापरीक्षाओं के लिए मार्गदर्शन आदि जैसे नियमित द्विपक्षीय आदान-प्रदान आयोजित किए जाते हैं।' 
               : 'Regular bilateral exchanges like bilateralseminars, training programmes, secondments, capacity building workshops, hand holding for specific audits etc. are held under these arrangements.'}
@@ -259,7 +259,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
 
               {/* Left Title */}
               <div className="absolute left-[37px] top-1/2 -translate-y-1/2 z-10 max-w-[650px]">
-                <h1 className="font-sans font-bold text-[24px] leading-[38px] text-white drop-shadow-sm">
+                <h1 className="font-['Noto_Sans'] font-bold text-[24px] leading-[38px] text-white drop-shadow-sm">
                   {heroTitle}
                 </h1>
               </div>
@@ -295,7 +295,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
             </div>
 
             {/* Main Article Body Text */}
-            <div className="text-[14px] leading-[24px] tracking-normal space-y-4 font-sans">
+            <div className="text-[14px] leading-[24px] tracking-normal space-y-4 text-justify font-['Noto_Sans']">
               {isMultilateral ? (
                 /* MULTILATERAL ENGAGEMENT PAGE CONTENT */
                 isHindi ? (
@@ -509,7 +509,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
                   <>
                     {/* Opening Statement */}
                     <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      CAG is the Governing Board member of ASOSAI
+                      The Comptroller and Auditor General of India is the Governing Board member of Asian Organization of Supreme Audit Institutions (ASOSAI).
                     </p>
 
                     {/* Overview Paragraph with Hyperlink */}

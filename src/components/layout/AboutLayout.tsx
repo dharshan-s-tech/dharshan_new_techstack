@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AboutusSidemenu from '@/components/navigation/AboutusSidemenu';
+import Breadcrumb from '@/components/Breadcrumb/Breadcrumb';
 import { dataManager } from '@/lib/dataManager';
 
 const DICTIONARY: Record<string, string> = {
@@ -102,16 +103,13 @@ export default function AboutLayout({ title, children }: { title: string; childr
   const displayTitle = isHindi && DICTIONARY[title] ? DICTIONARY[title] : title;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" ref={containerRef}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-6" ref={containerRef}>
       <div className="about-layout flex flex-col lg:flex-row gap-10 items-start">
         <aside className="w-full lg:w-[310px] shrink-0">
           <AboutusSidemenu />
         </aside>
         <main className="about-content flex-grow w-full">
-          <h2 className="text-[24px] font-bold text-[#751639] leading-[1.6] border-b border-[#e6e6e6] pb-4 mb-6 text-left">
-            {displayTitle}
-          </h2>
-          <div className="text-zinc-700 leading-relaxed space-y-6">
+          <div>
             {children}
           </div>
         </main>
