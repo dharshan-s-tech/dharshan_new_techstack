@@ -10,13 +10,7 @@ pipeline {
      *
      * Repository:
      *
-     *     https://github.com/Keerthiga-S/CAG_Website_v2.git
-     *
-     * CI branches:
-     *
-     *     Dev
-     *     Prod
-     *     Pull Requests
+     *     https://github.com/Keerthiga-S/CAG_Website_V2.git
      *
      * CI FLOW:
      *
@@ -41,18 +35,19 @@ pipeline {
      *
      * IMPORTANT:
      *
-     *     - CI NEVER connects to the production PostgreSQL server.
-     *     - CI NEVER uses production DB credentials.
-     *     - CI uses an isolated temporary PostgreSQL container.
-     *     - CI creates a separate Docker network for every build.
-     *     - CI builds the actual application Docker images.
-     *     - Docker build failures are NOT bypassed.
-     *     - TypeScript / Next.js build failures fail CI.
-     *     - CI pushes immutable Git-SHA Docker images.
-     *     - CD later deploys the exact same images.
-     *     - CI does NOT run docker compose down on production.
-     *     - CI does NOT remove production containers.
-     *     - CI does NOT modify application source code.
+     *     CI NEVER connects to the production PostgreSQL database.
+     *
+     *     CI uses an isolated temporary PostgreSQL container.
+     *
+     *     CI creates a unique Docker network per build.
+     *
+     *     CI builds immutable Docker images using Git SHA.
+     *
+     *     CI does not modify developer source code.
+     *
+     *     CI does not bypass TypeScript / Next.js build errors.
+     *
+     *     CD deploys the exact Docker images created by CI.
      *
      * ================================================================
      */
@@ -64,23 +59,6 @@ pipeline {
         /*
          * ============================================================
          * DOCKER HUB
-         * ============================================================
-         *
-         * Jenkins credential:
-         *
-         *     dockerhub-creds
-         *
-         * Credential type:
-         *
-         *     Username with password
-         *
-         * Username:
-         *
-         *     Docker Hub username
-         *
-         * Password:
-         *
-         *     Docker Hub Access Token
          * ============================================================
          */
 
@@ -96,13 +74,6 @@ pipeline {
         /*
          * ============================================================
          * GITHUB
-         * ============================================================
-         *
-         * Jenkins credential:
-         *
-         *     github-token
-         *
-         * This is used for GitHub PR communication if required.
          * ============================================================
          */
 
@@ -128,16 +99,6 @@ pipeline {
          * ============================================================
          * CI NETWORK
          * ============================================================
-         *
-         * Every Jenkins build receives a unique Docker network.
-         *
-         * Example:
-         *
-         *     cag-website-v2-ci-10
-         *     cag-website-v2-ci-11
-         *
-         * This prevents builds from interfering with one another.
-         * ============================================================
          */
 
         CI_NETWORK = "cag-website-v2-ci-${BUILD_NUMBER}"
@@ -161,9 +122,9 @@ pipeline {
          * CI POSTGRESQL
          * ============================================================
          *
-         * These credentials are TEST credentials only.
+         * TEST DATABASE ONLY.
          *
-         * They are NOT production credentials.
+         * NEVER production credentials.
          * ============================================================
          */
 
@@ -178,51 +139,14 @@ pipeline {
 
         /*
          * ============================================================
-         * CI TRIVY CACHE
+         * TRIVY
          * ============================================================
          */
 
         TRIVY_CACHE_DIR = "${WORKSPACE}/.trivy-cache"
 
-
-        /*
-         * ============================================================
-         * IMAGE TAG
-         * ============================================================
-         *
-         * The real value is populated after checkout.
-         *
-         * Example:
-         *
-         *     46cd58f12345
-         *
-         * Images:
-         *
-         *     iitmpravartak/cag-website-v2-backend:46cd58f12345
-         *
-         *     iitmpravartak/cag-website-v2-frontend:46cd58f12345
-         * ============================================================
-         */
-
-        IMAGE_TAG = ""
-
-
-        /*
-         * ============================================================
-         * GIT SHA
-         * ============================================================
-         */
-
-        GIT_SHA = ""
-
     }
 
-
-    /*
-     * ================================================================
-     * STAGES
-     * ================================================================
-     */
 
     stages {
 
@@ -243,56 +167,83 @@ CAG WEBSITE V2 - CHECKOUT
 ============================================================
 """
 
+
                 checkout scm
 
 
                 script {
 
                     /*
-                     * Get exact Git commit.
+                     * Get the exact commit after checkout.
+                     *
+                     * We intentionally use a Jenkins runtime variable
+                     * instead of declaring IMAGE_TAG/GIT_SHA as empty
+                     * Declarative environment variables.
                      */
 
-                    env.GIT_SHA = sh(
+
+                    def gitSha = sh(
                         script: "git rev-parse --short=12 HEAD",
                         returnStdout: true
                     ).trim()
 
 
-                    env.IMAGE_TAG = env.GIT_SHA
+                    /*
+                     * Make the values available to later stages.
+                     */
 
+
+                    env.GIT_SHA = gitSha
+
+                    env.IMAGE_TAG = gitSha
+
+
+                    echo ""
 
                     echo "Repository:"
                     echo "${env.GIT_URL ?: 'Jenkins SCM'}"
+
 
                     echo ""
 
                     echo "Branch:"
                     echo "${env.BRANCH_NAME}"
 
+
                     echo ""
 
                     echo "Pull Request:"
                     echo "${env.CHANGE_ID ?: 'No'}"
 
+
                     echo ""
 
-                    echo "Full Git Commit:"
+                    echo "Git Commit:"
                     echo "${env.GIT_COMMIT}"
 
+
                     echo ""
 
-                    echo "12 Character Git SHA:"
+                    echo "Git SHA:"
                     echo "${env.GIT_SHA}"
+
+
+                    echo ""
+
+                    echo "Image Tag:"
+                    echo "${env.IMAGE_TAG}"
+
 
                     echo ""
 
                     echo "Backend Image:"
-                    echo "${BACKEND_IMAGE}:${env.GIT_SHA}"
+                    echo "${BACKEND_IMAGE}:${env.IMAGE_TAG}"
+
 
                     echo ""
 
                     echo "Frontend Image:"
-                    echo "${FRONTEND_IMAGE}:${env.GIT_SHA}"
+                    echo "${FRONTEND_IMAGE}:${env.IMAGE_TAG}"
                 }
             }
         }
@@ -301,12 +252,6 @@ CAG WEBSITE V2 - CHECKOUT
         /*
          * ============================================================
          * 2. CHECK RAW FILES
-         * ============================================================
-         *
-         * This stage validates that the expected application files
-         * exist before Docker builds begin.
-         *
-         * We do NOT modify any source file here.
          * ============================================================
          */
 
@@ -319,6 +264,7 @@ CAG WEBSITE V2 - CHECKOUT
 CAG WEBSITE V2 - SOURCE VALIDATION
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -404,15 +350,6 @@ CAG WEBSITE V2 - SOURCE VALIDATION
          * ============================================================
          * 3. SONARQUBE SCAN
          * ============================================================
-         *
-         * SonarQube performs static code analysis.
-         *
-         * IMPORTANT:
-         *
-         * This stage does NOT modify application source.
-         *
-         * Build errors are handled by Docker build later.
-         * ============================================================
          */
 
         stage("3. SonarQube Scan") {
@@ -424,6 +361,7 @@ CAG WEBSITE V2 - SOURCE VALIDATION
 CAG WEBSITE V2 - SONARQUBE SCAN
 ============================================================
 """
+
 
                 script {
 
@@ -464,23 +402,6 @@ CAG WEBSITE V2 - SONARQUBE SCAN
          * ============================================================
          * 4. CREATE CI NETWORK
          * ============================================================
-         *
-         * Every Jenkins build receives its own Docker network.
-         *
-         * Example:
-         *
-         *     cag-website-v2-ci-20
-         *
-         * Containers:
-         *
-         *     postgres
-         *     backend
-         *     frontend
-         *
-         * communicate only through this network.
-         *
-         * No production container is touched.
-         * ============================================================
          */
 
         stage("4. Create CI Network") {
@@ -493,11 +414,13 @@ CAG WEBSITE V2 - CREATE CI NETWORK
 ============================================================
 """
 
+
                 sh '''
                     set -eu
 
 
                     echo "Creating Docker network:"
+
 
                     echo "${CI_NETWORK}"
 
@@ -507,6 +430,7 @@ CAG WEBSITE V2 - CREATE CI NETWORK
 
 
                     echo ""
+
                     echo "Created CI network:"
 
 
@@ -522,25 +446,6 @@ CAG WEBSITE V2 - CREATE CI NETWORK
          * ============================================================
          * 5. START POSTGRESQL
          * ============================================================
-         *
-         * CI MUST NOT connect to the production database.
-         *
-         * The AWS production DB:
-         *
-         *     10.10.183.210:5433
-         *
-         * is NEVER used by this CI pipeline.
-         *
-         * A temporary PostgreSQL container is created instead.
-         *
-         * The alias:
-         *
-         *     postgres
-         *
-         * allows the backend container to connect using:
-         *
-         *     DB_HOST=postgres
-         * ============================================================
          */
 
         stage("5. Start PostgreSQL") {
@@ -552,6 +457,7 @@ CAG WEBSITE V2 - CREATE CI NETWORK
 CAG WEBSITE V2 - START CI POSTGRESQL
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -571,6 +477,7 @@ CAG WEBSITE V2 - START CI POSTGRESQL
 
 
                     echo ""
+
                     echo "PostgreSQL container:"
 
 
@@ -579,6 +486,7 @@ CAG WEBSITE V2 - START CI POSTGRESQL
 
 
                     echo ""
+
                     echo "Waiting for PostgreSQL..."
 
 
@@ -602,12 +510,14 @@ CAG WEBSITE V2 - START CI POSTGRESQL
 
                         echo "PostgreSQL not ready - attempt ${i}/60"
 
+
                         sleep 2
 
                     done
 
 
                     echo ""
+
                     echo "PostgreSQL failed to become ready."
 
 
@@ -626,17 +536,6 @@ CAG WEBSITE V2 - START CI POSTGRESQL
          * ============================================================
          * 6. BUILD BACKEND DOCKER IMAGE
          * ============================================================
-         *
-         * Source:
-         *
-         *     back_end/
-         *
-         * Dockerfile:
-         *
-         *     back_end/Dockerfile
-         *
-         * The image is tagged with the exact Git SHA.
-         * ============================================================
          */
 
         stage("6. Build Backend Docker Image") {
@@ -649,13 +548,30 @@ CAG WEBSITE V2 - BUILD BACKEND IMAGE
 ============================================================
 """
 
+
                 sh '''
                     set -eu
 
 
-                    echo "Backend image:"
+                    echo "Git SHA:"
+                    echo "${GIT_SHA}"
 
+
+                    echo ""
+
+                    echo "Image tag:"
+                    echo "${IMAGE_TAG}"
+
+
+                    echo ""
+
+                    echo "Backend image:"
                     echo "${BACKEND_IMAGE}:${IMAGE_TAG}"
+
+
+                    echo ""
+
+                    echo "Building backend Docker image..."
 
 
                     docker build \
@@ -667,6 +583,7 @@ CAG WEBSITE V2 - BUILD BACKEND IMAGE
 
 
                     echo ""
+
                     echo "Checking backend image..."
 
 
@@ -676,6 +593,7 @@ CAG WEBSITE V2 - BUILD BACKEND IMAGE
 
 
                     echo ""
+
                     echo "Backend image created successfully."
 
 
@@ -691,25 +609,6 @@ CAG WEBSITE V2 - BUILD BACKEND IMAGE
          * ============================================================
          * 7. BUILD FRONTEND DOCKER IMAGE
          * ============================================================
-         *
-         * The project Dockerfile performs:
-         *
-         *     npm ci
-         *     npm run build
-         *
-         * Therefore:
-         *
-         *     TypeScript errors
-         *     Next.js errors
-         *     dependency errors
-         *     npm build errors
-         *
-         * correctly fail this stage.
-         *
-         * CI does NOT bypass those errors.
-         *
-         * Developer source code is NOT modified.
-         * ============================================================
          */
 
         stage("7. Build Frontend Docker Image") {
@@ -722,13 +621,30 @@ CAG WEBSITE V2 - BUILD FRONTEND IMAGE
 ============================================================
 """
 
+
                 sh '''
                     set -eu
 
 
-                    echo "Frontend image:"
+                    echo "Git SHA:"
+                    echo "${GIT_SHA}"
 
+
+                    echo ""
+
+                    echo "Image tag:"
+                    echo "${IMAGE_TAG}"
+
+
+                    echo ""
+
+                    echo "Frontend image:"
                     echo "${FRONTEND_IMAGE}:${IMAGE_TAG}"
+
+
+                    echo ""
+
+                    echo "Building frontend Docker image..."
 
 
                     docker build \
@@ -740,6 +656,7 @@ CAG WEBSITE V2 - BUILD FRONTEND IMAGE
 
 
                     echo ""
+
                     echo "Checking frontend image..."
 
 
@@ -749,6 +666,7 @@ CAG WEBSITE V2 - BUILD FRONTEND IMAGE
 
 
                     echo ""
+
                     echo "Frontend image created successfully."
 
 
@@ -764,13 +682,6 @@ CAG WEBSITE V2 - BUILD FRONTEND IMAGE
          * ============================================================
          * 8. TRIVY BACKEND IMAGE SCAN
          * ============================================================
-         *
-         * HIGH and CRITICAL vulnerabilities are reported.
-         *
-         * --exit-code 0 means the scan itself does not block CI.
-         *
-         * This follows the current CAG CI pattern.
-         * ============================================================
          */
 
         stage("8. Trivy Backend Image Scan") {
@@ -782,6 +693,7 @@ CAG WEBSITE V2 - BUILD FRONTEND IMAGE
 CAG WEBSITE V2 - TRIVY BACKEND IMAGE SCAN
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -809,6 +721,7 @@ CAG WEBSITE V2 - TRIVY BACKEND IMAGE SCAN
 
 
                     echo ""
+
                     echo "Backend Trivy report:"
 
 
@@ -818,6 +731,7 @@ CAG WEBSITE V2 - TRIVY BACKEND IMAGE SCAN
 
 
                     echo ""
+
                     echo "Backend image scan completed."
                 '''
             }
@@ -839,6 +753,7 @@ CAG WEBSITE V2 - TRIVY BACKEND IMAGE SCAN
 CAG WEBSITE V2 - TRIVY FRONTEND IMAGE SCAN
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -866,6 +781,7 @@ CAG WEBSITE V2 - TRIVY FRONTEND IMAGE SCAN
 
 
                     echo ""
+
                     echo "Frontend Trivy report:"
 
 
@@ -875,6 +791,7 @@ CAG WEBSITE V2 - TRIVY FRONTEND IMAGE SCAN
 
 
                     echo ""
+
                     echo "Frontend image scan completed."
                 '''
             }
@@ -884,17 +801,6 @@ CAG WEBSITE V2 - TRIVY FRONTEND IMAGE SCAN
         /*
          * ============================================================
          * 10. START BACKEND TEST CONTAINER
-         * ============================================================
-         *
-         * IMPORTANT:
-         *
-         * No host port is published.
-         *
-         * This avoids conflicts when Jenkins executes multiple builds.
-         *
-         * Backend communicates with PostgreSQL through:
-         *
-         *     postgres:5432
          * ============================================================
          */
 
@@ -907,6 +813,7 @@ CAG WEBSITE V2 - TRIVY FRONTEND IMAGE SCAN
 CAG WEBSITE V2 - START BACKEND TEST CONTAINER
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -929,6 +836,7 @@ CAG WEBSITE V2 - START BACKEND TEST CONTAINER
 
 
                     echo ""
+
                     echo "Backend container:"
 
 
@@ -937,6 +845,7 @@ CAG WEBSITE V2 - START BACKEND TEST CONTAINER
 
 
                     echo ""
+
                     echo "Backend environment configuration:"
 
 
@@ -954,14 +863,6 @@ CAG WEBSITE V2 - START BACKEND TEST CONTAINER
          * ============================================================
          * 11. BACKEND HEALTH CHECK
          * ============================================================
-         *
-         * Health endpoint:
-         *
-         *     /health
-         *
-         * The health check is performed from another container
-         * on the same isolated Docker network.
-         * ============================================================
          */
 
         stage("11. Backend Health Check") {
@@ -973,6 +874,7 @@ CAG WEBSITE V2 - START BACKEND TEST CONTAINER
 CAG WEBSITE V2 - BACKEND HEALTH CHECK
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -995,10 +897,12 @@ CAG WEBSITE V2 - BACKEND HEALTH CHECK
                         then
 
                             echo ""
+
                             echo "Backend health check PASSED."
 
 
                             echo ""
+
                             echo "Backend response:"
 
 
@@ -1020,10 +924,12 @@ CAG WEBSITE V2 - BACKEND HEALTH CHECK
 
 
                     echo ""
+
                     echo "Backend health check FAILED."
 
 
                     echo ""
+
                     echo "Backend container status:"
 
 
@@ -1032,6 +938,7 @@ CAG WEBSITE V2 - BACKEND HEALTH CHECK
 
 
                     echo ""
+
                     echo "Backend logs:"
 
 
@@ -1050,14 +957,6 @@ CAG WEBSITE V2 - BACKEND HEALTH CHECK
          * ============================================================
          * 12. START FRONTEND TEST CONTAINER
          * ============================================================
-         *
-         * The frontend is started on the same isolated CI network.
-         *
-         * NEXT_PUBLIC_API_URL is supplied for runtime/application
-         * validation where applicable.
-         *
-         * No production IP or production container is used.
-         * ============================================================
          */
 
         stage("12. Start Frontend Test Container") {
@@ -1069,6 +968,7 @@ CAG WEBSITE V2 - BACKEND HEALTH CHECK
 CAG WEBSITE V2 - START FRONTEND TEST CONTAINER
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -1086,6 +986,7 @@ CAG WEBSITE V2 - START FRONTEND TEST CONTAINER
 
 
                     echo ""
+
                     echo "Frontend container:"
 
 
@@ -1100,15 +1001,6 @@ CAG WEBSITE V2 - START FRONTEND TEST CONTAINER
          * ============================================================
          * 13. FRONTEND HEALTH CHECK
          * ============================================================
-         *
-         * Next.js server:
-         *
-         *     port 3000
-         *
-         * Health endpoint:
-         *
-         *     /
-         * ============================================================
          */
 
         stage("13. Frontend Health Check") {
@@ -1120,6 +1012,7 @@ CAG WEBSITE V2 - START FRONTEND TEST CONTAINER
 CAG WEBSITE V2 - FRONTEND HEALTH CHECK
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -1142,14 +1035,17 @@ CAG WEBSITE V2 - FRONTEND HEALTH CHECK
                         then
 
                             echo ""
+
                             echo "Frontend health check PASSED."
 
 
                             echo ""
+
                             echo "Frontend HTTP response received."
 
 
                             echo ""
+
                             echo "HTTP response preview:"
 
 
@@ -1175,10 +1071,12 @@ CAG WEBSITE V2 - FRONTEND HEALTH CHECK
 
 
                     echo ""
+
                     echo "Frontend health check FAILED."
 
 
                     echo ""
+
                     echo "Frontend container status:"
 
 
@@ -1187,6 +1085,7 @@ CAG WEBSITE V2 - FRONTEND HEALTH CHECK
 
 
                     echo ""
+
                     echo "Frontend logs:"
 
 
@@ -1205,12 +1104,6 @@ CAG WEBSITE V2 - FRONTEND HEALTH CHECK
          * ============================================================
          * 14. TRIVY BACKEND FILESYSTEM SCAN
          * ============================================================
-         *
-         * The backend image is exported and scanned as a filesystem.
-         *
-         * This provides an additional security check beyond the
-         * Docker image scan.
-         * ============================================================
          */
 
         stage("14. Trivy Backend Filesystem Scan") {
@@ -1222,6 +1115,7 @@ CAG WEBSITE V2 - FRONTEND HEALTH CHECK
 CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -1253,6 +1147,7 @@ CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
 
 
                     echo ""
+
                     echo "Extracting backend filesystem..."
 
 
@@ -1262,6 +1157,7 @@ CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
 
 
                     echo ""
+
                     echo "Running Trivy filesystem scan..."
 
 
@@ -1281,6 +1177,7 @@ CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
 
 
                     echo ""
+
                     echo "Backend filesystem Trivy report:"
 
 
@@ -1290,6 +1187,7 @@ CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
 
 
                     echo ""
+
                     echo "Backend filesystem scan completed."
                 '''
             }
@@ -1299,23 +1197,6 @@ CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
         /*
          * ============================================================
          * 15. PUSH IMAGES TO DOCKER HUB
-         * ============================================================
-         *
-         * Images are pushed only for:
-         *
-         *     Dev
-         *     Prod
-         *     Pull Requests
-         *
-         *
-         * Example:
-         *
-         *     iitmpravartak/cag-website-v2-backend:46cd58f12345
-         *
-         *     iitmpravartak/cag-website-v2-frontend:46cd58f12345
-         *
-         *
-         * CD will later pull these exact immutable images.
          * ============================================================
          */
 
@@ -1341,6 +1222,7 @@ CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
 CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
 ============================================================
 """
+
 
                 withCredentials([
 
@@ -1369,6 +1251,7 @@ CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
 
 
                         echo ""
+
                         echo "Pushing backend image:"
 
 
@@ -1380,6 +1263,7 @@ CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
 
 
                         echo ""
+
                         echo "Pushing frontend image:"
 
 
@@ -1391,10 +1275,12 @@ CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
 
 
                         echo ""
+
                         echo "Docker Hub push completed successfully."
 
 
                         echo ""
+
                         echo "Logging out from Docker Hub..."
 
 
@@ -1410,11 +1296,6 @@ CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
          * ============================================================
          * 16. PUBLISH BUILD INFORMATION
          * ============================================================
-         *
-         * This file records the exact images created by CI.
-         *
-         * CD can use this immutable Git SHA.
-         * ============================================================
          */
 
         stage("16. Publish Build Information") {
@@ -1426,6 +1307,7 @@ CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
 CAG WEBSITE V2 - BUILD INFORMATION
 ============================================================
 """
+
 
                 sh '''
                     set -eu
@@ -1452,6 +1334,9 @@ Git Commit:
 ${GIT_COMMIT}
 
 Git SHA:
+${GIT_SHA}
+
+Image Tag:
 ${IMAGE_TAG}
 
 Backend Image:
@@ -1482,8 +1367,11 @@ EOF
 
 
                     echo ""
+
                     echo "==========================================="
+
                     echo "BUILD INFORMATION"
+
                     echo "==========================================="
 
 
@@ -1506,32 +1394,6 @@ EOF
         /*
          * ============================================================
          * 17. DEPLOY PROD
-         * ============================================================
-         *
-         * IMPORTANT:
-         *
-         * CI builds and pushes Docker images.
-         *
-         * Production deployment is performed only for the Prod branch.
-         *
-         * CD/Jenkinsfile receives:
-         *
-         *     Git SHA
-         *     Backend image
-         *     Frontend image
-         *
-         *
-         * CD will:
-         *
-         *     1. SSH to AWS
-         *     2. Pull exact backend image
-         *     3. Pull exact frontend image
-         *     4. Verify images
-         *     5. Deploy containers
-         *     6. Health-check containers
-         *
-         *
-         * Dev and Pull Requests NEVER deploy production.
          * ============================================================
          */
 
@@ -1558,19 +1420,23 @@ CAG WEBSITE V2 - PRODUCTION DEPLOYMENT
 ============================================================
 """
 
+
                 script {
 
                     echo "Production deployment requested."
 
+
                     echo ""
 
                     echo "Git SHA:"
-                    echo "${env.IMAGE_TAG}"
+                    echo "${env.GIT_SHA}"
+
 
                     echo ""
 
                     echo "Backend:"
                     echo "${BACKEND_IMAGE}:${env.IMAGE_TAG}"
+
 
                     echo ""
 
@@ -1579,7 +1445,7 @@ CAG WEBSITE V2 - PRODUCTION DEPLOYMENT
 
 
                     /*
-                     * CD/Jenkinsfile must exist in the Prod branch.
+                     * CD/Jenkinsfile must exist in Prod.
                      */
 
                     if (!fileExists("CD/Jenkinsfile")) {
@@ -1597,10 +1463,6 @@ CAG WEBSITE V2 - PRODUCTION DEPLOYMENT
 
                     def deployCD = load "CD/Jenkinsfile"
 
-
-                    /*
-                     * CD Jenkinsfile must expose deploy().
-                     */
 
                     deployCD.deploy(
 
@@ -1647,18 +1509,18 @@ CAG WEBSITE V2 - CI PIPELINE SUCCESS
 
 Repository Validation       : PASSED
 SonarQube Scan              : COMPLETED
-Backend Docker Build       : PASSED
-Frontend Docker Build      : PASSED
-Trivy Backend Scan         : COMPLETED
-Trivy Frontend Scan        : COMPLETED
-PostgreSQL CI Test         : PASSED
-Backend Health Check       : PASSED
-Frontend Health Check      : PASSED
-Filesystem Scan            : COMPLETED
-Docker Hub Push            : COMPLETED
+Backend Docker Build        : PASSED
+Frontend Docker Build       : PASSED
+Trivy Backend Scan          : COMPLETED
+Trivy Frontend Scan         : COMPLETED
+PostgreSQL CI Test          : PASSED
+Backend Health Check        : PASSED
+Frontend Health Check       : PASSED
+Filesystem Scan             : COMPLETED
+Docker Hub Push             : COMPLETED
 
 Git SHA:
-${env.IMAGE_TAG}
+${env.GIT_SHA}
 
 Backend Image:
 ${BACKEND_IMAGE}:${env.IMAGE_TAG}
@@ -1670,15 +1532,10 @@ ${FRONTEND_IMAGE}:${env.IMAGE_TAG}
 """
 
 
-                /*
-                 * GitHub PR information.
-                 *
-                 * We intentionally do not expose credentials.
-                 */
-
                 if (env.CHANGE_ID) {
 
                     echo ""
+
                     echo "Pull Request:"
                     echo "#${env.CHANGE_ID}"
 
@@ -1749,17 +1606,6 @@ No production database was used by the CI test environment.
          * ============================================================
          * ALWAYS
          * ============================================================
-         *
-         * IMPORTANT:
-         *
-         * There is ONLY ONE always block.
-         *
-         * This fixes the Jenkins error:
-         *
-         *     Duplicate build condition name: "always"
-         *
-         * Both artifact archiving and CI cleanup are handled here.
-         * ============================================================
          */
 
         always {
@@ -1774,9 +1620,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                 /*
-                 * ----------------------------------------------------
-                 * ARCHIVE TRIVY REPORTS
-                 * ----------------------------------------------------
+                 * Archive Trivy reports.
                  */
 
                 echo "Archiving Trivy reports..."
@@ -1796,14 +1640,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                 /*
-                 * ----------------------------------------------------
-                 * CLEAN CI RESOURCES
-                 * ----------------------------------------------------
-                 *
-                 * ONLY CI resources are removed.
-                 *
-                 * Production containers are never touched.
-                 * ----------------------------------------------------
+                 * Cleanup CI resources.
                  */
 
                 echo ""
@@ -1816,6 +1653,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing frontend CI container..."
 
 
@@ -1826,6 +1664,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing backend CI container..."
 
 
@@ -1836,6 +1675,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing PostgreSQL CI container..."
 
 
@@ -1846,6 +1686,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing CI network..."
 
 
@@ -1856,6 +1697,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing temporary health files..."
 
 
@@ -1865,6 +1707,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing temporary backend filesystem..."
 
 
@@ -1873,6 +1716,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Removing temporary backend tar..."
 
 
@@ -1881,10 +1725,12 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "CI container cleanup completed."
 
 
                     echo ""
+
                     echo "Remaining CAG Website V2 CI containers:"
 
 
@@ -1894,6 +1740,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
 
                     echo ""
+
                     echo "Remaining CAG Website V2 CI networks:"
 
 
@@ -1907,12 +1754,7 @@ CAG WEBSITE V2 - POST BUILD ACTIONS
 
         /*
          * ============================================================
-         * CLEANUP
-         * ============================================================
-         *
-         * Jenkins workspace is cleaned after all post actions.
-         *
-         * Trivy reports have already been archived above.
+         * CLEAN WORKSPACE
          * ============================================================
          */
 
