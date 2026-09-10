@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import logging
 import urllib.parse
@@ -14,7 +15,7 @@ REMOTE_CONFIG = {
     "dbname": "cag_db_final",
     "user": "test",
     "password": "Test@123",
-    "connect_timeout": 10,
+    "connect_timeout": 3,
     "options": "-c search_path=cag_revamp",
 }
 
@@ -207,24 +208,46 @@ def resolve_report_image(
         return figma_sequence[index % len(figma_sequence)]
 
 
+_LAST_DB_FAIL_TIME = 0
+_FAIL_CACHE_TTL = 6
+
+
 def _get_remote_conn():
-    try:
-        conn = psycopg2.connect(**REMOTE_CONFIG)
-        conn.set_session(readonly=True, autocommit=True)
-        return conn
-    except Exception as exc:
-        logger.warning(f"[RemoteDB] Could not connect to remote DB ({exc}). Falling back to local data.")
+    global _LAST_DB_FAIL_TIME
+    import time
+    now = time.time()
+    if now - _LAST_DB_FAIL_TIME < _FAIL_CACHE_TTL:
         return None
+
+    for port in [5434, 5432]:
+        try:
+            cfg = dict(REMOTE_CONFIG)
+            cfg["port"] = port
+            cfg["connect_timeout"] = 1
+            conn = psycopg2.connect(**cfg)
+            conn.set_session(readonly=True, autocommit=True)
+            _LAST_DB_FAIL_TIME = 0
+            return conn
+        except Exception:
+            continue
+    _LAST_DB_FAIL_TIME = time.time()
+    logger.warning("[RemoteDB] Could not connect to remote DB on port 5434 or 5432. Falling back to local data.")
+    return None
 
 
 def _get_write_conn():
-    try:
-        conn = psycopg2.connect(**REMOTE_CONFIG)
-        conn.set_session(readonly=False, autocommit=True)
-        return conn
-    except Exception as exc:
-        logger.warning(f"[RemoteDB Write] Could not connect to remote DB for write ({exc}). Falling back to local data.")
-        return None
+    for port in [5434, 5432]:
+        try:
+            cfg = dict(REMOTE_CONFIG)
+            cfg["port"] = port
+            cfg["connect_timeout"] = 1
+            conn = psycopg2.connect(**cfg)
+            conn.set_session(readonly=False, autocommit=True)
+            return conn
+        except Exception:
+            continue
+    logger.warning("[RemoteDB Write] Could not connect to remote DB for write on port 5434 or 5432. Falling back to local data.")
+    return None
 
 
 def _load_json(file_path: str, default_val: Any) -> Any:
@@ -468,12 +491,18 @@ class ReportsService:
                 continue
             if query and query.lower() not in r.get("title", "").lower() and query.lower() not in r.get("overview", "").lower():
                 continue
-            if level and level != "All" and r.get("level", "").lower() != level.lower():
-                continue
-            if sector and sector != "All" and sector != "All Sectors" and r.get("sector", "").lower() != sector.lower():
-                continue
-            if report_type and report_type != "All" and r.get("report_type", "").lower() != report_type.lower():
-                continue
+            if level and level != "All":
+                lvl_list = [l.strip().lower() for l in level.split(",") if l.strip() and l.strip().lower() != "all"]
+                if lvl_list and not any(l in str(r.get("level", "")).lower() for l in lvl_list):
+                    continue
+            if sector and sector not in ("All", "All Sectors"):
+                sec_list = [s.strip().lower() for s in sector.split(",") if s.strip() and s.strip().lower() not in ("all", "all sectors")]
+                if sec_list and not any(s in str(r.get("sector", "")).lower() or str(r.get("sector", "")).lower() in s for s in sec_list):
+                    continue
+            if report_type and report_type != "All":
+                tp_list = [t.strip().lower() for t in report_type.split(",") if t.strip() and t.strip().lower() != "all"]
+                if tp_list and not any(t in str(r.get("report_type", "")).lower() for t in tp_list):
+                    continue
             if year and str(r.get("year", "")) != str(year):
                 continue
             filtered_local.append(r)
@@ -709,51 +738,60 @@ class ReportsService:
                 if conn:
                     conn.close()
 
-        # Collect deleted IDs and local override IDs
         deleted_ids = {str(r.get("id")) for r in local_reports if r.get("is_deleted")}
-        local_override_ids = {str(r.get("id")) for r in filtered_local}
-
-        # Filter remote_items to exclude any soft-deleted or locally overridden reports
-        filtered_remote = [
-            r for r in remote_items
-            if str(r.get("id")) not in deleted_ids and str(r.get("id")) not in local_override_ids
-        ]
-
-        all_items = filtered_local + filtered_remote
 
         def _parse_report_id(x):
             raw = str(x.get("rawId") or x.get("id") or "0")
             digits = "".join(ch for ch in raw if ch.isdigit())
-            return int(digits) if digits else 0
+            base_val = int(digits) if digits else 0
+            if not x.get("is_seed"):
+                return 1000000000 + base_val
+            return base_val
 
         def _parse_report_year(x):
             raw = str(x.get("year") or x.get("year_of_report") or "0")
             digits = "".join(ch for ch in raw if ch.isdigit())
             return int(digits[:4]) if digits else 0
 
-        if sort in ("newest", "newly_added", "latest"):
-            all_items.sort(key=lambda x: _parse_report_id(x), reverse=True)
-        elif sort == "oldest":
-            all_items.sort(key=lambda x: _parse_report_id(x))
-        elif sort == "year_desc":
-            all_items.sort(key=lambda x: (_parse_report_year(x), _parse_report_id(x)), reverse=True)
-        elif sort == "year_asc":
-            all_items.sort(key=lambda x: (_parse_report_year(x), _parse_report_id(x)))
-        elif sort == "title_asc":
-            all_items.sort(key=lambda x: str(x.get("title", "")).strip().lower())
-        elif sort == "title_desc":
-            all_items.sort(key=lambda x: str(x.get("title", "")).strip().lower(), reverse=True)
+        def _sort_items(items_list):
+            if sort in ("newest", "newly_added", "latest"):
+                items_list.sort(key=lambda x: _parse_report_id(x), reverse=True)
+            elif sort == "oldest":
+                items_list.sort(key=lambda x: _parse_report_id(x))
+            elif sort == "year_desc":
+                items_list.sort(key=lambda x: (_parse_report_year(x), _parse_report_id(x)), reverse=True)
+            elif sort == "year_asc":
+                items_list.sort(key=lambda x: (_parse_report_year(x), _parse_report_id(x)))
+            elif sort == "title_asc":
+                items_list.sort(key=lambda x: str(x.get("title", "")).strip().lower())
+            elif sort == "title_desc":
+                items_list.sort(key=lambda x: str(x.get("title", "")).strip().lower(), reverse=True)
+            else:
+                items_list.sort(key=lambda x: _parse_report_id(x), reverse=True)
+
+        if remote_items or remote_total > 0:
+            # When remote DB is connected, only include custom user-created/edited CMS items, not offline seeds
+            user_local = [r for r in filtered_local if not r.get("is_seed") and str(r.get("id")) not in deleted_ids]
+            user_local_ids = {str(r.get("id")) for r in user_local}
+            filtered_remote = [
+                r for r in remote_items
+                if str(r.get("id")) not in deleted_ids and str(r.get("id")) not in user_local_ids
+            ]
+            all_items = user_local + filtered_remote
+            _sort_items(all_items)
+            total = len(user_local) + max(0, remote_total - len(deleted_ids.intersection({str(r.get("id")) for r in remote_items})))
+            result_items = all_items[:page_size]
         else:
-            all_items.sort(key=lambda x: _parse_report_id(x), reverse=True)
-
-        total = len(filtered_local) + max(0, remote_total - len(deleted_ids.intersection({str(r.get("id")) for r in remote_items})))
-
-        if not all_items:
-            all_items = FIGMA_CURATED_REPORTS
+            # When remote DB is offline, serve full rich local dataset with offset pagination
+            all_items = [r for r in filtered_local if str(r.get("id")) not in deleted_ids]
+            if not all_items:
+                all_items = list(FIGMA_CURATED_REPORTS)
+            _sort_items(all_items)
             total = len(all_items)
+            result_items = all_items[offset : offset + page_size]
 
         return {
-            "items": all_items[:page_size],
+            "items": result_items,
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -1532,12 +1570,40 @@ class ReportsService:
                 continue
             if year and year != "All" and year not in str(a.get("year", "") or a.get("account_year", "")):
                 continue
-            if category_name and category_name != "All" and category_name.lower() not in str(a.get("category_name", "")).lower():
-                continue
+            if category_name and category_name != "All":
+                cat_lower = category_name.lower()
+                item_cat = str(a.get("category_name", "")).lower()
+                if "glance" in cat_lower:
+                    if "glance" not in item_cat:
+                        continue
+                elif "appropriation" in cat_lower:
+                    if "appropriation" not in item_cat:
+                        continue
+                elif "finance" in cat_lower:
+                    if "finance" not in item_cat:
+                        continue
+                elif "monthly" in cat_lower:
+                    if "monthly" not in item_cat:
+                        continue
+                elif "faaa" in cat_lower or "fa&aa" in cat_lower:
+                    if "fa" not in item_cat and "fa&aa" not in item_cat:
+                        continue
+                elif cat_lower not in item_cat and item_cat not in cat_lower:
+                    continue
+
             if state_id and str(a.get("state_id")) != str(state_id):
                 continue
-            if state and state != "All" and state.lower() not in str(a.get("state_name", "")).lower():
-                continue
+            if state and state != "All":
+                st_clean = state.lower().replace('&', 'and').strip()
+                item_st = str(a.get("state_name", "")).lower().replace('&', 'and').strip()
+                if "puducherry" in st_clean or "pondicherry" in st_clean:
+                    if "puducherry" not in item_st and "pondicherry" not in item_st:
+                        continue
+                elif "jammu" in st_clean or "kashmir" in st_clean:
+                    if "jammu" not in item_st and "kashmir" not in item_st:
+                        continue
+                elif st_clean not in item_st and item_st not in st_clean:
+                    continue
             filtered_local.append(a)
 
         # Sort filtered local CMS items
@@ -1692,44 +1758,59 @@ class ReportsService:
                     conn.close()
 
         deleted_ids = {str(a.get("id")) for a in local_items if a.get("is_deleted")}
-        local_override_ids = {str(a.get("id")) for a in filtered_local}
-        filtered_remote = [
-            r for r in remote_items
-            if str(r.get("id")) not in deleted_ids and str(r.get("id")) not in local_override_ids
-        ]
-        all_items = filtered_local + filtered_remote
 
         def _parse_sa_id(x):
             raw = str(x.get("rawId") or x.get("id") or "0")
             digits = "".join(ch for ch in raw if ch.isdigit())
-            return int(digits) if digits else 0
+            base_val = int(digits) if digits else 0
+            if not x.get("is_seed"):
+                return 1000000000 + base_val
+            return base_val
 
         def _parse_sa_year(x):
             raw = str(x.get("account_year") or x.get("year") or "0")
             digits = "".join(ch for ch in raw if ch.isdigit())
             return int(digits[:4]) if digits else 0
 
-        if sort in ("newest", "newly_added", "latest"):
-            all_items.sort(key=lambda x: _parse_sa_id(x), reverse=True)
-        elif sort == "oldest":
-            all_items.sort(key=lambda x: _parse_sa_id(x))
-        elif sort == "year_desc":
-            all_items.sort(key=lambda x: (_parse_sa_year(x), _parse_sa_id(x)), reverse=True)
-        elif sort == "year_asc":
-            all_items.sort(key=lambda x: (_parse_sa_year(x), _parse_sa_id(x)))
-        elif sort == "title_asc":
-            all_items.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower())
-        elif sort == "title_desc":
-            all_items.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower(), reverse=True)
-        elif sort == "state_asc":
-            all_items.sort(key=lambda x: str(x.get("state_name", "")).strip().lower())
-        else:
-            all_items.sort(key=lambda x: _parse_sa_id(x), reverse=True)
+        def _sort_sa_items(items_list):
+            if sort in ("newest", "newly_added", "latest"):
+                items_list.sort(key=lambda x: _parse_sa_id(x), reverse=True)
+            elif sort == "oldest":
+                items_list.sort(key=lambda x: _parse_sa_id(x))
+            elif sort == "year_desc":
+                items_list.sort(key=lambda x: (_parse_sa_year(x), _parse_sa_id(x)), reverse=True)
+            elif sort == "year_asc":
+                items_list.sort(key=lambda x: (_parse_sa_year(x), _parse_sa_id(x)))
+            elif sort == "title_asc":
+                items_list.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower())
+            elif sort == "title_desc":
+                items_list.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower(), reverse=True)
+            elif sort == "state_asc":
+                items_list.sort(key=lambda x: str(x.get("state_name", "")).strip().lower())
+            else:
+                items_list.sort(key=lambda x: _parse_sa_id(x), reverse=True)
 
-        total = len(filtered_local) + remote_total
+        if remote_items or remote_total > 0:
+            # When remote DB is connected, only include custom user-created/edited CMS items, not offline seeds
+            user_local = [a for a in filtered_local if not a.get("is_seed") and str(a.get("id")) not in deleted_ids]
+            user_local_ids = {str(a.get("id")) for a in user_local}
+            filtered_remote = [
+                r for r in remote_items
+                if str(r.get("id")) not in deleted_ids and str(r.get("id")) not in user_local_ids
+            ]
+            all_items = user_local + filtered_remote
+            _sort_sa_items(all_items)
+            total = len(user_local) + max(0, remote_total - len(deleted_ids.intersection({str(r.get("id")) for r in remote_items})))
+            result_items = all_items[:page_size]
+        else:
+            # When remote DB is offline, serve full rich local dataset with offset pagination
+            all_items = [a for a in filtered_local if str(a.get("id")) not in deleted_ids]
+            _sort_sa_items(all_items)
+            total = len(all_items)
+            result_items = all_items[offset : offset + page_size]
 
         return {
-            "items": all_items[:page_size],
+            "items": result_items,
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -2025,44 +2106,57 @@ class ReportsService:
                     conn.close()
 
         deleted_ids = {str(a.get("id")) for a in local_items if a.get("is_deleted")}
-        local_override_ids = {str(a.get("id")) for a in filtered_local}
-        filtered_remote = [
-            r for r in remote_items
-            if str(r.get("id")) not in deleted_ids and str(r.get("id")) not in local_override_ids
-        ]
-        all_items = filtered_local + filtered_remote
 
-        def _parse_sa_id(x):
+        def _parse_ca_id(x):
             raw = str(x.get("rawId") or x.get("id") or "0")
             digits = "".join(ch for ch in raw if ch.isdigit())
-            return int(digits) if digits else 0
+            base_val = int(digits) if digits else 0
+            if not x.get("is_seed"):
+                return 1000000000 + base_val
+            return base_val
 
-        def _parse_sa_year(x):
+        def _parse_ca_year(x):
             raw = str(x.get("account_year") or x.get("year") or "0")
             digits = "".join(ch for ch in raw if ch.isdigit())
             return int(digits[:4]) if digits else 0
 
-        if sort in ("newest", "newly_added", "latest"):
-            all_items.sort(key=lambda x: _parse_sa_id(x), reverse=True)
-        elif sort == "oldest":
-            all_items.sort(key=lambda x: _parse_sa_id(x))
-        elif sort == "year_desc":
-            all_items.sort(key=lambda x: (_parse_sa_year(x), _parse_sa_id(x)), reverse=True)
-        elif sort == "year_asc":
-            all_items.sort(key=lambda x: (_parse_sa_year(x), _parse_sa_id(x)))
-        elif sort == "title_asc":
-            all_items.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower())
-        elif sort == "title_desc":
-            all_items.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower(), reverse=True)
-        elif sort == "state_asc":
-            all_items.sort(key=lambda x: str(x.get("state_name", "")).strip().lower())
-        else:
-            all_items.sort(key=lambda x: _parse_sa_id(x), reverse=True)
+        def _sort_ca_items(items_list):
+            if sort in ("newest", "newly_added", "latest"):
+                items_list.sort(key=lambda x: _parse_ca_id(x), reverse=True)
+            elif sort == "oldest":
+                items_list.sort(key=lambda x: _parse_ca_id(x))
+            elif sort == "year_desc":
+                items_list.sort(key=lambda x: (_parse_ca_year(x), _parse_ca_id(x)), reverse=True)
+            elif sort == "year_asc":
+                items_list.sort(key=lambda x: (_parse_ca_year(x), _parse_ca_id(x)))
+            elif sort == "title_asc":
+                items_list.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower())
+            elif sort == "title_desc":
+                items_list.sort(key=lambda x: str(x.get("title_en", x.get("title", ""))).strip().lower(), reverse=True)
+            else:
+                items_list.sort(key=lambda x: _parse_ca_id(x), reverse=True)
 
-        total = len(filtered_local) + remote_total
+        if remote_items or remote_total > 0:
+            # When remote DB is connected, only include custom user-created/edited CMS items, not offline seeds
+            user_local = [a for a in filtered_local if not a.get("is_seed") and str(a.get("id")) not in deleted_ids]
+            user_local_ids = {str(a.get("id")) for a in user_local}
+            filtered_remote = [
+                r for r in remote_items
+                if str(r.get("id")) not in deleted_ids and str(r.get("id")) not in user_local_ids
+            ]
+            all_items = user_local + filtered_remote
+            _sort_ca_items(all_items)
+            total = len(user_local) + max(0, remote_total - len(deleted_ids.intersection({str(r.get("id")) for r in remote_items})))
+            result_items = all_items[:page_size]
+        else:
+            # When remote DB is offline, serve full rich local dataset with offset pagination
+            all_items = [a for a in filtered_local if str(a.get("id")) not in deleted_ids]
+            _sort_ca_items(all_items)
+            total = len(all_items)
+            result_items = all_items[offset : offset + page_size]
 
         return {
-            "items": all_items[:page_size],
+            "items": result_items,
             "total": total,
             "page": page,
             "page_size": page_size,

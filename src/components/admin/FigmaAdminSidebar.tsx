@@ -66,6 +66,12 @@ export default function FigmaAdminSidebar() {
         },
         {
           type: 'leaf',
+          id: 'rep-accounts',
+          name: 'Accounts Reports',
+          path: '/admin/accounts'
+        },
+        {
+          type: 'leaf',
           id: 'rep-state-acc',
           name: 'State & UT Accounts',
           path: '/admin/state-accounts'
@@ -251,6 +257,7 @@ export default function FigmaAdminSidebar() {
 
     if (
       pathname === '/admin/reports' || 
+      pathname === '/admin/accounts' || 
       pathname === '/admin/state-accounts' || 
       pathname === '/admin/combined-accounts'
     ) {
@@ -290,6 +297,12 @@ export default function FigmaAdminSidebar() {
         if (searchParams.get(key) !== val) matches = false;
       });
       return matches;
+    }
+
+    if (targetPath === '/admin/accounts') {
+      if (pathname !== '/admin/accounts') return false;
+      const sub = searchParams.get('subtopic');
+      return !sub || sub === 'all';
     }
 
     return pathname === targetPath;

@@ -26,7 +26,7 @@ async def get_accounts_summary():
 @state_router.get("/")
 async def get_state_accounts(
     page: int = Query(1, ge=1),
-    pageSize: int = Query(20, ge=1, le=100),
+    pageSize: int = Query(20, ge=1, le=1000),
     state_id: Optional[int] = Query(None, description="State ID"),
     state: str = Query("", description="State Name or Slug"),
     category: str = Query("", description="Account Category (Accounts at a Glance, Appropriation, Finance, Monthly)"),
@@ -89,7 +89,7 @@ async def delete_state_account(account_id: str):
 @combined_router.get("/")
 async def get_combined_accounts(
     page: int = Query(1, ge=1),
-    pageSize: int = Query(20, ge=1, le=100),
+    pageSize: int = Query(20, ge=1, le=1000),
     year: str = Query("", description="Accounting Year"),
     query: str = Query("", description="Search term"),
     category: str = Query("", description="combined or conference"),

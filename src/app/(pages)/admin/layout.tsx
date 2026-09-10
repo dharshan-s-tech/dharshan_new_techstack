@@ -106,6 +106,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (pathname === '/admin') return 'SUPER ADMIN > Dashboard';
     if (pathname === '/admin/banners') return 'SUPER ADMIN > Main CAG Website > Home Page';
     if (pathname === '/admin/reports') return 'SUPER ADMIN > Main CAG Website > Reports > Audit Reports';
+    if (pathname === '/admin/accounts') return 'SUPER ADMIN > Main CAG Website > Reports > Accounts Management Suite';
     if (pathname === '/admin/state-accounts') return 'SUPER ADMIN > Main CAG Website > Reports > State & UT Accounts';
     if (pathname === '/admin/combined-accounts') return 'SUPER ADMIN > Main CAG Website > Reports > Combined Accounts & Conferences';
     if (pathname === '/admin/offices') return 'SUPER ADMIN > Main CAG Website > Our Presence > Offices & Institutes';

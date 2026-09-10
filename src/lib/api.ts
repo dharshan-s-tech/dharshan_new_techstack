@@ -12,11 +12,8 @@ export function getApiBaseUrl(): string {
   }
 
   if (typeof window !== 'undefined') {
-    const { protocol, hostname } = window.location;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://127.0.0.1:8000';
-    }
-    return `${protocol}//${hostname}:8000`;
+    // Same-origin relative path, transparently proxied by Next.js rewrites to FastAPI backend
+    return '';
   }
 
   return (

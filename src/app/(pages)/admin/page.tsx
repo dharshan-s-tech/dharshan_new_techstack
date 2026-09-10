@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { dataManager } from '@/lib/dataManager';
 
 export default function AdminOverview() {
@@ -64,6 +65,54 @@ export default function AdminOverview() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Accounts Reports Subtopics Quick Access Console */}
+      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] p-5 shadow-sm space-y-4">
+        <div className="flex justify-between items-center border-b border-zinc-200 pb-3">
+          <div>
+            <h3 className="text-xs font-bold text-zinc-850 flex items-center gap-2">
+              <span>🏛️</span>
+              <span>Accounts Reports Subtopics &amp; Elements Hub</span>
+            </h3>
+            <p className="text-[11px] text-zinc-500 mt-0.5">
+              Direct access to manage each element, state statement, and subtopic of the CAG Accounts portal.
+            </p>
+          </div>
+          <Link
+            href="/admin/accounts"
+            className="px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-[11px] rounded-none shadow-xs transition-colors"
+          >
+            Open All Accounts Hub →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {[
+            { id: 'finance', label: 'Finance Accounts', desc: 'Vol I & II state statements', icon: '🏛️' },
+            { id: 'glance', label: 'Accounts at a Glance', desc: 'Annual executive digests', icon: '📊' },
+            { id: 'appropriation', label: 'Appropriation Accounts', desc: 'Grants & expenditure', icon: '⚖️' },
+            { id: 'monthly', label: 'Monthly Key Indicators', desc: 'Month-wise trends', icon: '📅' },
+            { id: 'faaa', label: 'FA&AA Data', desc: 'Supplementary data sets', icon: '📂' },
+            { id: 'ut', label: 'UT Accounts', desc: 'Union Territories', icon: '🇮🇳' },
+            { id: 'combined', label: 'Combined Accounts', desc: 'Union & States accounts', icon: '🌐' },
+            { id: 'conference', label: 'State Finance Conf.', desc: 'Annual conferences', icon: '🤝' },
+          ].map((sub) => (
+            <Link
+              key={sub.id}
+              href={`/admin/accounts?subtopic=${sub.id}`}
+              className="p-3 bg-zinc-50 border border-zinc-200 hover:border-[#751639] hover:bg-pink-50/40 transition-all rounded-none group flex flex-col justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base">{sub.icon}</span>
+                <span className="font-bold text-zinc-800 text-[11px] group-hover:text-[#751639] transition-colors">
+                  {sub.label}
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-1.5 line-clamp-1">{sub.desc}</p>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* System Settings Table panel */}
