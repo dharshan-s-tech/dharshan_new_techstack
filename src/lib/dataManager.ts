@@ -244,7 +244,44 @@ export const DEFAULT_VISION_MISSION: VisionMissionItem = {
 export const DEFAULT_ORG_OFFICERS: OrgOfficerItem[] = [];
 export const DEFAULT_HISTORY_DOCUMENTS: HistoryDocumentItem[] = [];
 export const DEFAULT_DUTIES_POWERS_CHAPTERS: DutiesPowersChapterItem[] = [];
-export const DEFAULT_AUDIT_REGULATIONS: AuditRegulationItem[] = [];
+export const DEFAULT_AUDIT_REGULATIONS: AuditRegulationItem[] = [
+  {
+    id: 'reg-1',
+    title_en: 'Gazette publication-Regulations on Audit & Accounts -2020',
+    title_hi: 'लेखापरीक्षा एवं लेखा विनियम - 2020 का राजपत्र प्रकाशन',
+    file_format: 'PDF',
+    file_size: '34.7 MB',
+    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2020-Gazette-60b73c4d7d91e8-78235251.pdf',
+    icon_type: 'gazette',
+    is_active: true,
+    isActive: true,
+    displayOrder: 1,
+  },
+  {
+    id: 'reg-2',
+    title_en: 'Book - Regulations on Audit & Accounts -2020',
+    title_hi: 'पुस्तक - लेखापरीक्षा एवं लेखा विनियम - 2020',
+    file_format: 'PDF',
+    file_size: '34.7 MB',
+    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2020-60b73b5f00e954-46908386.pdf',
+    icon_type: 'book',
+    is_active: true,
+    isActive: true,
+    displayOrder: 2,
+  },
+  {
+    id: 'reg-3',
+    title_en: 'Earlier Version on Regulation on Audit & Accounts - 2007',
+    title_hi: 'लेखापरीक्षा एवं लेखा विनियम का पूर्व संस्करण - 2007',
+    file_format: 'PDF',
+    file_size: '34.7 MB',
+    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2007-5f7560da1d0347-15102559.pdf',
+    icon_type: 'archive',
+    is_active: true,
+    isActive: true,
+    displayOrder: 3,
+  },
+];
 export const DEFAULT_CONSTITUTIONAL_PROVISIONS: ConstitutionalProvisionItem[] = [];
 export const DEFAULT_AUDIT_ADVISORY_MEMBERS: AuditAdvisoryMemberItem[] = [];
 

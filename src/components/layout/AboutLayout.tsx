@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import AboutusSidemenu from '@/Reusable components/Side Menu/Aboutus_sidemenu/AboutusSidemenu';
+import AboutusSidemenu from '@/components/navigation/AboutusSidemenu';
+import Breadcrumb from '@/components/Breadcrumb/Breadcrumb';
 import { dataManager } from '@/lib/dataManager';
 
 const DICTIONARY: Record<string, string> = {
@@ -13,14 +14,10 @@ const DICTIONARY: Record<string, string> = {
   'Former-Comptroller-and-Auditors-General': 'पूर्व सीएजी गैलरी',
   'History-of-Indian-Audit-ans-Accounts-Department': 'आईएएडी का इतिहास',
   'Audit-Advisory-Board': 'लेखा परीक्षा सलाहकार बोर्ड',
+  'Constitutional-Provisions': 'संवैधानिक प्रावधान',
   'Duties-&-Powers-Act': 'कर्तव्य और शक्तियां अधिनियम',
-  'Duties & Powers Act': 'कर्तव्य और शक्तियां अधिनियम',
-  "DPC Act - CAG's Duties Powers and Conditions of Service": "डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें",
-  "DPC Act — CAG's Duties, Powers and Conditions of Service": "डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें",
   'Audit-Regulation': 'लेखा परीक्षा विनियम',
-  'Audit Regulation': 'लेखा परीक्षा विनियम',
   'International-Relations': 'अंतर्राष्ट्रीय संबंध',
-  'International Relations': 'अंतर्राष्ट्रीय संबंध',
 
   // Constitutional Provisions Headings
   'Article 148 — Comptroller and Auditor-General of India': 'अनुच्छेद 148 — भारत के नियंत्रक और महालेखा परीक्षक',
@@ -89,14 +86,12 @@ export default function AboutLayout({
 
       if (!containerRef.current) return;
 
-      // Walk text nodes inside the container and replace matching English keys
       const walk = document.createTreeWalker(containerRef.current, NodeFilter.SHOW_TEXT);
       let node;
       while ((node = walk.nextNode())) {
         const text = node.nodeValue || '';
         const trimmed = text.trim();
         
-        // Find if this exact text exists in our dictionary
         if (trimmed && DICTIONARY[trimmed]) {
           const original = node.parentElement?.getAttribute('data-original-text') || text;
           if (node.parentElement && !node.parentElement.getAttribute('data-original-text')) {
@@ -110,37 +105,19 @@ export default function AboutLayout({
     translateDOM();
     window.addEventListener('languageChange', translateDOM);
     return () => window.removeEventListener('languageChange', translateDOM);
-  }, [children]); // Re-run when layout children change
+  }, [children]);
 
   const isHindi = lang === 'हिन्दी';
   const displayTitle = isHindi && DICTIONARY[title] ? DICTIONARY[title] : title;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" ref={containerRef}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-6" ref={containerRef}>
       <div className="about-layout flex flex-col lg:flex-row gap-10 items-start">
         <aside className="w-full lg:w-[310px] shrink-0">
           <AboutusSidemenu />
         </aside>
         <main className="about-content flex-grow w-full">
-          <h2
-            className={`text-[24px] font-bold text-[#751639] ${
-              hideTitleBorder ? 'mb-6' : 'border-b border-[#e6e6e6] pb-4 mb-6'
-            } text-left font-['Noto_Sans',sans-serif]`}
-            style={{
-              fontFamily: "var(--font-noto-sans), 'Noto Sans', sans-serif",
-              fontWeight: 700,
-              fontSize: '24px',
-              lineHeight: '160%',
-              letterSpacing: '0%',
-              color: '#751639',
-              minHeight: '38px',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-            }}
-          >
-            {displayTitle}
-          </h2>
-          <div className={`text-zinc-700 leading-relaxed ${hideTitleBorder ? 'space-y-4' : 'space-y-6'}`}>
+          <div>
             {children}
           </div>
         </main>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import AboutLayout from '@/components/layout/AboutLayout';
+import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager } from '@/lib/dataManager';
 
 const TABLE_DATA = [
