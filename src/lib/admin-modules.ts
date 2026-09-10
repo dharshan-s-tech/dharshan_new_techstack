@@ -9,7 +9,7 @@
 // DB TABLE → ADMIN MODULE CONFIGURATION MAP
 // =============================================
 export interface AdminModule {
-  table: string;          // DB table name (in cag_new schema)
+  table: string;          // DB table name (in cag_revamp schema)
   title: string;          // Page title
   addTitle: string;       // Add form title
   searchColumn: string;   // Column to search on
@@ -463,11 +463,12 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
   },
   'state-accounts': {
     table: 'state_accounts',
-    title: 'State Accounts',
-    addTitle: 'Add State Account',
+    title: 'State Finance Accounts',
+    addTitle: 'Add State Account Statement',
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'category_name', label: 'Category' },
       { key: 'account_year', label: 'Year' },
       { key: 'month', label: 'Month' },
       { key: 'volume', label: 'Volume' },
@@ -476,12 +477,45 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     formFields: [
       { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
       { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
-      { name: 'state_id', label: 'State', type: 'select' },
+      { name: 'state_id', label: 'State / Union Territory', type: 'select' },
+      { name: 'category_name', label: 'Account Category', type: 'select', options: [
+        { value: 'Accounts at a Glance', label: 'Accounts at a Glance' },
+        { value: 'Appropriation Accounts', label: 'Appropriation Accounts' },
+        { value: 'Finance Accounts', label: 'Finance Accounts' },
+        { value: 'Monthly Key Indicators', label: 'Monthly Key Indicators' },
+      ]},
       { name: 'account_year', label: 'Account Year', type: 'number', required: true },
-      { name: 'month', label: 'Month', type: 'text' },
-      { name: 'volume', label: 'Volume', type: 'text' },
-      { name: 'file_url', label: 'Upload File (PDF)', type: 'file' },
+      { name: 'month', label: 'Month (if monthly statement)', type: 'text' },
+      { name: 'volume', label: 'Volume Description', type: 'text' },
+      { name: 'file_url', label: 'Upload File / CloudFront PDF URL', type: 'file' },
       { name: 'external_link', label: 'External Link URL', type: 'url' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'combined-accounts': {
+    table: 'combined_accounts',
+    title: 'Combined Finance Accounts & Conferences',
+    addTitle: 'Add Combined Account Document',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Document Title' },
+      { key: 'category', label: 'Category' },
+      { key: 'account_year', label: 'Year' },
+      { key: 'volume', label: 'Volume' },
+      { key: 'size', label: 'Size' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Document Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Document Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'category', label: 'Document Category', type: 'select', options: [
+        { value: 'combined', label: 'Combined Finance & Revenue Accounts' },
+        { value: 'conference', label: 'State Finance Secretaries Conference' },
+      ], required: true },
+      { name: 'account_year', label: 'Account / Report Year', type: 'text', required: true, placeholder: '2024 - 25' },
+      { name: 'volume', label: 'Volume Description', type: 'text', placeholder: 'Full Comprehensive Volume' },
+      { name: 'size', label: 'Document File Size', type: 'text', placeholder: '18.5 MB' },
+      { name: 'file_url', label: 'Upload Document / CloudFront PDF Link', type: 'file' },
       { name: 'is_active', label: 'Active', type: 'boolean' },
     ]
   },

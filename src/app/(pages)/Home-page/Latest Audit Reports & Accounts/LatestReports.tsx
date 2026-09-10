@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { dataManager } from '@/lib/dataManager';
+import ReportCard from '@/components/common/ReportCard';
 
 const HINDI_TRANSLATIONS: Record<string, { title: string; label: string; desc: string }> = {
   'rep-1': {
@@ -122,7 +123,7 @@ export default function LatestReports() {
         </div>
 
         <div className="reports__cards" data-node-id="356:17054">
-          {displayReports.map((report) => {
+          {displayReports.map((report, idx) => {
             const details = isHindi && HINDI_TRANSLATIONS[report.id] ? HINDI_TRANSLATIONS[report.id] : {
               title: report.title,
               label: report.label || report.sector,
@@ -130,63 +131,20 @@ export default function LatestReports() {
             };
 
             return (
-              <article 
-                key={report.id} 
-                className="report-card cursor-pointer" 
-                data-node-id={report.id}
-                onClick={() => router.push(`/Reports/${report.id}`)}
-              >
-                {/* 1. Card image: 50% */}
-                <div className="report-card__banner" data-node-id="I356:17059;907:255">
-                  <img 
-                    src={typeof report.image === 'string' ? report.image : report.image.src} 
-                    alt={details.title} 
-                    className="report-card__photo" 
-                  />
-                  <span className="report-card__tag" data-node-id="I356:17059;907:256">
-                    {report.tag || 'Text'}
-                  </span>
-                </div>
-
-                {/* 2. Card body: 50% */}
-                <div className="report-card__body" data-node-id="I356:17059;906:237">
-                  {/* Meta row: 5% (Arrow + Category/State + Date) */}
-                  <div className="report-card__meta" data-node-id="I356:17059;906:215">
-                    <div className="report-card__meta-left">
-                      <svg 
-                        className="report-card__arrow-svg" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                      >
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                      <span className="report-card__label" data-node-id="I356:17059;906:221">
-                        {details.label}
-                      </span>
-                    </div>
-                    <span className="report-card__date" data-node-id="I356:17059;1217:10557">
-                      {report.date}
-                    </span>
-                  </div>
-
-                  {/* Header: 30% (Title in bold) */}
-                  <h3 className="report-card__title" data-node-id="I356:17059;906:234">
-                    <Link href={`/Reports/${report.id}`} onClick={(e) => e.stopPropagation()}>
-                      {details.title}
-                    </Link>
-                  </h3>
-
-                  {/* Sub heading: 15% (Description) */}
-                  <p className="report-card__desc" data-node-id="I356:17059;906:235">
-                    {details.desc}
-                  </p>
-                </div>
-              </article>
+              <ReportCard
+                key={report.id || `home-rep-${idx}`}
+                report={{
+                  id: report.id,
+                  title: details.title,
+                  image: typeof report.image === 'string' ? report.image : report.image?.src,
+                  tag: report.tag || details.label || report.sector || 'Audit',
+                  date: report.date || report.year || 'Jun 4, 2026',
+                  sector: report.sector || details.label || 'Finance',
+                  pdfUrl: report.pdfUrl || report.pdf_url
+                }}
+                isHindi={isHindi}
+                fallbackImageIndex={startIndex + idx}
+              />
             );
           })}
         </div>

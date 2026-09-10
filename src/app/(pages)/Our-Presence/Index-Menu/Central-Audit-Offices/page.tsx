@@ -38,7 +38,8 @@ function CentralOfficesPageContent() {
     api.getPresence()
       .then((data) => {
         if (data) {
-          setOffices(data.filter(x => x.type === 'central'));
+          const list: Office[] = Array.isArray(data) ? data : ((data as any).offices || []);
+          setOffices(list.filter((x: Office) => x.type === 'central'));
         }
         setLoading(false);
       })

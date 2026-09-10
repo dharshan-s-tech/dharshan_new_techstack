@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Globe Outer Circle -->
+  <circle cx="60" cy="60" r="54" fill="none" stroke="#00529B" stroke-width="3" />
+  
+  <!-- Latitude Lines -->
+  <ellipse cx="60" cy="60" rx="54" ry="18" fill="none" stroke="#00529B" stroke-width="1.8" />
+  <ellipse cx="60" cy="60" rx="54" ry="36" fill="none" stroke="#00529B" stroke-width="1.8" />
+  <line x1="6" y1="60" x2="114" y2="60" stroke="#00529B" stroke-width="1.8" />
+  
+  <!-- Longitude Lines -->
+  <ellipse cx="60" cy="60" rx="18" ry="54" fill="none" stroke="#00529B" stroke-width="1.8" />
+  <ellipse cx="60" cy="60" rx="36" ry="54" fill="none" stroke="#00529B" stroke-width="1.8" />
+  <line x1="60" y1="6" x2="60" y2="114" stroke="#00529B" stroke-width="1.8" />
+
+  <!-- White badge backdrop for iCISA text -->
+  <rect x="22" y="44" width="76" height="32" fill="#FFFFFF" rx="2" />
+  
+  <!-- iCISA Center Text -->
+  <text x="60" y="68" text-anchor="middle" font-family="'Noto Sans', 'Segoe UI', Arial, sans-serif" font-size="24" font-weight="900" fill="#00529B" letter-spacing="0.5">iCISA</text>
+</svg>

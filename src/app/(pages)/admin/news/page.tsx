@@ -23,6 +23,7 @@ export default function AdminNews() {
   const [searchFor, setSearchFor] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [sortFilter, setSortFilter] = useState('newest');
 
   const [appliedSearch, setAppliedSearch] = useState('');
 
@@ -62,6 +63,16 @@ export default function AdminNews() {
         formatted = formatted.filter((item) => item.news_type === typeFilter);
       }
 
+      if (sortFilter === 'title_asc') {
+        formatted.sort((a, b) => (a.title_en || '').localeCompare(b.title_en || ''));
+      } else if (sortFilter === 'title_desc') {
+        formatted.sort((a, b) => (b.title_en || '').localeCompare(a.title_en || ''));
+      } else if (sortFilter === 'oldest') {
+        formatted.sort((a, b) => (new Date(a.publish_date).getTime() || 0) - (new Date(b.publish_date).getTime() || 0));
+      } else {
+        formatted.sort((a, b) => (new Date(b.publish_date).getTime() || 0) - (new Date(a.publish_date).getTime() || 0));
+      }
+
       setNews(formatted);
     } catch (err) {
       const localData = dataManager.getNews();
@@ -84,6 +95,16 @@ export default function AdminNews() {
         formatted = formatted.filter((item) => item.news_type === typeFilter);
       }
 
+      if (sortFilter === 'title_asc') {
+        formatted.sort((a, b) => (a.title_en || '').localeCompare(b.title_en || ''));
+      } else if (sortFilter === 'title_desc') {
+        formatted.sort((a, b) => (b.title_en || '').localeCompare(a.title_en || ''));
+      } else if (sortFilter === 'oldest') {
+        formatted.sort((a, b) => (new Date(a.publish_date).getTime() || 0) - (new Date(b.publish_date).getTime() || 0));
+      } else {
+        formatted.sort((a, b) => (new Date(b.publish_date).getTime() || 0) - (new Date(a.publish_date).getTime() || 0));
+      }
+
       setNews(formatted);
     } finally {
       setLoading(false);
@@ -95,7 +116,7 @@ export default function AdminNews() {
     const handleNewsChange = () => loadData();
     window.addEventListener('newsChange', handleNewsChange);
     return () => window.removeEventListener('newsChange', handleNewsChange);
-  }, [appliedSearch, statusFilter, typeFilter]);
+  }, [appliedSearch, statusFilter, typeFilter, sortFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -106,6 +127,7 @@ export default function AdminNews() {
     setAppliedSearch('');
     setStatusFilter('All');
     setTypeFilter('All');
+    setSortFilter('newest');
   };
 
   const handleOpenCreate = () => {
@@ -200,7 +222,7 @@ export default function AdminNews() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
           <div>
             <label className="block text-zinc-555 font-bold mb-1">Search Headline:</label>
             <input
@@ -222,6 +244,20 @@ export default function AdminNews() {
               <option value="All">All Types</option>
               <option value="trending">Trending News</option>
               <option value="featured">Featured Headlines</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Sort Order:</label>
+            <select
+              value={sortFilter}
+              onChange={(e) => setSortFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="newest">Publish Date (Newest first)</option>
+              <option value="oldest">Publish Date (Oldest first)</option>
+              <option value="title_asc">Title (A to Z)</option>
+              <option value="title_desc">Title (Z to A)</option>
             </select>
           </div>
 

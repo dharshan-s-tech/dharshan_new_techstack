@@ -1,9 +1,34 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { notFound, useParams } from 'next/navigation';
 import { dataManager } from '@/lib/dataManager';
-import DualFlagStand from '@/components/DualFlagStand';
+
+// Interface definitions
+interface OfficeItem {
+  id: string;
+  title: string;
+  hindiTitle: string;
+  city: string;
+  hindiCity: string;
+  country: string;
+  hasPdf: boolean;
+  pdfSize?: string;
+  pdfTitle?: string;
+  hindiPdfTitle?: string;
+  designation: string;
+  hindiDesignation: string;
+  location: string;
+  hindiLocation: string;
+  jurisdiction: string;
+  hindiJurisdiction: string;
+  mandate: string;
+  hindiMandate: string;
+  keyEntities: string[];
+  hindiKeyEntities: string[];
+}
 
 interface SidebarLink {
   name: string;
@@ -17,14 +42,483 @@ interface SidebarGroup {
   links: SidebarLink[];
 }
 
-export default function GlobalRelationsDynamicPage({ params }: { params: Promise<{ slug: string }> }) {
-  // Next.js 16 Dynamic Route Parameter Unwrapping via React.use()
-  const resolvedParams = React.use(params);
-  const rawSlug = decodeURIComponent(resolvedParams.slug);
-  const slugDecoded = rawSlug.toLowerCase();
-  
-  // Dynamic Language Synchronization (English ↔ हिन्दी)
+const SIDEBAR_GROUPS: SidebarGroup[] = [
+  {
+    heading: 'Audit Engagements',
+    hindiHeading: 'लेखा परीक्षा सहभागिता',
+    links: [
+      {
+        name: 'UN Panel of External Auditors',
+        hindiName: 'बाह्य लेखा परीक्षकों का संयुक्त राष्ट्र पैनल',
+        slug: 'un panel of external auditors',
+      },
+      {
+        name: 'Present International Audits',
+        hindiName: 'वर्तमान अंतर्राष्ट्रीय लेखा परीक्षा',
+        slug: 'present international audits',
+      },
+      {
+        name: 'Past International Audits',
+        hindiName: 'विगत अंतर्राष्ट्रीय लेखा परीक्षा',
+        slug: 'past international audits',
+      },
+      {
+        name: 'Overseas Audit Offices',
+        hindiName: 'विदेशी लेखा परीक्षा कार्यालय',
+        slug: 'overseas audit offices',
+      },
+    ],
+  },
+  {
+    heading: 'International Bodies',
+    hindiHeading: 'अंतर्राष्ट्रीय निकाय',
+    links: [
+      {
+        name: 'Association with INTOSAI',
+        hindiName: 'INTOSAI के साथ जुड़ाव',
+        slug: 'association with intosai',
+      },
+      {
+        name: 'Association with ASOSAI',
+        hindiName: 'ASOSAI के साथ जुड़ाव',
+        slug: 'association with asosai',
+      },
+      {
+        name: 'Multilateral Engagement',
+        hindiName: 'बहुपक्षीय सहभागिता',
+        slug: 'multilateral engagement',
+      },
+    ],
+  },
+  {
+    heading: 'Bilateral Relations',
+    hindiHeading: 'द्विपक्षीय संबंध',
+    links: [
+      {
+        name: 'Bilateral Relations',
+        hindiName: 'द्विपक्षीय संबंध',
+        slug: 'bilateral relations',
+      },
+    ],
+  },
+  {
+    heading: 'Training Institutes',
+    hindiHeading: 'प्रशिक्षण संस्थान',
+    links: [
+      { name: 'iCED', hindiName: 'iCED', slug: 'iced' },
+      { name: 'iCISA', hindiName: 'iCISA', slug: 'icisa' },
+      { name: 'NAAA', hindiName: 'NAAA', slug: 'naaa' },
+      { name: 'iCAL', hindiName: 'iCAL', slug: 'ical' },
+    ],
+  },
+  {
+    heading: 'Contact',
+    hindiHeading: 'संपर्क',
+    links: [
+      {
+        name: 'International relation wing',
+        hindiName: 'अंतर्राष्ट्रीय संबंध विंग',
+        slug: 'international relations wing',
+      },
+    ],
+  },
+];
+
+interface OfficerProfile {
+  id: string;
+  name: string;
+  hindiName: string;
+  designation: string;
+  hindiDesignation: string;
+  email: string;
+  image: string;
+}
+
+const IR_OFFICERS: OfficerProfile[] = [
+  {
+    id: 'subramanian',
+    name: 'Mr. K. S. Subramanian',
+    hindiName: 'श्री के. एस. सुब्रमण्यन',
+    designation: 'Deputy Comptroller & Auditor General (Human Resources,\nInternational Relations, Coordination and Legal)',
+    hindiDesignation: 'उप नियंत्रक एवं महालेखापरीक्षक (मानव संसाधन,\nअंतर्राष्ट्रीय संबंध, समन्वय और कानूनी)',
+    email: 'subramanianks@cag.gov.in',
+    image: '/assets/officers/subramanian.jpg',
+  },
+  {
+    id: 'patwardhan',
+    name: 'Mr. Vimalendra Anand Patwardhan',
+    hindiName: 'श्री विमलेंद्र आनंद पटवर्धन',
+    designation: 'Director General (International Relations)',
+    hindiDesignation: 'महानिदेशक (अंतर्राष्ट्रीय संबंध)',
+    email: 'patwardhanva@cag.gov.in',
+    image: '/assets/officers/patwardhan.jpg',
+  },
+  {
+    id: 'patil',
+    name: 'Mr. Nilesh Patil',
+    hindiName: 'श्री नीलेश पाटिल',
+    designation: 'Director (International Relations)',
+    hindiDesignation: 'निदेशक (अंतर्राष्ट्रीय संबंध)',
+    email: 'patilnp@cag.gov.in',
+    image: '/assets/officers/patil.jpg',
+  },
+  {
+    id: 'choudhary',
+    name: 'Mr. Abhinav Choudhary',
+    hindiName: 'श्री अभिनव चौधरी',
+    designation: 'Dy. Director (International Relations)',
+    hindiDesignation: 'उप निदेशक (अंतर्राष्ट्रीय संबंध)',
+    email: 'abhinavc@cag.gov.in',
+    image: '/assets/officers/choudhary.jpg',
+  },
+];
+
+const OVERSEAS_OFFICES: OfficeItem[] = [
+  {
+    id: 'washington',
+    title: 'Principal Director of Audit, Washington DC',
+    hindiTitle: 'प्रधान लेखा परीक्षा निदेशक, वाशिंगटन डीसी',
+    city: 'Washington DC',
+    hindiCity: 'वाशिंगटन डीसी',
+    country: 'United States',
+    hasPdf: false,
+    designation: 'Principal Director of Audit (PDA)',
+    hindiDesignation: 'प्रधान लेखा परीक्षा निदेशक (पीडीए)',
+    location: 'Embassy of India, 2107 Massachusetts Ave NW, Washington, DC 20008, USA',
+    hindiLocation: 'भारतीय दूतावास, 2107 मैसाचुसेट्स एवेन्यू एनडब्ल्यू, वाशिंगटन, डीसी 20008, यूएसए',
+    jurisdiction: 'North America, Central America & South America',
+    hindiJurisdiction: 'उत्तरी अमेरिका, मध्य अमेरिका और दक्षिण अमेरिका',
+    mandate:
+      'Responsible for external audit of the Embassy of India in Washington DC, Consulates General across North and South America, Permanent Mission of India to the UN (New York), defense supply missions, and commercial wings of public sector undertakings in the region.',
+    hindiMandate:
+      'वाशिंगटन डीसी में भारतीय दूतावास, उत्तर और दक्षिण अमेरिका में महावाणिज्य दूतावासों, संयुक्त राष्ट्र (न्यूयॉर्क) में भारत के स्थायी मिशन, रक्षा आपूर्ति मिशनों और इस क्षेत्र में सार्वजनिक क्षेत्र के उपक्रमों के वाणिज्यिक विंगों के बाह्य लेखा परीक्षा के लिए जिम्मेदार।',
+    keyEntities: [
+      'Embassy of India, Washington DC',
+      'Permanent Mission of India to the UN, New York',
+      'Consulates General: New York, San Francisco, Chicago, Houston, Atlanta, Seattle',
+      'Indian Missions across Canada, Mexico, Brazil, Argentina, Chile',
+      'Air India & PSU Overseas Liaison Offices in the Americas',
+    ],
+    hindiKeyEntities: [
+      'भारतीय दूतावास, वाशिंगटन डीसी',
+      'संयुक्त राष्ट्र में भारत का स्थायी मिशन, न्यूयॉर्क',
+      'महावाणिज्य दूतावास: न्यूयॉर्क, सैन फ्रांसिस्को, शिकागो, ह्यूस्टन, अटलांटा, सिएटल',
+      'कनाडा, मैक्सिको, ब्राजील, अर्जेंटीना, चिली में भारतीय मिशन',
+      'अमेरिका में एयर इंडिया और पीएसयू विदेशी संपर्क कार्यालय',
+    ],
+  },
+  {
+    id: 'london',
+    title: 'Principal Director of Audit, London',
+    hindiTitle: 'प्रधान लेखा परीक्षा निदेशक, लंदन',
+    city: 'London',
+    hindiCity: 'लंदन',
+    country: 'United Kingdom',
+    hasPdf: false,
+    designation: 'Principal Director of Audit (PDA)',
+    hindiDesignation: 'प्रधान लेखा परीक्षा निदेशक (पीडीए)',
+    location: 'High Commission of India, India House, Aldwych, London WC2B 4NA, UK',
+    hindiLocation: 'भारतीय उच्चायोग, इंडिया हाउस, एल्डविच, लंदन WC2B 4NA, यूके',
+    jurisdiction: 'United Kingdom and Western European Nations',
+    hindiJurisdiction: 'यूनाइटेड किंगडम और पश्चिमी यूरोपीय देश',
+    mandate:
+      'Oversees comprehensive audit of the High Commission of India in London, diplomatic posts in the UK and Western Europe, defense procurement offices, Tourist Offices, and overseas branches of state enterprises.',
+    hindiMandate:
+      'लंदन में भारतीय उच्चायोग, ब्रिटेन और पश्चिमी यूरोप में राजनयिक पदों, रक्षा खरीद कार्यालयों, पर्यटक कार्यालयों और राज्य उद्यमों की विदेशी शाखाओं के व्यापक लेखा परीक्षा की देखरेख करता है।',
+    keyEntities: [
+      'High Commission of India, London',
+      'Consulates General in Birmingham, Edinburgh',
+      'Indian Embassies in France, Germany, Netherlands, Belgium, Spain, Portugal',
+      'Ministry of Defence & Technical Liaison Offices in the UK',
+      'Public Sector Banks and Insurance entities operating in Europe',
+    ],
+    hindiKeyEntities: [
+      'भारतीय उच्चायोग, लंदन',
+      'बर्मिंघम, एडिनबर्ग में महावाणिज्य दूतावास',
+      'फ्रांस, जर्मनी, नीदरलैंड, बेल्जियम, स्पेन, पुर्तगाल में भारतीय दूतावास',
+      'यूके में रक्षा मंत्रालय और तकनीकी संपर्क कार्यालय',
+      'यूरोप में कार्यरत सार्वजनिक क्षेत्र के बैंक और बीमा संस्थाएं',
+    ],
+  },
+  {
+    id: 'kuala-lumpur',
+    title: 'Principal Director of Audit, Kuala Lumpur',
+    hindiTitle: 'प्रधान लेखा परीक्षा निदेशक, कुआलालंपुर',
+    city: 'Kuala Lumpur',
+    hindiCity: 'कुआलालंपुर',
+    country: 'Malaysia',
+    hasPdf: false,
+    designation: 'Principal Director of Audit (PDA)',
+    hindiDesignation: 'प्रधान लेखा परीक्षा निदेशक (पीडीए)',
+    location: 'High Commission of India, Menara 1 Mon’t Kiara, Kuala Lumpur, Malaysia',
+    hindiLocation: 'भारतीय उच्चायोग, मेनारा 1 मॉन्ट कियारा, कुआलालंपुर, मलेशिया',
+    jurisdiction: 'Southeast Asia, East Asia & Australasia / Pacific',
+    hindiJurisdiction: 'दक्षिण पूर्व एशिया, पूर्वी एशिया और ऑस्ट्रेलेशिया / प्रशांत',
+    mandate:
+      'Conducts audit of Indian High Commissions, Embassies, and Consulates across ASEAN nations, Japan, South Korea, Australia, New Zealand, and Pacific Island countries.',
+    hindiMandate:
+      'आसियान देशों, जापान, दक्षिण कोरिया, ऑस्ट्रेलिया, न्यूजीलैंड और प्रशांत द्वीप देशों में भारतीय उच्चायोगों, दूतावासों और वाणिज्य दूतावासों का लेखा परीक्षण आयोजित करता है।',
+    keyEntities: [
+      'High Commission of India, Kuala Lumpur & Singapore',
+      'Embassy of India in Tokyo, Seoul, Beijing, Jakarta, Bangkok, Hanoi',
+      'High Commission in Canberra, Wellington, Suva (Fiji), Port Moresby',
+      'Consulates General in Sydney, Melbourne, Osaka, Shanghai, Guangzhou',
+      'Indian PSU Joint Ventures and Trade Promotion Centers in the Asia-Pacific',
+    ],
+    hindiKeyEntities: [
+      'भारतीय उच्चायोग, कुआलालंपुर और सिंगापुर',
+      'टोक्यो, सियोल, बीजिंग, जकार्ता, बैंकॉक, हनोई में भारतीय दूतावास',
+      'कैनबरा, वेलिंगटन, सुवा (फिजी), पोर्ट मोरेस्बी में उच्चायोग',
+      'सिडनी, मेलबर्न, ओसाका, शंघाई, ग्वांगझू में महावाणिज्य दूतावास',
+      'एशिया-प्रशांत में भारतीय पीएसयू संयुक्त उद्यम और व्यापार संवर्धन केंद्र',
+    ],
+  },
+  {
+    id: 'rome',
+    title: 'Director of External Audit, Rome',
+    hindiTitle: 'बाह्य लेखा परीक्षा निदेशक, रोम',
+    city: 'Rome',
+    hindiCity: 'रोम',
+    country: 'Italy',
+    hasPdf: true,
+    pdfSize: '34.7 MB',
+    pdfTitle: 'External Audit of UN Rome-Based Agencies Mandate & Governance',
+    hindiPdfTitle: 'संयुक्त राष्ट्र रोम स्थित एजेंसियों का बाह्य लेखा परीक्षा अधिदेश और शासन',
+    designation: 'Director of External Audit (DEA)',
+    hindiDesignation: 'बाह्य लेखा परीक्षा निदेशक (डीईए)',
+    location: 'Food and Agriculture Organization (FAO) Headquarters, Viale delle Terme di Caracalla, Rome, Italy',
+    hindiLocation: 'खाद्य एवं कृषि संगठन (एफएओ) मुख्यालय, वियाले डेले टर्मे डि कराकल्ला, रोम, इटली',
+    jurisdiction: 'UN Specialized Agencies Headquartered in Rome',
+    hindiJurisdiction: 'रोम में मुख्यालय वाली संयुक्त राष्ट्र विशेष एजेंसियां',
+    mandate:
+      'Directly responsible for conducting independent statutory external financial audits, compliance verifications, and performance audits for United Nations Rome-based organizations.',
+    hindiMandate:
+      'संयुक्त राष्ट्र रोम स्थित संगठनों के लिए स्वतंत्र वैधानिक बाह्य वित्तीय लेखा परीक्षा, अनुपालन सत्यापन और प्रदर्शन लेखा परीक्षा आयोजित करने के लिए प्रत्यक्ष रूप से जिम्मेदार।',
+    keyEntities: [
+      'Food and Agriculture Organization (FAO)',
+      'World Food Programme (WFP)',
+      'International Fund for Agricultural Development (IFAD)',
+      'International Centre for the Study of the Preservation and Restoration of Cultural Property (ICCROM)',
+    ],
+    hindiKeyEntities: [
+      'खाद्य एवं कृषि संगठन (FAO)',
+      'विश्व खाद्य कार्यक्रम (WFP)',
+      'कृषि विकास के लिए अंतर्राष्ट्रीय कोष (IFAD)',
+      'सांस्कृतिक संपत्ति के संरक्षण और जीर्णोद्धार के अध्ययन के लिए अंतर्राष्ट्रीय केंद्र (ICCROM)',
+    ],
+  },
+  {
+    id: 'geneva',
+    title: 'Director of External Audit, Geneva',
+    hindiTitle: 'बाह्य लेखा परीक्षा निदेशक, जिनेवा',
+    city: 'Geneva',
+    hindiCity: 'जिनेवा',
+    country: 'Switzerland',
+    hasPdf: true,
+    pdfSize: '34.7 MB',
+    pdfTitle: 'External Audit Report of Specialized UN Agencies — Geneva Office',
+    hindiPdfTitle: 'विशेषज्ञ संयुक्त राष्ट्र एजेंसियों की बाह्य लेखा परीक्षा रिपोर्ट — जिनेवा कार्यालय',
+    designation: 'Director of External Audit (DEA)',
+    hindiDesignation: 'बाह्य लेखा परीक्षा निदेशक (डीईए)',
+    location: 'World Health Organization (WHO) Headquarters / UNOG, Geneva, Switzerland',
+    hindiLocation: 'विश्व स्वास्थ्य संगठन (डब्ल्यूएचओ) मुख्यालय / यूएनओजी, जिनेवा, स्विट्जरलैंड',
+    jurisdiction: 'UN Global Health & Specialized Organizations in Geneva',
+    hindiJurisdiction: 'जिनेवा में संयुक्त राष्ट्र वैश्विक स्वास्थ्य और विशेष संगठन',
+    mandate:
+      'Performs external audit mandates as appointed External Auditor by the World Health Assembly and governing boards of international organizations, providing audit certificates and value-for-money evaluations.',
+    hindiMandate:
+      'विश्व स्वास्थ्य सभा और अंतर्राष्ट्रीय संगठनों के शासी बोर्डों द्वारा नियुक्त बाह्य लेखा परीक्षक के रूप में बाह्य लेखा परीक्षा अधिदेशों का निष्पादन करता है, लेखा परीक्षा प्रमाणपत्र और प्रदर्शन मूल्यांकन प्रदान करता है।',
+    keyEntities: [
+      'World Health Organization (WHO)',
+      'International Labour Organization (ILO)',
+      'International Telecommunication Union (ITU)',
+      'World Intellectual Property Organization (WIPO)',
+      'UNITAID (Global Health Partnership)',
+      'Inter-Parliamentary Union (IPU)',
+    ],
+    hindiKeyEntities: [
+      'विश्व स्वास्थ्य संगठन (WHO)',
+      'अंतर्राष्ट्रीय श्रम संगठन (ILO)',
+      'अंतर्राष्ट्रीय दूरसंचार संघ (ITU)',
+      'विश्व बौद्धिक संपदा संगठन (WIPO)',
+      'यूनिटैड (वैश्विक स्वास्थ्य भागीदारी)',
+      'अंतर-संसदीय संघ (IPU)',
+    ],
+  },
+];
+
+// Fallback data for other Global Relations pages
+const OTHER_PAGES_DATA: Record<
+  string,
+  {
+    title: string;
+    hindiTitle: string;
+    group: string;
+    hindiGroup: string;
+    description: string;
+    hindiDescription: string;
+  }
+> = {
+  'un panel of external auditors': {
+    title: 'UN Panel of External Auditors',
+    hindiTitle: 'बाह्य लेखा परीक्षकों का संयुक्त राष्ट्र पैनल',
+    group: 'Audit Engagements',
+    hindiGroup: 'लेखा परीक्षा सहभागिता',
+    description:
+      'The Comptroller and Auditor General of India is a prominent member of the United Nations Panel of External Auditors. The Panel contributes to the supreme quality and consistency of auditing standards across all UN system organizations and peacekeeping missions.',
+    hindiDescription:
+      'भारत के नियंत्रक एवं महालेखा परीक्षक संयुक्त राष्ट्र के बाह्य लेखा परीक्षकों के पैनल के एक प्रमुख सदस्य हैं। यह पैनल सभी संयुक्त राष्ट्र प्रणाली संगठनों और शांति स्थापना मिशनों में लेखा परीक्षा मानकों की सर्वोच्च गुणवत्ता और निरंतरता में योगदान देता है।',
+  },
+  'present international audits': {
+    title: 'Present International Audits',
+    hindiTitle: 'वर्तमान अंतर्राष्ट्रीय लेखा परीक्षा',
+    group: 'Audit Engagements',
+    hindiGroup: 'लेखा परीक्षा सहभागिता',
+    description:
+      'SAI India currently holds prestigious external audit mandates for premier international bodies, including the World Health Organization (WHO), Food and Agriculture Organization (FAO), International Labour Organization (ILO), and the Organization for the Prohibition of Chemical Weapons (OPCW).',
+    hindiDescription:
+      'SAI भारत के पास वर्तमान में विश्व स्वास्थ्य संगठन (WHO), खाद्य एवं कृषि संगठन (FAO), अंतर्राष्ट्रीय श्रम संगठन (ILO), और रासायनिक हथियार निषेध संगठन (OPCW) सहित प्रमुख अंतर्राष्ट्रीय निकायों के लिए प्रतिष्ठित बाह्य लेखा परीक्षा अधिदेश हैं।',
+  },
+  'past international audits': {
+    title: 'Past International Audits',
+    hindiTitle: 'विगत अंतर्राष्ट्रीय लेखा परीक्षा',
+    group: 'Audit Engagements',
+    hindiGroup: 'लेखा परीक्षा सहभागिता',
+    description:
+      'Over the decades, SAI India has successfully served as External Auditor to numerous multilateral institutions such as the World Meteorological Organization (WMO), International Atomic Energy Agency (IAEA), and UN peacekeeping missions.',
+    hindiDescription:
+      'दशकों से, SAI भारत ने विश्व मौसम विज्ञान संगठन (WMO), अंतर्राष्ट्रीय परमाणु ऊर्जा एजेंसी (IAEA), और संयुक्त राष्ट्र शांति स्थापना मिशनों जैसे कई बहुपक्षीय संस्थानों के बाह्य लेखा परीक्षक के रूप में सफलतापूर्वक कार्य किया है।',
+  },
+  'association with intosai': {
+    title: 'Association with INTOSAI',
+    hindiTitle: 'INTOSAI के साथ जुड़ाव',
+    group: 'International Bodies',
+    hindiGroup: 'अंतर्राष्ट्रीय निकाय',
+    description:
+      'SAI India is a key constituent of the International Organization of Supreme Audit Institutions (INTOSAI), chairing several strategic working groups including the Working Group on IT Audit (WGITA) and compliance auditing initiatives.',
+    hindiDescription:
+      'SAI भारत सर्वोच्च लेखा परीक्षा संस्थानों के अंतर्राष्ट्रीय संगठन (INTOSAI) का एक प्रमुख घटक है, जो आईटी ऑडिट (WGITA) और अनुपालन लेखा परीक्षा पहलों पर कार्य समूह सहित कई रणनीतिक कार्य समूहों की अध्यक्षता करता है।',
+  },
+  'association with asosai': {
+    title: 'Association with ASOSAI',
+    hindiTitle: 'ASOSAI के साथ जुड़ाव',
+    group: 'International Bodies',
+    hindiGroup: 'अंतर्राष्ट्रीय निकाय',
+    description:
+      'As a founding and active member of the Asian Organization of Supreme Audit Institutions (ASOSAI), SAI India fosters regional collaboration, joint capacity building, and innovative audit research throughout the Asian continent.',
+    hindiDescription:
+      'एशियाई सर्वोच्च लेखा परीक्षा संस्थानों के संगठन (ASOSAI) के संस्थापक और सक्रिय सदस्य के रूप में, SAI भारत पूरे एशियाई महाद्वीप में क्षेत्रीय सहयोग, संयुक्त क्षमता निर्माण और नवीन लेखा परीक्षा अनुसंधान को बढ़ावा देता है।',
+  },
+  'multilateral engagement': {
+    title: 'Multilateral Engagement',
+    hindiTitle: 'बहुपक्षीय सहभागिता',
+    group: 'International Bodies',
+    hindiGroup: 'अंतर्राष्ट्रीय निकाय',
+    description:
+      'Engagement in global multilateral platforms including SAI20 (G20 Engagement Group of Supreme Audit Institutions), BRICS SAIs, and Commonwealth Auditors General forums.',
+    hindiDescription:
+      'SAI20 (सुप्रीम ऑडिट संस्थानों का G20 एंगेजमेंट ग्रुप), ब्रिक्स SAI, और कॉमनवेल्थ ऑडिटर्स जनरल मंचों सहित वैश्विक बहुपक्षीय मंचों में सहभागिता।',
+  },
+  'bilateral relations': {
+    title: 'Bilateral Relations',
+    hindiTitle: 'द्विपक्षीय संबंध',
+    group: 'Bilateral Relations',
+    hindiGroup: 'द्विपक्षीय संबंध',
+    description:
+      'SAI India maintains bilateral Memoranda of Understanding (MoUs) and mutual cooperation agreements with over 30 Supreme Audit Institutions across the globe to facilitate joint training and peer reviews.',
+    hindiDescription:
+      'SAI भारत संयुक्त प्रशिक्षण और सहकर्मी समीक्षाओं को सुविधाजनक बनाने के लिए दुनिया भर के 30 से अधिक सर्वोच्च लेखा परीक्षा संस्थानों के साथ द्विपक्षीय समझौता ज्ञापनों (MoUs) और पारस्परिक सहयोग समझौतों को बनाए रखता है।',
+  },
+  'iced': {
+    title: 'International Centre for Environment Audit and Sustainable Development (iCED)',
+    hindiTitle: 'पर्यावरण लेखा परीक्षा और सतत विकास के लिए अंतर्राष्ट्रीय केंद्र (iCED)',
+    group: 'Training Institutes',
+    hindiGroup: 'प्रशिक्षण संस्थान',
+    description:
+      'Located in Jaipur, iCED is a global state-of-the-art center for international training and research in environmental auditing, climate finance, and sustainable development goals (SDGs).',
+    hindiDescription:
+      'जयपुर में स्थित, iCED पर्यावरण लेखा परीक्षा, जलवायु वित्त और सतत विकास लक्ष्यों (SDGs) में अंतर्राष्ट्रीय प्रशिक्षण और अनुसंधान के लिए एक वैश्विक अत्याधुनिक केंद्र है।',
+  },
+  'icisa': {
+    title: 'International Centre for Information Systems and Audit (iCISA)',
+    hindiTitle: 'सूचना प्रणाली और लेखा परीक्षा के लिए अंतर्राष्ट्रीय केंद्र (iCISA)',
+    group: 'Training Institutes',
+    hindiGroup: 'प्रशिक्षण संस्थान',
+    description:
+      'Based in Noida, iCISA is an internationally acclaimed academy providing specialized training in Information Systems audit, Big Data analytics, AI-assisted auditing, and cybersecurity auditing for auditors worldwide.',
+    hindiDescription:
+      'नोएडा में स्थित, iCISA एक अंतरराष्ट्रीय स्तर पर प्रशंसित अकादमी है जो दुनिया भर के लेखा परीक्षकों के लिए सूचना प्रणाली लेखा परीक्षा, बिग डेटा एनालिटिक्स, एआई-सहायता प्राप्त लेखा परीक्षा और साइबर सुरक्षा लेखा परीक्षा में विशेष प्रशिक्षण प्रदान करती है।',
+  },
+  'naaa': {
+    title: 'National Academy of Audit & Accounts (NAAA)',
+    hindiTitle: 'राष्ट्रीय लेखा परीक्षा और लेखा अकादमी (NAAA)',
+    group: 'Training Institutes',
+    hindiGroup: 'प्रशिक्षण संस्थान',
+    description:
+      'Located in Shimla, NAAA is the apex induction and continuous professional learning academy for officers of the Indian Audit & Accounts Service (IA&AS).',
+    hindiDescription:
+      'शिमला में स्थित, NAAA भारतीय लेखा परीक्षा और लेखा सेवा (IA&AS) के अधिकारियों के लिए सर्वोच्च प्रेरण और निरंतर व्यावसायिक शिक्षण अकादमी है।',
+  },
+  'ical': {
+    title: 'International Centre for Audit of Local Governance (iCAL)',
+    hindiTitle: 'स्थानीय शासन के लेखा परीक्षा के लिए अंतर्राष्ट्रीय केंद्र (iCAL)',
+    group: 'Training Institutes',
+    hindiGroup: 'प्रशिक्षण संस्थान',
+    description:
+      'iCAL in Rajkot focuses on capacity building, standard operating frameworks, and research for municipal and panchayat local government auditing.',
+    hindiDescription:
+      'राजकोट में iCAL नगर निगम और पंचायत स्थानीय सरकारी लेखा परीक्षा के लिए क्षमता निर्माण, मानक संचालन ढांचे और अनुसंधान पर केंद्रित है।',
+  },
+  'international relations wing': {
+    title: 'International Relations Wing',
+    hindiTitle: 'अंतर्राष्ट्रीय संबंध विंग',
+    group: 'Contact',
+    hindiGroup: 'संपर्क',
+    description:
+      'The International Relations (IR) Wing at the CAG Headquarters in New Delhi coordinates all international engagements, UN audits, multilateral conferences, and overseas audit offices.',
+    hindiDescription:
+      'नई दिल्ली में सीएजी मुख्यालय में अंतर्राष्ट्रीय संबंध (आईआर) विंग सभी अंतर्राष्ट्रीय गतिविधियों, संयुक्त राष्ट्र लेखा परीक्षाओं, बहुपक्षीय सम्मेलनों और विदेशी लेखा परीक्षा कार्यालयों का समन्वय करता है।',
+  },
+};
+
+export default function GlobalRelationsDynamicPage({
+  params,
+}: {
+  params?: Promise<{ slug: string }> | { slug: string };
+}) {
+  const routeParams = useParams();
+  let rawSlug = '';
+  if (routeParams?.slug) {
+    rawSlug = Array.isArray(routeParams.slug) ? routeParams.slug[0] : (routeParams.slug as string);
+  } else if (params) {
+    if (typeof (params as any).then === 'function') {
+      try {
+        const unwrapped = React.use(params as Promise<{ slug: string }>);
+        rawSlug = unwrapped?.slug || '';
+      } catch {
+        rawSlug = '';
+      }
+    } else {
+      rawSlug = (params as { slug: string }).slug || '';
+    }
+  }
+
+  const slugDecoded = decodeURIComponent(rawSlug || '').toLowerCase().trim();
+
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [selectedOffice, setSelectedOffice] = useState<OfficeItem | null>(null);
+  const [activePdfModal, setActivePdfModal] = useState<{
+    title: string;
+    hindiTitle: string;
+    pdfSize: string;
+    pdfTitle: string;
+    hindiPdfTitle: string;
+    mandate?: string;
+    hindiMandate?: string;
+    keyEntities?: string[];
+    hindiKeyEntities?: string[];
+  } | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     setLang(dataManager.getLanguage());
@@ -36,1352 +530,1252 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   }, []);
 
   const isHindi = lang === 'हिन्दी';
-
-  // Complete Sidebar menu definition for Global Relations
-  const groups: SidebarGroup[] = [
-    {
-      heading: 'International Bodies',
-      hindiHeading: 'अंतर्राष्ट्रीय निकाय',
-      links: [
-        { name: 'Association with INTOSAI', hindiName: 'INTOSAI के साथ जुड़ाव', slug: 'association with intosai' },
-        { name: 'Association with ASOSAI', hindiName: 'ASOSAI के साथ जुड़ाव', slug: 'association with asosai' },
-        { name: 'Multilateral Engagement', hindiName: 'बहुपक्षीय सहभागिता', slug: 'multilateral engagement' }
-      ]
-    },
-    {
-      heading: 'Audit Engagements',
-      hindiHeading: 'लेखा परीक्षा सहभागिता',
-      links: [
-        { name: 'UN Panel of External Auditors', hindiName: 'बाह्य लेखा परीक्षकों का संयुक्त राष्ट्र पैनल', slug: 'un panel of external auditors' },
-        { name: 'Present International Audits', hindiName: 'वर्तमान अंतर्राष्ट्रीय लेखा परीक्षा', slug: 'present international audits' },
-        { name: 'Past International Audits', hindiName: 'विगत अंतर्राष्ट्रीय लेखा परीक्षा', slug: 'past international audits' },
-        { name: 'Overseas Audit Offices', hindiName: 'विदेशी लेखा परीक्षा कार्यालय', slug: 'overseas audit offices' }
-      ]
-    }
-  ];
-
-  // Filter groups to display only the relevant group for the current section (e.g. Audit Engagements for UN Panel)
-  const activeGroups = groups.filter(grp => grp.links.some(link => link.slug === slugDecoded));
-  const groupsToDisplay = activeGroups.length > 0 ? activeGroups : [groups[0]];
-
-  // Dynamic page title computation
-  const isIntosai = slugDecoded === 'association with intosai';
-  const isAsosai = slugDecoded === 'association with asosai';
-  const isMultilateral = slugDecoded === 'multilateral engagement';
+  const isOverseasOffices =
+    slugDecoded === 'overseas audit offices' ||
+    slugDecoded === 'overseas-audit-offices';
+  const isIced = slugDecoded === 'iced' || slugDecoded === '';
+  const isIcisa = slugDecoded === 'icisa';
+  const isNaaa = slugDecoded === 'naaa';
+  const isIcal = slugDecoded === 'ical';
+  const isIrWing =
+    slugDecoded === 'international relations wing' ||
+    slugDecoded === 'international-relations-wing' ||
+    slugDecoded === 'international relation wing' ||
+    slugDecoded === 'international-relation-wing';
   const isBilateral = slugDecoded === 'bilateral relations';
-  const isUnPanel = slugDecoded === 'un panel of external auditors';
-  const isPresentAudits = slugDecoded === 'present international audits';
-  const isPastAudits = slugDecoded === 'past international audits';
 
-  let pageTitle = rawSlug;
-  let heroTitle = rawSlug;
-  let breadcrumbParent = isHindi ? 'वैश्विक संबंध' : 'Global Relations';
+  // Compute active sidebar group dynamically
+  const currentSidebarGroup = useMemo(() => {
+    const norm = (s: string) => (s || '').toLowerCase().replace(/[-_]/g, ' ').trim();
+    const current = norm(slugDecoded);
 
-  if (isIntosai) {
-    pageTitle = isHindi ? 'INTOSAI के साथ जुड़ाव' : 'Association with INTOSAI';
-    heroTitle = pageTitle;
-  } else if (isAsosai) {
-    pageTitle = isHindi ? 'ASOSAI के साथ जुड़ाव' : 'Association with ASOSAI';
-    heroTitle = pageTitle;
-  } else if (isMultilateral) {
-    pageTitle = isHindi ? 'बहुपक्षीय सहभागिता' : 'Multilateral Engagement';
-    heroTitle = isHindi ? 'बहुपक्षीय मंचों के साथ सहभागिता' : 'Engagement with Multilateral Forums';
-  } else if (isBilateral) {
-    pageTitle = isHindi ? 'द्विपक्षीय संबंध' : 'Bilateral Relations';
-    heroTitle = pageTitle;
-  } else if (isUnPanel) {
-    pageTitle = isHindi ? 'बाह्य लेखा परीक्षकों का संयुक्त राष्ट्र पैनल' : 'UN Panel of External Auditors';
-    heroTitle = pageTitle;
-    breadcrumbParent = isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements';
-  } else if (isPresentAudits) {
-    pageTitle = isHindi ? 'वर्तमान अंतर्राष्ट्रीय लेखा परीक्षा' : 'Present International Audits';
-    heroTitle = pageTitle;
-    breadcrumbParent = isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements';
-  } else if (isPastAudits) {
-    pageTitle = isHindi ? 'विगत अंतर्राष्ट्रीय लेखा परीक्षा' : 'Past International Audits';
-    heroTitle = pageTitle;
-    breadcrumbParent = isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements';
+    const found = SIDEBAR_GROUPS.find((group) =>
+      group.links.some(
+        (l) =>
+          norm(l.slug) === current ||
+          norm(l.name) === current ||
+          (isOverseasOffices && norm(l.slug).includes('overseas')) ||
+          (isIrWing && (norm(l.slug).includes('international') && norm(l.slug).includes('wing')))
+      )
+    );
+    return found || SIDEBAR_GROUPS[3]; // Default to Training Institutes if iCED
+  }, [slugDecoded, isOverseasOffices, isIrWing]);
+
+  // Find active data for other pages if not Overseas Audit Offices or iCED or iCISA or NAAA or iCAL or IR Wing
+  const fallbackPageData = OTHER_PAGES_DATA[slugDecoded];
+
+  if (slugDecoded && !isOverseasOffices && !fallbackPageData && !isIced && !isIcisa && !isNaaa && !isIcal && !isIrWing) {
+    notFound();
   }
 
-  // Hyperlink inline style to force visible underline for web URLs (Black)
-  const linkStyle: React.CSSProperties = {
-    color: '#2A2A2A',
-    textDecoration: 'underline',
-    textDecorationColor: '#2A2A2A',
-    textDecorationThickness: '1.5px',
-    textUnderlineOffset: '3px',
-    cursor: 'pointer'
-  };
-
-  // Black Hyperlink inline style for speeches & meeting images bullet list items
-  const blackLinkStyle: React.CSSProperties = {
-    color: '#2A2A2A',
-    textDecoration: 'underline',
-    textDecorationColor: '#2A2A2A',
-    textDecorationThickness: '1px',
-    textUnderlineOffset: '2px',
-    cursor: 'pointer'
-  };
-
-  // Exact 24 countries sequence matching Figma design reference grid
-  const countries = [
-    'Bhutan', 'Brazil', 'Cambodia', 'Chile', 'China', 'Indonesia',
-    'Israel', 'Kazakhstan', 'Korea', 'Kuwait', 'Maldives', 'Iran',
-    'Russia', 'Bahrain', 'Korea', 'Kuwait', 'Maldives', 'Iran',
-    'Israel', 'Kazakhstan', 'Korea', 'Kuwait', 'Maldives', 'Iran'
-  ];
-
-  // Helper to map country names to exact SVG flag assets exported from Figma
-  const getFlagSvgPath = (countryName: string) => {
-    const c = countryName.toLowerCase();
-    if (c === 'bhutan') return '/assets/Images/flags/bhutan.svg';
-    if (c === 'brazil') return '/assets/Images/flags/brazil.svg';
-    if (c === 'cambodia') return '/assets/Images/flags/cambodia.svg';
-    if (c === 'chile') return '/assets/Images/flags/Chile.svg';
-    if (c === 'china') return '/assets/Images/flags/China.svg';
-    if (c === 'indonesia') return '/assets/Images/flags/Indonesia.svg';
-    if (c === 'israel') return '/assets/Images/flags/Israel.svg';
-    if (c === 'kazakhstan') return '/assets/Images/flags/Kazakhstan.svg';
-    if (c === 'korea') return '/assets/Images/flags/Korea.svg';
-    if (c === 'kuwait') return '/assets/Images/flags/Kuwait.svg';
-    if (c === 'maldives') return '/assets/Images/flags/Maldives.svg';
-    if (c === 'iran') return '/assets/Images/flags/Iran.svg';
-    if (c === 'russia') return '/assets/Images/flags/Russia.svg';
-    if (c === 'bahrain') return '/assets/Images/flags/Bahrain.svg';
-    return `/assets/Images/flags/${countryName}.svg`;
+  const handleCopy = (text: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500);
+    }
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[64px] pt-2 pb-[220px] font-['Noto_Sans'] tracking-normal">
-      {/* Dynamic Breadcrumbs */}
-      <nav className="breadcrumbs mb-4" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-2 text-[12px] leading-[16px] font-['Noto_Sans'] tracking-normal">
-          <li>
-            <Link href="/" className="text-[#565656] hover:text-[#751639] transition-colors">
-              {isHindi ? 'गृह' : 'Home'}
-            </Link>
-          </li>
-          <li className="text-[#565656] flex items-center">
-            <svg className="w-2.5 h-2.5 text-[#565656] transform -rotate-90" viewBox="0 0 10 6" fill="none" stroke="currentColor">
-              <path d="M1 1L5 5L9 1" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </li>
-          <li>
-            <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" className="text-[#565656] hover:text-[#751639] transition-colors">
-              {isHindi ? 'वैश्विक संबंध' : 'Global Relations'}
-            </Link>
-          </li>
-          <li className="text-[#565656] flex items-center">
-            <svg className="w-2.5 h-2.5 text-[#565656] transform -rotate-90" viewBox="0 0 10 6" fill="none" stroke="currentColor">
-              <path d="M1 1L5 5L9 1" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </li>
-          <li className="font-bold text-[#2A2A2A]">
-            {(isUnPanel || isPresentAudits || isPastAudits) ? (isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements') : pageTitle}
-          </li>
-        </ol>
-      </nav>
-
-      {isBilateral ? (
-        /* BILATERAL RELATIONS PAGE FULL WIDTH LAYOUT (1312px) */
-        <main className="w-full">
-          {/* Top Heading */}
-          <h1 className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#000000] mb-6">
-            {isHindi 
-              ? 'वर्तमान में SAI भारत के 29 सर्वोच्च लेखा परीक्षा संस्थानों के साथ समझौता ज्ञापन/जुड़वां व्यवस्थाएं हैं:' 
-              : 'Presently SAI India has MoUs/twinning arrangements with 29 Supreme Audit Institutions viz.'}
-          </h1>
-
-          {/* 6-Column Flag Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full mb-8">
-            {countries.map((countryName, idx) => (
-              <div 
-                key={idx}
-                className="w-full flex items-center justify-center transition-transform hover:-translate-y-1 hover:drop-shadow-md cursor-pointer"
-              >
-                <img 
-                  src={getFlagSvgPath(countryName)} 
-                  alt={`${countryName} Bilateral Relations`} 
-                  className="w-full h-auto object-contain"
-                />
-              </div>
-            ))}
-
-            {/* Special Card: INTOSAI Development Initiative (IDI) */}
-            <div className="bg-white border border-[#E6E6E6] rounded-[8px] p-4 flex flex-col items-center justify-center shadow-[4px_4px_4px_rgba(0,0,0,0.02)] min-h-[186px] h-full transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer">
-              <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#2A2A2A] text-center">
-                INTOSAI<br />Development<br />Initiative (IDI)
-              </p>
-            </div>
-          </div>
-
-          {/* Bottom Closing Paragraph */}
-          <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[24px] text-[#000000]">
-            {isHindi 
-              ? 'इन व्यवस्थाओं के तहत द्विपक्षीय सेमिनार, प्रशिक्षण कार्यक्रम, प्रतिनियुक्ति, क्षमता निर्माण कार्यशालाएं, विशिष्ट लेखापरीक्षाओं के लिए मार्गदर्शन आदि जैसे नियमित द्विपक्षीय आदान-प्रदान आयोजित किए जाते हैं।' 
-              : 'Regular bilateral exchanges like bilateralseminars, training programmes, secondments, capacity building workshops, hand holding for specific audits etc. are held under these arrangements.'}
-          </p>
-        </main>
-      ) : (
-        /* OTHER PAGES WITH SIDEBAR (INTOSAI, ASOSAI, MULTILATERAL, UN PANEL) */
-        <div className="flex flex-col lg:flex-row gap-[24px] items-start">
-          {/* Left Side Menu */}
-          <aside className="w-full lg:w-[310px] shrink-0 bg-white border border-[#E6E6E6] rounded-[8px] p-[24px] shadow-[4px_4px_20px_rgba(0,0,0,0.04)]">
-            <h2 className="font-semibold text-[20px] leading-[27px] text-[#000000] pb-3 border-b border-[#D7D7D7] mb-4">
+    <div
+      className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-[64px] pt-1 pb-16 font-['Noto_Sans',sans-serif]"
+      style={{ maxWidth: '1440px', opacity: 1 }}
+    >
+      {/* Two-Column Layout with exact 21px gap */}
+      <div className="flex flex-col lg:flex-row gap-[21px] items-start">
+        {/* Left Side Menu (width: 310px, height: 184px, padding: 24px, gap: 10px, border-radius: 8px, border-width: 1px) */}
+        <aside
+          className="w-full lg:w-[310px] shrink-0"
+          aria-label="Global Relations Menu"
+          style={{ width: '310px', opacity: 1, transform: 'rotate(0deg)' }}
+        >
+          <div
+            className="bg-white border border-[#E6E6E6] rounded-[8px] p-[24px] shadow-[0px_4px_20px_rgba(0,0,0,0.04)] flex flex-col gap-[10px]"
+            style={{
+              width: '310px',
+              minHeight: '184px',
+              borderRadius: '8px',
+              borderWidth: '1px',
+              padding: '24px',
+              opacity: 1,
+            }}
+          >
+            {/* Global Relations Title */}
+            <h2 className="text-[20px] font-bold text-[#000000] leading-[100%] tracking-[0%] pb-[10px] border-b border-[#E6E6E6] text-left">
               {isHindi ? 'वैश्विक संबंध' : 'Global Relations'}
             </h2>
-            <div className="space-y-4">
-              {groupsToDisplay.map((grp, idx) => (
-                <div key={idx} className="space-y-2">
-                  <p className="font-bold text-[16px] leading-[22px] text-[#2A2A2A] px-2 py-1">
-                    {isHindi ? grp.hindiHeading : grp.heading}
-                  </p>
-                  <div className="space-y-[4px]">
-                    {grp.links.map((link) => {
-                      const isActive = slugDecoded === link.slug;
-                      return (
-                        <Link
-                          key={link.slug}
-                          href={`/About/Index-Menu-About/Global-relations/${encodeURIComponent(link.name)}`}
-                          className={`block text-[14px] leading-[19px] py-2 px-4 rounded-[0px] transition-colors ${
-                            isActive
-                              ? 'bg-[rgba(117,22,57,0.08)] font-semibold border-l border-[#751639]'
-                              : 'bg-white font-normal border-l border-[#D7D7D7] hover:bg-slate-50'
-                          }`}
-                          style={{
-                            color: isActive ? '#751639' : '#2A2A2A',
-                            fontWeight: isActive ? 600 : 400
-                          }}
-                        >
-                          {isHindi ? link.hindiName : link.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
 
-          {/* Right Main Content Area */}
-          <main className="flex-1 w-full min-w-0">
-            {/* Top Hero Banner (Frame 2147227446) */}
-            <div className="relative w-full h-[141.33px] bg-white rounded-[8px] overflow-hidden mb-6 shadow-sm">
-              {/* SVG ClipPath Definition for Burgundy Background */}
-              <svg className="absolute w-0 h-0" aria-hidden="true">
+            {/* Menus / Group Category Container */}
+            <div className="flex flex-col gap-[10px]">
+              {/* Group Heading */}
+              <div className="text-[15px] font-bold text-[#1A1A1A] leading-[120%] tracking-[0%] px-1 text-left">
+                {isHindi ? currentSidebarGroup.hindiHeading : currentSidebarGroup.heading}
+              </div>
+
+              {/* Sub Menus List with continuous left border line */}
+              <nav className="flex flex-col w-full pl-0 ml-1 border-l border-[#E5E5E5] gap-[2px]" aria-label="Current category links">
+                {currentSidebarGroup.links.map((link) => {
+                  const norm = (s: string) => (s || '').toLowerCase().replace(/[-_]/g, ' ').trim();
+                  const current = norm(slugDecoded);
+                  const isItemActive =
+                    current === norm(link.slug) ||
+                    current === norm(link.name) ||
+                    (isOverseasOffices && norm(link.slug).includes('overseas')) ||
+                    (isIced && norm(link.slug) === 'iced') ||
+                    (isIcisa && norm(link.slug) === 'icisa') ||
+                    (isNaaa && norm(link.slug) === 'naaa') ||
+                    (isIcal && norm(link.slug) === 'ical') ||
+                    (isIrWing && norm(link.slug).includes('international') && norm(link.slug).includes('wing'));
+
+                  return (
+                    <Link
+                      key={link.slug}
+                      href={`/About/Index-Menu-About/Global-relations/${encodeURIComponent(
+                        link.name
+                      )}`}
+                      className={`block px-3.5 py-2 text-[14px] leading-[135%] tracking-[0%] transition-all text-left ${
+                        isItemActive
+                          ? 'bg-[#F6EDF0] text-[#751639] !text-[#751639] font-bold'
+                          : 'text-[#2A2A2A] font-normal hover:text-[#751639] hover:bg-zinc-50'
+                      }`}
+                      style={
+                        isItemActive
+                          ? {
+                              color: '#751639',
+                              backgroundColor: '#F6EDF0',
+                              fontWeight: 700,
+                            }
+                          : { color: '#2A2A2A' }
+                      }
+                    >
+                      <span className="block">{isHindi ? link.hindiName : link.name}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Main Content Area (978px width) */}
+        <main
+          className="w-full lg:w-[978px] max-w-[978px] min-w-0"
+          style={{ width: '100%', maxWidth: '978px', opacity: 1 }}
+        >
+          {/* Hero Banner (Width: 978px, Height: 141.33px, Margin bottom: 31px) */}
+          {isOverseasOffices || isIced || isIcisa || isNaaa || isIcal || isIrWing ? (
+            <div
+              className="w-full max-w-[978px] relative overflow-hidden border border-[#D7D7D7] bg-white rounded-[2px] mb-[31px]"
+              style={{
+                width: '100%',
+                maxWidth: '978px',
+                height: '141.33px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              {/* Hero Banner SVG with exact gradient, halftone arch and gold rim */}
+              <svg
+                className="absolute inset-0 w-full h-full"
+                viewBox="0 0 929 142"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ width: '100%', height: '100%' }}
+              >
                 <defs>
-                  <clipPath id="header-burgundy-clip" clipPathUnits="objectBoundingBox">
-                    <path d="M 0 0 L 0.817 0 C 0.805 0.35, 0.780 0.70, 0.758 1 L 0 1 Z" />
-                  </clipPath>
+                  {/* Deep Rich Maroon Gradient */}
+                  <linearGradient id="maroonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#5A0C22" />
+                    <stop offset="45%" stopColor="#751639" />
+                    <stop offset="100%" stopColor="#4A081A" />
+                  </linearGradient>
+
+                  {/* Dark Burgundy Rim Gradient */}
+                  <linearGradient id="rimGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#460718" />
+                    <stop offset="100%" stopColor="#2D030E" />
+                  </linearGradient>
+
+                  {/* Subtle Dot Grid */}
+                  <pattern id="dotGrid" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="0.75" fill="#FFFFFF" opacity="0.08" />
+                  </pattern>
                 </defs>
+
+                {/* White Background Canvas */}
+                <rect x="0" y="0" width="929" height="142" fill="#FFFFFF" />
+
+                {/* 1. Dark Burgundy Outer Layer Shadow */}
+                <path
+                  d="M 0,0 L 760,0 C 800,28 812,74 766,142 L 0,142 Z"
+                  fill="url(#rimGrad)"
+                />
+
+                {/* Gold / Tan Edge Accent Rim */}
+                <path
+                  d="M 760,0 C 800,28 812,74 766,142"
+                  fill="none"
+                  stroke="#D2A679"
+                  strokeWidth="1.2"
+                  opacity="0.85"
+                />
+
+                {/* 2. Main Rich Maroon Curved Body */}
+                <path
+                  d="M 0,0 L 752,0 C 792,28 804,74 758,142 L 0,142 Z"
+                  fill="url(#maroonGrad)"
+                />
+
+                {/* Left Subtle Geometric Diamond Grid Lines */}
+                <g stroke="#FFFFFF" strokeWidth="0.8" opacity="0.10">
+                  <line x1="-50" y1="0" x2="250" y2="300" />
+                  <line x1="0" y1="-50" x2="300" y2="250" />
+                  <line x1="50" y1="-50" x2="350" y2="250" />
+                  <line x1="-50" y1="142" x2="250" y2="-158" />
+                  <line x1="0" y1="192" x2="300" y2="-108" />
+                  <line x1="50" y1="192" x2="350" y2="-108" />
+                </g>
+
+                {/* Subtle Dot Grid */}
+                <rect x="0" y="0" width="600" height="142" fill="url(#dotGrid)" />
+
+                {/* 3. Halftone Matrix Flowing in an Arch */}
+                <g fill="#FFFFFF">
+                  <circle cx="661.4" cy="10" r="0.8" opacity="0.1" />
+                  <circle cx="671.2" cy="19" r="0.8" opacity="0.1" />
+                  <circle cx="680.2" cy="28" r="0.8" opacity="0.1" />
+                  <circle cx="688" cy="37" r="0.8" opacity="0.1" />
+                  <circle cx="694.2" cy="46" r="0.8" opacity="0.1" />
+                  <circle cx="698.8" cy="55" r="0.8" opacity="0.1" />
+                  <circle cx="701.4" cy="64" r="0.8" opacity="0.1" />
+                  <circle cx="701.9" cy="73" r="0.8" opacity="0.1" />
+                  <circle cx="700.5" cy="82" r="0.8" opacity="0.1" />
+                  <circle cx="697" cy="91" r="0.8" opacity="0.1" />
+                  <circle cx="691.7" cy="100" r="0.8" opacity="0.1" />
+                  <circle cx="684.7" cy="109" r="0.8" opacity="0.1" />
+                  <circle cx="676.3" cy="118" r="0.8" opacity="0.1" />
+                  <circle cx="666.9" cy="127" r="0.8" opacity="0.1" />
+                  <circle cx="673.4" cy="10" r="0.8" opacity="0.16" />
+                  <circle cx="683.2" cy="19" r="0.8" opacity="0.16" />
+                  <circle cx="692.2" cy="28" r="0.8" opacity="0.16" />
+                  <circle cx="700" cy="37" r="0.8" opacity="0.16" />
+                  <circle cx="706.2" cy="46" r="0.8" opacity="0.16" />
+                  <circle cx="710.8" cy="55" r="0.8" opacity="0.16" />
+                  <circle cx="713.4" cy="64" r="0.8" opacity="0.16" />
+                  <circle cx="713.9" cy="73" r="0.8" opacity="0.16" />
+                  <circle cx="712.5" cy="82" r="0.8" opacity="0.16" />
+                  <circle cx="709" cy="91" r="0.8" opacity="0.16" />
+                  <circle cx="703.7" cy="100" r="0.8" opacity="0.16" />
+                  <circle cx="696.7" cy="109" r="0.8" opacity="0.16" />
+                  <circle cx="688.3" cy="118" r="0.8" opacity="0.16" />
+                  <circle cx="678.9" cy="127" r="0.8" opacity="0.16" />
+                  <circle cx="685.4" cy="10" r="0.9" opacity="0.23" />
+                  <circle cx="695.2" cy="19" r="0.9" opacity="0.23" />
+                  <circle cx="704.2" cy="28" r="0.9" opacity="0.23" />
+                  <circle cx="712" cy="37" r="0.9" opacity="0.23" />
+                  <circle cx="718.2" cy="46" r="0.9" opacity="0.23" />
+                  <circle cx="722.8" cy="55" r="0.9" opacity="0.23" />
+                  <circle cx="725.4" cy="64" r="0.9" opacity="0.23" />
+                  <circle cx="725.9" cy="73" r="0.9" opacity="0.23" />
+                  <circle cx="724.5" cy="82" r="0.9" opacity="0.23" />
+                  <circle cx="721" cy="91" r="0.9" opacity="0.23" />
+                  <circle cx="715.7" cy="100" r="0.9" opacity="0.23" />
+                  <circle cx="708.7" cy="109" r="0.9" opacity="0.23" />
+                  <circle cx="700.3" cy="118" r="0.9" opacity="0.23" />
+                  <circle cx="690.9" cy="127" r="0.9" opacity="0.23" />
+                  <circle cx="697.4" cy="10" r="1" opacity="0.29" />
+                  <circle cx="707.2" cy="19" r="1" opacity="0.29" />
+                  <circle cx="716.2" cy="28" r="1" opacity="0.29" />
+                  <circle cx="724" cy="37" r="1" opacity="0.29" />
+                  <circle cx="730.2" cy="46" r="1" opacity="0.29" />
+                  <circle cx="734.8" cy="55" r="1" opacity="0.29" />
+                  <circle cx="737.4" cy="64" r="1" opacity="0.29" />
+                  <circle cx="737.9" cy="73" r="1" opacity="0.29" />
+                  <circle cx="736.5" cy="82" r="1" opacity="0.29" />
+                  <circle cx="733" cy="91" r="1" opacity="0.29" />
+                  <circle cx="727.7" cy="100" r="1" opacity="0.29" />
+                  <circle cx="720.7" cy="109" r="1" opacity="0.29" />
+                  <circle cx="712.3" cy="118" r="1" opacity="0.29" />
+                  <circle cx="702.9" cy="127" r="1" opacity="0.29" />
+                  <circle cx="709.4" cy="10" r="1.1" opacity="0.36" />
+                  <circle cx="719.2" cy="19" r="1.1" opacity="0.36" />
+                  <circle cx="728.2" cy="28" r="1.1" opacity="0.36" />
+                  <circle cx="736" cy="37" r="1.1" opacity="0.36" />
+                  <circle cx="742.2" cy="46" r="1.1" opacity="0.36" />
+                  <circle cx="746.8" cy="55" r="1.1" opacity="0.36" />
+                  <circle cx="749.4" cy="64" r="1.1" opacity="0.36" />
+                  <circle cx="749.9" cy="73" r="1.1" opacity="0.36" />
+                  <circle cx="748.5" cy="82" r="1.1" opacity="0.36" />
+                  <circle cx="745" cy="91" r="1.1" opacity="0.36" />
+                  <circle cx="739.7" cy="100" r="1.1" opacity="0.36" />
+                  <circle cx="732.7" cy="109" r="1.1" opacity="0.36" />
+                  <circle cx="724.3" cy="118" r="1.1" opacity="0.36" />
+                  <circle cx="714.9" cy="127" r="1.1" opacity="0.36" />
+                  <circle cx="721.4" cy="10" r="1.2" opacity="0.42" />
+                  <circle cx="731.2" cy="19" r="1.2" opacity="0.42" />
+                  <circle cx="740.2" cy="28" r="1.2" opacity="0.42" />
+                  <circle cx="748" cy="37" r="1.2" opacity="0.42" />
+                  <circle cx="754.2" cy="46" r="1.2" opacity="0.42" />
+                  <circle cx="757" cy="91" r="1.2" opacity="0.42" />
+                  <circle cx="751.7" cy="100" r="1.2" opacity="0.42" />
+                  <circle cx="744.7" cy="109" r="1.2" opacity="0.42" />
+                  <circle cx="736.3" cy="118" r="1.2" opacity="0.42" />
+                  <circle cx="726.9" cy="127" r="1.2" opacity="0.42" />
+                  <circle cx="733.4" cy="10" r="1.3" opacity="0.49" />
+                  <circle cx="743.2" cy="19" r="1.3" opacity="0.49" />
+                  <circle cx="752.2" cy="28" r="1.3" opacity="0.49" />
+                  <circle cx="756.7" cy="109" r="1.3" opacity="0.49" />
+                  <circle cx="748.3" cy="118" r="1.3" opacity="0.49" />
+                  <circle cx="738.9" cy="127" r="1.3" opacity="0.49" />
+                  <circle cx="745.4" cy="10" r="1.4" opacity="0.55" />
+                  <circle cx="755.2" cy="19" r="1.4" opacity="0.55" />
+                  <circle cx="750.9" cy="127" r="1.4" opacity="0.55" />
+                </g>
               </svg>
 
-              {/* Background SVG exported from Figma (Clipped to expose white section on right) */}
-              <img 
-                src="/assets/Images/page-header-bg.svg" 
-                alt="Header Background" 
-                className="absolute inset-0 w-full h-full object-cover"
+              {/* Title Text (left: 37.48px, top: 32.83px, font-size: 24px, font-weight: 700, line-height: 38px, color: #FFFFFF) */}
+              <div
+                className="absolute z-10 select-none text-left"
                 style={{
-                  clipPath: 'url(#header-burgundy-clip)',
-                  WebkitClipPath: 'url(#header-burgundy-clip)'
+                  left: '37.48px',
+                  top: isIced || isIcisa ? '32.83px' : '51.67px',
                 }}
-              />
-
-              {/* Left Title */}
-              <div className="absolute left-[37px] top-1/2 -translate-y-1/2 z-10 max-w-[650px]">
-                <h1 className="font-['Noto_Sans'] font-bold text-[24px] leading-[38px] text-white drop-shadow-sm">
-                  {heroTitle}
-                </h1>
+              >
+                {isOverseasOffices ? (
+                  <h1 className="text-[24px] font-bold text-white tracking-normal leading-[38px] font-['Noto_Sans',sans-serif]">
+                    {isHindi ? 'विदेशी लेखा परीक्षा कार्यालय' : 'Overseas Audit Offices'}
+                  </h1>
+                ) : isIced ? (
+                  <h1 className="text-[22px] sm:text-[24px] font-bold text-white tracking-normal leading-[38px] font-['Noto_Sans',sans-serif]">
+                    {isHindi ? (
+                      <>
+                        पर्यावरण लेखा परीक्षा और
+                        <br />
+                        सतत विकास के लिए अंतर्राष्ट्रीय केंद्र (iCED)
+                      </>
+                    ) : (
+                      <>
+                        International Centre for Environment Audit and
+                        <br />
+                        Sustainable Development (iCED)
+                      </>
+                    )}
+                  </h1>
+                ) : isIcisa ? (
+                  <h1 className="text-[20px] sm:text-[22px] font-bold text-white tracking-normal leading-[1.3] font-['Noto_Sans',sans-serif]">
+                    {isHindi ? (
+                      <>
+                        सूचना प्रणाली और लेखा परीक्षा के लिए
+                        <br />
+                        अंतर्राष्ट्रीय केंद्र (iCISA)
+                      </>
+                    ) : (
+                      <>
+                        The International Centre for Information Systems and
+                        <br />
+                        Audit (iCISA)
+                      </>
+                    )}
+                  </h1>
+                ) : isNaaa ? (
+                  <h1 className="text-[20px] sm:text-[22px] font-bold text-white tracking-normal leading-[1.3] font-['Noto_Sans',sans-serif]">
+                    {isHindi ? (
+                      <>
+                        राष्ट्रीय लेखा परीक्षा और लेखा अकादमी (NAAA)
+                      </>
+                    ) : (
+                      <>
+                        National Academy of Audit and Accounts (NAAA)
+                      </>
+                    )}
+                  </h1>
+                ) : isIcal ? (
+                  <h1 className="text-[20px] sm:text-[22px] font-bold text-white tracking-normal leading-[1.3] font-['Noto_Sans',sans-serif]">
+                    {isHindi ? (
+                      <>
+                        स्थानीय शासन के लेखा परीक्षा के लिए
+                        <br />
+                        अंतर्राष्ट्रीय केंद्र (iCAL)
+                      </>
+                    ) : (
+                      <>
+                        International Centre for Audit of Local Governance
+                        <br />
+                        (iCAL)
+                      </>
+                    )}
+                  </h1>
+                ) : isIrWing ? (
+                  <h1 className="text-[20px] sm:text-[24px] font-bold text-white tracking-normal leading-[38px] font-['Noto_Sans',sans-serif]">
+                    {isHindi ? 'अंतर्राष्ट्रीय संबंध विंग' : 'International relation wing'}
+                  </h1>
+                ) : null}
               </div>
 
-              {/* Right Logo Section (Centered in White Background Area) */}
-              <div className="absolute right-0 top-0 bottom-0 w-[205px] z-10 flex items-center justify-center">
-                <img 
-                  src={
-                    isIntosai 
-                      ? "/assets/Images/INTOSAI-logo.svg"
-                      : ((isPresentAudits || isPastAudits)
-                          ? "/assets/Images/presentIA-logo.svg"
-                          : (isUnPanel
-                              ? "/assets/Images/unpanel-logo.svg"
-                              : (isMultilateral 
-                                  ? "/assets/Images/multilateral-logo.svg" 
-                                  : (isAsosai ? "/assets/Images/ASOSAI-logo.svg" : "/assets/Images/INTOSAI-logo.svg"))))
-                  } 
-                  alt="Organization Logo" 
-                  className={
-                    isIntosai 
-                      ? "w-[80px] h-[77px] object-contain"
-                      : ((isPresentAudits || isPastAudits)
-                          ? "w-[167px] h-[120px] object-contain"
-                          : (isUnPanel
-                              ? "w-[141px] h-[101px] object-contain"
-                              : (isMultilateral 
-                                  ? "w-[103px] h-[103px] object-contain" 
-                                  : (isAsosai ? "w-[126px] h-[40px] object-contain" : "w-[80px] h-[77px] object-contain"))))
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Main Article Body Text */}
-            <div className="text-[14px] leading-[24px] tracking-normal space-y-4 text-justify font-['Noto_Sans']">
-              {isPastAudits ? (
-                /* PAST INTERNATIONAL AUDITS PAGE CONTENT */
-                isHindi ? (
-                  <>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      संयुक्त राष्ट्र लेखा परीक्षकों का बोर्ड
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक (सीएजी) अतीत में निम्नानुसार प्रत्येक 6 वर्ष के दो कार्यकालों के लिए संयुक्त राष्ट्र लेखा परीक्षक बोर्ड के सदस्य रहे हैं:
-                    </p>
-                    <ol className="list-decimal pl-6 space-y-1 text-[#2A2A2A] font-normal my-2">
-                      <li>1993-1999</li>
-                      <li>2014-2020</li>
-                    </ol>
-                    <p className="text-[#2A2A2A] font-normal">
-                      सीएजी 2017 और 2018 के दौरान संयुक्त राष्ट्र लेखा परीक्षक बोर्ड के अध्यक्ष रहे हैं।
-                    </p>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      अन्य संयुक्त राष्ट्र निकाय / एजेंसियां
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक अतीत में निम्नलिखित संयुक्त राष्ट्र निकायों / एजेंसियों के बाह्य लेखा परीक्षक रहे हैं:
-                    </p>
-
-                    {/* Data Table */}
-                    <div className="w-full overflow-x-auto my-4 border border-[#D7D7D7] rounded-[4px] shadow-sm">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-[#751639] text-white font-medium text-[16px] leading-[26px]">
-                            <th className="py-3 px-4 text-center w-[90px] border-r border-white/20">Sr. No.</th>
-                            <th className="py-3 px-6 border-r border-white/20">Organization</th>
-                            <th className="py-3 px-6 text-center w-[180px]">Period</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E6E6E6] text-[14px] leading-[24px] text-[#2A2A2A]">
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">1</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">World Health Organization (WHO)</td>
-                            <td className="py-3 px-6 text-center">2004 to 2012</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">2</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Maritime Organization (IMO)</td>
-                            <td className="py-3 px-6 text-center">2000 to 2012</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">3</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Centre for Genetic Engineering and Biotechnology (ICGEB)</td>
-                            <td className="py-3 px-6 text-center">1996 to 2004</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">4</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">Food and Agriculture Organization (FAO)</td>
-                            <td className="py-3 px-6 text-center">2002 to 2008</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">5</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">Organisation for Prohibition of Chemical Weapons (OPCW)</td>
-                            <td className="py-3 px-6 text-center">1997 to 2003</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">6</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">UN World Tourism Organisation (UNWTO)</td>
-                            <td className="py-3 px-6 text-center">2000 to 2015</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">7</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">World Food Programme (WFP)</td>
-                            <td className="py-3 px-6 text-center">2010 to 2016</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">8</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Atomic Energy Agency (IAEA)</td>
-                            <td className="py-3 px-6 text-center">2012 to 2016</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">9</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Organization for Migration (IOM)</td>
-                            <td className="py-3 px-6 text-center">2010 to 2016</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">10</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">World Intellectual Property Organisation (WIPO)</td>
-                            <td className="py-3 px-6 text-center">2012 to 2017</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      उपरोक्त के अलावा, सीएजी ने 2011 में अंतर्राष्ट्रीय थर्मोन्यूक्लियर प्रायोगिक रिएक्टर (ITER) का प्रबंधन मूल्यांकन भी किया।
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      United Nations Board of Auditors
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India (CAG) has been the Member in the UN Board of Auditors for two terms of 6 years each in the past as per details below:
-                    </p>
-                    <ol className="list-decimal pl-6 space-y-1 text-[#2A2A2A] font-normal my-2">
-                      <li>1993-1999</li>
-                      <li>2014-2020</li>
-                    </ol>
-                    <p className="text-[#2A2A2A] font-normal">
-                      CAG has been the Chair of UN Board of Auditors during 2017 and 2018.
-                    </p>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      Other UN Bodies / Agencies
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India has been the external auditor of the following UN Bodies / Agencies in the past:
-                    </p>
-
-                    {/* Data Table */}
-                    <div className="w-full overflow-x-auto my-4 border border-[#D7D7D7] rounded-[4px] shadow-sm">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-[#751639] text-white font-medium text-[16px] leading-[26px]">
-                            <th className="py-3 px-4 text-center w-[90px] border-r border-white/20">Sr. No.</th>
-                            <th className="py-3 px-6 border-r border-white/20">Organization</th>
-                            <th className="py-3 px-6 text-center w-[180px]">Period</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E6E6E6] text-[14px] leading-[24px] text-[#2A2A2A]">
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">1</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">World Health Organization (WHO)</td>
-                            <td className="py-3 px-6 text-center">2004 to 2012</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">2</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Maritime Organization (IMO)</td>
-                            <td className="py-3 px-6 text-center">2000 to 2012</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">3</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Centre for Genetic Engineering and Biotechnology (ICGEB)</td>
-                            <td className="py-3 px-6 text-center">1996 to 2004</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">4</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">Food and Agriculture Organization (FAO)</td>
-                            <td className="py-3 px-6 text-center">2002 to 2008</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">5</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">Organisation for Prohibition of Chemical Weapons (OPCW)</td>
-                            <td className="py-3 px-6 text-center">1997 to 2003</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">6</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">UN World Tourism Organisation (UNWTO)</td>
-                            <td className="py-3 px-6 text-center">2000 to 2015</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">7</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">World Food Programme (WFP)</td>
-                            <td className="py-3 px-6 text-center">2010 to 2016</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">8</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Atomic Energy Agency (IAEA)</td>
-                            <td className="py-3 px-6 text-center">2012 to 2016</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">9</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">International Organization for Migration (IOM)</td>
-                            <td className="py-3 px-6 text-center">2010 to 2016</td>
-                          </tr>
-                          <tr className="hover:bg-slate-50">
-                            <td className="py-3 px-4 text-center border-r border-[#E6E6E6]">10</td>
-                            <td className="py-3 px-6 border-r border-[#E6E6E6]">World Intellectual Property Organisation (WIPO)</td>
-                            <td className="py-3 px-6 text-center">2012 to 2017</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      Apart from the above, CAG also conducted Management Assessment of the International Thermonuclear Experimental Reactor (ITER) in 2011.
-                    </p>
-                  </>
-                )
-              ) : isPresentAudits ? (
-                /* PRESENT INTERNATIONAL AUDITS PAGE CONTENT */
-                isHindi ? (
-                  <>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      अंतर्राष्ट्रीय परमाणु ऊर्जा एजेंसी (IAEA), विएना
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक को 2022 से 2027 तक छह वर्ष की अवधि के लिए अंतर्राष्ट्रीय परमाणु ऊर्जा एजेंसी (IAEA), विएना का बाह्य लेखा परीक्षक चुना गया है। सीएजी ने इंडोनेशिया गणराज्य के लेखा परीक्षा बोर्ड से पदभार ग्रहण किया।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      IAEA परमाणु क्षेत्र में सहयोग का वैश्विक केंद्र है। यह संयुक्त राष्ट्र परिवार के भीतर &quot;शांति के लिए परमाणु&quot; संगठन के रूप में स्थापित किया गया था। IAEA की वेबसाइट है:{' '}
-                      <a href="https://www.iaea.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.iaea.org/
-                      </a>
-                    </p>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      खाद्य एवं कृषि संगठन (FAO), रोम
-                    </h2>
-                    <p className="font-normal text-[20px] leading-[31px] text-[#2A2A2A] my-3">
-                      भारत के नियंत्रक और महालेखापरीक्षक पिछले पांच वर्षों से खाद्य एवं कृषि संगठन (FAO), रोम के बाह्य लेखा परीक्षक के रूप में कार्य कर रहे हैं। SAI भारत को 2020-2025 तक की अवधि के लिए FAO के बाह्य लेखा परीक्षक के रूप में चुना गया था।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      FAO संयुक्त राष्ट्र की एक विशेष एजेंसी है जो भूख को हराने के अंतर्राष्ट्रीय प्रयासों का नेतृत्व करती है। FAO की वेबसाइट है:{' '}
-                      <a href="http://www.fao.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.fao.org/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      सीएजी ने रोम स्थित एफएओ मुख्यालय में बाह्य लेखा परीक्षा निदेशक (डीईए) के रूप में एक वरिष्ठ आईएएएस अधिकारी को तैनात किया है।
-                    </p>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      विश्व स्वास्थ्य संगठन (WHO), जेनेवा
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक ने मई/जून 2020 में SAI फिलीपींस से इस लेखा परीक्षा का पदभार लेने के बाद 2020-2023 से चार साल के कार्यकाल के लिए विश्व स्वास्थ्य संगठन (WHO) के बाह्य लेखा परीक्षक के रूप में कार्य किया। सीएजी को 2024-2027 से आगे के चार साल के कार्यकाल के लिए पुनः नियुक्त किया गया है।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      WHO संयुक्त राष्ट्र की एक विशेष एजेंसी है जो स्वास्थ्य को बढ़ावा देने और दुनिया को सुरक्षित रखने के लिए राष्ट्रों को जोड़ती है। WHO की वेबसाइट है:{' '}
-                      <a href="https://www.who.int/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.who.int/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      सीएजी ने जेनेवा में डब्ल्यूएचओ मुख्यालय में बाह्य लेखा परीक्षा निदेशक (डीईए) के रूप में एक वरिष्ठ आईएएएस अधिकारी को तैनात किया है।
-                    </p>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      रासायनिक हथियार निषेध संगठन (OPCW), हेग
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक को लगातार दूसरे तीन साल के कार्यकाल (2024-2026) के लिए OPCW के बाह्य लेखा परीक्षक के रूप में पुनः नियुक्त किया गया है।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      OPCW रासायनिक हथियार सम्मेलन के लिए कार्यान्वयन निकाय है। OPCW की वेबसाइट है:{' '}
-                      <a href="https://www.opcw.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.opcw.org/
-                      </a>
-                    </p>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      अंतर्राष्ट्रीय श्रम संगठन (ILO)
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक को 79वें और 80वें वित्तीय काल के लिए ILO का बाह्य लेखा परीक्षक चुना गया है।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      ILO संयुक्त राष्ट्र की एक एजेंसी है जिसका जनादेश अंतर्राष्ट्रीय श्रम मानकों को स्थापित करना है। ILO की वेबसाइट है:{' '}
-                      <a href="https://www.ilo.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.ilo.org/
-                      </a>
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {/* Section 1: IAEA */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      International Atomic Energy Agency (IAEA), Vienna
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India, has been elected as External Auditor of the International Atomic Energy Agency (IAEA), Vienna for a six-year term from 2022 to 2027. The Comptroller &amp; Auditor General took over from the  then incumbent External Auditor of IAEA, Audit Board of the Republic of Indonesia.
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The IAEA is the world&apos;s centre for cooperation in the nuclear field. It was set up as the world&apos;s &quot;Atoms for Peace&quot; organization within the United Nations family. The Agency works with its Member States and multiple partners worldwide to promote a safe, secure and peaceful use of nuclear technologies. Website of IAEA is{' '}
-                      <a href="https://www.iaea.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.iaea.org/
-                      </a>
-                    </p>
-
-                    {/* Section 2: FAO */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      Food and Agriculture Organization (FAO), Rome
-                    </h2>
-
-                    {/* Large Highlight Paragraph matching Figma (20px font-size, 31px line-height, #2A2A2A) */}
-                    <p className="font-normal text-[20px] leading-[31px] text-[#2A2A2A] my-3">
-                      The Comptroller and Auditor General of India is serving as External Auditor of Food and Agriculture Organization (FAO), Rome from last five years. SAI India was elected as the External Auditor of FAO for a term from 2020-2025 and took over this audit from SAI Philippines in May/June 2020.
-                    </p>
-
-                    {/* FAO Paragraph 1 */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      FAO is a specialized agency of the United Nations that leads international efforts to defeat hunger, and is headquartered in Rome, Italy. FAO’s goal is to achieve food security for all and make sure that people have regular access to enough high quality food to lead active healthy lives. Website of FAO is{' '}
-                      <a href="http://www.fao.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.fao.org/
-                      </a>
-                    </p>
-
-                    {/* FAO Paragraph 2 */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      CAG has posted a senior IAAS officer as Director of External Audit (DEA) in FAO headquarters in Rome. The DEA is responsible for Risk Assessment, Audit Planning, Quality Assurance of audit deliverables, interfacing with the FAO management, hose Charged with Governance (TCWG) and internal audit.
-                    </p>
-
-                    {/* Section 3: WHO */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      World Health Organization (WHO), Geneva
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India served as the External Auditor of World Health Organization (WHO) for a four-year term from 2020-2023 after taking over this audit from SAI Philippines in May/June 2020.The CAG has been reappointed as the External Auditor of WHO for a further four-year term from 2024-2027.
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      WHO, headquartered in Geneva, Switzerland is a specialized agency of the United Nations that connects nations, partners and people to promote health, keep the world safe and serve the vulnerable – so everyone, everywhere can attain the highest level of health. WHO leads global efforts to expand universal health coverage. It directs and coordinates the world’s response to health emergencies. Website of WHO is{' '}
-                      <a href="https://www.who.int/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.who.int/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      CAG has posted a senior IAAS officer as Director of External Audit (DEA) in WHO headquarters in Geneva. The DEA is responsible for Risk Assessment, Audit Planning, Quality Assurance of audit deliverables, interfacing with the WHO management, Those Charged with Governance (TCWG) and internal audit.
-                    </p>
-
-                    {/* Section 4: OPCW */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      Organization for Prohibition of Chemical Weapons (OPCW), Hague
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India has been re-appointed as External auditor of OPCW for  a second consecutive three  year term  (2024-2026). Previously, the CAG of India served in this role for the 2021- 2023 term.
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      OPCW, headquartered at the Hague, Netherlands, is the implementing body for the Chemical Weapons Convention, which entered into force on 29 April 1997. The OPCW oversees the global endeavour to permanently and verifiably eliminate chemical weapons. Website of OPCW is{' '}
-                      <a href="https://www.opcw.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.opcw.org/
-                      </a>
-                    </p>
-
-                    {/* Section 5: ILO */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6">
-                      International labour Organization (ILO),
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India has been selected as the External Auditor of the ILO for the 79th and 80th financial periods. The appointment commenced on 1 April 2024 for a term of four years (2024-2027).
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The ILO is a United Nations agency whose mandate is to advance social and economic justice by setting international labour standards. Founded in October 1919 under the League of Nations, it is one of the first and oldest specialized agencies of the UN. Website of ILO is{' '}
-                      <a href="https://www.ilo.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.ilo.org/
-                      </a>
-                    </p>
-                  </>
-                )
-              ) : isUnPanel ? (
-                /* UN PANEL OF EXTERNAL AUDITORS PAGE CONTENT */
-                isHindi ? (
-                  <>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      भारत के CAG- बाह्य लेखा परीक्षकों के संयुक्त राष्ट्र पैनल के अध्यक्ष (2020 और 2021)
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के सीएजी वर्ष 2020 से बाह्य लेखा परीक्षकों के संयुक्त राष्ट्र पैनल के अध्यक्ष हैं। अतीत में भी, सीएजी दिसंबर 2011 से दिसंबर 2013 तक पैनल अध्यक्ष थे और 2019 में उपाध्यक्ष थे।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      संयुक्त राष्ट्र महासभा ने 1959 में संयुक्त राष्ट्र, विशिष्ट एजेंसियों और अंतर्राष्ट्रीय परमाणु ऊर्जा एजेंसी के बाह्य लेखा परीक्षकों के पैनल की स्थापना की, जिसमें संयुक्त राष्ट्र प्रणाली के व्यक्तिगत बाह्य लेखा परीक्षक शामिल हैं, जो सर्वोच्च लेखा परीक्षा संस्थानों के प्रमुख भी हैं। पैनल के सदस्य एक चल रही प्रक्रिया के आधार पर अनुभवों और पद्धतियों को साझा करते हैं ताकि पूरे संयुक्त राष्ट्र प्रणाली में बाह्य लेखा परीक्षा प्रथाओं की यथासंभव एकरूपता सुनिश्चित की जा सके।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      पैनल के सदस्य सदस्य राज्यों और अन्य हितधारकों को संगठनों के संसाधनों के उचित उपयोग के साथ-साथ उनके आर्थिक, कुशल और प्रभावी उपयोग के संबंध में स्वतंत्र आश्वासन प्रदान करते हैं। वे संगठनों को उनके संचालन और उनकी आंतरिक नियंत्रण गतिविधियों में सुधार करने में सहायता करने में भी महत्वपूर्ण भूमिका निभाते हैं। पैनल के सदस्यों के निष्कर्षों और सिफारिशों को गंभीरता से लिया जाता है, और समय पर और प्रभावी कार्यान्वयन सुनिश्चित करने के लिए सिफारिशों की स्थिति की बारीकी से निगरानी की जाती है। इस प्रकार, पैनल के सदस्य संयुक्त राष्ट्र के चार्टर की पूर्ति में महत्वपूर्ण योगदान देते हैं।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      बाह्य लेखा परीक्षकों के संयुक्त राष्ट्र पैनल की वेबसाइट है:{' '}
-                      <a href="https://www.un.org/en/auditors/panel/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.un.org/en/auditors/panel/
-                      </a>
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {/* Opening Subheading */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      CAG of India-Chair of the UN Panel of External Auditors (2020 &amp; 2021)
-                    </h2>
-
-                    {/* Paragraph 1 */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      CAG of India is the Chair of the UN Panel of External Auditors since the year 2020. In the past also, CAG has been Panel Chair from December 2011 to December 2013 and was the Vice- Chair in 2019.
-                    </p>
-
-                    {/* Paragraph 2 */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      The United Nations General Assembly in 1959 established the Panel of External Auditors of the United Nations, the Specialized Agencies and the International Atomic Energy Agency, comprising the individual external auditors of the United Nations system, who are also Heads of Supreme Audit Institutions. Panel Members share experiences and methodologies on an on-going basis so as to ensure as far as possible uniformity of external audit practices throughout the United Nations system.
-                    </p>
-
-                    {/* Paragraph 3 */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      Panel Members provide independent assurance to Member States and other stakeholders in relation to the proper use of the Organizations’ resources as well as their economic, efficient and effective use. They also play a significant role in assisting the Organizations to improve their operations and their internal control activities. The findings and recommendations of Panel Members are taken seriously, and the status of recommendations is closely monitored to ensure timely and effective implementation. In this way, Panel Members contribute significantly to the fulfilment of the Charter of the United Nations.
-                    </p>
-
-                    {/* Paragraph 4: Website Link */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      Website of UN Panel of External Auditors is:{' '}
-                      <a href="https://www.un.org/en/auditors/panel/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.un.org/en/auditors/panel/
-                      </a>
-                    </p>
-                  </>
-                )
-              ) : isMultilateral ? (
-                /* MULTILATERAL ENGAGEMENT PAGE CONTENT */
-                isHindi ? (
-                  <>
-                    <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      बहुपक्षीय मंचों के साथ सहभागिता
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      1) BRICS
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      ब्रिक्स सर्वोच्च लेखा परीक्षा संस्थान (SAI) मंच ब्रिक्स सदस्य देशों - ब्राजील, रूस, भारत, चीन और दक्षिण अफ्रीका - के साथ-साथ नए सदस्यों मिस्र, इथियोपिया, ईरान, संयुक्त अरब अमीरात और सऊदी अरब के लेखा परीक्षा संस्थानों का एक सहयोगात्मक मंच है। इसका उद्देश्य ज्ञान साझा करने की सुविधा प्रदान करके, आधुनिक लेखा परीक्षा पद्धतियों को विकसित करके और संस्थागत क्षमता का निर्माण करके पारदर्शिता, जवाबदेही और सुशासन को बढ़ावा देना है।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      2026 में भारत द्वारा ब्रिक्स की अध्यक्षता संभालने के बाद, भारत के नियंत्रक और महालेखापरीक्षक ने मई 2026 के दौरान बेंगलुरु भारत में 5वें ब्रिक्स SAI लीडर्स समिट 2026 की अध्यक्षता और मेजबानी की। शिखर सम्मेलन का विषय &quot;शहरी गतिशीलता पर ध्यान केंद्रित करने के साथ जीवन की सुगमता&quot; था।
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      2) शंघाई सहयोग संगठन (SCO)
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक शंघाई सहयोग संगठन (SCO) के सदस्य हैं। SCO भौगोलिक दायरे और जनसंख्या की दृष्टि से विश्व का सबसे बड़ा क्षेत्रीय संगठन है। SCO के सदस्य देश चीन, कजाकिस्तान, किर्गिस्तान, रूस, ताजिकिस्तान, उज्बेकिस्तान, भारत और पाकिस्तान हैं।
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      3) SAI20 एंगेजमेंट ग्रुप
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      SAI20 एंगेजमेंट ग्रुप G20 और संयुक्त राष्ट्र सतत विकास लक्ष्यों के अनुरूप पारदर्शिता, जवाबदेही और शासन को बढ़ाने के लिए एक रणनीतिक मंच के रूप में कार्य करते हुए G20 सदस्य देशों के भाग लेने वाले SAI को एक साथ लाता है।
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {/* Opening Statement */}
-                    <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      Engagement with Multilateral Forums
-                    </p>
-
-                    {/* Section 1: BRICS */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      1) BRICS
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The BRICS Supreme Audit Institutions (SAIs) forum is a collaborative platform comprising the audit institutions of BRICS member countries – Brazil, Russia, India, China, and South Africa – along with new members Egypt, Ethiopia, Iran, and United Arab Emirates, and Saudi Arabia. It aims to promote transparency, accountability, and good governance by facilitating knowledge sharing, developing modern auditing methodologies, and building institutional capacity. BRICS SAIs periodically meet to exchange knowledge, share best practices, and strengthen cooperation in public sector auditing. These engagements focus on key themes including audit innovation, sustainable development, capacity building, and technological integration. They often culminate in joint declarations or action plans to enhance audit methodologies and address governance challenges shared by the member states. Comptroller and Auditor General of India previously hosted 3rd BRICS SAI Leaders’ Summit in New Delhi in October 2022. The 4th BRICS SAI Leaders&apos; Summit had been hosted by SAI Russia in July 2024.
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      Consequent to India assuming the Chairmanship of BRICS in 2026, the Comptroller and Auditor General of India chaired and hosted the 5th BRICS SAI Leaders’ Summit 2026 in Bengaluru India during May 2026. The theme of the Summit was “Ease of Living with a focus on Urban Mobility”, with the sub-themes (i) Ease of Living: Audit of the Urban Sector and (ii) Ease of Living: Audit of Urban Mobility. A total of 41 delegates from nine BRICS SAI member countries (including SAI India) participated in the Summit. SAI India is scheduled to organise a webinar on “Water and Sanitation” in 2027.
-                    </p>
-
-                    {/* Section 2: Shanghai Cooperation Organization (SCO) */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      2) Shanghai Cooperation Organization(SCO)
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India is the member of the Shanghai Cooperation Organization (SCO). The SCO is a world&apos;s largest regional organization in geographic scope and population. The member countries of SCO are China, Kazakhstan, Kyrgyzstan, Russia, Tajikistan, Uzbekistan, India and Pakistan. The previous i.e. 7th meeting of the Heads of SAIs of SCO member states took place in Dushanbe under the Chairmanship of SAI Tajikistan. Representatives of SAI India participated in this meeting. As per the SCO Action Plan 2025-27 finalized during the 7th SCO SAIs meeting, SAI India had organized a webinar on “Audit of solid municipal waste management” at International Centre for Environment Audit and Sustainable Development (iCED) Jaipur in August 2025, wherein representatives of SCO SAIs members participated.
-                    </p>
-
-                    {/* Section 3: The SAI20 Engagement Group */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      3) The SAI20 Engagemnet Group
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The SAI20 engagement group brings together the participating SAIs of G20 member countries, serving as a strategic platform to enhance transparency, accountability, and governance in line with G20 and UN Sustainable Development Goals. Key participants include SAIs from India, Brazil, South Africa, Indonesia, Korea, Russia, Saudi Arabia, Türkiye, Australia, and others. SAI India had hosted the Senior Officials Meeting and Summit of SAI20 engagement group during India’s G20 presidency in 2023-focusing on priority themes like the Blue Economy and Responsible AI. The 2025 SAI20 Summit-has been hosted by SAI South Africa in June 2025, which was advancing discussions on infrastructure financing and workforce skills under the overarching G20 theme of solidarity, equality, and sustainability. Representatives of SAI India had actively participated in the SAI20 Summit in South Africa.
-                    </p>
-                  </>
-                )
-              ) : isAsosai ? (
-                /* ASOSAI PAGE CONTENT */
-                isHindi ? (
-                  <>
-                    <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      भारत के नियंत्रक और महालेखापरीक्षक एशियाई सर्वोच्च लेखा परीक्षा संस्थानों के संगठन (ASOSAI) के शासी बोर्ड के सदस्य हैं।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      एशियाई सर्वोच्च लेखा परीक्षा संस्थानों का संगठन (ASOSAI) (
-                      <a href="http://www.asosai.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.asosai.org/
-                      </a>
-                      ) 1978 में स्थापित, INTOSAI के सात क्षेत्रीय कार्य समूहों में से एक है। भारत ASOSAI का संस्थापक सदस्य है। भारत के सीएजी ने 2012-2015 तक ASOSAI के अध्यक्ष के रूप में कार्य किया।
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      CAG को 2024-2027 के लिए ASOSAI के अध्यक्ष के रूप में चुना गया है
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      56वें शासी बोर्ड ने भारत के तत्कालीन नियंत्रक और महालेखापरीक्षक को 2024 में ASOSAI की 16वीं असेंबली के मेजबान और 2024-2027 तक ASOSAI के अध्यक्ष के रूप में चुना।
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      CAG के भाषण यहाँ उपलब्ध हैं:-
-                    </h2>
-                    <ul className="list-none pl-4 space-y-[8px] my-3 text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          9th ASOSAI Symposium Opening Address by CAG of India
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Closing Address for 9th Symposium
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Welcome Speech 60th Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          61st GB Meeting Opening Address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          61st GB Meeting Closing Address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Acceptance speech by SAI India 16th ASOSAI Assembly First Plenary
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Welcome Address by CAG of India at the Opening Ceremony of 16th ASOSAI Assembly
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Second Plenary opening address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Second Plenary closing address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          15th ASOSAI Assembly- Speech on ASOSAI Journal and Journal Award
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          15th ASOSAI Assembly
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          57th Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          56th Governing Board Meeting
-                        </a>
-                      </li>
-                    </ul>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      बैठक की छवियां यहां उपलब्ध हैं
-                    </h2>
-                    <ul className="list-none pl-4 space-y-[8px] my-3 text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          16th ASOSAI Assembly and 60th & 61st Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          56th Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          15th ASOSAI Assembly and 57th Governing Board Meeting (Virtual 6-8 September, 2021)
-                        </a>
-                      </li>
-                    </ul>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      ASOSAI जर्नल
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      ASOSAI जर्नल यानी एशियन जर्नल ऑफ गवर्नमेंट ऑडिट के संपादकीय बोर्ड के अध्यक्ष के रूप में, SAI भारत अंग्रेजी भाषा में वर्ष में दो बार ASOSAI जर्नल प्रकाशित करता है। जर्नल को यहाँ देखा जा सकता है:{' '}
-                      <a href="http://www.asosaijournal.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.asosaijournal.org/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      ASOSAI जर्नल वेबसाइट का नया रूप जनता की पहुंच के लिए खुला है जिसमें मोबाइल और टैबलेट अनुकूलता, बेहतर पठनीयता के लिए लेखों की पेशेवर पीडीएफ डिजाइनिंग जैसी आधुनिक सुविधाएं शामिल हैं।
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      ASOSAI अनुसंधान परियोजना (ARP)
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      भारत के नियंत्रक और महालेखापरीक्षक ने ASOSAI द्वारा अब तक शुरू की गई सभी तेरह अनुसंधान परियोजनाओं में महत्वपूर्ण भूमिका निभाई है। &quot;सार्वजनिक लेखा परीक्षा में दक्षता और प्रभावशीलता बढ़ाने के लिए कृत्रिम बुद्धिमत्ता का लाभ उठाना&quot; पर 14वीं ASOSAI अनुसंधान परियोजना प्रगति पर है और SAI भारत इसमें सक्रिय रूप से भाग ले रहा है।
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {/* Opening Statement */}
-                    <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      The Comptroller and Auditor General of India is the Governing Board member of Asian Organization of Supreme Audit Institutions (ASOSAI).
-                    </p>
-
-                    {/* Overview Paragraph with Hyperlink */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Asian Organization of Supreme Audit Institutions (ASOSAI) (
-                      <a href="http://www.asosai.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.asosai.org/
-                      </a>
-                      ) established in 1978, is one of the seven regional working groups of INTOSAI. India is a charter member of ASOSAI. The CAG of India served as the Chair of ASOSAI from 2012-2015. The CAG of India has been granted ex-officio membership on the Governing Board of ASOSAI by virtue of being the Chair, Board of Editors of the ASOSAI Journal.
-                    </p>
-
-                    {/* Subheading 1 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      CAG has been elected as the Chair of ASOSAI from 2024-2027
-                    </h2>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      The 56th Governing Board elected Shri Girish Chandra Murmu, the then Comptroller and Auditor General of India (C&AG), as the host of the 16th Assembly of Asian Organization of Supreme Audit Institutions (ASOSAI) in 2024 and the Chair of ASOSAI from 2024-2027. The 15th Assembly of ASOSAI approved the election on 7 September 2021. C&AG, as the Chairman, is the Chief Executive of ASOSAI and represent ASOSAI in its dealings with national and international organizations.
-                    </p>
-
-                    {/* Subheading 2 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      Speeches of CAG are available here:-
-                    </h2>
-
-                    {/* Bullet List 1: Speeches as BLACK underlined hyperlinks */}
-                    <ul className="list-none pl-4 space-y-[8px] my-3 text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          9th ASOSAI Symposium Opening Address by CAG of India
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Closing Address for 9th Symposium
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Welcome Speech 60th Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          61st GB Meeting Opening Address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          61st GB Meeting Closing Address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Acceptance speech by SAI India 16th ASOSAI Assembly First Plenary
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Welcome Address by CAG of India at the Opening Ceremony of 16th ASOSAI Assembly
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Second Plenary opening address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          Second Plenary closing address
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          15th ASOSAI Assembly- Speech on ASOSAI Journal and Journal Award
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          15th ASOSAI Assembly
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          57th Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          56th Governing Board Meeting
-                        </a>
-                      </li>
-                    </ul>
-
-                    {/* Subheading 3 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      Images of the meeting are available here
-                    </h2>
-
-                    {/* Bullet List 2: Meeting Images as BLACK underlined hyperlinks */}
-                    <ul className="list-none pl-4 space-y-[8px] my-3 text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          16th ASOSAI Assembly and 60th & 61st Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          56th Governing Board Meeting
-                        </a>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <a href="#" style={blackLinkStyle} className="hover:text-[#751639] transition-colors">
-                          15th ASOSAI Assembly and 57th Governing Board Meeting which was held virtually from 6-8 September, 2021
-                        </a>
-                      </li>
-                    </ul>
-
-                    {/* Subheading 4 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      ASOSAI Journal
-                    </h2>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      As the Chair of the Editorial Board of ASOSAI Journal i.e. Asian Journal of Government Audit, SAI India publishes the ASOSAI Journal twice a year in English language. The journal can be viewed at{' '}
-                      <a href="http://www.asosaijournal.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.asosaijournal.org/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The new revamped version of the ASOSAI Journal website is open for public access which includes model features like mobile and tablet friendliness, professional PDF designing of articles for better readability, social media presence (X handle- @AsosaiJournal).
-                    </p>
-
-                    {/* Subheading 5 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      ASOSAI Research Project (ARP)
-                    </h2>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Comptroller and Auditor General of India has played a vital role in all the thirteen research projects undertaken so far by ASOSAI. The 14th ASOSAI Research Project on “Leveraging Artificial Intelligence to Enhance Efficiency and Effectiveness in Public Auditing” is under progress and SAI India is actively participating in it. The report of the 14th ASOSAI Research Project would be adopted during the 17th ASOSAI Assembly scheduled in Saudi Arabia in 2027.
-                    </p>
-                  </>
-                )
-              ) : (
-                /* INTOSAI PAGE CONTENT */
-                isHindi ? (
-                  <>
-                    <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      भारत के नियंत्रक और महालेखापरीक्षक सर्वोच्च लेखा परीक्षा संस्थानों के अंतर्राष्ट्रीय संगठन (INTOSAI) के शासी बोर्ड के सदस्य हैं।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      सुप्रीम ऑडिट संस्थानों का अंतर्राष्ट्रीय संगठन (INTOSAI) बाहरी सरकारी लेखा परीक्षा समुदाय के लिए एक छत्र संगठन के रूप में काम करता है। INTOSAI एक स्वायत्त, स्वतंत्र और गैर-राजनीतिक संगठन है। यह संयुक्त राष्ट्र के आर्थिक और सामाजिक परिषद (ECOSOC) के साथ विशेष सलाहकार स्थिति वाला एक गैर-सरकारी संगठन है। INTOSAI शासी बोर्ड INTOSAI गतिविधियों की रणनीतिक नेतृत्व, प्रबंधन और निरंतरता प्रदान करने के लिए प्रतिवर्ष बैठक करता है।
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      INTOSAI के चार मुख्य समितियां हैं जो इसके चार रणनीतिक लक्ष्यों की प्राप्ति के वाहन हैं:
-                    </p>
-                    <ul className="list-none pl-4 space-y-[8px] my-3 text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Professional Standards Committee (PSC) (Goal 1) (
-                          <a href="https://www.psc-intosai.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            https://www.psc-intosai.org/
-                          </a>)
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Capacity Building Committee (CBC) (Goal 2) (
-                          <a href="https://www.intosaicbc.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            https://www.intosaicbc.org/
-                          </a>)
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Knowledge Sharing and Knowledge Services Committee (KSC) (Goal 3) (
-                          <a href="https://www.intosaicommunity.net" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            https://www.intosaicommunity.net
-                          </a>)
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Policy, Finance and Administrative Committee (PFAC) (Goal 4) (
-                          <a href="http://www.intosaipfac.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            http://www.intosaipfac.org/
-                          </a>)
-                        </span>
-                      </li>
-                    </ul>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      भारत के नियंत्रक और महालेखापरीक्षक ज्ञान साझाकरण और ज्ञान सेवा समिति (KSC) और इसकी संचालन समिति (KSC SC) के अध्यक्ष हैं।
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      KSC का उद्देश्य ज्ञान विकास, ज्ञान साझाकरण और ज्ञान सेवाओं के माध्यम से SAI सहयोग और निरंतर सुधार को बढ़ावा देना है। KSC के तहत 12 कार्य समूह हैं:
-                    </p>
-                    <ul className="list-none pl-4 space-y-[8px] my-3 italic text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Public Debt (WGPD) (Chair: SAI Philippines)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Information Technology Audit (WGITA) (Chair: SAI India)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Environmental Auditing (WGEA) (Chair: SAI Thailand)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Evaluation of Public Policies and Programmes (WGEPPP) (Chair: SAI Switzerland)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on the Fight Against Corruption and Money Laundering (WGFACML) (Chair: SAI Egypt)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on SDGs and Key Sustainable Development Indicators (WGSDG KSDI) (Chair: SAI Russia)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Financial and Economic Stability (WGFES) (Chair: SAI USA)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Audit of Extractive Industries (WGEI) (Chair: SAI Uganda)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Public Procurement Audit (WGPPA) (Chair: SAI Russia)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Big Data (WGBD) (Chair: SAI China)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Impact of Science and Technology on Auditing (WGISTA) (Chair: SAI Egypt)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Follow-Up Audit (WGFA) (Chair: SAI Malaysia)</span>
-                      </li>
-                    </ul>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      भारत के नियंत्रक और महालेखापरीक्षक IT लेखा परीक्षा पर INTOSAI कार्य समूह (WGITA) के अध्यक्ष हैं।
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      IT ऑडिट पर वर्किंग ग्रुप (WGITA) का गठन 1989 में IT ऑडिट के क्षेत्र में SAI के हितों को संबोधित करने के लिए किया गया था।
-                    </p>
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      भारत के नियंत्रक और महालेखापरीक्षक INTOSAI अनुपालन लेखा परीक्षा उपसमिति (CAS) के भी अध्यक्ष हैं।
-                    </h2>
-                    <p className="text-[#2A2A2A] font-normal">
-                      2017 से, भारत के नियंत्रक और महालेखापरीक्षक अनुपालन लेखा परीक्षा उपसमिति (CAS) के अध्यक्ष हैं।
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    {/* Opening Statement */}
-                    <p className="font-medium text-[#751639] text-[14px] leading-[24px]">
-                      The Comptroller and Auditor General of India is a member of the Governing Board of the International Organization of Supreme Audit Institutions (INTOSAI).
-                    </p>
-
-                    {/* Overview Paragraph */}
-                    <p className="text-[#2A2A2A] font-normal">
-                      The International Organization of Supreme Audit Institutions (INTOSAI) operates as an umbrella organization for the external government audit community. INTOSAI is an autonomous, independent and non-political organization. It is a non-governmental organization with special consultative status with the Economic and Social Council (ECOSOC) of the United Nations. The INTOSAI Governing Board meets annually to provide strategic leadership, stewardship, and continuity of INTOSAI activities between International Congresses of Supreme Audit Institutions (INCOSAI). The INTOSAI Congress (INCOSAI) is the supreme organ of INTOSAI and is composed of all the members. On a triennial basis, it holds regular meetings, which is chaired by the hosting SAI. Participants include delegations of member SAIs as well as representatives of the United Nations, the World Bank and other international and professional organizations. INTOSAI has four main Committees which are the vehicles for the achievement of its four strategic goals. These Committees are:
-                    </p>
-
-                    {/* Bullet List 1 */}
-                    <ul className="list-none pl-4 space-y-[8px] my-3 text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Professional Standards Committee (PSC) (Goal 1) (
-                          <a href="https://www.psc-intosai.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            https://www.psc-intosai.org/
-                          </a>)
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Capacity Building Committee (CBC) (Goal 2) (
-                          <a href="https://www.intosaicbc.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            https://www.intosaicbc.org/
-                          </a>)
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Knowledge Sharing and Knowledge Services Committee (KSC) (Goal 3) (
-                          <a href="https://www.intosaicommunity.net" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            https://www.intosaicommunity.net
-                          </a>)
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] select-none">•</span>
-                        <span>
-                          Policy, Finance and Administrative Committee (PFAC) (Goal 4) (
-                          <a href="http://www.intosaipfac.org/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                            http://www.intosaipfac.org/
-                          </a>)
-                        </span>
-                      </li>
-                    </ul>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      SAI India is an active player in the standard setting, capacity building and knowledge sharing activities of INTOSAI through our position of leadership in the KSC, INTOSAI Working Group on IT Audit (WGITA) and INTOSAI Compliance Audit Subcommittee (CAS) as well as our participation in the activities of the other organs including the INTOSAI Development Initiative and the INTOSAI Governing Board.
-                    </p>
-
-                    {/* Subheading 2 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      The Comptroller and Auditor General of India is the Chair of INTOSAI Committee on Knowledge Sharing and Knowledge Services – (KSC) and its Steering Committee (KSC SC).
-                    </h2>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      The objective of KSC is to encourage SAI cooperation, collaboration, and continuous improvement through knowledge development, knowledge sharing and knowledge services, including (i) producing and revising INTOSAI products (ii) providing benchmarks and operating a community portal and (iii) conducting best practice studies and performing research on issues of mutual concern. The Comptroller and Auditor General of India is the Chair of KSC since its inception. The KSC main committee today has 125 members and four observers. There are 12 Working Groups under KSC, and the websites of the Knowledge Sharing and Knowledge Services Committee (INTOSAI Community Portal & KSC Working Groups) can be accessed at{' '}
-                      <a href="https://www.intosaicommunity.net/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://www.intosaicommunity.net/
-                      </a>
-                      . The details of the Working Groups is as follows:
-                    </p>
-
-                    {/* Bullet List 2 */}
-                    <ul className="list-none pl-4 space-y-[8px] my-3 italic text-[#2A2A2A] font-normal">
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Public Debt (WGPD) (Chair: SAI Philippines)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Information Technology Audit (WGITA) (Chair: SAI India)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Environmental Auditing (WGEA) (Chair: SAI Thailand)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Evaluation of Public Policies and Programmes (WGEPPP) (Chair: SAI Switzerland)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on the Fight Against Corruption and Money Laundering (WGFACML) (Chair: SAI Egypt)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on SDGs and Key Sustainable Development Indicators (WGSDG KSDI) (Chair: SAI Russia)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Financial and Economic Stability (WGFES) (Chair: SAI USA)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Audit of Extractive Industries (WGEI) (Chair: SAI Uganda)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Public Procurement Audit (WGPPA) (Chair: SAI Russia)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Big Data (WGBD) (Chair: SAI China)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Impact of Science and Technology on Auditing (WGISTA) (Chair: SAI Egypt)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-[#751639] font-bold text-[14px] leading-[24px] not-italic select-none">•</span>
-                        <span>Working Group on Follow-Up Audit (WGFA) (Chair: SAI Malaysia)</span>
-                      </li>
-                    </ul>
-
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      The Comptroller and Auditor General of India is the Chair of the INTOSAI Working Group on IT Audit (WGITA).
-                    </h2>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      The Working Group on IT Audit (WGITA) was created in 1989 to address interests of SAIs in the area of IT Audit. WGITA aims to support SAIs in developing their knowledge and skills in the use and audit of information technology by providing information and facilities for exchange of experiences, and encouraging bilateral and regional cooperation. The Comptroller and Auditor General of India is the Chair of WGITA since its inception. Presently, WGITA has 58 members and 7 observers. Details are available at the WGITA website:{' '}
-                      <a href="https://wgita.intosaicommunity.net/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        https://wgita.intosaicommunity.net/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The 34th annual meeting of WGITA was held in Hyderabad, India on 10 September 2025. The Comptroller and Auditor General of India, as the Chair of WGITA, inaugurated the meeting.
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      According to the practice of hosting a seminar/webinar in conjunction with the WGITA meetings, this year, the WGITA meeting was followed by WGITA Summit on the topic ‘AI and Emerging Technologies for Supreme Audit Institutions – A Dialogue on Leveraging Technology and Enhancing Sustainable Audit Practices’ on 11 September 2025 in Hyderabad, India.
-                    </p>
-
-                    {/* Subheading 4 */}
-                    <h2 className="font-medium text-[#751639] text-[14px] leading-[24px] mt-6 mb-2">
-                      The Comptroller and Auditor General of India is also the Chair of the INTOSAI Compliance Audit Subcommittee (CAS).
-                    </h2>
-
-                    <p className="text-[#2A2A2A] font-normal">
-                      Since 2017, the Comptroller and Auditor General of India is the Chair of the Compliance Audit Subcommittee (CAS), which was established as one of the four standard setting committees under the INTOSAI’s Professional Standards Committee (PSC). The other sub-committees under PSC are the Financial Auditing and Accounting Sub-committee (FAAS), The Performance Audit Sub-committee (PAS), and the Internal Control Sub-committee (ICS). The mandate for the CAS is to elaborate on and clarify the term &quot;compliance audit&quot;, provide an overview of the different mandates SAIs have regarding compliance audits, give practical guidance on how compliance audit should be planned, executed and reported on, and to develop INTOSAI guidelines for compliance audit. CAS has 22 members and 2 observers. Details are available at the following link:{' '}
-                      <a href="http://www.psc-intosai.org/committee/compliance-audit-subcommittee/" target="_blank" rel="noopener noreferrer" style={linkStyle} className="hover:opacity-80 transition-opacity">
-                        http://www.psc-intosai.org/committee/compliance-audit-subcommittee/
-                      </a>
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      The 22nd Annual meeting of INTOSAI CAS was held online on 26th November 2025. The Comptroller and Auditor General of India, as the Chair of CAS, inaugurated the meeting through video message.
-                    </p>
-                    <p className="text-[#2A2A2A] font-normal">
-                      SAI India is also a member of other INTOSAI Goal committees, two other INTOSAI Subcommittees under PSC, two INTOSAI Task Forces and INTOSAI Donor Cooperation Steering Committee.
-                    </p>
-                  </>
-                )
+              {/* Right Emblem / Logo */}
+              {!isIcal && !isIrWing && (
+                <div
+                  className="absolute z-10 flex items-center justify-center pointer-events-none"
+                  style={{
+                    width: isIced
+                      ? '124.43px'
+                      : isOverseasOffices
+                      ? '155px'
+                      : isNaaa
+                      ? '75px'
+                      : '107.67px',
+                    height: isIced
+                      ? '68.94px'
+                      : isOverseasOffices
+                      ? '111px'
+                      : isNaaa
+                      ? '90px'
+                      : '100px',
+                    left: isIced
+                      ? '816.94px'
+                      : isIcisa
+                      ? '807.34px'
+                      : isOverseasOffices
+                      ? '816px'
+                      : isNaaa
+                      ? '827.14px'
+                      : '788.14px',
+                    top: isIced
+                      ? '36.36px'
+                      : isOverseasOffices
+                      ? '15px'
+                      : '20.83px',
+                    opacity: 1,
+                    transform: 'rotate(0deg)',
+                  }}
+                >
+                  <div className="w-full h-full relative flex items-center justify-center">
+                    <Image
+                      src={
+                        isIced
+                          ? '/assets/iced-logo.png'
+                          : isIcisa
+                          ? '/assets/icisa-logo.png'
+                          : isNaaa
+                          ? '/assets/naaa-logo.png'
+                          : '/assets/un-logo.png'
+                      }
+                      alt={
+                        isIced
+                          ? 'iCED Logo'
+                          : isIcisa
+                          ? 'iCISA Logo'
+                          : isNaaa
+                          ? 'NAAA Logo'
+                          : 'UN Emblem Logo'
+                      }
+                      width={
+                        isIced
+                          ? 124.43
+                          : isOverseasOffices
+                          ? 155
+                          : isNaaa
+                          ? 75
+                          : 107.67
+                      }
+                      height={
+                        isIced
+                          ? 68.94
+                          : isOverseasOffices
+                          ? 111
+                          : isNaaa
+                          ? 90
+                          : 100
+                      }
+                      className="object-contain"
+                      priority
+                      unoptimized
+                    />
+                  </div>
+                </div>
               )}
             </div>
-          </main>
+          ) : (
+            /* Clean Heading for other subpages */
+            <h2 className="text-[22px] md:text-[24px] font-bold text-[#751639] border-b border-[#e6e6e6] pb-4 mb-6 text-left">
+              {isHindi ? fallbackPageData?.hindiTitle : fallbackPageData?.title}
+            </h2>
+          )}
+
+          {/* Main Body Content */}
+          {isOverseasOffices ? (
+            /* Overseas Audit Offices Boxes (width: 100%, max-w-[978px] aligned flush with banner above) */
+            <div className="w-full max-w-[978px] flex flex-col gap-[12px]">
+              {OVERSEAS_OFFICES.map((office) => (
+                <article
+                  key={office.id}
+                  className="w-full bg-[#FAFAFA] border-l-2 border-[#FAFAFA] hover:border-[#751639] hover:bg-[#F4F4F4] px-[20px] py-[12px] transition-all flex items-center justify-between gap-[12px] rounded-[0px] box-border"
+                >
+                  {/* Left Column: Office Title (Underlined 14px, font-weight 600, color #000000) & Optional PDF Subtitle (12px, #565656) */}
+                  <div className="flex-1 min-w-0 text-left flex flex-col justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOffice(office)}
+                      className="text-left group/btn focus:outline-none block cursor-pointer bg-transparent border-none p-0"
+                      title={
+                        isHindi
+                          ? `${office.hindiTitle} का विवरण देखें`
+                          : `View details for ${office.title}`
+                      }
+                    >
+                      <h2 className="text-[14px] font-semibold text-[#000000] underline leading-[19px] group-hover/btn:text-[#751639] transition-colors font-['Noto_Sans',sans-serif]">
+                        {isHindi ? office.hindiTitle : office.title}
+                      </h2>
+                    </button>
+
+                    {/* Subtitle for items with PDF: "PDF" in 12px #565656 */}
+                    {office.hasPdf && (
+                      <span className="text-[12px] font-normal text-[#565656] leading-[16px] block mt-0.5">
+                        PDF
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Right Column: PDF Badge (width: 87px, height: 40px, red icon 27x32, 34.7 MB, View PDF) */}
+                  {office.hasPdf && (
+                    <div className="flex items-center gap-[8px] shrink-0" style={{ width: '87px', height: '40px' }}>
+                      {/* Red PDF Icon (width: 27px, height: 32px) */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActivePdfModal({
+                            title: office.title,
+                            hindiTitle: office.hindiTitle,
+                            pdfSize: office.pdfSize || '34.7 MB',
+                            pdfTitle: office.pdfTitle || office.title,
+                            hindiPdfTitle: office.hindiPdfTitle || office.hindiTitle,
+                            mandate: office.mandate,
+                            hindiMandate: office.hindiMandate,
+                            keyEntities: office.keyEntities,
+                            hindiKeyEntities: office.hindiKeyEntities,
+                          })
+                        }
+                        className="hover:scale-105 transition-transform focus:outline-none flex items-center justify-center shrink-0 bg-transparent border-none p-0 cursor-pointer"
+                        aria-label={
+                          isHindi
+                            ? `${office.hindiTitle} पीडीएफ देखें`
+                            : `View PDF for ${office.title}`
+                        }
+                      >
+                        <Image
+                          src="/assets/pdf-icon.png"
+                          alt="PDF"
+                          width={27}
+                          height={32}
+                          className="w-[27px] h-[32px] object-contain shrink-0"
+                          unoptimized
+                        />
+                      </button>
+
+                      {/* File Size (10px, #565656) & View PDF link (12px, #0D61AE, underline) */}
+                      <div className="flex flex-col text-left justify-center gap-[1px]" style={{ width: '52px' }}>
+                        <span className="text-[10px] text-[#565656] font-normal leading-[16px]">
+                          {office.pdfSize || '34.7 MB'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActivePdfModal({
+                              title: office.title,
+                              hindiTitle: office.hindiTitle,
+                              pdfSize: office.pdfSize || '34.7 MB',
+                              pdfTitle: office.pdfTitle || office.title,
+                              hindiPdfTitle: office.hindiPdfTitle || office.hindiTitle,
+                              mandate: office.mandate,
+                              hindiMandate: office.hindiMandate,
+                              keyEntities: office.keyEntities,
+                              hindiKeyEntities: office.hindiKeyEntities,
+                            })
+                          }
+                          className="text-[12px] text-[#0D61AE] hover:text-[#751639] font-normal underline leading-[16px] transition-colors cursor-pointer focus:outline-none bg-transparent border-none p-0 text-left"
+                        >
+                          {isHindi ? 'पीडीएफ देखें' : 'View PDF'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          ) : isIced ? (
+            /* iCED Content (width: 978px, font-family: 'Noto Sans', font-size: 14px, line-height: 28px) */
+            <div
+              className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif] text-[14px] leading-[28px] tracking-normal"
+              style={{ width: '100%', maxWidth: '978px', opacity: 1, transform: 'rotate(0deg)' }}
+            >
+              <p className="font-medium text-[#751639] mb-[24px]">
+                {isHindi
+                  ? 'पर्यावरण लेखा परीक्षा और सतत विकास के लिए एक उत्कृष्टता केंद्र।'
+                  : 'A Centre of Excellence for Environment Audit and Sustainable Development.'}
+              </p>
+              <p className="font-normal text-[#2A2A2A] mb-[24px]">
+                {isHindi
+                  ? 'iCED पर्यावरण लेखा परीक्षा, सतत विकास, पेशेवर क्षमता और ज्ञान साझाकरण को मजबूत करने पर केंद्रित एक विशेष केंद्र है। यह पर्यावरण लेखा परीक्षा के क्षेत्र में प्रशिक्षण, अनुसंधान, सहयोग और ज्ञान के आदान-प्रदान के माध्यम से विशेषज्ञता के विकास का समर्थन करता है।'
+                  : 'iCED is a specialised centre focused on strengthening environment auditing, sustainable development, professional capacity and knowledge sharing. It supports the development of expertise through training, research, collaboration and the exchange of knowledge in the field of environment audit.'}
+              </p>
+              <div className="mb-[24px] text-[#2A2A2A]">
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi ? 'iCED का अन्वेषण करें' : 'Explore iCED'}
+                </div>
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi
+                    ? 'केंद्र के कार्यक्रमों, पहलों, प्रशिक्षण, अनुसंधान, संसाधनों और विस्तृत जानकारी की खोज करें।'
+                    : "Discover the centre's programmes, initiatives, training, research, resources and detailed information."}
+                </div>
+              </div>
+              <p>
+                <a
+                  href="https://iced.cag.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline transition-colors font-normal cursor-pointer"
+                  style={{ color: '#0D61AE' }}
+                >
+                  {isHindi ? '[ iCED वेबसाइट पर जाएँ → ]' : '[ Visit the iCED Website → ]'}
+                </a>
+              </p>
+            </div>
+          ) : isIcisa ? (
+            /* iCISA Content (width: 978px, font-family: 'Noto Sans', font-size: 14px, line-height: 28px) */
+            <div
+              className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif] text-[14px] leading-[28px] tracking-normal"
+              style={{
+                width: '100%',
+                maxWidth: '978px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              <p className="font-medium text-[#751639] mb-[24px]">
+                {isHindi
+                  ? 'सूचना प्रणाली लेखा परीक्षा और क्षमता निर्माण के लिए एक उत्कृष्टता केंद्र।'
+                  : 'A Centre of Excellence for Information Systems Audit and Capacity Building.'}
+              </p>
+              <p className="font-normal text-[#2A2A2A] mb-[24px]">
+                {isHindi
+                  ? 'iCISA सूचना प्रणाली लेखा परीक्षा, उभरती प्रौद्योगिकियों, डेटा एनालिटिक्स और क्षमता निर्माण पर केंद्रित एक विशेष केंद्र है। यह नवोन्मेष, अनुसंधान, व्यावसायिक विकास और वैश्विक सहयोग का समर्थन करते हुए लेखा परीक्षकों और हितधारकों के लिए एक ज्ञान और प्रशिक्षण केंद्र के रूप में कार्य करता है।'
+                  : 'iCISA is a specialised centre focused on Information Systems Audit, emerging technologies, data analytics and capacity building. It serves as a knowledge and training hub for auditors and stakeholders, supporting innovation, research, professional development and global collaboration.'}
+              </p>
+              <div className="mb-[24px] text-[#2A2A2A]">
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi ? 'iCISA का अन्वेषण करें' : 'Explore iCISA'}
+                </div>
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi
+                    ? 'iCISA के प्रशिक्षण कार्यक्रमों, अनुसंधान, लेखा परीक्षा संसाधनों, प्रकाशनों, पहलों और अन्य सूचनाओं की खोज करें।'
+                    : "Discover iCISA's training programmes, research, audit resources, publications, initiatives and other information."}
+                </div>
+              </div>
+              <p>
+                <a
+                  href="https://icisa.cag.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline transition-colors font-normal cursor-pointer"
+                  style={{ color: '#0D61AE' }}
+                >
+                  {isHindi ? '[ iCISA वेबसाइट पर जाएँ → ]' : '[ Visit the iCISA Website → ]'}
+                </a>
+              </p>
+            </div>
+          ) : isNaaa ? (
+            /* NAAA Content (width: 978px, font-family: 'Noto Sans', font-size: 14px, line-height: 28px) */
+            <div
+              className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif] text-[14px] leading-[28px] tracking-normal"
+              style={{
+                width: '100%',
+                maxWidth: '978px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              <p className="font-medium text-[#751639] mb-[24px]">
+                {isHindi
+                  ? 'भारतीय लेखा परीक्षा और लेखा विभाग का सर्वोच्च प्रशिक्षण संस्थान'
+                  : 'The Apex Training Institute of the Indian Audit & Accounts Department'}
+              </p>
+              <p className="font-normal text-[#2A2A2A] mb-[24px]">
+                {isHindi
+                  ? 'NAAA भारतीय लेखा परीक्षा और लेखा विभाग (IA&AD) का सर्वोच्च प्रशिक्षण संस्थान है, जो प्रेरण प्रशिक्षण, निरंतर व्यावसायिक शिक्षा, अनुसंधान और ज्ञान विकास के माध्यम से अत्यधिक पेशेवर और सक्षम अधिकारियों को विकसित करने पर केंद्रित है। यह IA&AD की क्षमताओं को मजबूत करने और भारत के नियंत्रक एवं महालेखा परीक्षक के मार्गदर्शन में इसके संवैधानिक जनादेश का समर्थन करने में महत्वपूर्ण भूमिका निभाता है।'
+                  : 'NAAA is the apex training institute of the Indian Audit & Accounts Department (IA&AD), focused on developing highly professional and competent officers through induction training, continuing professional education, research and knowledge development. It plays a vital role in strengthening the capabilities of IA&AD and supporting its constitutional mandate under the guidance of the Comptroller & Auditor General of India.'}
+              </p>
+              <div className="mb-[24px] text-[#2A2A2A]">
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi ? 'NAAA का अन्वेषण करें' : 'Explore NAAA'}
+                </div>
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi
+                    ? 'NAAA के प्रशिक्षण कार्यक्रमों, व्यावसायिक विकास पहलों, अनुसंधान, संसाधनों और संस्थागत गतिविधियों की खोज करें।'
+                    : "Discover NAAA's training programmes, professional development initiatives, research, resources and institutional activities."}
+                </div>
+              </div>
+              <p>
+                <a
+                  href="https://naaa.cag.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline transition-colors font-normal cursor-pointer"
+                  style={{ color: '#0D61AE' }}
+                >
+                  {isHindi ? '[ NAAA वेबसाइट पर जाएँ → ]' : '[ Visit the NAAA Website → ]'}
+                </a>
+              </p>
+            </div>
+          ) : isIcal ? (
+            /* iCAL Content (width: 978px, font-family: 'Noto Sans', font-size: 14px, line-height: 28px) */
+            <div
+              className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif] text-[14px] leading-[28px] tracking-normal"
+              style={{
+                width: '100%',
+                maxWidth: '978px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+              }}
+            >
+              <p className="font-medium text-[#751639] mb-[24px]">
+                {isHindi
+                  ? 'स्थानीय शासन लेखा परीक्षा और क्षमता निर्माण के लिए एक उत्कृष्टता केंद्र'
+                  : 'A Centre of Excellence for Local Governance Audit and Capacity Building'}
+              </p>
+              <p className="font-normal text-[#2A2A2A] mb-[24px]">
+                {isHindi
+                  ? 'iCAL स्थानीय शासन लेखा परीक्षा, क्षमता निर्माण, ज्ञान साझाकरण और अंतर्राष्ट्रीय सहयोग को मजबूत करने पर केंद्रित एक विशेष केंद्र है। यह प्रशिक्षण, अनुसंधान और सर्वोत्तम प्रथाओं के आदान-प्रदान के माध्यम से जवाबदेही, वित्तीय प्रदर्शन और सेवा वितरण में सुधार के लिए लेखा परीक्षकों, नीति निर्माताओं और स्थानीय सरकारी संस्थानों के लिए एक मंच के रूप में कार्य करता है।'
+                  : 'iCAL is a specialised centre focused on strengthening local governance audit, capacity building, knowledge sharing and international collaboration. It serves as a platform for auditors, policymakers and local government institutions to improve accountability, financial performance and service delivery through training, research and the exchange of best practices.'}
+              </p>
+              <div className="mb-[24px] text-[#2A2A2A]">
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi ? 'iCAL का अन्वेषण करें' : 'Explore iCAL'}
+                </div>
+                <div className="font-normal text-[#2A2A2A]">
+                  {isHindi
+                    ? 'स्थानीय शासन और लेखा परीक्षा पर iCAL के प्रशिक्षण कार्यक्रमों, अनुसंधान, प्रकाशनों, पहलों और संसाधनों की खोज करें।'
+                    : 'Discover iCAL’s training programmes, research, publications, initiatives and resources on local governance and audit.'}
+                </div>
+              </div>
+              <p>
+                <a
+                  href="https://ical.cag.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline transition-colors font-normal cursor-pointer"
+                  style={{ color: '#0D61AE' }}
+                >
+                  {isHindi ? '[ iCAL वेबसाइट पर जाएँ → ]' : '[ Visit the iCAL Website → ]'}
+                </a>
+              </p>
+            </div>
+          ) : isIrWing ? (
+            /* International Relations Wing Content */
+            <div className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif]">
+              {/* Headings (width: 958px, height: 72px, top: 331px, left: 394px, angle: 0 deg, opacity: 1) */}
+              <div
+                className="w-full max-w-[958px] text-left flex flex-col justify-between mb-[24px]"
+                style={{
+                  width: '100%',
+                  maxWidth: '958px',
+                  height: '72px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                }}
+              >
+                <p className="text-[14px] md:text-[15px] font-bold text-[#751639] leading-[22px] m-0">
+                  {isHindi
+                    ? 'भारत के नियंत्रक एवं महालेखापरीक्षक भारत का सर्वोच्च लेखापरीक्षा संस्थान'
+                    : 'Comptroller and Auditor General of India Supreme Audit Institution of India'}
+                </p>
+                <p className="text-[14px] font-medium text-[#751639] leading-[22px] m-0">
+                  {isHindi ? 'अंतर्राष्ट्रीय संबंध प्रभाग' : 'International Relations Division'}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-[16px]">
+                {IR_OFFICERS.map((officer) => (
+                  <div
+                    key={officer.id}
+                    className="w-full max-w-[929px] bg-white border border-[#E5E5E5] rounded-[2px] overflow-hidden flex flex-col sm:flex-row shadow-[0px_2px_8px_rgba(0,0,0,0.04)]"
+                    style={{
+                      width: '100%',
+                      maxWidth: '929px',
+                      minHeight: '183px',
+                      height: '183px',
+                      opacity: 1,
+                      borderWidth: '1px',
+                      transform: 'rotate(0deg)',
+                    }}
+                  >
+                    <div className="w-full sm:w-[155px] md:w-[160px] h-full shrink-0 relative bg-[#F5F5F5]">
+                      <Image
+                        src={officer.image}
+                        alt={isHindi ? officer.hindiName : officer.name}
+                        fill
+                        className="object-cover object-top"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="flex-1 px-[20px] md:px-[24px] pt-[18px] pb-[13px] flex flex-col justify-between text-left">
+                      <div>
+                        <h3 className="text-[16px] md:text-[17px] font-bold text-[#1A1A1A] leading-[24px] mb-[4px]">
+                          {isHindi ? officer.hindiName : officer.name}
+                        </h3>
+                        <p className="text-[13px] md:text-[14px] text-[#4A4A4A] leading-[20px] m-0 whitespace-pre-line">
+                          {isHindi ? officer.hindiDesignation : officer.designation}
+                        </p>
+                      </div>
+                      
+                      {/* Email Info Line (width: 240px, height: 24px, angle: 0 deg, opacity: 1) */}
+                      <div
+                        className="flex items-center text-[13px] md:text-[14px] font-medium text-[#751639] leading-[24px] mt-auto"
+                        style={{
+                          minWidth: '240px',
+                          height: '24px',
+                          opacity: 1,
+                          transform: 'rotate(0deg)',
+                        }}
+                      >
+                        <span className="font-semibold">{isHindi ? 'ईमेल: ' : 'Email: '}</span>
+                        <a
+                          href={`mailto:${officer.email}`}
+                          className="text-[#751639] hover:underline focus:outline-none ml-1"
+                        >
+                          {officer.email}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : isBilateral ? (
+            /* Bilateral Relations */
+            <div className="space-y-6 text-left">
+              <div className="border-b border-[#e5e5e5] pb-4">
+                <p className="text-[14.5px] text-zinc-700 leading-relaxed">
+                  {isHindi
+                    ? 'SAI भारत ने लेखा परीक्षा पद्धतियों, संयुक्त प्रशिक्षण, सहकर्मी समीक्षा और डिजिटल शासन के आदान-प्रदान को मजबूत करने के लिए दुनिया भर के 30 से अधिक सर्वोच्च लेखा परीक्षा संस्थानों के साथ द्विपक्षीय समझौता ज्ञापनों पर हस्ताक्षर किए हैं।'
+                    : 'SAI India actively collaborates with partner Supreme Audit Institutions across the world to share audit expertise, conduct joint capacity-building seminars, and pioneer digital audit frameworks.'}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2">
+                {[
+                  'SAI Oman', 'SAI UAE', 'SAI Russia', 'SAI Vietnam',
+                  'SAI Egypt', 'SAI Maldives', 'SAI Bangladesh', 'SAI Indonesia',
+                  'SAI South Africa', 'SAI Brazil', 'SAI Malaysia', 'SAI Saudi Arabia'
+                ].map((partner, idx) => (
+                  <div key={idx} className="p-3 bg-[#fafafa] border border-[#e5e5e5] rounded text-center text-xs font-semibold text-[#751639] shadow-xs">
+                    {partner}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : slugDecoded === 'association with intosai' ? (
+            /* Association with INTOSAI Content (Matching screenshot 2) */
+            <div
+              className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif] text-[14px] leading-[28px] tracking-normal"
+              style={{ width: '100%', maxWidth: '978px', opacity: 1, transform: 'rotate(0deg)' }}
+            >
+              <p className="font-medium text-[#751639] mb-[24px]">
+                {isHindi
+                  ? 'भारत के नियंत्रक एवं महालेखापरीक्षक सर्वोच्च लेखा परीक्षा संस्थानों के अंतर्राष्ट्रीय संगठन (INTOSAI) के शासी बोर्ड के सदस्य हैं।'
+                  : 'The Comptroller and Auditor General of India is a member of the Governing Board of the International Organization of Supreme Audit Institutions (INTOSAI).'}
+              </p>
+              <p className="font-normal text-[#2A2A2A] mb-[24px]">
+                {isHindi
+                  ? 'सर्वोच्च लेखा परीक्षा संस्थानों का अंतर्राष्ट्रीय संगठन (INTOSAI) बाहरी सरकारी लेखा परीक्षा समुदाय के लिए एक छत्र संगठन के रूप में कार्य करता है। INTOSAI एक स्वायत्त, स्वतंत्र और गैर-राजनीतिक संगठन है। यह संयुक्त राष्ट्र की आर्थिक और सामाजिक परिषद (ECOSOC) के साथ विशेष परामर्शी दर्जा प्राप्त एक गैर-सरकारी संगठन है। INTOSAI गवर्निंग बोर्ड सर्वोच्च लेखा परीक्षा संस्थानों के अंतर्राष्ट्रीय सम्मेलनों (INCOSAI) के बीच रणनीतिक नेतृत्व, प्रबंधन और निरंतरता प्रदान करने के लिए प्रतिवर्ष मिलता है। INTOSAI कांग्रेस (INCOSAI) INTOSAI का सर्वोच्च अंग है और यह सभी सदस्यों से बना है। त्रिवार्षिक आधार पर, यह नियमित बैठकें आयोजित करता है, जिसकी अध्यक्षता मेजबान SAI द्वारा की जाती है। प्रतिभागियों में सदस्य SAI के प्रतिनिधिमंडलों के साथ-साथ संयुक्त राष्ट्र, विश्व बैंक और अन्य अंतर्राष्ट्रीय और व्यावसायिक संगठनों के प्रतिनिधि शामिल होते हैं। INTOSAI के पास चार मुख्य समितियां हैं जो इसके चार रणनीतिक लक्ष्यों की प्राप्ति के लिए साधन हैं। ये समितियां हैं:'
+                  : 'The International Organization of Supreme Audit Institutions (INTOSAI) operates as an umbrella organization for the external government audit community. INTOSAI is an autonomous, independent and non-political organization. It is a non-governmental organization with special consultative status with the Economic and Social Council (ECOSOC) of the United Nations. The INTOSAI Governing Board meets annually to provide strategic leadership, stewardship, and continuity of INTOSAI activities between International Congresses of Supreme Audit Institutions (INCOSAI). The INTOSAI Congress (INCOSAI) is the supreme organ of INTOSAI and is composed of all the members. On a triennial basis, it holds regular meetings, which is chaired by the hosting SAI. Participants include delegations of member SAIs as well as representatives of the United Nations, the World Bank and other international and professional organizations. INTOSAI has four main Committees which are the vehicles for the achievement of its four strategic goals. These Committees are:'}
+              </p>
+              <ul className="space-y-[8px] mb-[24px] text-[#2A2A2A] list-none pl-0">
+                <li>
+                  • Professional Standards Committee (PSC) (Goal 1) (
+                  <a
+                    href="https://www.psc-intosai.org/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D61AE] hover:text-[#751639] underline cursor-pointer"
+                  >
+                    https://www.psc-intosai.org/
+                  </a>
+                  )
+                </li>
+                <li>
+                  • Capacity Building Committee (CBC) (Goal 2) (
+                  <a
+                    href="https://www.intosaicbc.org/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D61AE] hover:text-[#751639] underline cursor-pointer"
+                  >
+                    https://www.intosaicbc.org/
+                  </a>
+                  )
+                </li>
+                <li>
+                  • Knowledge Sharing and Knowledge Services Committee (KSC) (Goal 3) (
+                  <a
+                    href="https://www.intosaicommunity.net"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D61AE] hover:text-[#751639] underline cursor-pointer"
+                  >
+                    https://www.intosaicommunity.net
+                  </a>
+                  )
+                </li>
+                <li>
+                  • Policy, Finance and Administrative Committee (PFAC) (Goal 4) (
+                  <a
+                    href="http://www.intosaipfac.org/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0D61AE] hover:text-[#751639] underline cursor-pointer"
+                  >
+                    http://www.intosaipfac.org/
+                  </a>
+                  )
+                </li>
+              </ul>
+              <p className="font-normal text-[#2A2A2A]">
+                {isHindi
+                  ? 'SAI भारत विभिन्न INTOSAI निकायों में नेतृत्व और प्रतिनिधित्व के पदों के माध्यम से INTOSAI की मानक निर्धारण, क्षमता निर्माण और ज्ञान साझाकरण गतिविधियों में एक सक्रिय भागीदार है।'
+                  : 'SAI India is an active member in the standard setting, capacity building and knowledge sharing activities of INTOSAI through positions of leadership and representation in various INTOSAI bodies.'}
+              </p>
+            </div>
+          ) : (
+            /* Clean Page Content for other pages */
+            <div
+              className="w-full max-w-[978px] text-left font-['Noto_Sans',sans-serif] text-[14px] leading-[28px] tracking-normal"
+              style={{ width: '100%', maxWidth: '978px', opacity: 1, transform: 'rotate(0deg)' }}
+            >
+              <p className="font-medium text-[#751639] mb-4">
+                {isHindi
+                  ? fallbackPageData?.hindiTitle
+                  : fallbackPageData?.title}
+              </p>
+              <p className="font-normal text-[#2A2A2A] leading-relaxed">
+                {isHindi
+                  ? fallbackPageData?.hindiDescription
+                  : fallbackPageData?.description}
+              </p>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Interactive Office Detail Modal */}
+      {selectedOffice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-zinc-200">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-[#751639] to-[#5A0E2A] px-6 py-5 rounded-t-xl text-white flex items-start justify-between">
+              <div>
+                <span className="inline-block px-2.5 py-0.5 bg-white/20 text-white text-[11px] font-semibold uppercase rounded mb-1.5 tracking-wider">
+                  {isHindi
+                    ? selectedOffice.hindiDesignation
+                    : selectedOffice.designation}
+                </span>
+                <h3 className="text-xl font-bold leading-tight text-white text-left">
+                  {isHindi ? selectedOffice.hindiTitle : selectedOffice.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOffice(null)}
+                className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors focus:outline-none cursor-pointer border-none"
+                aria-label={isHindi ? 'बंद करें' : 'Close modal'}
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-5 text-left text-zinc-700">
+              {/* Location & Jurisdiction */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3.5">
+                  <span className="text-[11px] font-bold text-[#751639] uppercase tracking-wider block mb-1">
+                    {isHindi ? 'स्थान / पता' : 'Location / Address'}
+                  </span>
+                  <p className="text-[13px] text-zinc-800 leading-snug">
+                    {isHindi ? selectedOffice.hindiLocation : selectedOffice.location}
+                  </p>
+                </div>
+
+                <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3.5">
+                  <span className="text-[11px] font-bold text-[#751639] uppercase tracking-wider block mb-1">
+                    {isHindi ? 'लेखा परीक्षा क्षेत्राधिकार' : 'Audit Jurisdiction'}
+                  </span>
+                  <p className="text-[13px] text-zinc-800 leading-snug">
+                    {isHindi
+                      ? selectedOffice.hindiJurisdiction
+                      : selectedOffice.jurisdiction}
+                  </p>
+                </div>
+              </div>
+
+              {/* Mandate */}
+              <div>
+                <h4 className="text-[14px] font-bold text-[#1A1A1A] mb-1.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#751639]"></span>
+                  {isHindi ? 'संवैधानिक अधिदेश और दायरा' : 'Mandate & Audit Scope'}
+                </h4>
+                <p className="text-[13.5px] text-zinc-600 leading-relaxed bg-[#FFF8FA] p-3.5 rounded-lg border border-[#F2D7E0]">
+                  {isHindi ? selectedOffice.hindiMandate : selectedOffice.mandate}
+                </p>
+              </div>
+
+              {/* Key Audited Entities */}
+              <div>
+                <h4 className="text-[14px] font-bold text-[#1A1A1A] mb-2 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#751639]"></span>
+                  {isHindi ? 'प्रमुख लेखा परीक्षित निकाय' : 'Key Audited Entities & Missions'}
+                </h4>
+                <ul className="grid grid-cols-1 gap-1.5 pl-2">
+                  {(isHindi
+                    ? selectedOffice.hindiKeyEntities
+                    : selectedOffice.keyEntities
+                  ).map((entity, idx) => (
+                    <li
+                      key={idx}
+                      className="text-[13px] text-zinc-700 flex items-start gap-2"
+                    >
+                      <span className="text-[#751639] font-bold">•</span>
+                      <span>{entity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleCopy(
+                      `${selectedOffice.title}\n${selectedOffice.location}\nJurisdiction: ${selectedOffice.jurisdiction}`
+                    )
+                  }
+                  className="px-4 py-2 text-[13px] border border-zinc-300 rounded-md text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-1.5 font-medium cursor-pointer"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  {isCopied
+                    ? isHindi
+                      ? 'कॉपी किया गया!'
+                      : 'Copied Details!'
+                    : isHindi
+                    ? 'विवरण कॉपी करें'
+                    : 'Copy Office Details'}
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {officeHasPdf(selectedOffice) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const off = selectedOffice;
+                        setSelectedOffice(null);
+                        setActivePdfModal({
+                          title: off.title,
+                          hindiTitle: off.hindiTitle,
+                          pdfSize: off.pdfSize || '34.7 MB',
+                          pdfTitle: off.pdfTitle || off.title,
+                          hindiPdfTitle: off.hindiPdfTitle || off.hindiTitle,
+                          mandate: off.mandate,
+                          hindiMandate: off.hindiMandate,
+                          keyEntities: off.keyEntities,
+                          hindiKeyEntities: off.hindiKeyEntities,
+                        });
+                      }}
+                      className="px-4 py-2 bg-[#751639] hover:bg-[#5E122E] text-white text-[13px] font-medium rounded-md shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer border-none"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z" />
+                      </svg>
+                      {isHindi ? 'पीडीएफ खोलें' : 'Open PDF Report'}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedOffice(null)}
+                    className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[13px] font-medium rounded-md transition-colors cursor-pointer border-none"
+                  >
+                    {isHindi ? 'बंद करें' : 'Close'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Interactive PDF Viewer Modal */}
+      {activePdfModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full h-[85vh] flex flex-col border border-zinc-200 overflow-hidden">
+            {/* Top Toolbar */}
+            <div className="bg-[#2B2D42] text-white px-5 py-3.5 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                  <Image
+                    src="/assets/pdf-icon.png"
+                    alt="PDF"
+                    width={28}
+                    height={28}
+                    className="w-full h-full object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="min-w-0 text-left">
+                  <h3 className="text-[14px] font-bold truncate text-white">
+                    {isHindi
+                      ? activePdfModal.hindiPdfTitle || activePdfModal.hindiTitle
+                      : activePdfModal.pdfTitle || activePdfModal.title}
+                  </h3>
+                  <p className="text-[11px] text-zinc-300">
+                    {activePdfModal.pdfSize || '34.7 MB'} •{' '}
+                    {isHindi
+                      ? 'भारत के नियंत्रक एवं महालेखापरीक्षक'
+                      : 'Comptroller and Auditor General of India'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => alert(isHindi ? 'पीडीएफ डाउनलोड शुरू हो रहा है...' : 'Downloading document...')}
+                  className="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded text-white text-[12px] font-medium transition-colors flex items-center gap-1.5 focus:outline-none cursor-pointer border-none"
+                  title={isHindi ? 'पीडीएफ डाउनलोड करें' : 'Download PDF'}
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span className="hidden sm:inline">{isHindi ? 'डाउनलोड' : 'Download'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded text-white text-[12px] font-medium transition-colors flex items-center gap-1.5 focus:outline-none cursor-pointer border-none"
+                  title={isHindi ? 'प्रिंट करें' : 'Print PDF'}
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
+                  </svg>
+                  <span className="hidden sm:inline">{isHindi ? 'प्रिंट' : 'Print'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActivePdfModal(null)}
+                  className="p-1.5 bg-white/15 hover:bg-[#E53935] rounded-full text-white transition-colors focus:outline-none ml-2 cursor-pointer border-none flex items-center justify-center"
+                  aria-label={isHindi ? 'बंद करें' : 'Close viewer'}
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Document Canvas Preview */}
+            <div className="flex-1 bg-zinc-800 p-4 sm:p-8 overflow-y-auto flex flex-col items-center">
+              <div className="bg-white shadow-2xl rounded-sm max-w-2xl w-full p-8 sm:p-12 text-zinc-800 text-left min-h-[600px] flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between border-b-2 border-[#751639] pb-4 mb-6">
+                    <div>
+                      <h4 className="text-[11px] font-bold tracking-widest text-[#751639] uppercase">
+                        {isHindi
+                          ? 'भारत का सर्वोच्च लेखापरीक्षा संस्थान'
+                          : 'Supreme Audit Institution of India'}
+                      </h4>
+                      <h2 className="text-[18px] font-bold text-zinc-900 mt-1">
+                        {isHindi
+                          ? activePdfModal.hindiTitle
+                          : activePdfModal.title}
+                      </h2>
+                    </div>
+                    <div className="w-12 h-12 relative shrink-0">
+                      <Image
+                        src="/assets/un-logo.png"
+                        alt="Logo"
+                        width={48}
+                        height={48}
+                        className="object-contain"
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 text-[13.5px] leading-relaxed text-zinc-700">
+                    <p className="font-semibold text-zinc-900">
+                      {isHindi
+                        ? 'अधिदेश एवं आधिकारिक प्रकाशन विवरण'
+                        : 'Executive Publication & Research Overview'}
+                    </p>
+                    <p>
+                      {isHindi ? activePdfModal.hindiMandate : activePdfModal.mandate}
+                    </p>
+
+                    {activePdfModal.keyEntities && activePdfModal.keyEntities.length > 0 && (
+                      <div className="bg-zinc-50 border border-zinc-200 rounded p-4 my-4">
+                        <h5 className="font-bold text-[12.5px] text-[#751639] uppercase mb-2">
+                          {isHindi ? 'लेखा परीक्षित प्रमुख संस्थाएं' : 'Governing Entities Audited:'}
+                        </h5>
+                        <ul className="list-disc pl-5 space-y-1 text-[13px]">
+                          {(isHindi
+                            ? activePdfModal.hindiKeyEntities || activePdfModal.keyEntities
+                            : activePdfModal.keyEntities
+                          ).map((ent, idx) => (
+                            <li key={idx}>{ent}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <p className="text-zinc-600 text-[12.5px]">
+                      {isHindi
+                        ? 'यह दस्तावेज़ भारत के नियंत्रक और महालेखापरीक्षक के अंतर्राष्ट्रीय संबंध प्रभाग द्वारा अधिकृत वैधानिक बाह्य लेखा परीक्षा रिपोर्ट/दिशानिर्देश का प्रतिनिधित्व करता है।'
+                        : 'This official publication represents the statutory external audit charter and research document published under the authority of the Comptroller and Auditor General of India.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t border-zinc-200 pt-4 mt-8 flex justify-between text-[11px] text-zinc-400">
+                  <span>CAG India — Global Relations</span>
+                  <span>Document Reference: OA-2026/V2</span>
+                  <span>Page 1 of 24</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function officeHasPdf(office: OfficeItem | null): boolean {
+  return Boolean(office && office.hasPdf);
 }

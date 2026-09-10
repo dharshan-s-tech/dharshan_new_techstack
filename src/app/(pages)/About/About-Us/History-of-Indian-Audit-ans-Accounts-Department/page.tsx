@@ -90,12 +90,12 @@ const HISTORY_SECTIONS: SectionItem[] = [
 ];
 
 const RedPdfIcon = () => (
-  <div className="w-[27px] h-[32px] relative flex-shrink-0 flex items-center justify-center">
-    <svg width="27" height="32" viewBox="0 0 27 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2.5 4C2.5 2.61929 3.61929 1.5 5 1.5H18.5L25 8V28C25 29.3807 23.8807 30.5 22.5 30.5H5C3.61929 30.5 2.5 29.3807 2.5 28V4Z" fill="#E53935" />
-      <path d="M18.5 1.5V8H25L18.5 1.5Z" fill="#C62828" />
-      <text x="13.5" y="21" fill="#FFFFFF" fontSize="8.5" fontWeight="bold" textAnchor="middle" fontFamily="Noto Sans, sans-serif" letterSpacing="0.5">PDF</text>
-    </svg>
+  <div className="w-[27px] h-[33px] relative flex-shrink-0 flex items-center justify-center">
+    <img 
+      src="/assets/pdf-icon.png" 
+      alt="PDF" 
+      className="w-full h-full object-contain block"
+    />
   </div>
 );
 

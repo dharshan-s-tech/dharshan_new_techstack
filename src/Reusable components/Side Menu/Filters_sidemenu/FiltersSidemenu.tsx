@@ -16,6 +16,8 @@ interface FiltersSidemenuProps {
   selectedTypes: string[];
   toggleType: (type: string) => void;
   isHindi?: boolean;
+  sectorsList?: string[];
+  typesList?: string[];
 }
 
 export default function FiltersSidemenu({
@@ -31,6 +33,8 @@ export default function FiltersSidemenu({
   selectedTypes,
   toggleType,
   isHindi = false,
+  sectorsList,
+  typesList,
 }: FiltersSidemenuProps) {
   const router = useRouter();
 
@@ -40,8 +44,12 @@ export default function FiltersSidemenu({
   const [typeOpen, setTypeOpen] = useState(true);
 
   const levels = ['All', 'Union', 'States', 'Local Bodies'];
-  const sectors = ['All Sectors', 'IT Audit', 'Finance', 'Tax and Duties', 'Transport & Infrastructure'];
-  const types = ['All', 'ADC Reports', 'Compliance', 'Financial'];
+  const sectors = sectorsList && sectorsList.length > 0
+    ? sectorsList
+    : ['All Sectors', 'Finance', 'Transport & Infrastructure', 'Education, Health & Family Welfare', 'Environment and Sustainable Development', 'IT Audit', 'Defence and National Security', 'Commercial', 'Agriculture and Rural Development', 'Tax and Duties'];
+  const types = typesList && typesList.length > 0
+    ? typesList
+    : ['All', 'ADC reports', 'Compliance', 'Financial', 'Performance'];
 
   const datePickerRef = React.useRef<HTMLDivElement>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);

@@ -74,20 +74,20 @@ export default function AdminOverview() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-[11px]">
           <div className="bg-zinc-50 p-4 rounded-none border border-zinc-200">
-            <span className="text-[10px] text-zinc-400 uppercase block mb-1">Database Schema</span>
-            <span className="font-mono text-zinc-800 font-bold">cag_new</span>
+            <span className="text-[10px] text-zinc-400 uppercase block mb-1">Database &amp; Schema</span>
+            <span className="font-mono text-zinc-800 font-bold">cag_db_final (cag_revamp)</span>
           </div>
           <div className="bg-zinc-50 p-4 rounded-none border border-zinc-200">
             <span className="text-[10px] text-zinc-400 uppercase block mb-1">Database User</span>
-            <span className="font-mono text-zinc-800 font-bold">dhar</span>
+            <span className="font-mono text-zinc-800 font-bold">test</span>
+          </div>
+          <div className="bg-zinc-50 p-4 rounded-none border border-zinc-200">
+            <span className="text-[10px] text-zinc-400 uppercase block mb-1">DB Host &amp; Port</span>
+            <span className="font-mono text-zinc-800 font-bold">10.10.183.69:5434</span>
           </div>
           <div className="bg-zinc-50 p-4 rounded-none border border-zinc-200">
             <span className="text-[10px] text-zinc-400 uppercase block mb-1">Session Inactivity Timeout</span>
             <span className="font-mono text-zinc-800 font-bold">5 Minutes</span>
-          </div>
-          <div className="bg-zinc-50 p-4 rounded-none border border-zinc-200">
-            <span className="text-[10px] text-zinc-400 uppercase block mb-1">Network Host Server</span>
-            <span className="font-mono text-zinc-800 font-bold">http://10.10.183.228:3000</span>
           </div>
         </div>
       </div>

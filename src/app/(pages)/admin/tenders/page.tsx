@@ -12,6 +12,7 @@ export default function AdminTenders() {
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [sortFilter, setSortFilter] = useState('newest');
   const [appliedSearch, setAppliedSearch] = useState('');
 
   // Form State
@@ -39,6 +40,17 @@ export default function AdminTenders() {
           item.reference_no?.toLowerCase().includes(appliedSearch.toLowerCase())
         );
       }
+
+      if (sortFilter === 'title_asc') {
+        filtered.sort((a: any, b: any) => (a.title_en || '').localeCompare(b.title_en || ''));
+      } else if (sortFilter === 'title_desc') {
+        filtered.sort((a: any, b: any) => (b.title_en || '').localeCompare(a.title_en || ''));
+      } else if (sortFilter === 'oldest') {
+        filtered.sort((a: any, b: any) => (new Date(a.closing_date).getTime() || 0) - (new Date(b.closing_date).getTime() || 0));
+      } else {
+        filtered.sort((a: any, b: any) => (new Date(b.closing_date).getTime() || 0) - (new Date(a.closing_date).getTime() || 0));
+      }
+
       setTenders(filtered);
     } catch (err) {
       let filtered = dataManager.getTenders();
@@ -48,6 +60,17 @@ export default function AdminTenders() {
           item.reference_no?.toLowerCase().includes(appliedSearch.toLowerCase())
         );
       }
+
+      if (sortFilter === 'title_asc') {
+        filtered.sort((a: any, b: any) => (a.title_en || '').localeCompare(b.title_en || ''));
+      } else if (sortFilter === 'title_desc') {
+        filtered.sort((a: any, b: any) => (b.title_en || '').localeCompare(a.title_en || ''));
+      } else if (sortFilter === 'oldest') {
+        filtered.sort((a: any, b: any) => (new Date(a.closing_date).getTime() || 0) - (new Date(b.closing_date).getTime() || 0));
+      } else {
+        filtered.sort((a: any, b: any) => (new Date(b.closing_date).getTime() || 0) - (new Date(a.closing_date).getTime() || 0));
+      }
+
       setTenders(filtered);
     } finally {
       setLoading(false);
@@ -59,7 +82,7 @@ export default function AdminTenders() {
     const handleTendersChange = () => loadData();
     window.addEventListener('tendersChange', handleTendersChange);
     return () => window.removeEventListener('tendersChange', handleTendersChange);
-  }, [appliedSearch, statusFilter]);
+  }, [appliedSearch, statusFilter, sortFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -69,6 +92,7 @@ export default function AdminTenders() {
     setSearchFor('');
     setAppliedSearch('');
     setStatusFilter('All');
+    setSortFilter('newest');
   };
 
   const handleOpenCreate = () => {
@@ -178,6 +202,20 @@ export default function AdminTenders() {
               placeholder="Ref No / Title"
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Sort Order:</label>
+            <select
+              value={sortFilter}
+              onChange={(e) => setSortFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="newest">Closing Date (Furthest first)</option>
+              <option value="oldest">Closing Date (Closing soonest)</option>
+              <option value="title_asc">Title (A to Z)</option>
+              <option value="title_desc">Title (Z to A)</option>
+            </select>
           </div>
 
           <div className="flex items-end gap-2">

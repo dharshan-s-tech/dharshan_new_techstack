@@ -16,12 +16,12 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
 
-    DB_HOST: str = "localhost"
-    DB_PORT: int = 5432
-    DB_NAME: str = "d_cag"
-    DB_USER: str = "dhar"
-    DB_PASSWORD: str = ""
-    DB_SCHEMA: str = "cag_new"
+    DB_HOST: str = "10.10.183.69"
+    DB_PORT: int = 5434
+    DB_NAME: str = "cag_db_final"
+    DB_USER: str = "test"
+    DB_PASSWORD: str = "Test@123"
+    DB_SCHEMA: str = "cag_revamp"
     DATABASE_URL: str | None = None
 
     @property

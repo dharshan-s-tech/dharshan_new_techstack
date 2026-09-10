@@ -52,7 +52,8 @@ function TrainingInstitutesPageContent() {
     api.getPresence()
       .then((data) => {
         if (data) {
-          setOffices(data.filter(x => x.type === 'training'));
+          const list: Office[] = Array.isArray(data) ? data : ((data as any).offices || []);
+          setOffices(list.filter((x: Office) => x.type === 'training'));
         }
         setLoading(false);
       })

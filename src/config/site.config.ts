@@ -1,9 +1,9 @@
 import { MenuItem } from '@/types';
 
-// Static image imports from Assets
-import report1Pic from '@/app/Assets/Images/d14889fd29ae93bd23d9b51c4dad883e07f826bf.png';
-import report2Pic from '@/app/Assets/Images/56272e2a85b8227dfa00af6d4065211e9ac5de8f.png';
-import report3Pic from '@/app/Assets/Images/28f782be18b6cfdf23aa0c90ec681e3916b8d6c7.png';
+// CloudFront sector images from http://d7i5wg8xwe4hf.cloudfront.net/en/home
+const report1Pic = 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Local_Bodies.jpg';
+const report2Pic = 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Environment_and_Sustainable_Development.png';
+const report3Pic = 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Agriculture_and_Rural_Development.jfif';
 
 export const siteConfig = {
   name: 'Comptroller and Auditor General of India',

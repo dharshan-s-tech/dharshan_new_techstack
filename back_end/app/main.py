@@ -15,9 +15,10 @@ from app.models import admin_user, audit_log, news, page, report, event, menu  #
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     with engine.begin() as conn:
-        schema = settings.DB_SCHEMA
-        if schema:
-            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+        if engine.dialect.name == "postgresql":
+            schema = settings.DB_SCHEMA
+            if schema:
+                conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
         Base.metadata.create_all(bind=conn)
     yield
 

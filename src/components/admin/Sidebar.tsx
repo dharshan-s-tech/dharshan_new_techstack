@@ -41,9 +41,10 @@ const NAV: NavGroup[] = [
   },
   {
     group: 'Audit Reports', icon: FileBarChart, items: [
-      { label: 'Audit Reports', href: '/admin/audit-reports', icon: FileBarChart },
+      { label: 'Audit Reports', href: '/admin/reports', icon: FileBarChart },
+      { label: 'State Finance Accounts', href: '/admin/state-accounts', icon: Receipt },
+      { label: 'Combined Accounts', href: '/admin/combined-accounts', icon: Layers },
       { label: 'Audit Report Files', href: '/admin/audit-report-files', icon: Archive },
-      { label: 'State Accounts', href: '/admin/state-accounts', icon: Receipt },
     ]
   },
   {
