@@ -146,11 +146,53 @@ async def list_or_get_crud(
             query=search or "",
             sort=eff_sort,
         )
+    if table == "pages":
+        from app.services.pages_service import SEED_PAGES, PagesService
+        if id:
+            page_item = PagesService.get_page_by_slug_or_id(str(id), db=db)
+            return {"data": [page_item] if page_item else []}
+        page_list = []
+        for pid, pdata in SEED_PAGES.items():
+            page_list.append({
+                "id": pdata["id"],
+                "slug": pdata["slug"],
+                "title_en": pdata["title_en"],
+                "title_hi": pdata.get("title_hi", ""),
+                "section": "About Us",
+                "is_active": True
+            })
         return {
-            "data": result.get("items", []),
-            "total": result.get("total", 0),
-            "page": page,
-            "totalPages": result.get("total_pages", 1)
+            "data": page_list,
+            "total": len(page_list),
+            "page": 1,
+            "totalPages": 1
+        }
+
+    if table == "former_cag":
+        from app.services.former_cag_service import FormerCagService
+        cags = FormerCagService.get_former_cags(db=db)
+        if id:
+            found = [c for c in cags if str(c.get("id")) == str(id)]
+            return {"data": found}
+        return {
+            "data": cags,
+            "total": len(cags),
+            "page": 1,
+            "totalPages": 1
+        }
+
+    if table == "organisation_chart":
+        from app.services.organisation_chart_service import OrganisationChartService
+        chart = OrganisationChartService.get_organisation_chart(db=db)
+        officers = chart.get("officers", [])
+        if id:
+            found = [o for o in officers if str(o.get("id")) == str(id)]
+            return {"data": found}
+        return {
+            "data": officers,
+            "total": len(officers),
+            "page": 1,
+            "totalPages": 1
         }
 
     items = MOCK_MODULE_STORE.get(table, [])

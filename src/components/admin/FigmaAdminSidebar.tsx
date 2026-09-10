@@ -379,24 +379,14 @@ export default function FigmaAdminSidebar() {
   };
 
   return (
-    <aside 
-      className="admin-sidebar-font shrink-0 select-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+    <aside
+      className="h-full max-h-full flex flex-col flex-shrink-0 select-none overflow-hidden"
       style={{
-        /* Frame 1000005283 */
         boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        padding: '24px',
-        gap: '40px',
-        width: '355px',
-        minWidth: '355px',
-        maxWidth: '355px',
-        height: '977px',
-        minHeight: '977px',
-        top: '80px',
-        left: '1px',
-        overflowY: 'scroll',
+        width: '320px',
+        minWidth: '320px',
+        maxWidth: '320px',
+        padding: '20px 16px',
         background: '#751639',
         fontFamily: "'Inter', sans-serif",
         fontWeight: 500,
@@ -435,8 +425,8 @@ export default function FigmaAdminSidebar() {
         </span>
       </div>
 
-      {/* Main Navigation Tree */}
-      <nav className="flex flex-col gap-2 w-full">
+      {/* Main Navigation Tree - Scrollable to End */}
+      <nav className="flex-1 overflow-y-auto overscroll-contain py-3 space-y-1 w-full scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
         {menuItems.map(item => {
           if (item.type === 'leaf') {
             return renderLeaf(item);
@@ -447,7 +437,7 @@ export default function FigmaAdminSidebar() {
 
       {/* Bottom Info Footer */}
       <div 
-        className="mt-auto pt-4 border-t border-white/20 text-xs flex flex-col gap-1.5 w-full shrink-0"
+        className="pt-3 border-t border-white/20 text-xs flex flex-col gap-1.5 w-full shrink-0 mt-auto"
         style={{ fontFamily: "'Inter', sans-serif", color: '#FFFFFF' }}
       >
         <div className="flex justify-between items-center text-[11px]" style={{ color: '#FFFFFF' }}>

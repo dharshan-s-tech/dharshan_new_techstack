@@ -1334,6 +1334,37 @@ const DEFAULT_NEWS: NewsItem[] = [
 ];
 
 export const dataManager = {
+  // --- Live Backend API Connectors for About Us & Governance ---
+  async fetchPageData(slugOrId: string, culture = 'en') {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/pages/${encodeURIComponent(slugOrId)}?culture=${culture}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Graceful fallback
+    }
+    return null;
+  },
+
+  async fetchOrganisationChart(culture = 'en') {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/organisation-chart?culture=${culture}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Graceful fallback
+    }
+    return { officers: [] };
+  },
+
+  async fetchFormerCags(culture = 'en') {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/former-cag?culture=${culture}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Graceful fallback
+    }
+    return this.getFormerCags();
+  },
+
   getLanguage(): 'English' | 'हिन्दी' {
     if (typeof window === 'undefined') return 'English';
     return (localStorage.getItem('cag_language') as any) || 'English';
