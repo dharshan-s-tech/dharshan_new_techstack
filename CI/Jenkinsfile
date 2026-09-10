@@ -790,6 +790,13 @@ pipeline {
          * ============================================================
          * 16. PUBLISH BUILD INFORMATION
          * ============================================================
+         *
+         * IMPORTANT:
+         *
+         * This shell block uses single-quoted Groovy strings so that
+         * Linux shell variables such as ${BUILD_NUMBER} and
+         * $(date ...) are NOT interpreted by Groovy.
+         * ============================================================
          */
         stage('16. Publish Build Information') {
             steps {
@@ -798,7 +805,7 @@ pipeline {
                     echo "16. PUBLISH BUILD INFORMATION"
                     echo "============================================================"
 
-                    sh """
+                    sh '''
                         cat > build-info.txt <<EOF
 CAG Website V2 CI Build Information
 ===================================
@@ -807,16 +814,16 @@ Jenkins Build:
 ${BUILD_NUMBER}
 
 Git SHA:
-${env.GIT_SHA}
+${GIT_SHA}
 
 Branch:
-${env.BRANCH_NAME}
+${BRANCH_NAME}
 
 Backend Image:
-${BACKEND_IMAGE}:${env.GIT_SHA}
+${BACKEND_IMAGE}:${GIT_SHA}
 
 Frontend Image:
-${FRONTEND_IMAGE}:${env.GIT_SHA}
+${FRONTEND_IMAGE}:${GIT_SHA}
 
 Backend Health Endpoint:
 /health
@@ -832,7 +839,7 @@ $(date -u '+%Y-%m-%d %H:%M:%S UTC')
 EOF
 
                         cat build-info.txt
-                    """
+                    '''
 
                     archiveArtifacts artifacts: 'build-info.txt', fingerprint: true
                 }
@@ -932,28 +939,13 @@ EOF
                 echo ""
 
                 /*
-                 * GitHub PR success comment
+                 * GitHub PR success information
                  */
                 if (env.CHANGE_ID) {
 
-                    withCredentials([
-                        string(
-                            credentialsId: "${GITHUB_CREDENTIALS_ID}",
-                            variable: 'GITHUB_TOKEN'
-                        )
-                    ]) {
-
-                        sh '''
-                            if [ -n "${CHANGE_ID}" ] && [ -n "${CHANGE_URL}" ]; then
-
-                                echo "PR build completed successfully."
-
-                                echo "GitHub PR:"
-                                echo "${CHANGE_URL}"
-
-                            fi
-                        '''
-                    }
+                    echo "PR build completed successfully."
+                    echo "GitHub PR:"
+                    echo "${env.CHANGE_URL}"
                 }
             }
         }
