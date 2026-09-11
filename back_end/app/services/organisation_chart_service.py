@@ -36,7 +36,30 @@ def clean_html(raw_html: str) -> str:
     return clean
 
 
+SEED_ORGANISATION_OFFICERS = [
+    {
+        "id": 1,
+        "name_en": "Shri K. Sanjay Murthy",
+        "name_hi": "श्री के. संजय मूर्ति",
+        "designation_en": "Comptroller & Auditor General of India",
+        "designation_hi": "भारत के नियंत्रक एवं महालेखापरीक्षक",
+        "charge_en": "Apex Authority",
+        "charge_hi": "शीर्ष प्राधिकारी",
+        "email": "cagindia@cag.gov.in",
+        "phone": "011-23235790",
+        "profile_image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg",
+        "level": 0,
+        "reporting_en": "Supreme Audit Institution of India",
+        "reporting_hi": "भारत का सर्वोच्च लेखापरीक्षा संस्थान",
+        "display_order": 1,
+        "retired": 0,
+        "status": 1
+    }
+]
+
+
 class OrganisationChartService:
+
     @staticmethod
     def get_organisation_chart(culture: str = "en", db: Optional[Session] = None) -> Dict[str, Any]:
         is_hi = culture == "hi"

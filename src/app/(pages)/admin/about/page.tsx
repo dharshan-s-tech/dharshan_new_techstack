@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { ALL_ABOUT_DB_RECORDS, AboutRecord } from '@/data/aboutAdminData';
-import { 
-  Landmark, UserCheck, Compass, GitBranch, Award, Library, Users, 
-  Scale, ScrollText, BookOpen, Search, Filter, RotateCcw, ExternalLink, 
-  Pencil, Eye, Plus, CheckCircle2, FileText, ChevronRight, Layers, 
+import {
+  Landmark, UserCheck, Compass, GitBranch, Award, Library, Users,
+  Scale, ScrollText, BookOpen, Search, Filter, RotateCcw, ExternalLink,
+  Pencil, Eye, Plus, CheckCircle2, FileText, ChevronRight, Layers,
   ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database
 } from 'lucide-react';
 
@@ -25,7 +25,7 @@ function AdminAboutRegistryContent() {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length >= 100) return parsed;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     return ALL_ABOUT_DB_RECORDS;
   });
@@ -93,9 +93,9 @@ function AdminAboutRegistryContent() {
       ];
       categories.forEach((cat) => {
         (SUBTOPICS_BY_CATEGORY[cat] || []).forEach((st) => {
-          const count = allAboutRecords.filter(r => 
+          const count = allAboutRecords.filter(r =>
             r.category === cat && (
-              r.subTopicSlug.toLowerCase().includes(st.value.toLowerCase()) || 
+              r.subTopicSlug.toLowerCase().includes(st.value.toLowerCase()) ||
               r.subTopic.toLowerCase().includes(st.value.toLowerCase()) ||
               r.subTopic.toLowerCase().includes(st.label.toLowerCase()) ||
               st.value.toLowerCase().includes(r.subTopicSlug.toLowerCase())
@@ -115,8 +115,8 @@ function AdminAboutRegistryContent() {
     const result = [{ label: `All ${categoryFilter} Sub-Topics (${catRecords.length})`, value: 'All' }];
 
     currentList.forEach((st) => {
-      const count = catRecords.filter(r => 
-        r.subTopicSlug.toLowerCase().includes(st.value.toLowerCase()) || 
+      const count = catRecords.filter(r =>
+        r.subTopicSlug.toLowerCase().includes(st.value.toLowerCase()) ||
         r.subTopic.toLowerCase().includes(st.value.toLowerCase()) ||
         r.subTopic.toLowerCase().includes(st.label.toLowerCase()) ||
         st.value.toLowerCase().includes(r.subTopicSlug.toLowerCase())
@@ -206,7 +206,7 @@ function AdminAboutRegistryContent() {
     // Sub-topic filter
     if (subTopicFilter !== 'All') {
       const qTopic = subTopicFilter.toLowerCase();
-      result = result.filter(r => 
+      result = result.filter(r =>
         r.subTopicSlug.toLowerCase().includes(qTopic) ||
         r.subTopic.toLowerCase().includes(qTopic) ||
         r.rawId.toLowerCase().includes(qTopic)
@@ -232,7 +232,7 @@ function AdminAboutRegistryContent() {
     // Applied Search query
     if (appliedSearch.trim()) {
       const q = appliedSearch.toLowerCase();
-      result = result.filter(r => 
+      result = result.filter(r =>
         r.title_en.toLowerCase().includes(q) ||
         (r.title_hi && r.title_hi.toLowerCase().includes(q)) ||
         (r.desc && r.desc.toLowerCase().includes(q)) ||
@@ -335,7 +335,7 @@ function AdminAboutRegistryContent() {
       await fetch(`${API_URL}/api/admin/crud?table=about&id=${encodeURIComponent(rawId)}`, {
         method: 'DELETE',
       });
-    } catch (e) {}
+    } catch (e) { }
 
     const updated = allAboutRecords.filter(r => r.rawId !== rawId);
     setAllAboutRecords(updated);
@@ -381,7 +381,7 @@ function AdminAboutRegistryContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newRecord),
         });
-      } catch (e) {}
+      } catch (e) { }
       updated = allAboutRecords.map(r => r.rawId === editingRawId ? newRecord : r);
     } else {
       try {
@@ -397,7 +397,7 @@ function AdminAboutRegistryContent() {
             newRecord.id = resData.id;
           }
         }
-      } catch (e) {}
+      } catch (e) { }
       updated = [newRecord, ...allAboutRecords];
     }
 
@@ -412,7 +412,7 @@ function AdminAboutRegistryContent() {
 
   return (
     <div className="space-y-4 text-xs text-zinc-700 font-sans">
-      
+
       {/* 1. TOP FILTERS PANEL (Figma Burgundy Header matching Reports) */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -625,7 +625,7 @@ function AdminAboutRegistryContent() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr 
+              <tr
                 className="text-white border-b border-[#5c102c] font-bold"
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
@@ -666,21 +666,21 @@ function AdminAboutRegistryContent() {
 
                     {/* Thumbnail */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <img 
-                        src={item.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'} 
-                        alt="" 
+                      <img
+                        src={item.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
+                        alt=""
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
                         }}
-                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100 mx-auto shadow-2xs" 
+                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100 mx-auto shadow-2xs"
                       />
                     </td>
 
                     {/* Title & Summary */}
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
-                      <div 
-                        className="line-clamp-2 cursor-pointer hover:underline text-sm" 
-                        onClick={() => handleOpenView(item)} 
+                      <div
+                        className="line-clamp-2 cursor-pointer hover:underline text-sm"
+                        onClick={() => handleOpenView(item)}
                         title="Click to view full record details"
                       >
                         {item.title_en}
@@ -699,11 +699,10 @@ function AdminAboutRegistryContent() {
 
                     {/* Category */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block rounded-xs ${
-                        item.category === 'Who We Are' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                        item.category === 'Leadership & Legacy' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
-                        'bg-amber-50 text-amber-800 border border-amber-200'
-                      }`}>
+                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block rounded-xs ${item.category === 'Who We Are' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                          item.category === 'Leadership & Legacy' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
+                            'bg-amber-50 text-amber-800 border border-amber-200'
+                        }`}>
                         {item.category}
                       </span>
                     </td>
@@ -716,11 +715,10 @@ function AdminAboutRegistryContent() {
 
                     {/* DB Table */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] font-mono text-[11px] text-zinc-600">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                        item.table_name.includes('pages') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                        item.table_name.includes('former_cag') ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                        'bg-teal-50 text-teal-700 border border-teal-200'
-                      }`}>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${item.table_name.includes('pages') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                          item.table_name.includes('former_cag') ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                            'bg-teal-50 text-teal-700 border border-teal-200'
+                        }`}>
                         {item.table_name.replace('cag_revamp.', '')}
                       </span>
                     </td>
@@ -734,9 +732,8 @@ function AdminAboutRegistryContent() {
 
                     {/* Status */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                        }`}>
                         {item.is_active ? 'ACTIVE' : 'DRAFT'}
                       </span>
                     </td>
@@ -823,9 +820,9 @@ function AdminAboutRegistryContent() {
       {viewingRecord && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
+
             {/* Modal Header */}
-            <div 
+            <div
               className="p-4 text-white flex justify-between items-start"
               style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
             >
@@ -852,7 +849,7 @@ function AdminAboutRegistryContent() {
 
             {/* Modal Body */}
             <div className="p-6 space-y-5 text-zinc-800">
-              
+
               {/* Badges Bar */}
               <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
                 <span className="px-2.5 py-1 bg-[#751639] text-white font-bold text-[11px] rounded-xs">
@@ -867,9 +864,8 @@ function AdminAboutRegistryContent() {
                 <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-bold text-[11px] rounded-xs">
                   Lang: {viewingRecord.language}
                 </span>
-                <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
-                  viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-zinc-200 text-zinc-700'
-                }`}>
+                <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-zinc-200 text-zinc-700'
+                  }`}>
                   {viewingRecord.is_active ? '● ACTIVE' : '○ DRAFT'}
                 </span>
               </div>
