@@ -13,7 +13,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री गिरीश चंद्र मुर्मू",
         "tenure_from": "2020",
         "tenure_to": "2024",
-        "image": "/assets/former-cags/cag-14.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-FG-Girish-0673ead2d5dcc41-56012319.jpg"
     },
     {
         "id": 13,
@@ -21,7 +21,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री राजीव महर्षि",
         "tenure_from": "2017",
         "tenure_to": "2020",
-        "image": "/assets/former-cags/cag-13.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-Rajiv-05f3c0e1acaff31-44023461.jpg"
     },
     {
         "id": 12,
@@ -29,7 +29,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री शशिकांत शर्मा",
         "tenure_from": "2013",
         "tenure_to": "2017",
-        "image": "/assets/former-cags/cag-12.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-shashi-05de4f20e412159-43528983.jpg"
     },
     {
         "id": 11,
@@ -37,7 +37,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री विनोद राय",
         "tenure_from": "2008",
         "tenure_to": "2013",
-        "image": "/assets/former-cags/cag-11.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-20-05de4f26d189092-01819458.jpg"
     },
     {
         "id": 10,
@@ -45,7 +45,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री वी. एन. कौल",
         "tenure_from": "2002",
         "tenure_to": "2008",
-        "image": "/assets/former-cags/cag-10.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-19-05de4f2a89a6655-77279258.jpg"
     },
     {
         "id": 9,
@@ -53,7 +53,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री वी. के. शुंगलू",
         "tenure_from": "1996",
         "tenure_to": "2002",
-        "image": "/assets/former-cags/cag-9.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-18-05de4f2ea4f3913-35294852.jpg"
     },
     {
         "id": 8,
@@ -61,7 +61,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री सी. जी. सोमैया",
         "tenure_from": "1990",
         "tenure_to": "1996",
-        "image": "/assets/former-cags/cag-8.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-17-05de4f32fd82f40-71710021.jpg"
     },
     {
         "id": 7,
@@ -69,7 +69,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री टी. एन. चतुर्वेदी",
         "tenure_from": "1984",
         "tenure_to": "1989",
-        "image": "/assets/former-cags/cag-7.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-16-05e69dc63495a63-58455972.jpg"
     },
     {
         "id": 6,
@@ -77,7 +77,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री ज्ञान प्रकाश",
         "tenure_from": "1978",
         "tenure_to": "1984",
-        "image": "/assets/former-cags/cag-6.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-15-05de4f3b6139fc4-77603869.jpg"
     },
     {
         "id": 5,
@@ -85,7 +85,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री ए. बक्सी",
         "tenure_from": "1972",
         "tenure_to": "1978",
-        "image": "/assets/former-cags/cag-5.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-14-05de4f3e9a23e92-06148388.jpg"
     },
     {
         "id": 4,
@@ -93,7 +93,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री एस. रंगनाथन",
         "tenure_from": "1966",
         "tenure_to": "1972",
-        "image": "/assets/former-cags/cag-4.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-13-05de4f42bc9fc33-07074595.jpg"
     },
     {
         "id": 3,
@@ -101,7 +101,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री ए. के. रॉय",
         "tenure_from": "1960",
         "tenure_to": "1966",
-        "image": "/assets/former-cags/cag-3.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-12-05de4f456be6206-12327052.jpg"
     },
     {
         "id": 2,
@@ -109,7 +109,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री ए. के. चंदा",
         "tenure_from": "1954",
         "tenure_to": "1960",
-        "image": "/assets/former-cags/cag-2.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-11-05de4f481501010-16235001.jpg"
     },
     {
         "id": 1,
@@ -117,7 +117,7 @@ SEED_FORMER_CAGS = [
         "name_hi": "श्री वी. नरहरि राव",
         "tenure_from": "1948",
         "tenure_to": "1954",
-        "image": "/assets/former-cags/cag-1.png"
+        "image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-10-05de4f4cc261e13-47267885.jpg"
     }
 ]
 
@@ -150,8 +150,17 @@ class FormerCagService:
                     items = []
                     for r in rows:
                         img = r.get("image") or ""
-                        if img and not img.startswith("/"):
-                            img = f"/uploads/former_cag/{img}"
+                        if img:
+                            if img.startswith("http://") or img.startswith("https://"):
+                                pass
+                            elif img.startswith("/uploads/"):
+                                img = f"https://d7i5wg8xwe4hf.cloudfront.net{img}"
+                            elif img.startswith("uploads/"):
+                                img = f"https://d7i5wg8xwe4hf.cloudfront.net/{img}"
+                            elif img.startswith("/assets/"):
+                                pass
+                            else:
+                                img = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/{img}"
 
                         items.append({
                             "id": r.get("id"),

@@ -1386,13 +1386,54 @@ export const dataManager = {
     return { officers: [] };
   },
 
-  async fetchFormerCags(culture = 'en') {
+  async fetchFormerCags(culture: string = 'en'): Promise<FormerCAGItem[]> {
     try {
       const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000');
       const res = await fetch(`${baseUrl}/api/former-cag?culture=${culture}`, { cache: 'no-store' });
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const items = await res.json();
+        if (Array.isArray(items) && items.length > 0) {
+          return items.map((item: any, idx: number) => {
+            const tFrom = item.tenure_from || '';
+            const tTo = item.tenure_to || '';
+            let tenureStr = item.tenure || '';
+            if (!tenureStr && (tFrom || tTo)) {
+              tenureStr = `(${tFrom}${tTo ? ` - ${tTo}` : ''})`;
+            } else if (tenureStr && !tenureStr.startsWith('(')) {
+              tenureStr = `(${tenureStr})`;
+            }
+
+            let imgUrl = item.image || item.image_url || '';
+            if (imgUrl) {
+              if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+                // already full URL
+              } else if (imgUrl.startsWith('/uploads/')) {
+                imgUrl = `https://d7i5wg8xwe4hf.cloudfront.net${imgUrl}`;
+              } else if (imgUrl.startsWith('uploads/')) {
+                imgUrl = `https://d7i5wg8xwe4hf.cloudfront.net/${imgUrl}`;
+              } else if (imgUrl.startsWith('/assets/')) {
+                // local static asset
+              } else {
+                imgUrl = `https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/${imgUrl}`;
+              }
+            } else {
+              imgUrl = `/assets/former-cags/fc-${(idx % 29) + 1}.png`;
+            }
+
+            return {
+              id: String(item.id || `fc-${idx + 1}`),
+              name: item.name || item.title || 'Former CAG',
+              tenure: tenureStr,
+              image_url: imgUrl,
+              title: item.title,
+              tenure_from: tFrom,
+              tenure_to: tTo,
+            };
+          });
+        }
+      }
     } catch (e) {
-      // Graceful fallback
+      console.warn('[dataManager] fetchFormerCags failed, using local fallback:', e);
     }
     return this.getFormerCags();
   },
@@ -1751,18 +1792,38 @@ export const dataManager = {
       } else {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          items = DEFAULT_FORMER_CAGS.map(def => {
-            const found = parsed.find(p => p.id === def.id);
+          items = DEFAULT_FORMER_CAGS.map((def, idx) => {
+            const found = parsed.find(p => p.id === def.id || p.id === String(idx + 1));
             return found ? { ...found, image_url: def.image_url || found.image_url } : def;
           });
         } else {
           items = DEFAULT_FORMER_CAGS;
         }
       }
-      return items.map(item => ({
-        ...item,
-        tenure: item.tenure ? item.tenure.replace(/\((\d{4})\s*-\s*(\d{4})\)/, '($1 - $2)') : item.tenure
-      }));
+      return items.map((item, idx) => {
+        let img = item.image_url || '';
+        if (img) {
+          if (img.startsWith('http://') || img.startsWith('https://')) {
+            // keep
+          } else if (img.startsWith('/uploads/')) {
+            img = `https://d7i5wg8xwe4hf.cloudfront.net${img}`;
+          } else if (img.startsWith('uploads/')) {
+            img = `https://d7i5wg8xwe4hf.cloudfront.net/${img}`;
+          } else if (img.startsWith('/assets/')) {
+            // keep
+          } else {
+            img = `https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/${img}`;
+          }
+        } else {
+          img = `/assets/former-cags/fc-${(idx % 29) + 1}.png`;
+        }
+
+        return {
+          ...item,
+          image_url: img,
+          tenure: item.tenure ? item.tenure.replace(/\((\d{4})\s*-\s*(\d{4})\)/, '($1 - $2)') : item.tenure
+        };
+      });
     } catch (e) {
       return DEFAULT_FORMER_CAGS;
     }
