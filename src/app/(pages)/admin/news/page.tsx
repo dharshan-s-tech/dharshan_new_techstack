@@ -26,6 +26,8 @@ export default function AdminNews() {
   const [sortFilter, setSortFilter] = useState('newest');
 
   const [appliedSearch, setAppliedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -280,10 +282,35 @@ export default function AdminNews() {
 
       {/* 2. TABLE GRID PANEL */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
+        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
           <h3 className="font-semibold text-zinc-800">
-            AeNotices Records [ Displaying {news.length} of {news.length} ]
+            AeNotices Records [ Displaying {news.slice((page - 1) * pageSize, page * pageSize).length} of {news.length} ]
           </h3>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+              >
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+            <button
+              onClick={handleOpenCreate}
+              className="text-white px-3.5 py-1.5 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
+              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+            >
+              + Add New Notice
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -315,9 +342,9 @@ export default function AdminNews() {
                   </td>
                 </tr>
               ) : (
-                news.map((item, idx) => (
+                news.slice((page - 1) * pageSize, page * pageSize).map((item, idx) => (
                   <tr key={item.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
+                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{(page - 1) * pageSize + idx + 1}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
                       <div>{item.title_en}</div>
                       <div className="text-[11px] text-zinc-500 font-normal mt-0.5 truncate">{item.desc_en}</div>
@@ -348,6 +375,31 @@ export default function AdminNews() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {Math.ceil(news.length / pageSize) > 1 && (
+          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
+            <span className="text-[11px] text-zinc-500">
+              Page <strong>{page}</strong> of <strong>{Math.ceil(news.length / pageSize)}</strong> ({news.length} records)
+            </span>
+            <div className="flex gap-1">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
+              >
+                ← Prev
+              </button>
+              <button
+                disabled={page >= Math.ceil(news.length / pageSize)}
+                onClick={() => setPage(p => Math.min(Math.ceil(news.length / pageSize), p + 1))}
+                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Form Slide Modal */}

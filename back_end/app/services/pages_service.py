@@ -101,9 +101,11 @@ SLUG_TO_ID_MAP: Dict[str, str] = {
     "page-duties-power-and-conditions-of-services-act": "3",
     "duties-power-and-conditions-of-services-act": "3",
     "duties-&-powers-act": "3",
+    "duties-powers-act": "3",
     "page-cag-audit-regulations": "6685",
     "cag-audit-regulations": "6685",
     "audit-regulation": "6685",
+    "audit-regulations": "6685",
     "page-constitutional-provisions": "2",
     "constitutional-provisions": "2",
     "page-our-vision-mission-values": "10",
@@ -114,8 +116,16 @@ SLUG_TO_ID_MAP: Dict[str, str] = {
     "page-history-of-indian-audit-and-accounts-department": "41",
     "history-of-indian-audit-and-accounts-department": "41",
     "history-of-indian-audit-ans-accounts-department": "41",
+    "history-of-iaad": "41",
     "page-audit-advisory-board": "40",
-    "audit-advisory-board": "40"
+    "audit-advisory-board": "40",
+    "page-international-relations": "4",
+    "international-relations": "4",
+    "page-cag-s-auditing-standards-2017": "11",
+    "auditing-standards": "11",
+    "page-citizen-s-charter": "16",
+    "citizen-charter": "16",
+    "citizen-s-charter": "16"
 }
 
 

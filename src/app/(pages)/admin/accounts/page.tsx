@@ -672,6 +672,23 @@ function AdminAccountsManagementHubContent() {
           </h3>
           
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+              >
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+
             <Link
               href={`/Reports/accounts?category=${activeSubtopic === 'combined' ? 'combined-finance-revenue' : activeSubtopic === 'conference' ? 'annual-conference' : activeSubtopic === 'ut' ? 'territories-accounts' : 'state-accounts'}&tab=${activeSubtopic === 'conference' ? 'conference' : activeSubtopic === 'combined' ? 'combined' : activeSubtopic === 'glance' ? 'glance' : activeSubtopic === 'appropriation' ? 'appropriation' : activeSubtopic === 'monthly' ? 'monthly-key-indicators' : activeSubtopic === 'faaa' ? 'faaa-data' : 'finance'}`}
               target="_blank"

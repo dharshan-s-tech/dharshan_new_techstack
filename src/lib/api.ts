@@ -137,8 +137,14 @@ export const api = {
   getOfficers: async () => {
     return fetchJson<any>('/api/officers');
   },
-  getPageContent: async (slug: string) => {
-    return fetchJson<{ title: string; content_html: string }>(`/api/pages/${slug}`);
+  getPageContent: async (slug: string, culture = 'en') => {
+    return fetchJson<{ id?: number; title: string; excerpt?: string; content_html: string; upload_file?: string; file_title?: string }>(`/api/pages/${slug}?culture=${culture}`);
+  },
+  getOrganisationChart: async (culture = 'en') => {
+    return fetchJson<{ officers: any[]; levels?: any[]; charges?: any[] }>(`/api/organisation-chart?culture=${culture}`);
+  },
+  getFormerCags: async (culture = 'en') => {
+    return fetchJson<any[]>(`/api/former-cag?culture=${culture}`);
   },
   getStateSubsite: async (slug: string) => {
     return fetchJson<any>(`/api/states/${slug}`);

@@ -625,6 +625,23 @@ function AdminReportsContent() {
           </h3>
           
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+              >
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
             <button
               onClick={handleOpenCreate}
               className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"

@@ -81,9 +81,40 @@ async def list_or_get_crud(
     search: Optional[str] = Query(None),
     searchCol: Optional[str] = Query(None),
     sort: Optional[str] = Query("newest"),
+    category: Optional[str] = Query(None),
+    subtopic: Optional[str] = Query(None),
+    db_table: Optional[str] = Query(None),
+    language: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
     eff_sort = sort or "newest"
+    if table in ("about", "about_us", "about_records"):
+        from app.services.about_service import AboutAdminService
+        if id:
+            all_data = AboutAdminService.get_all_about_records(db=db, page=1, page_size=1000)
+            found = [r for r in all_data.get("items", []) if str(r.get("id")) == str(id) or str(r.get("rawId")) == str(id)]
+            return {"data": found}
+        result = AboutAdminService.get_all_about_records(
+            db=db,
+            category=category,
+            subtopic=subtopic,
+            table_name=db_table,
+            language=language,
+            status=status,
+            search=search,
+            sort=eff_sort,
+            page=page,
+            page_size=limit
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("totalPages", 1),
+            "categoryCounts": result.get("categoryCounts", {})
+        }
+
     if table == "audit_reports":
         if id:
             rep = ReportsService.get_audit_report_by_id(str(id))
@@ -146,6 +177,13 @@ async def list_or_get_crud(
             query=search or "",
             sort=eff_sort,
         )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
     if table == "pages":
         from app.services.pages_service import SEED_PAGES, PagesService
         if id:
@@ -240,6 +278,10 @@ async def create_crud(
     elif table == "combined_accounts":
         saved = ReportsService.save_local_combined_account(data)
         record_id = str(saved.get("id"))
+    elif table in ("about", "about_us", "about_records"):
+        from app.services.about_service import AboutAdminService
+        saved = AboutAdminService.save_about_record(data, db=db)
+        record_id = str(saved.get("rawId") or saved.get("id") or uuid.uuid4())
     else:
         record_id = str(uuid.uuid4())
         data["id"] = record_id
@@ -288,6 +330,9 @@ async def update_crud(
     elif table == "combined_accounts":
         data["id"] = str(id)
         ReportsService.save_local_combined_account(data)
+    elif table in ("about", "about_us", "about_records"):
+        from app.services.about_service import AboutAdminService
+        AboutAdminService.save_about_record({**data, "rawId": id}, db=db)
     else:
         items = MOCK_MODULE_STORE.get(table, [])
         found_idx = -1
@@ -337,6 +382,9 @@ async def delete_crud(
         ReportsService.delete_local_state_account(str(id))
     elif table == "combined_accounts":
         ReportsService.delete_local_combined_account(str(id))
+    elif table in ("about", "about_us", "about_records"):
+        from app.services.about_service import AboutAdminService
+        AboutAdminService.delete_about_record(str(id), db=db)
     else:
         items = MOCK_MODULE_STORE.get(table, [])
         MOCK_MODULE_STORE[table] = [item for item in items if str(item.get("id")) != str(id)]

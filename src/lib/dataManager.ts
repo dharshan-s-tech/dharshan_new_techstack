@@ -1366,7 +1366,8 @@ export const dataManager = {
   // --- Live Backend API Connectors for About Us & Governance ---
   async fetchPageData(slugOrId: string, culture = 'en') {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/pages/${encodeURIComponent(slugOrId)}?culture=${culture}`);
+      const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000');
+      const res = await fetch(`${baseUrl}/api/pages/${encodeURIComponent(slugOrId)}?culture=${culture}`, { cache: 'no-store' });
       if (res.ok) return await res.json();
     } catch (e) {
       // Graceful fallback
@@ -1376,7 +1377,8 @@ export const dataManager = {
 
   async fetchOrganisationChart(culture = 'en') {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/organisation-chart?culture=${culture}`);
+      const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000');
+      const res = await fetch(`${baseUrl}/api/organisation-chart?culture=${culture}`, { cache: 'no-store' });
       if (res.ok) return await res.json();
     } catch (e) {
       // Graceful fallback
@@ -1386,7 +1388,8 @@ export const dataManager = {
 
   async fetchFormerCags(culture = 'en') {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/former-cag?culture=${culture}`);
+      const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000');
+      const res = await fetch(`${baseUrl}/api/former-cag?culture=${culture}`, { cache: 'no-store' });
       if (res.ok) return await res.json();
     } catch (e) {
       // Graceful fallback

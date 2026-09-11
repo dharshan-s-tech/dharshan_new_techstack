@@ -411,14 +411,65 @@ const OFFICERS_DATA: {
 
 export default function OrganisationChartPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [chartData, setChartData] = useState(OFFICERS_DATA);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => {
-      setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    const loadData = (selectedLang: 'English' | 'हिन्दी') => {
+      const culture = selectedLang === 'हिन्दी' ? 'hi' : 'en';
+      dataManager.fetchOrganisationChart(culture).then((data) => {
+        if (!isMounted || !data || !Array.isArray(data.officers) || data.officers.length === 0) return;
+        const raw = data.officers;
+        const cagOfficer = raw.find((o: any) => o.level === 0 || String(o.id) === '1') || raw[0];
+        const secOfficer = raw.find((o: any) => o.level === 1 || String(o.id) === '2') || raw[1];
+        const otherOfficers = raw.filter((o: any) => String(o.id) !== String(cagOfficer?.id) && String(o.id) !== String(secOfficer?.id));
+
+        const mapOfficer = (o: any): OfficerData => ({
+          id: String(o.id),
+          nameEn: o.name_en || o.name || '',
+          nameHi: o.name_hi || o.name || o.name_en || '',
+          desigEn: o.designation_en || o.designation || 'Deputy Comptroller & Auditor General',
+          desigHi: o.designation_hi || o.designation || 'उप नियंत्रक एवं महालेखापरीक्षक',
+          subEn: o.charge_en || o.charge || '',
+          subHi: o.charge_hi || o.charge || o.charge_en || '',
+          email: o.email || '',
+          phone: o.phone || '',
+          reportingEn: o.reporting_en || o.reporting || '',
+          reportingHi: o.reporting_hi || o.reporting || o.reporting_en || ''
+        });
+
+        const rows: { left: OfficerData | null; right: OfficerData | null }[] = [];
+        for (let i = 0; i < otherOfficers.length; i += 2) {
+          rows.push({
+            left: otherOfficers[i] ? mapOfficer(otherOfficers[i]) : null,
+            right: otherOfficers[i + 1] ? mapOfficer(otherOfficers[i + 1]) : null
+          });
+        }
+
+        setChartData({
+          cag: cagOfficer ? mapOfficer(cagOfficer) : OFFICERS_DATA.cag,
+          secretary: secOfficer ? mapOfficer(secOfficer) : OFFICERS_DATA.secretary,
+          rows: rows.length > 0 ? rows : OFFICERS_DATA.rows
+        });
+      });
     };
+
+    loadData(currentLang);
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      loadData(newLang);
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
@@ -575,7 +626,7 @@ export default function OrganisationChartPage() {
             {/* Tier 1: CAG (Centered at 396px) */}
             <div className="w-[792px] relative z-20 flex justify-center hover:z-50">
               <div className="w-[356px]">
-                {renderOfficerCardWithDetails(OFFICERS_DATA.cag, 'center')}
+                {renderOfficerCardWithDetails(chartData.cag, 'center')}
               </div>
             </div>
 
@@ -619,7 +670,7 @@ export default function OrganisationChartPage() {
 
               {/* Secretary Card: 356px (Left aligned at x = 436px, matching right column) */}
               <div className="w-[356px] flex justify-start">
-                {renderOfficerCardWithDetails(OFFICERS_DATA.secretary, 'right')}
+                {renderOfficerCardWithDetails(chartData.secretary, 'right')}
               </div>
             </div>
 
@@ -629,8 +680,8 @@ export default function OrganisationChartPage() {
             </div>
 
             {/* Tier 3: Vector 603 Main Trunk and Dual Column Grid of Reportee Rows */}
-            {OFFICERS_DATA.rows.map((row, index) => {
-              const isLastRow = index === OFFICERS_DATA.rows.length - 1;
+            {chartData.rows.map((row, index) => {
+              const isLastRow = index === chartData.rows.length - 1;
               const trunkLineStyle = isLastRow
                 ? row.right !== null
                   ? 'top-0 h-[calc(50%+24px)]'

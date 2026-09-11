@@ -506,13 +506,46 @@ function AdminCombinedAccountsContent() {
 
       {/* 2. DATA TABLE */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
+        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
           <div className="font-bold text-zinc-800 text-sm">
             Records Registry [ Displaying {accounts.length} of {totalCount.toLocaleString()} ]
           </div>
-          <span className="text-[11px] text-zinc-500">
-            Category: <strong>{categoryFilter}</strong> | Year: <strong>{yearFilter}</strong>
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+              >
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+            <button
+              onClick={() => {
+                setEditingId(null);
+                setTitleEn('');
+                setTitleHi('');
+                setCategory('combined');
+                setAccountYear('2024 - 25');
+                setVolume('Full Comprehensive Volume');
+                setSize('18.5 MB');
+                setFileUrl('#');
+                setIsActive(true);
+                setIsDrawerOpen(true);
+              }}
+              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
+              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+            >
+              <span>+ Add Combined Record</span>
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

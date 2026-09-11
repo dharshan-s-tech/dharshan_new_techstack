@@ -101,6 +101,7 @@ const RedPdfIcon = () => (
 
 export default function HistoryPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'analytical': true,
     'thematic-1': true,
@@ -109,20 +110,38 @@ export default function HistoryPage() {
   const [previewVolume, setPreviewVolume] = useState<VolumeItem | null>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-history-of-indian-audit-and-accounts-department', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-history-of-indian-audit-and-accounts-department', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'भारतीय लेखापरीक्षा और लेखा विभाग का इतिहास' : 'History of Indian Audit and Accounts Department');
 
   const toggleSection = (id: string) => {
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   return (
-    <AboutLayout title={isHindi ? 'भारतीय लेखापरीक्षा और लेखा विभाग का इतिहास' : 'History of Indian Audit and Accounts Department'}>
+    <AboutLayout title={pageTitle}>
       <div className="flex flex-col items-start w-full max-w-[978px]">
         {/* Main Section Title matching Figma CSS */}
         <h1 
@@ -135,7 +154,7 @@ export default function HistoryPage() {
             color: '#751639'
           }}
         >
-          {isHindi ? 'भारतीय लेखापरीक्षा और लेखा विभाग का इतिहास' : 'History of Indian Audit and Accounts Department'}
+          {pageTitle}
         </h1>
 
         {/* Sections Listing */}

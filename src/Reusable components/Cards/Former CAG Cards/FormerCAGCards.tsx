@@ -7,14 +7,21 @@ export default function FormerCAGCards() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
   const [list, setList] = useState<FormerCAGItem[]>([]);
 
-  const loadData = () => {
-    setList(dataManager.getFormerCags());
-    setLang(dataManager.getLanguage());
+  const loadData = async () => {
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+    const culture = currentLang === 'हिन्दी' ? 'hi' : 'en';
+    const remoteData = await dataManager.fetchFormerCags(culture);
+    if (Array.isArray(remoteData) && remoteData.length > 0) {
+      setList(remoteData);
+    } else {
+      setList(dataManager.getFormerCags());
+    }
   };
 
   useEffect(() => {
     loadData();
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    const handleLangChange = () => loadData();
     const handleCagsChange = () => loadData();
 
     window.addEventListener('languageChange', handleLangChange);

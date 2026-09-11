@@ -6,18 +6,37 @@ import { dataManager } from '@/lib/dataManager';
 
 export default function ConstitutionalProvisionsPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-constitutional-provisions', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-constitutional-provisions', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional Provisions');
 
   return (
-    <AboutLayout title={isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional Provisions'}>
+    <AboutLayout title={pageTitle}>
       <div className="flex flex-col items-start w-full max-w-[978px]">
         {/* Page Title matching Figma CSS */}
         <h1 
@@ -30,7 +49,7 @@ export default function ConstitutionalProvisionsPage() {
             color: '#751639'
           }}
         >
-          {isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional Provisions'}
+          {pageTitle}
         </h1>
 
         {/* Content Container */}
