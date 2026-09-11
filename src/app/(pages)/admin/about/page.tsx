@@ -44,7 +44,7 @@ function AdminAboutRegistryContent() {
   const [languageFilter, setLanguageFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [tableFilter, setTableFilter] = useState('All');
-  const [sortFilter, setSortFilter] = useState('default');
+  const [sortFilter, setSortFilter] = useState('newest');
 
   // Lookups & Subtopics grouped by Category (9 canonical About Us sections)
   const categories = ['Who We Are', 'Leadership & Legacy', 'Governance & Mandate'];
@@ -144,7 +144,7 @@ function AdminAboutRegistryContent() {
   // View Details Modal State
   const [viewingRecord, setViewingRecord] = useState<AboutRecord | null>(null);
 
-  // Form State (Add / Edit Drawer)
+  // Form State (Add / Edit Modal)
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRawId, setEditingRawId] = useState<string | null>(null);
 
@@ -285,7 +285,7 @@ function AdminAboutRegistryContent() {
     setLanguageFilter('All');
     setStatusFilter('All');
     setTableFilter('All');
-    setSortFilter('default');
+    setSortFilter('newest');
     setPage(1);
   };
 
@@ -413,12 +413,12 @@ function AdminAboutRegistryContent() {
   return (
     <div className="space-y-4 text-xs text-zinc-700 font-sans">
       
-      {/* 1. TOP FILTERS PANEL */}
+      {/* 1. TOP FILTERS PANEL (Figma Burgundy Header matching Reports) */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">About Us Management</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">Manage pages, former CAG profiles, and organisation hierarchy records.</p>
+            <h2 className="text-base font-bold text-[#751639]">About Us Management Registry</h2>
+            <p className="text-zinc-500 text-[11px] mt-0.5">Manage Who We Are profiles, Leadership & Legacy galleries, and Governance hierarchy content published on the CAG portal.</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -442,14 +442,14 @@ function AdminAboutRegistryContent() {
         {/* Row 1: Search, Category, Sub-Topic, Language */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Search within Title / Summary / Officer:</label>
+            <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title / Officer:</label>
             <input
               type="text"
-              placeholder="e.g. Constitutional, DPC, Murmu, Director..."
+              placeholder="Search by title, overview, officer name..."
               value={searchFor}
               onChange={(e) => setSearchFor(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
           </div>
 
@@ -549,14 +549,13 @@ function AdminAboutRegistryContent() {
               }}
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
             >
-              <option value="default">Default DB Order</option>
-              <option value="id_asc">Record ID (Ascending)</option>
-              <option value="id_desc">Record ID (Descending)</option>
+              <option value="newest">Newly Added First</option>
               <option value="title_asc">Title / Name (A to Z)</option>
               <option value="title_desc">Title / Name (Z to A)</option>
               <option value="category_asc">Category (Hierarchy)</option>
-              <option value="newest">Last Updated (Newest)</option>
-              <option value="oldest">Last Updated (Oldest)</option>
+              <option value="id_asc">Record ID (Ascending)</option>
+              <option value="id_desc">Record ID (Descending)</option>
+              <option value="oldest">Oldest Added First</option>
             </select>
           </div>
 
@@ -582,17 +581,17 @@ function AdminAboutRegistryContent() {
             Active Filter: <strong>{categoryFilter}</strong> | Sub-Topic: <strong>{subTopicFilter}</strong> | Table: <strong>{tableFilter}</strong> | Status: <strong>{statusFilter}</strong>
           </span>
           <span>
-            Data Source: <strong className="text-emerald-700">PostgreSQL cag_db_final (155 DB Records)</strong>
+            Source: <strong className="text-emerald-700">PostgreSQL cag_db_final (155 DB Records) + Local CMS</strong>
           </span>
         </div>
       </div>
 
-      {/* ─── 4. TABLE GRID PANEL (Figma Burgundy Header Gradient) ─── */}
+      {/* ─── 2. TABLE GRID PANEL (Figma Burgundy Header Gradient matching Reports) ─── */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
         <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
           <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
             <span>About Us Section Registry</span>
-            <span className="text-zinc-500 font-normal">[ Displaying {records.length} of {totalCount} records ]</span>
+            <span className="text-zinc-500 font-normal">[ Displaying {records.length} of {totalCount.toLocaleString()} records ]</span>
           </h3>
 
           <div className="flex items-center gap-3">
@@ -615,10 +614,10 @@ function AdminAboutRegistryContent() {
 
             <button
               onClick={handleOpenCreate}
-              className="text-white px-3.5 py-1.5 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
+              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
               style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
             >
-              <span>+ Add New Record</span>
+              <span>+ Add New Section Record</span>
             </button>
           </div>
         </div>
@@ -630,14 +629,14 @@ function AdminAboutRegistryContent() {
                 className="text-white border-b border-[#5c102c] font-bold"
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
-                <th className="px-3 py-3 border-r border-white/20 w-16 text-center">#</th>
-                <th className="px-3 py-3 border-r border-white/20 w-16 text-center">Thumb</th>
-                <th className="px-4 py-3 border-r border-white/20 min-w-[260px]">About Us Title &amp; Summary</th>
+                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
+                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Thumb</th>
+                <th className="px-4 py-3 border-r border-white/20 min-w-[280px]">About Us Title &amp; Summary</th>
                 <th className="px-3 py-3 border-r border-white/20 w-36">Category</th>
-                <th className="px-3 py-3 border-r border-white/20 w-40">Sub-Topic / Key</th>
+                <th className="px-3 py-3 border-r border-white/20 w-44">Sub-Topic / Section</th>
                 <th className="px-3 py-3 border-r border-white/20 w-32 font-mono">DB Table</th>
-                <th className="px-3 py-3 border-r border-white/20 w-16 text-center">Lang</th>
-                <th className="px-3 py-3 border-r border-white/20 w-16 text-center">Status</th>
+                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Lang</th>
+                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Status</th>
                 <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
               </tr>
             </thead>
@@ -670,14 +669,17 @@ function AdminAboutRegistryContent() {
                       <img 
                         src={item.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'} 
                         alt="" 
-                        className="h-9 w-12 object-cover border border-zinc-200 bg-gray-100 mx-auto shadow-2xs" 
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
+                        }}
+                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100 mx-auto shadow-2xs" 
                       />
                     </td>
 
                     {/* Title & Summary */}
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
                       <div 
-                        className="line-clamp-1 cursor-pointer hover:underline text-sm" 
+                        className="line-clamp-2 cursor-pointer hover:underline text-sm" 
                         onClick={() => handleOpenView(item)} 
                         title="Click to view full record details"
                       >
@@ -697,7 +699,7 @@ function AdminAboutRegistryContent() {
 
                     {/* Category */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block ${
+                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block rounded-xs ${
                         item.category === 'Who We Are' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
                         item.category === 'Leadership & Legacy' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
                         'bg-amber-50 text-amber-800 border border-amber-200'
@@ -735,7 +737,7 @@ function AdminAboutRegistryContent() {
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                         item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
                       }`}>
-                        {item.is_active ? 'Active' : 'Draft'}
+                        {item.is_active ? 'ACTIVE' : 'DRAFT'}
                       </span>
                     </td>
 
@@ -795,7 +797,7 @@ function AdminAboutRegistryContent() {
         {totalPages > 1 && (
           <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
             <span className="text-[11px] text-zinc-500">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount} total records)
+              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} total records)
             </span>
             <div className="flex gap-1">
               <button
@@ -803,94 +805,138 @@ function AdminAboutRegistryContent() {
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
               >
-                Previous
+                ← Prev
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
               >
-                Next
+                Next →
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* ─── 5. VIEW DETAILS MODAL ─── */}
+      {/* ─── 3. VIEW DETAILS MODAL (Figma Burgundy Header Gradient matching Reports) ─── */}
       {viewingRecord && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white max-w-2xl w-full border border-zinc-300 shadow-2xl p-6 rounded-none animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-zinc-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#751639] text-white flex items-center justify-center font-bold text-sm">
-                  {viewingRecord.formattedId.replace('#AB-', '')}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div 
+              className="p-4 text-white flex justify-between items-start"
+              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+            >
+              <div>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200 mb-1">
+                  About Us Record Details [ID: {viewingRecord.formattedId || viewingRecord.rawId}]
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-[#751639]">{viewingRecord.title_en}</h3>
-                  <p className="text-xs text-zinc-500 font-hindi">{viewingRecord.title_hi}</p>
-                </div>
+                <h2 className="text-base font-bold leading-snug">
+                  {viewingRecord.title_en}
+                </h2>
+                {viewingRecord.title_hi && (
+                  <p className="text-xs text-pink-100 font-medium mt-1 font-hindi">
+                    {viewingRecord.title_hi}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => setViewingRecord(null)}
-                className="p-1 text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                className="text-white/80 hover:text-white text-xl font-bold ml-4 p-1 cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                ✕
               </button>
             </div>
 
-            {/* Content Details */}
-            <div className="space-y-4 pt-4 text-xs">
-              {/* Category & Sub-Topic */}
-              <div className="grid grid-cols-2 gap-4 bg-zinc-50 p-3 border border-zinc-200">
-                <div>
-                  <span className="text-zinc-400 block font-bold">Hierarchy Category:</span>
-                  <span className="font-bold text-zinc-800">{viewingRecord.category}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block font-bold">Sub-Topic Section:</span>
-                  <span className="font-bold text-zinc-800">{viewingRecord.subTopic}</span>
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 text-zinc-800">
+              
+              {/* Badges Bar */}
+              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
+                <span className="px-2.5 py-1 bg-[#751639] text-white font-bold text-[11px] rounded-xs">
+                  {viewingRecord.category}
+                </span>
+                <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-[11px] rounded-xs">
+                  Sub-Topic: {viewingRecord.subTopic}
+                </span>
+                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-[11px] rounded-xs font-mono">
+                  Table: {viewingRecord.table_name.replace('cag_revamp.', '')}
+                </span>
+                <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-bold text-[11px] rounded-xs">
+                  Lang: {viewingRecord.language}
+                </span>
+                <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                  viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-zinc-200 text-zinc-700'
+                }`}>
+                  {viewingRecord.is_active ? '● ACTIVE' : '○ DRAFT'}
+                </span>
+              </div>
+
+              {/* Banner & Preview */}
+              <div className="flex flex-col sm:flex-row gap-4 items-start bg-zinc-50 p-4 border border-zinc-200">
+                <img
+                  src={viewingRecord.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
+                  alt="Banner"
+                  className="h-24 w-36 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
+                  }}
+                />
+                <div className="space-y-1.5 flex-1">
+                  <div className="font-bold text-zinc-900 text-xs">Banner Asset & CloudFront Link</div>
+                  <p className="text-[11px] text-zinc-500 break-all font-mono">
+                    {viewingRecord.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
+                  </p>
+                  {viewingRecord.file_url && (
+                    <div className="pt-2">
+                      <a
+                        href={viewingRecord.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                      >
+                        <span>📥 Download Attached Reference Document (PDF)</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Executive Summary & Scope Overview */}
               <div>
-                <span className="text-zinc-400 block font-bold mb-1">Executive Summary / Description:</span>
-                <p className="bg-zinc-50 p-3 border border-zinc-200 text-zinc-700 leading-relaxed font-normal">
-                  {viewingRecord.desc}
-                </p>
-              </div>
-
-              {/* Database & Technical Info */}
-              <div className="grid grid-cols-2 gap-4 bg-zinc-50 p-3 border border-zinc-200">
-                <div>
-                  <span className="text-zinc-400 block font-bold">Database Table:</span>
-                  <span className="font-mono text-zinc-800 font-semibold">{viewingRecord.table_name}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block font-bold">Record Slug / Key:</span>
-                  <span className="font-mono text-zinc-800 truncate block">{viewingRecord.primary_key_or_slug}</span>
+                <h4 className="font-bold text-zinc-900 text-xs mb-1.5 uppercase tracking-wide text-[#751639]">
+                  Executive Summary &amp; Scope Overview
+                </h4>
+                <div className="bg-zinc-50 border border-zinc-200 p-3.5 text-zinc-700 leading-relaxed text-xs">
+                  {viewingRecord.desc ? (
+                    <p>{viewingRecord.desc}</p>
+                  ) : (
+                    <p className="italic text-zinc-400">No narrative summary available for this section.</p>
+                  )}
                 </div>
               </div>
 
-              {/* Attachment File */}
-              {viewingRecord.file_url && (
-                <div className="bg-blue-50/70 border border-blue-200 p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-blue-900">
-                    <FileText className="w-4 h-4 text-blue-700" />
-                    <span className="font-bold">{viewingRecord.file_name || 'Attached Reference Document (PDF)'}</span>
-                  </div>
-                  <a
-                    href={viewingRecord.file_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-none text-xs"
-                  >
-                    Open PDF ↗
-                  </a>
+              {/* Technical Database & Routing Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50 p-3.5 border border-zinc-200">
+                <div>
+                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Database Table:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.table_name}</span>
                 </div>
-              )}
+                <div>
+                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Record Slug / Key:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs truncate block">{viewingRecord.primary_key_or_slug}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Live Public Route:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs truncate block">{viewingRecord.public_url}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Raw Record ID:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.rawId}</span>
+                </div>
+              </div>
 
               {/* Timestamps */}
               <div className="flex justify-between text-[11px] text-zinc-400 pt-2 border-t border-zinc-150">
@@ -900,7 +946,7 @@ function AdminAboutRegistryContent() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-5 border-t border-zinc-200 mt-5">
+            <div className="p-6 pt-0 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 mt-4">
               <Link
                 href={viewingRecord.public_url}
                 target="_blank"
@@ -945,29 +991,68 @@ function AdminAboutRegistryContent() {
         </div>
       )}
 
-      {/* ─── 6. CREATE / EDIT FORM DRAWER (Figma Burgundy Styling) ─── */}
+      {/* ─── 4. CREATE / EDIT MODAL FORM (Matching Reports Modal Architecture) ─── */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-end">
-          <div className="bg-white h-full w-full max-w-xl shadow-2xl p-6 border-l border-zinc-300 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200">
-            <div>
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-                <h3 className="font-bold text-lg text-[#751639]">
-                  {editingRawId ? 'Edit About Us Record' : 'Add New About Us Record'}
-                </h3>
-                <button
-                  onClick={() => setIsFormOpen(false)}
-                  className="p-1 text-zinc-400 hover:text-zinc-700 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsFormOpen(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+            <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-200 pb-3 mb-4">
+              {editingRawId ? `Edit About Us Section Record [ID: ${editingRawId}]` : 'Register New About Us Section Record (Local CMS & PostgreSQL)'}
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* English Title */}
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">
+                  Record Title / Officer Name (English) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formTitleEn}
+                  onChange={(e) => setFormTitleEn(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  placeholder="Enter full English title or officer name"
+                />
               </div>
 
-              {/* Drawer Form */}
-              <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-xs">
-                {/* Hierarchy Category */}
+              {/* Hindi Title */}
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">
+                  Record Title / Officer Name (हिन्दी)
+                </label>
+                <input
+                  type="text"
+                  value={formTitleHi}
+                  onChange={(e) => setFormTitleHi(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-hindi"
+                  placeholder="दस्तावेज़ या अधिकारी का नाम (हिंदी)"
+                />
+              </div>
+
+              {/* Executive Summary Narrative */}
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">
+                  Executive Summary / Overview / Designation
+                </label>
+                <textarea
+                  rows={3}
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  placeholder="Enter summary description and key section narrative"
+                />
+              </div>
+
+              {/* Category & Sub-Topic */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">Hierarchy Category:</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Hierarchy Category *</label>
                   <select
                     value={formCategory}
                     onChange={(e) => {
@@ -980,7 +1065,7 @@ function AdminAboutRegistryContent() {
                         setFormPublicUrl(defTopic.defaultUrl);
                       }
                     }}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   >
                     <option value="Who We Are">Who We Are</option>
                     <option value="Leadership & Legacy">Leadership & Legacy</option>
@@ -988,9 +1073,8 @@ function AdminAboutRegistryContent() {
                   </select>
                 </div>
 
-                {/* Sub-Topic Section */}
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">Sub-Topic / Section:</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Sub-Topic / Section *</label>
                   <select
                     value={formSubTopic}
                     onChange={(e) => {
@@ -1003,142 +1087,132 @@ function AdminAboutRegistryContent() {
                       }
                     }}
                     required
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   >
                     {(SUBTOPICS_BY_CATEGORY[formCategory] || []).map(st => (
                       <option key={st.value} value={st.label}>{st.label}</option>
                     ))}
                   </select>
                 </div>
+              </div>
 
-                {/* English Title */}
+              {/* DB Table & Slug */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">Record Title / Officer Name (English):</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Database Table Source</label>
                   <input
                     type="text"
-                    value={formTitleEn}
-                    onChange={(e) => setFormTitleEn(e.target.value)}
-                    required
-                    placeholder="Enter full English title or officer name"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    value={formTable}
+                    onChange={(e) => setFormTable(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
                   />
                 </div>
 
-                {/* Hindi Title */}
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">Record Title / Officer Name (हिन्दी):</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Slug / Identifier Key</label>
                   <input
                     type="text"
-                    value={formTitleHi}
-                    onChange={(e) => setFormTitleHi(e.target.value)}
-                    placeholder="Enter Hindi title or officer name"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-2 text-zinc-850 focus:outline-none focus:border-[#751639] font-hindi"
+                    value={formSlug}
+                    onChange={(e) => setFormSlug(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
                   />
                 </div>
+              </div>
 
-                {/* Description */}
+              {/* Public URL & Thumbnail Image */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">Executive Summary / Overview / Designation:</label>
-                  <textarea
-                    rows={3}
-                    value={formDesc}
-                    onChange={(e) => setFormDesc(e.target.value)}
-                    placeholder="Enter summary description"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  <label className="block font-bold text-zinc-700 mb-1">Public URL Route Path</label>
+                  <input
+                    type="text"
+                    value={formPublicUrl}
+                    onChange={(e) => setFormPublicUrl(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
                   />
                 </div>
 
-                {/* Database Table & Slug */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Database Table:</label>
-                    <input
-                      type="text"
-                      value={formTable}
-                      onChange={(e) => setFormTable(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 font-mono text-[11px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Key / Slug / Hierarchy:</label>
-                    <input
-                      type="text"
-                      value={formSlug}
-                      onChange={(e) => setFormSlug(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 font-mono text-[11px]"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Thumbnail / Card Image Link</label>
+                  <input
+                    type="text"
+                    value={formThumbImage}
+                    onChange={(e) => setFormThumbImage(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* PDF Document Attachment URL & Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">PDF Attachment URL</label>
+                  <input
+                    type="text"
+                    value={formFileUrl}
+                    onChange={(e) => setFormFileUrl(e.target.value)}
+                    placeholder="https://.../document.pdf"
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
+                  />
                 </div>
 
-                {/* Public URL & Document Link */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Public URL:</label>
-                    <input
-                      type="text"
-                      value={formPublicUrl}
-                      onChange={(e) => setFormPublicUrl(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 font-mono text-[11px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Document Attachment URL:</label>
-                    <input
-                      type="text"
-                      value={formFileUrl}
-                      onChange={(e) => setFormFileUrl(e.target.value)}
-                      placeholder="https://.../document.pdf"
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 font-mono text-[11px]"
-                    />
-                  </div>
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">PDF Document Name</label>
+                  <input
+                    type="text"
+                    value={formFileName}
+                    onChange={(e) => setFormFileName(e.target.value)}
+                    placeholder="e.g. DPC_Act_1971.pdf"
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  />
                 </div>
+              </div>
 
-                {/* Language & Publish Status */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Language Mode:</label>
-                    <select
-                      value={formLanguage}
-                      onChange={(e) => setFormLanguage(e.target.value as any)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850"
-                    >
-                      <option value="Bilingual">Bilingual (EN + HI)</option>
-                      <option value="EN">English Only</option>
-                      <option value="HI">Hindi Only</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
-                    <select
-                      value={formIsActive ? 'Active' : 'Inactive'}
-                      onChange={(e) => setFormIsActive(e.target.value === 'Active')}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850"
-                    >
-                      <option value="Active">Active (Published)</option>
-                      <option value="Inactive">Inactive (Draft)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Drawer Footer Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-6 border-t border-zinc-200">
-                  <button
-                    type="button"
-                    onClick={() => setIsFormOpen(false)}
-                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium rounded-none cursor-pointer"
+              {/* Language & Publish Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Language Mode</label>
+                  <select
+                    value={formLanguage}
+                    onChange={(e) => setFormLanguage(e.target.value as any)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 text-white font-bold rounded-none shadow-xs cursor-pointer"
-                    style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-                  >
-                    {editingRawId ? 'Save Changes' : 'Create Record'}
-                  </button>
+                    <option value="Bilingual">Bilingual (English + Hindi)</option>
+                    <option value="EN">English Only</option>
+                    <option value="HI">हिन्दी Only</option>
+                  </select>
                 </div>
-              </form>
-            </div>
+
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Publication Status</label>
+                  <select
+                    value={formIsActive ? 'Active' : 'Inactive'}
+                    onChange={(e) => setFormIsActive(e.target.value === 'Active')}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  >
+                    <option value="Active">Active (Published on Live Portal)</option>
+                    <option value="Inactive">Inactive (Draft / Archived)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className="pt-4 border-t border-zinc-200 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium rounded-none text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 text-white font-bold rounded-none text-xs shadow-xs cursor-pointer"
+                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+                >
+                  {editingRawId ? 'Save Changes' : 'Register Record'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
