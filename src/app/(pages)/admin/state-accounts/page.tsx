@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
@@ -31,7 +31,7 @@ interface StateAccountItem {
   source?: string;
 }
 
-export default function AdminStateAccounts() {
+function AdminStateAccountsContent() {
   const API_URL = getApiBaseUrl();
   const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<StateAccountItem[]>([]);
@@ -1061,5 +1061,13 @@ export default function AdminStateAccounts() {
       )}
 
     </div>
+  );
+}
+
+export default function AdminStateAccounts() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading State Accounts Registry...</div>}>
+      <AdminStateAccountsContent />
+    </Suspense>
   );
 }

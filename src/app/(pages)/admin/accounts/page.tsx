@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
@@ -48,7 +48,7 @@ const SUBTOPIC_OPTIONS = [
 
 const UT_NAMES = ['Puducherry', 'Jammu & Kashmir', 'Delhi', 'Ladakh', 'Chandigarh'];
 
-export default function AdminAccountsManagementHub() {
+function AdminAccountsManagementHubContent() {
   const API_URL = getApiBaseUrl();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1143,5 +1143,13 @@ export default function AdminAccountsManagementHub() {
       )}
 
     </div>
+  );
+}
+
+export default function AdminAccountsManagementHub() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading Accounts Management Hub...</div>}>
+      <AdminAccountsManagementHubContent />
+    </Suspense>
   );
 }

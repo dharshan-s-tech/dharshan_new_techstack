@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { dataManager } from '@/lib/dataManager';
@@ -177,7 +177,7 @@ const FALLBACK_MONTHLY_YEARS: AccordionYearItem[] = [
   }
 ];
 
-export default function AccountsPage() {
+function AccountsPageContent() {
   const API_URL = getApiBaseUrl();
   const searchParams = useSearchParams();
 
@@ -1180,5 +1180,13 @@ export default function AccountsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AccountsPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20 text-[#0a3d30] font-medium">Loading Accounts Portal...</div>}>
+      <AccountsPageContent />
+    </Suspense>
   );
 }

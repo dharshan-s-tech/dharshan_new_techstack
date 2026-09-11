@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
@@ -112,7 +112,7 @@ const INITIAL_ABOUT_RECORDS: AboutRecord[] = [
     subTopic: 'Former CAGs Gallery',
     subTopicSlug: 'former-cags',
     title_en: 'Historical Gallery & Biographies of Former CAGs',
-    titleHi: 'पूर्व नियंत्रक एवं महालेखापरीक्षक ऐतिहासिक दीर्घा (1948 से वर्तमान)',
+    title_hi: 'पूर्व नियंत्रक एवं महालेखापरीक्षक ऐतिहासिक दीर्घा (1948 से वर्तमान)',
     desc: 'Archive and photo gallery documenting all past Comptrollers and Auditors General of Independent India from Shri V. Narahari Rao (1948) to Shri Girish Chandra Murmu (2024).',
     table_name: 'cag_revamp.former_cag',
     primary_key_or_slug: '15 Former CAGs Gallery Records',
@@ -240,7 +240,7 @@ const INITIAL_ABOUT_RECORDS: AboutRecord[] = [
   },
 ];
 
-export default function AdminAboutRegistry() {
+function AdminAboutRegistryContent() {
   const API_URL = getApiBaseUrl();
   const searchParams = useSearchParams();
 
@@ -1161,5 +1161,13 @@ export default function AdminAboutRegistry() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminAboutRegistry() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading About Us Admin Registry...</div>}>
+      <AdminAboutRegistryContent />
+    </Suspense>
   );
 }

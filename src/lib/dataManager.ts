@@ -73,24 +73,53 @@ export interface BannerItem {
   is_active: boolean;
 }
 
-export interface TenderItem {
-  id: number;
+export interface AccountItem {
+  id: string | number;
   title_en: string;
   title_hi?: string;
+  title?: string;
+  state_name_en?: string;
+  state_name_hi?: string;
+  category: string;
+  financial_year?: string;
+  date_of_upload?: string;
+  pdf_url?: string;
+  is_active?: boolean;
+  [key: string]: any;
+}
+
+export interface StateAccountItem extends AccountItem {}
+
+export interface TenderItem {
+  id: number;
+  title_en?: string;
+  title_hi?: string;
+  title?: string;
   reference_no?: string;
+  tenderNo?: string;
   closing_date?: string;
+  closingDate?: string;
+  status?: string;
   tender_file_url?: string;
+  docUrl?: string;
   is_active: boolean;
+  [key: string]: any;
 }
 
 export interface CircularItem {
   id: number;
-  title_en: string;
+  title_en?: string;
   title_hi?: string;
+  title?: string;
   circular_no?: string;
+  refNo?: string;
+  category?: string;
   issue_date?: string;
+  date?: string;
   file_url?: string;
+  docUrl?: string;
   is_active: boolean;
+  [key: string]: any;
 }
 
 export interface CagProfileItem {

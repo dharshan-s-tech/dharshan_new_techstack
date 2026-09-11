@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
@@ -40,7 +40,7 @@ interface ReportDisplayItem {
   chapters?: ChapterItem[];
 }
 
-export default function AdminReports() {
+function AdminReportsContent() {
   const API_URL = getApiBaseUrl();
   const [reports, setReports] = useState<ReportDisplayItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -1272,5 +1272,13 @@ export default function AdminReports() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminReports() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading Reports Registry...</div>}>
+      <AdminReportsContent />
+    </Suspense>
   );
 }
