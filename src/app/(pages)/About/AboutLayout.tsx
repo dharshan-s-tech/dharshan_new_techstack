@@ -64,7 +64,15 @@ const DICTIONARY: Record<string, string> = {
   'Independence, Objectivity, Integrity, Professional Excellence, Transparency, Positive Approach.': 'स्वतंत्रता, निष्पक्षता, सत्यनिष्ठा, व्यावसायिक उत्कृष्टता, पारदर्शिता, सकारात्मक दृष्टिकोण।'
 };
 
-export default function AboutLayout({ title, children }: { title: string; children: React.ReactNode }) {
+export default function AboutLayout({
+  title,
+  children,
+  hideTitleBorder = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  hideTitleBorder?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
 

@@ -9,8 +9,10 @@ import json
 from app.core.database import get_db
 from app.models.audit_log import AdminAuditLog
 from app.models.admin_user import AdminUser
+from app.services.reports_service import ReportsService
 
 router = APIRouter()
+
 
 # In-memory mock store for dynamic admin modules if DB table doesn't exist yet
 MOCK_MODULE_STORE: Dict[str, List[Dict[str, Any]]] = {
@@ -78,8 +80,121 @@ async def list_or_get_crud(
     limit: int = Query(15),
     search: Optional[str] = Query(None),
     searchCol: Optional[str] = Query(None),
+    sort: Optional[str] = Query("newest"),
     db: Session = Depends(get_db)
 ):
+    eff_sort = sort or "newest"
+    if table == "audit_reports":
+        if id:
+            rep = ReportsService.get_audit_report_by_id(str(id))
+            return {"data": [rep] if rep else []}
+
+        result = ReportsService.get_audit_reports(
+            page=page,
+            page_size=limit,
+            query=search if (not searchCol or searchCol in ("title", "title_en", "overview", "desc")) else "",
+            sector=search if searchCol == "sector" else "",
+            sort=eff_sort,
+        )
+        formatted = []
+        for item in result.get("items", []):
+            formatted.append({
+                "id": item.get("id"),
+                "rawId": item.get("id"),
+                "title_en": item.get("title"),
+                "title_hi": item.get("title_hi", item.get("title")),
+                "year_of_report": item.get("year"),
+                "report_type": item.get("report_type"),
+                "sector": item.get("sector"),
+                "level": item.get("level", "Union"),
+                "image": item.get("image"),
+                "desc": item.get("overview") or item.get("desc"),
+                "pdf_url": item.get("pdf_url"),
+                "is_active": True,
+            })
+        return {
+            "data": formatted,
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
+    if table in ("state_accounts", "state_accounts_report"):
+        if id:
+            item = ReportsService.get_state_account_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_state_accounts(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
+    if table == "combined_accounts":
+        if id:
+            item = ReportsService.get_combined_account_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_combined_accounts(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+        )
+    if table == "pages":
+        from app.services.pages_service import SEED_PAGES, PagesService
+        if id:
+            page_item = PagesService.get_page_by_slug_or_id(str(id), db=db)
+            return {"data": [page_item] if page_item else []}
+        page_list = []
+        for pid, pdata in SEED_PAGES.items():
+            page_list.append({
+                "id": pdata["id"],
+                "slug": pdata["slug"],
+                "title_en": pdata["title_en"],
+                "title_hi": pdata.get("title_hi", ""),
+                "section": "About Us",
+                "is_active": True
+            })
+        return {
+            "data": page_list,
+            "total": len(page_list),
+            "page": 1,
+            "totalPages": 1
+        }
+
+    if table == "former_cag":
+        from app.services.former_cag_service import FormerCagService
+        cags = FormerCagService.get_former_cags(db=db)
+        if id:
+            found = [c for c in cags if str(c.get("id")) == str(id)]
+            return {"data": found}
+        return {
+            "data": cags,
+            "total": len(cags),
+            "page": 1,
+            "totalPages": 1
+        }
+
+    if table == "organisation_chart":
+        from app.services.organisation_chart_service import OrganisationChartService
+        chart = OrganisationChartService.get_organisation_chart(db=db)
+        officers = chart.get("officers", [])
+        if id:
+            found = [o for o in officers if str(o.get("id")) == str(id)]
+            return {"data": found}
+        return {
+            "data": officers,
+            "total": len(officers),
+            "page": 1,
+            "totalPages": 1
+        }
+
     items = MOCK_MODULE_STORE.get(table, [])
     
     if id:
@@ -116,15 +231,25 @@ async def create_crud(
     if not table or not data:
         raise HTTPException(status_code=400, detail="Table and data are required")
 
-    record_id = str(uuid.uuid4())
-    data["id"] = record_id
-    data["created_at"] = datetime.utcnow().isoformat()
-    data["updated_at"] = datetime.utcnow().isoformat()
+    if table == "audit_reports":
+        saved = ReportsService.save_local_report(data)
+        record_id = str(saved.get("id"))
+    elif table in ("state_accounts", "state_accounts_report"):
+        saved = ReportsService.save_local_state_account(data)
+        record_id = str(saved.get("id"))
+    elif table == "combined_accounts":
+        saved = ReportsService.save_local_combined_account(data)
+        record_id = str(saved.get("id"))
+    else:
+        record_id = str(uuid.uuid4())
+        data["id"] = record_id
+        data["created_at"] = datetime.utcnow().isoformat()
+        data["updated_at"] = datetime.utcnow().isoformat()
 
-    if table not in MOCK_MODULE_STORE:
-        MOCK_MODULE_STORE[table] = []
-    
-    MOCK_MODULE_STORE[table].append(data)
+        if table not in MOCK_MODULE_STORE:
+            MOCK_MODULE_STORE[table] = []
+        
+        MOCK_MODULE_STORE[table].append(data)
 
     # Audit log
     audit_entry = AdminAuditLog(
@@ -154,23 +279,32 @@ async def update_crud(
     if not table or not id or not data:
         raise HTTPException(status_code=400, detail="Table, ID and data are required")
 
-    items = MOCK_MODULE_STORE.get(table, [])
-    found_idx = -1
-    for idx, item in enumerate(items):
-        if str(item.get("id")) == str(id):
-            found_idx = idx
-            break
-
-    if found_idx == -1:
-        # Create item if not exists
-        data["id"] = id
-        data["updated_at"] = datetime.utcnow().isoformat()
-        if table not in MOCK_MODULE_STORE:
-            MOCK_MODULE_STORE[table] = []
-        MOCK_MODULE_STORE[table].append(data)
+    if table == "audit_reports":
+        data["id"] = str(id)
+        ReportsService.save_local_report(data)
+    elif table in ("state_accounts", "state_accounts_report"):
+        data["id"] = str(id)
+        ReportsService.save_local_state_account(data)
+    elif table == "combined_accounts":
+        data["id"] = str(id)
+        ReportsService.save_local_combined_account(data)
     else:
-        updated_item = {**items[found_idx], **data, "id": id, "updated_at": datetime.utcnow().isoformat()}
-        MOCK_MODULE_STORE[table][found_idx] = updated_item
+        items = MOCK_MODULE_STORE.get(table, [])
+        found_idx = -1
+        for idx, item in enumerate(items):
+            if str(item.get("id")) == str(id):
+                found_idx = idx
+                break
+
+        if found_idx == -1:
+            data["id"] = id
+            data["updated_at"] = datetime.utcnow().isoformat()
+            if table not in MOCK_MODULE_STORE:
+                MOCK_MODULE_STORE[table] = []
+            MOCK_MODULE_STORE[table].append(data)
+        else:
+            updated_item = {**items[found_idx], **data, "id": id, "updated_at": datetime.utcnow().isoformat()}
+            MOCK_MODULE_STORE[table][found_idx] = updated_item
 
     # Audit log
     audit_entry = AdminAuditLog(
@@ -197,8 +331,15 @@ async def delete_crud(
     if not table or not id:
         raise HTTPException(status_code=400, detail="Table and ID are required")
 
-    items = MOCK_MODULE_STORE.get(table, [])
-    MOCK_MODULE_STORE[table] = [item for item in items if str(item.get("id")) != str(id)]
+    if table == "audit_reports":
+        ReportsService.delete_local_report(str(id))
+    elif table in ("state_accounts", "state_accounts_report"):
+        ReportsService.delete_local_state_account(str(id))
+    elif table == "combined_accounts":
+        ReportsService.delete_local_combined_account(str(id))
+    else:
+        items = MOCK_MODULE_STORE.get(table, [])
+        MOCK_MODULE_STORE[table] = [item for item in items if str(item.get("id")) != str(id)]
 
     # Audit log
     audit_entry = AdminAuditLog(
@@ -214,3 +355,4 @@ async def delete_crud(
     db.commit()
 
     return {"success": True}
+

@@ -29,10 +29,13 @@ export default function CircularsPage() {
 
   const filteredCirculars = circulars.filter(item => {
     if (!searchQuery) return true;
+    const title = (item as any).title || (item as any).title_en || '';
+    const refNo = (item as any).refNo || (item as any).circular_no || '';
+    const category = (item as any).category || 'General';
     return (
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.refNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      refNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      category.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
@@ -93,22 +96,22 @@ export default function CircularsPage() {
                 filteredCirculars.map((item) => (
                   <tr key={item.id} className="hover:bg-zinc-50 transition-colors">
                     <td className="py-3.5 px-4 font-mono font-bold text-[#751639]">
-                      {item.refNo}
+                      {(item as any).refNo || (item as any).circular_no || `#${item.id}`}
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-zinc-800">
-                      {item.title}
+                      {(item as any).title || (item as any).title_en || 'Circular'}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="inline-block bg-zinc-100 border border-zinc-300 text-zinc-700 px-2 py-0.5 rounded text-[10px] font-semibold">
-                        {item.category}
+                        {(item as any).category || 'Circular'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-zinc-500 font-medium">
-                      {item.date}
+                      {(item as any).date || (item as any).issue_date || 'N/A'}
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <a
-                        href={item.docUrl || '#'}
+                        href={(item as any).docUrl || (item as any).file_url || '#'}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-[#751639] font-bold hover:underline"

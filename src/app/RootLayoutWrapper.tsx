@@ -15,7 +15,12 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
     return <main className="min-h-screen bg-white">{children}</main>;
   }
 
-  const showGlobalBreadcrumbWrapper = pathname !== '/' && !pathname?.toLowerCase().includes('global-relations');
+  const isReports = pathname?.startsWith('/Reports');
+  const isHome = pathname === '/' || pathname?.startsWith('/Home-page');
+  const showGlobalBreadcrumbWrapper =
+    !isHome &&
+    !isReports &&
+    !pathname?.toLowerCase().includes('global-relations');
 
   return (
     <div className="min-h-screen flex flex-col justify-between">

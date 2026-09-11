@@ -12,11 +12,8 @@ export function getApiBaseUrl(): string {
   }
 
   if (typeof window !== 'undefined') {
-    const { protocol, hostname } = window.location;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://127.0.0.1:8000';
-    }
-    return `${protocol}//${hostname}:8000`;
+    // Same-origin relative path, transparently proxied by Next.js rewrites to FastAPI backend
+    return '';
   }
 
   return (
@@ -84,28 +81,25 @@ export function getMockData(path: string): any {
 }
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T | null> {
-  const useMock = !process.env.NEXT_PUBLIC_API_URL;
-  if (useMock) {
-    const mock = getMockData(path);
-    if (mock !== null) {
-      return mock as T;
-    }
-  }
-
   try {
-    const res = await fetch(`${getApiBaseUrl()}${path}`, {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}${path}`, {
       cache: 'no-store',
       ...options,
     });
-    if (!res.ok) {
-      console.warn(`[API Fallback] ${res.status} on ${path}, using mock data.`);
-      return (getMockData(path) || {}) as T;
+    if (res.ok) {
+      return await res.json() as T;
     }
-    return await res.json() as T;
+    console.warn(`[API Fallback] ${res.status} on ${path}, using fallback data.`);
   } catch (error) {
-    console.warn(`[API Fallback] ${path} unavailable, using mock data.`);
-    return (getMockData(path) || {}) as T;
+    console.warn(`[API Fallback] ${path} network error, using fallback data:`, error);
   }
+
+  const mock = getMockData(path);
+  if (mock !== null && mock !== undefined) {
+    return mock as T;
+  }
+  return null;
 }
 
 export const api = {
@@ -116,9 +110,23 @@ export const api = {
       stats: { label: string; value: string }[];
     }>('/api/home');
   },
-  getReports: async (params?: { page?: number; page_size?: number; query?: string }) => {
+  getReports: async (params?: Record<string, any>) => {
     const query = new URLSearchParams(params as any).toString();
-    return fetchJson<{ items: any[]; total: number }>(`/api/reports?${query}`);
+    return fetchJson<{ items: any[]; total: number; total_pages?: number; page?: number }>(`/api/reports${query ? `?${query}` : ''}`);
+  },
+  getReportById: async (id: string) => {
+    return fetchJson<any>(`/api/reports/${id}`);
+  },
+  getReportFilters: async () => {
+    return fetchJson<{ levels: string[]; sectors: string[]; report_types: string[]; years: string[]; states: any[] }>('/api/reports/filters');
+  },
+  getStateAccounts: async (params?: Record<string, any>) => {
+    const query = new URLSearchParams(params as any).toString();
+    return fetchJson<{ items: any[]; total: number; total_pages?: number; page?: number }>(`/api/state-accounts${query ? `?${query}` : ''}`);
+  },
+  getCombinedAccounts: async (params?: Record<string, any>) => {
+    const query = new URLSearchParams(params as any).toString();
+    return fetchJson<{ items: any[]; total: number; total_pages?: number; page?: number }>(`/api/combined-accounts${query ? `?${query}` : ''}`);
   },
   getNews: async () => {
     return fetchJson<any[]>('/api/news');
@@ -136,3 +144,4 @@ export const api = {
     return fetchJson<any>(`/api/states/${slug}`);
   }
 };
+

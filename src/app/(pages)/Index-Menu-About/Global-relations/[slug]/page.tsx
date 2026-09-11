@@ -55,6 +55,9 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   const isAsosai = slugDecoded === 'association with asosai';
   const isMultilateral = slugDecoded === 'multilateral engagement';
   const isBilateral = slugDecoded === 'bilateral relations';
+  const isPresentAudits = slugDecoded === 'present audits' || slugDecoded === 'present international audits' || slugDecoded.includes('present');
+  const isPastAudits = slugDecoded === 'past audits' || slugDecoded === 'past international audits' || slugDecoded.includes('past');
+  const isUnPanel = slugDecoded === 'un panel' || slugDecoded === 'un panel of external auditors' || slugDecoded.includes('panel');
 
   let pageTitle = rawSlug;
   let heroTitle = rawSlug;
