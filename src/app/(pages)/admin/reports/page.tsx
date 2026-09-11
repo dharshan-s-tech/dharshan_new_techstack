@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, ReportItem as DataReportItem } from '@/lib/dataManager';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
+import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
 
 interface StateLookup {
   id: number;
@@ -666,7 +667,7 @@ function AdminReportsContent() {
                 <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Type</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Year</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Level</th>
-                <th className="px-3 py-3 text-center w-36">Actions</th>
+                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -716,36 +717,47 @@ function AdminReportsContent() {
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-600 font-semibold">{report.year_of_report}</td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-500 font-medium">{report.level || 'Union'}</td>
                     
-                    <td className="px-3 py-3 text-center space-x-1.5 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
+                      {/* View */}
                       <button
                         onClick={() => handleOpenView(report)}
-                        className="p-1 border border-emerald-300 hover:bg-emerald-50 text-emerald-700 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
+                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="View Full Report Details"
                       >
-                        👁️
+                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>View</span>
                       </button>
+
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleOpenEdit(report)}
+                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        title="Edit Record"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
+                      </button>
+
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDelete(report.rawId)}
+                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        title="Delete Record"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
+                      </button>
+
+                      {/* Live Link */}
                       <Link
                         href={`/Reports/${report.rawId}`}
                         target="_blank"
-                        className="p-1 border border-blue-200 hover:bg-blue-50 text-blue-600 inline-flex items-center justify-center w-7 h-7 text-xs"
+                        className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
                         title="Preview Public Page ↗"
                       >
-                        ↗
+                        <ExternalLink className="w-3 h-3 text-blue-600" />
+                        <span>Live</span>
                       </Link>
-                      <button
-                        onClick={() => handleOpenEdit(report)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
-                        title="Edit Record"
-                      >
-                        📝
-                      </button>
-                      <button
-                        onClick={() => handleDelete(report.rawId)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
-                        title="Delete Record"
-                      >
-                        🗑️
-                      </button>
                     </td>
                   </tr>
                 ))
@@ -920,32 +932,45 @@ function AdminReportsContent() {
 
               {/* Footer Actions */}
               <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/Reports/${viewingReport.rawId}`}
-                    target="_blank"
-                    className="px-4 py-2 border border-blue-300 text-blue-700 hover:bg-blue-50 font-bold text-xs flex items-center gap-1.5"
-                  >
-                    <span>Preview Public Page ↗</span>
-                  </Link>
+                <Link
+                  href={`/Reports/${viewingReport.rawId}`}
+                  target="_blank"
+                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Public Page ↗</span>
+                </Link>
+
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => {
                       const r = viewingReport;
                       setViewingReport(null);
                       handleOpenEdit(r);
                     }}
-                    className="px-4 py-2 border border-[#751639] text-[#751639] hover:bg-pink-50 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <span>📝 Edit Record</span>
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit Record</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const idToDelete = viewingReport.rawId;
+                      setViewingReport(null);
+                      handleDelete(idToDelete);
+                    }}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Record</span>
+                  </button>
+                  <button
+                    onClick={() => setViewingReport(null)}
+                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
+                  >
+                    Close
                   </button>
                 </div>
-
-                <button
-                  onClick={() => setViewingReport(null)}
-                  className="px-6 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-xs transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
               </div>
 
             </div>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, NewsItem as DataNewsItem } from '@/lib/dataManager';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface NewsDisplayItem {
   id: string;
@@ -325,7 +326,7 @@ export default function AdminNews() {
                 <th className="px-4 py-3.5 border-r border-white/20 w-32">Type</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-28">Tag</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-32">Publish Date</th>
-                <th className="px-4 py-3.5 text-center w-28">Actions</th>
+                <th className="px-4 py-3.5 text-center min-w-[180px] w-48">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -353,20 +354,25 @@ export default function AdminNews() {
                     <td className="px-4 py-3 border-r border-[#e2e5e7] text-zinc-600">{item.tag}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-mono text-zinc-500">{item.publish_date}</td>
 
-                    <td className="px-4 py-3 text-center space-x-1.5">
+                    <td className="px-4 py-3 text-center whitespace-nowrap space-x-1.5">
+                      {/* Edit */}
                       <button
                         onClick={() => handleOpenEdit(item.id)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7"
+                        className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Edit Record"
                       >
-                        📝
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
                       </button>
+
+                      {/* Delete */}
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7"
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Delete Record"
                       >
-                        🗑️
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
                       </button>
                     </td>
                   </tr>

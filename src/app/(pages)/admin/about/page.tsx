@@ -632,13 +632,13 @@ function AdminAboutRegistryContent() {
               >
                 <th className="px-3 py-3 border-r border-white/20 w-16 text-center">#</th>
                 <th className="px-3 py-3 border-r border-white/20 w-16 text-center">Thumb</th>
-                <th className="px-4 py-3 border-r border-white/20 min-w-[280px]">About Us Title &amp; Summary</th>
+                <th className="px-4 py-3 border-r border-white/20 min-w-[260px]">About Us Title &amp; Summary</th>
                 <th className="px-3 py-3 border-r border-white/20 w-36">Category</th>
-                <th className="px-3 py-3 border-r border-white/20 w-44">Sub-Topic / Key</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36 font-mono">DB Table</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Lang</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Status</th>
-                <th className="px-3 py-3 text-center w-36">Actions</th>
+                <th className="px-3 py-3 border-r border-white/20 w-40">Sub-Topic / Key</th>
+                <th className="px-3 py-3 border-r border-white/20 w-32 font-mono">DB Table</th>
+                <th className="px-3 py-3 border-r border-white/20 w-16 text-center">Lang</th>
+                <th className="px-3 py-3 border-r border-white/20 w-16 text-center">Status</th>
+                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -740,39 +740,49 @@ function AdminAboutRegistryContent() {
                     </td>
 
                     {/* Actions */}
-                    <td className="px-3 py-3 text-center space-x-1.5 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
+                      {/* View */}
                       <button
                         onClick={() => handleOpenView(item)}
-                        className="p-1 border border-emerald-300 hover:bg-emerald-50 text-emerald-700 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer shadow-2xs"
+                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="View Full Record Details"
                       >
-                        👁️
+                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>View</span>
                       </button>
 
-                      <Link
-                        href={item.public_url}
-                        target="_blank"
-                        className="p-1 border border-blue-200 hover:bg-blue-50 text-blue-600 inline-flex items-center justify-center w-7 h-7 text-xs shadow-2xs"
-                        title="Preview Public Page ↗"
-                      >
-                        ↗
-                      </Link>
-
+                      {/* Edit */}
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer shadow-2xs"
+                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Edit Record"
                       >
-                        📝
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
                       </button>
 
+                      {/* Delete */}
                       <button
                         onClick={() => handleDelete(item.rawId)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer shadow-2xs"
+                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Delete / Archive Record"
                       >
-                        🗑️
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
                       </button>
+
+                      {/* Live Link */}
+                      {item.public_url && (
+                        <Link
+                          href={item.public_url}
+                          target="_blank"
+                          className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
+                          title="Preview Public Page ↗"
+                        >
+                          <ExternalLink className="w-3 h-3 text-blue-600" />
+                          <span>Live</span>
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -890,29 +900,42 @@ function AdminAboutRegistryContent() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-5 border-t border-zinc-200 mt-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-5 border-t border-zinc-200 mt-5">
               <Link
                 href={viewingRecord.public_url}
                 target="_blank"
-                className="px-4 py-2 border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white font-bold rounded-none transition-colors"
+                className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
               >
-                Open Public Page ↗
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open Public Page ↗</span>
               </Link>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => {
                     const item = viewingRecord;
                     setViewingRecord(null);
                     handleOpenEdit(item);
                   }}
-                  className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold rounded-none"
+                  className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  Edit This Record 📝
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>Edit Record</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const idToDelete = viewingRecord.rawId;
+                    setViewingRecord(null);
+                    handleDelete(idToDelete);
+                  }}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Record</span>
                 </button>
                 <button
                   onClick={() => setViewingRecord(null)}
-                  className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium rounded-none"
+                  className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
                 >
                   Close
                 </button>
