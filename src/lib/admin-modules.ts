@@ -9,7 +9,7 @@
 // DB TABLE → ADMIN MODULE CONFIGURATION MAP
 // =============================================
 export interface AdminModule {
-  table: string;          // DB table name (in cag_new schema)
+  table: string;          // DB table name (in cag_revamp schema)
   title: string;          // Page title
   addTitle: string;       // Add form title
   searchColumn: string;   // Column to search on
@@ -336,30 +336,6 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
       { name: 'is_active', label: 'Active', type: 'boolean' },
     ]
   },
-  'former-cags': {
-    table: 'former_cags',
-    title: 'Former CAGs',
-    addTitle: 'Add Former CAG',
-    searchColumn: 'name_en',
-    columns: [
-      { key: 'name_en', label: 'Name (EN)' },
-      { key: 'tenure_from', label: 'Tenure From' },
-      { key: 'tenure_to', label: 'Tenure To' },
-      { key: 'display_order', label: 'Order' },
-      { key: 'is_active', label: 'Status', type: 'boolean' },
-    ],
-    formFields: [
-      { name: 'name_en', label: 'Full Name (English)', type: 'text', required: true },
-      { name: 'name_hi', label: 'Full Name (Hindi)', type: 'text', isHindi: true },
-      { name: 'tenure_from', label: 'Tenure From', type: 'text', placeholder: 'e.g. 1948' },
-      { name: 'tenure_to', label: 'Tenure To', type: 'text', placeholder: 'e.g. 1954' },
-      { name: 'description_en', label: 'Description (English)', type: 'richtext' },
-      { name: 'description_hi', label: 'Description (Hindi)', type: 'richtext', isHindi: true },
-      { name: 'image_url', label: 'Portrait Image', type: 'image' },
-      { name: 'display_order', label: 'Display Order', type: 'number' },
-      { name: 'is_active', label: 'Active', type: 'boolean' },
-    ]
-  },
   'org-designations': {
     table: 'org_designations',
     title: 'Org. Designations',
@@ -463,11 +439,12 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
   },
   'state-accounts': {
     table: 'state_accounts',
-    title: 'State Accounts',
-    addTitle: 'Add State Account',
+    title: 'State Finance Accounts',
+    addTitle: 'Add State Account Statement',
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'category_name', label: 'Category' },
       { key: 'account_year', label: 'Year' },
       { key: 'month', label: 'Month' },
       { key: 'volume', label: 'Volume' },
@@ -476,12 +453,45 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     formFields: [
       { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
       { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
-      { name: 'state_id', label: 'State', type: 'select' },
+      { name: 'state_id', label: 'State / Union Territory', type: 'select' },
+      { name: 'category_name', label: 'Account Category', type: 'select', options: [
+        { value: 'Accounts at a Glance', label: 'Accounts at a Glance' },
+        { value: 'Appropriation Accounts', label: 'Appropriation Accounts' },
+        { value: 'Finance Accounts', label: 'Finance Accounts' },
+        { value: 'Monthly Key Indicators', label: 'Monthly Key Indicators' },
+      ]},
       { name: 'account_year', label: 'Account Year', type: 'number', required: true },
-      { name: 'month', label: 'Month', type: 'text' },
-      { name: 'volume', label: 'Volume', type: 'text' },
-      { name: 'file_url', label: 'Upload File (PDF)', type: 'file' },
+      { name: 'month', label: 'Month (if monthly statement)', type: 'text' },
+      { name: 'volume', label: 'Volume Description', type: 'text' },
+      { name: 'file_url', label: 'Upload File / CloudFront PDF URL', type: 'file' },
       { name: 'external_link', label: 'External Link URL', type: 'url' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'combined-accounts': {
+    table: 'combined_accounts',
+    title: 'Combined Finance Accounts & Conferences',
+    addTitle: 'Add Combined Account Document',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Document Title' },
+      { key: 'category', label: 'Category' },
+      { key: 'account_year', label: 'Year' },
+      { key: 'volume', label: 'Volume' },
+      { key: 'size', label: 'Size' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Document Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Document Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'category', label: 'Document Category', type: 'select', options: [
+        { value: 'combined', label: 'Combined Finance & Revenue Accounts' },
+        { value: 'conference', label: 'State Finance Secretaries Conference' },
+      ], required: true },
+      { name: 'account_year', label: 'Account / Report Year', type: 'text', required: true, placeholder: '2024 - 25' },
+      { name: 'volume', label: 'Volume Description', type: 'text', placeholder: 'Full Comprehensive Volume' },
+      { name: 'size', label: 'Document File Size', type: 'text', placeholder: '18.5 MB' },
+      { name: 'file_url', label: 'Upload Document / CloudFront PDF Link', type: 'file' },
       { name: 'is_active', label: 'Active', type: 'boolean' },
     ]
   },
@@ -603,11 +613,235 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
       { key: 'is_active', label: 'Status', type: 'boolean' },
     ],
     formFields: [
-      { name: 'report_id', label: 'Audit Report', type: 'select', required: true },
-      { name: 'file_type', label: 'File Type', type: 'text', required: true },
-      { name: 'file_url', label: 'Upload File (PDF)', type: 'file', required: true },
+      { name: 'report_id', label: 'Report ID', type: 'number', required: true },
+      { name: 'file_type', label: 'File Type', type: 'select', options: [
+        { value: 'complete', label: 'Complete Report' },
+        { value: 'chapter', label: 'Chapter' },
+        { value: 'annexure', label: 'Annexure' },
+        { value: 'press_release', label: 'Press Release' },
+      ]},
+      { name: 'file_url', label: 'File URL', type: 'text', required: true },
       { name: 'display_order', label: 'Display Order', type: 'number' },
       { name: 'is_active', label: 'Active', type: 'boolean' },
     ]
   },
+  // --- About Us 9 Subpages Modules ---
+  'cag-of-india': {
+    table: 'pages',
+    title: 'CAG of India Profile',
+    addTitle: 'Update CAG Profile',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'upload_file', label: 'Attachment', type: 'link' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'upload_file', label: 'Profile Document / Photo', type: 'file' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'our-vision-mission-values': {
+    table: 'pages',
+    title: 'Our Vision, Mission & Core Values',
+    addTitle: 'Update Vision & Mission',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'organisation-chart': {
+    table: 'organisation_chart',
+    title: 'Organisation Chart',
+    addTitle: 'Add Officer to Hierarchy',
+    searchColumn: 'name',
+    columns: [
+      { key: 'name', label: 'Officer Name' },
+      { key: 'designation', label: 'Designation' },
+      { key: 'charge', label: 'Portfolio / Charge' },
+      { key: 'level', label: 'Level' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'display_order', label: 'Order' },
+    ],
+    formFields: [
+      { name: 'name_en', label: 'Officer Name (English)', type: 'text', required: true },
+      { name: 'name_hi', label: 'Officer Name (Hindi)', type: 'text', isHindi: true },
+      { name: 'designation_en', label: 'Designation (English)', type: 'text', required: true },
+      { name: 'designation_hi', label: 'Designation (Hindi)', type: 'text', isHindi: true },
+      { name: 'charge_en', label: 'Portfolio / Charge (English)', type: 'text' },
+      { name: 'charge_hi', label: 'Portfolio / Charge (Hindi)', type: 'text', isHindi: true },
+      { name: 'level', label: 'Hierarchy Level (0=CAG, 1=Secy, 2=DyCAG, 3=AddlDyCAG, 4=DG/PD)', type: 'number', required: true },
+      { name: 'email', label: 'Email Address', type: 'text' },
+      { name: 'phone', label: 'Telephone Number', type: 'text' },
+      { name: 'profile_image', label: 'Profile Photo', type: 'image' },
+      { name: 'display_order', label: 'Display Order', type: 'number' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'former-cags': {
+    table: 'former_cag',
+    title: 'Former CAGs Gallery',
+    addTitle: 'Add Former CAG',
+    searchColumn: 'name',
+    columns: [
+      { key: 'name', label: 'Officer Name' },
+      { key: 'tenure_from', label: 'Tenure From' },
+      { key: 'tenure_to', label: 'Tenure To' },
+      { key: 'image', label: 'Photo', type: 'image' },
+      { key: 'title', label: 'Category' },
+    ],
+    formFields: [
+      { name: 'name_en', label: 'Officer Name (English)', type: 'text', required: true },
+      { name: 'name_hi', label: 'Officer Name (Hindi)', type: 'text', isHindi: true },
+      { name: 'tenure_from', label: 'Tenure From (Year / Date)', type: 'text', required: true },
+      { name: 'tenure_to', label: 'Tenure To (Year / Date)', type: 'text', required: true },
+      { name: 'image', label: 'Photograph URL / Upload', type: 'image' },
+      { name: 'title', label: 'Title Category', type: 'text', placeholder: 'Former CAG' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'history-of-indian-audit-and-accounts-department': {
+    table: 'pages',
+    title: 'History of IAAD',
+    addTitle: 'Update History of IAAD',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'upload_file', label: 'Attachment', type: 'link' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'upload_file', label: 'Historical Document (PDF)', type: 'file' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'audit-advisory-board': {
+    table: 'pages',
+    title: 'Audit Advisory Board',
+    addTitle: 'Update Audit Advisory Board',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'upload_file', label: 'Attachment', type: 'link' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'upload_file', label: 'Notification Document (PDF)', type: 'file' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'constitutional-provisions': {
+    table: 'pages',
+    title: 'Constitutional Provisions',
+    addTitle: 'Update Constitutional Provisions',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'upload_file', label: 'Attachment', type: 'link' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'upload_file', label: 'Constitutional Reference (PDF)', type: 'file' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'duties-power-and-conditions-of-services-act': {
+    table: 'pages',
+    title: 'Duties & Powers Act',
+    addTitle: 'Update Duties & Powers Act',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'upload_file', label: 'Attachment', type: 'link' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'upload_file', label: 'Act Document (PDF)', type: 'file' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
+  'cag-audit-regulations': {
+    table: 'pages',
+    title: 'Audit Regulation',
+    addTitle: 'Update Audit Regulation',
+    searchColumn: 'title_en',
+    columns: [
+      { key: 'title_en', label: 'Title (EN)' },
+      { key: 'title_hi', label: 'Title (HI)' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'upload_file', label: 'Attachment', type: 'link' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'title_en', label: 'Title (English)', type: 'text', required: true },
+      { name: 'title_hi', label: 'Title (Hindi)', type: 'text', isHindi: true },
+      { name: 'slug', label: 'URL Slug', type: 'text', required: true },
+      { name: 'excerpt_en', label: 'Excerpt (English)', type: 'textarea' },
+      { name: 'excerpt_hi', label: 'Excerpt (Hindi)', type: 'textarea', isHindi: true },
+      { name: 'content_en', label: 'Content (English)', type: 'richtext' },
+      { name: 'content_hi', label: 'Content (Hindi)', type: 'richtext', isHindi: true },
+      { name: 'upload_file', label: 'Regulations Gazette / Book (PDF)', type: 'file' },
+      { name: 'is_active', label: 'Active', type: 'boolean' },
+    ]
+  },
 };
+

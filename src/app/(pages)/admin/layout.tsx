@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import FigmaAdminSidebar from '@/components/admin/FigmaAdminSidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -100,166 +101,113 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!authorized) return null;
 
-  // Essential menu categories
-  const menuCategories = [
-    {
-      category: 'CORE & INSTITUTIONAL',
-      items: [
-        { name: 'Dashboard Overview', path: '/admin', active: pathname === '/admin' },
-        { name: 'About Us & Former CAGs', path: '/admin/about', active: pathname === '/admin/about' },
-        { name: 'Global Site Settings & Texts', path: '/admin/site-settings', active: pathname === '/admin/site-settings' },
-      ]
-    },
-    {
-      category: 'REPORTS & PUBLICATIONS',
-      items: [
-        { name: 'Audit Reports & Accounts', path: '/admin/reports', active: pathname === '/admin/reports' },
-        { name: 'State Finance Accounts', path: '/admin/state-accounts', active: pathname === '/admin/state-accounts' },
-      ]
-    },
-    {
-      category: 'PRESENCE & RELATIONS',
-      items: [
-        { name: 'State Level Offices Cards', path: '/admin/offices', active: pathname === '/admin/offices' },
-        { name: 'Global Relations (INTOSAI/UN)', path: '/admin/global', active: pathname === '/admin/global' },
-      ]
-    },
-    {
-      category: 'MEDIA & ANNOUNCEMENTS',
-      items: [
-        { name: 'News & Press Releases', path: '/admin/news', active: pathname === '/admin/news' },
-        { name: 'Home Banner Slideshows', path: '/admin/banners', active: pathname === '/admin/banners' },
-      ]
-    },
-    {
-      category: 'CIRCULARS & TENDERS',
-      items: [
-        { name: 'Circulars & Office Orders', path: '/admin/circulars', active: pathname === '/admin/circulars' },
-        { name: 'Tenders & Procurement', path: '/admin/tenders', active: pathname === '/admin/tenders' },
-      ]
-    },
-    {
-      category: 'SYSTEM MASTERS',
-      items: [
-        { name: 'Master Data Dictionaries', path: '/admin/masters', active: pathname === '/admin/masters' },
-      ]
-    }
-  ];
-
-  // Map route paths to clear breadcrumbs
+  // Map route paths to clear breadcrumbs matching Super Admin hierarchy
   const getBreadcrumb = () => {
-    if (pathname === '/admin') return 'Home > Dashboard Overview';
-    if (pathname === '/admin/banners') return 'Home > Home Page Hero Banners';
-    if (pathname === '/admin/reports') return 'Home > Audit Reports & Accounts';
-    if (pathname === '/admin/about') return 'Home > About Us & Former CAGs';
-    if (pathname === '/admin/offices') return 'Home > State Level Offices Cards';
-    if (pathname === '/admin/global') return 'Home > Global Relations (INTOSAI)';
-    if (pathname === '/admin/news') return 'Home > News & Press Releases';
-    if (pathname === '/admin/state-accounts') return 'Home > State Finance Accounts';
-    if (pathname === '/admin/circulars') return 'Home > Circulars & Regulations';
-    if (pathname === '/admin/tenders') return 'Home > Tenders & Procurement';
-    if (pathname === '/admin/masters') return 'Home > Master Data Dictionaries';
-    if (pathname === '/admin/site-settings') return 'Home > Global Site Settings & Texts';
-    return 'Home';
+    if (pathname === '/admin') return 'SUPER ADMIN > Dashboard';
+    if (pathname === '/admin/banners') return 'SUPER ADMIN > Main CAG Website > Home Page';
+    if (pathname === '/admin/reports') return 'SUPER ADMIN > Main CAG Website > Reports > Audit Reports';
+    if (pathname === '/admin/accounts') return 'SUPER ADMIN > Main CAG Website > Reports > Accounts Management Suite';
+    if (pathname === '/admin/state-accounts') return 'SUPER ADMIN > Main CAG Website > Reports > State & UT Accounts';
+    if (pathname === '/admin/combined-accounts') return 'SUPER ADMIN > Main CAG Website > Reports > Combined Accounts & Conferences';
+    if (pathname === '/admin/offices') return 'SUPER ADMIN > Main CAG Website > Our Presence > Offices & Institutes';
+    if (pathname === '/admin/global') return 'SUPER ADMIN > Main CAG Website > Global Relations';
+    if (pathname === '/admin/circulars') return 'SUPER ADMIN > Main CAG Website > Resources';
+    if (pathname === '/admin/about') return 'SUPER ADMIN > Main CAG Website > About Us';
+    if (pathname === '/admin/news') return 'SUPER ADMIN > Main CAG Website > News & Events';
+    if (pathname === '/admin/site-settings') return 'SUPER ADMIN > Main CAG Website > Contact';
+    if (pathname === '/admin/masters') return 'SUPER ADMIN > Shared Content';
+    if (pathname === '/admin/users') return 'SUPER ADMIN > Administration > User Management';
+    return 'SUPER ADMIN > Main CAG Website';
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f6f9] text-zinc-800 font-sans text-[14px]">
+    <div className="h-screen max-h-screen w-screen overflow-hidden flex flex-col bg-[#f4f6f9] text-zinc-800 font-sans text-[14px]">
       
-      {/* Top Header Bar */}
-      <header className="bg-white border-b border-[#e2e5e7] flex items-center justify-between px-6 py-2.5 z-10 shrink-0 shadow-xs">
+      {/* Top Header Bar - Fixed at top matching Figma Frame 1000005174 */}
+      <header className="h-[80px] w-full bg-white shadow-[0px_2px_4px_rgba(0,0,0,0.25)] flex items-center justify-between px-6 z-30 shrink-0 sticky top-0 select-none">
         
         {/* Left Crest & Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <img 
             src="/assets/12e6d254adf33bbd46537f45eb8f9ecd50a15e55.png" 
             alt="CAG Emblem Logo" 
-            className="h-10 w-auto object-contain"
+            className="h-[60px] w-auto object-contain"
           />
           <div className="leading-tight">
-            <h1 className="text-sm font-bold text-[#751639]">
-              Comptroller & Auditor General of India
+            <h1 className="text-[17px] font-bold text-[#751639] tracking-tight">
+              Comptroller &amp; Auditor General of India
             </h1>
-            <p className="text-[10px] text-zinc-400 font-medium leading-none">
+            <p className="text-[11px] text-zinc-500 font-medium">
               Supreme Audit Institution of India — Admin Control Panel
             </p>
           </div>
         </div>
 
-        {/* Right Admin Details / Language */}
-        <div className="flex items-center gap-4 text-xs">
-          <div className="relative">
-            <select className="bg-white border border-zinc-300 rounded px-2 py-1 text-zinc-700 outline-none">
-              <option>English</option>
-              <option>Hindi</option>
-            </select>
+        {/* Right Header Controls matching Figma */}
+        <div className="flex items-center gap-5">
+          
+          {/* Language Selector Button */}
+          <div className="flex items-center gap-2 border border-[#EDE9E9] rounded-[12px] px-3 py-1.5 text-[14px] text-[#45556C] font-medium bg-white">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="7" stroke="#45556C" strokeWidth="1.3"/>
+              <ellipse cx="8" cy="8" rx="3.2" ry="7" stroke="#45556C" strokeWidth="1.3"/>
+              <path d="M1 8H15" stroke="#45556C" strokeWidth="1.3"/>
+            </svg>
+            <span>English</span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" opacity="0.6">
+              <path d="M4 6L8 10L12 6" stroke="#45556C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
 
+          {/* Vertical Divider */}
+          <div className="h-[36px] w-[1px] bg-[#D8D8D8]"></div>
+
+          {/* Admin User Profile Dropdown */}
           <div className="relative group">
-            <button className="flex items-center gap-1.5 font-semibold text-[#751639] py-1">
-              <span>( Administrator )</span>
-              <span className="text-[10px]">▼</span>
+            <button className="flex items-center gap-2.5 py-1 text-left cursor-pointer outline-none">
+              {/* Gradient Circle with 'A' */}
+              <div className="w-[35px] h-[35px] rounded-full bg-gradient-to-br from-[#9F385E] to-[#741739] text-white flex items-center justify-center font-semibold text-[14px] shadow-xs">
+                A
+              </div>
+
+              {/* Admin Label */}
+              <span className="font-semibold text-[14px] leading-[20px] text-[#751639]">
+                Admin
+              </span>
+
+              {/* Dropdown Chevron */}
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="text-[#BBBBBB]">
+                <path d="M1 1L5 5L9 1" stroke="#BBBBBB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </button>
             
             {/* Dropdown Menu */}
-            <div className="absolute right-0 top-full mt-1 bg-white border border-zinc-200 shadow-lg rounded-md py-1 w-40 hidden group-hover:block z-50">
+            <div className="absolute right-0 top-full mt-2 bg-white border border-zinc-200 shadow-xl rounded-[12px] py-1.5 w-44 hidden group-hover:block z-50 animate-fadeIn">
+              <div className="px-4 py-2 border-b border-zinc-100">
+                <p className="text-[13px] font-bold text-zinc-800">Super Administrator</p>
+                <p className="text-[11px] text-zinc-400">admin@cag.gov.in</p>
+              </div>
               <button 
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-red-600 font-semibold"
+                className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 font-semibold text-[13px] transition-colors flex items-center gap-2"
               >
-                Logout / Sign Out
+                <span>Logout / Sign Out</span>
               </button>
             </div>
           </div>
+
         </div>
 
       </header>
 
-      {/* Main Body container (Sidebar + Content) */}
-      <div className="flex flex-grow overflow-hidden">
+      {/* Main Body container (Figma Burgundy Sidebar + Scrollable Content) */}
+      <div className="flex-1 w-full flex flex-row overflow-hidden">
         
-        {/* Solid Rich Solid CAG Burgundy Sidebar with High-Contrast Bold Text */}
-        <aside className="w-[280px] bg-[#751639] overflow-y-auto shrink-0 flex flex-col justify-between border-r border-[#5c102c] shadow-xl">
-          <div>
-            {/* Side Panel Header */}
-            <div className="px-5 py-4 border-b border-white/20 flex items-center justify-between bg-black/20">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-white shadow-xs"></span>
-                <span className="text-xs uppercase tracking-wider font-extrabold text-white">CAG Control Suite</span>
-              </div>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-white animate-pulse" title="Active Admin Session"></span>
-            </div>
+        {/* Figma 355px Tree Navigation Sidebar - Fixed on left with its own scroll */}
+        <FigmaAdminSidebar />
 
-            {/* Navigation Category Groups */}
-            <nav className="py-4 space-y-4 pr-3">
-              {menuCategories.map((cat, catIdx) => (
-                <div key={catIdx} className="space-y-1">
-                  <div className="px-5 text-[11px] font-extrabold text-[#ffe6ed] tracking-widest uppercase border-b border-white/10 pb-1 mb-1.5">
-                    {cat.category}
-                  </div>
-                  {cat.items.map((item, idx) => (
-                    <div key={idx}>
-                      <Link 
-                        href={item.path}
-                        target="_self"
-                        className={`block py-3 px-5 transition-all text-[13.5px] ${
-                          item.active 
-                            ? 'bg-white text-[#751639] font-extrabold pl-6 shadow-md rounded-r-md border-l-4 border-l-[#ffb3c6]' 
-                            : 'text-white font-bold hover:bg-white/15 rounded-r-md'
-                        }`}
-                      >
-                        {item.name}
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </nav>
-          </div>
-        </aside>
-
-        {/* Right Main Content Panel */}
-        <main className="flex-grow flex flex-col overflow-y-auto p-6 justify-between">
+        {/* Right Main Content Panel - Independently scrollable */}
+        <main className="flex-1 h-full overflow-y-auto p-6 flex flex-col justify-between">
           <div>
             
             {/* Breadcrumb Header */}
@@ -269,7 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             {/* Dynamic Page Content */}
-            <div className="animate-fadeIn">
+            <div className="animate-fadeIn pb-8">
               {children}
             </div>
 

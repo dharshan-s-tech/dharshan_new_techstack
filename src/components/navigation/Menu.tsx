@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 
 export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boolean; language?: 'English' | 'हिन्दी' }) {
   const pathname = usePathname() || '';
+  const decodedPath = decodeURIComponent(pathname || '').toLowerCase();
   const [activeMega, setActiveMega] = useState<'about' | 'global' | 'presence' | 'resources' | 'careers' | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,12 +88,12 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
 
   const isReportsActive = pathname === '/Reports' || hoveredItem === 'reports';
   const isPresenceActive = pathname.startsWith('/Our-Presence') || activeMega === 'presence' || hoveredItem === 'presence';
-  const isGlobalActive = pathname.includes('Global-relations') || activeMega === 'global' || hoveredItem === 'global';
+  const isGlobalActive = decodedPath.includes('global-relations') || decodedPath.includes('global relations') || activeMega === 'global' || hoveredItem === 'global';
   const isResourcesActive = pathname.startsWith('/Resources') || activeMega === 'resources' || hoveredItem === 'resources';
   const isCareersActive = pathname.startsWith('/Career-Engagement') || activeMega === 'careers' || hoveredItem === 'careers';
-  const isAboutActive = ((pathname.startsWith('/About') || pathname.startsWith('/About-Us')) && !pathname.includes('Global-relations')) || activeMega === 'about' || hoveredItem === 'about';
+  const isAboutActive = (((pathname.startsWith('/About') || pathname.startsWith('/About-Us') || decodedPath.includes('about-us') || decodedPath.startsWith('/about')) && !isGlobalActive) || activeMega === 'about' || hoveredItem === 'about');
 
-  const activeLinkClass = "text-[#751639] font-medium text-[14px] leading-[19px] tracking-normal underline decoration-[#751639] decoration-solid underline-offset-0 transition-colors";
+  const activeLinkClass = "text-[#751639] !text-[#751639] font-medium text-[14px] leading-[19px] tracking-normal underline decoration-[#751639] underline-offset-[5px] decoration-[1.5px] transition-colors";
   const inactiveLinkClass = "text-[#4d4d4d] font-normal text-[14px] leading-[19px] tracking-normal transition-colors";
 
   return (
@@ -166,7 +167,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
           href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" 
           id="global-relations-trigger"
           className={isGlobalActive ? activeLinkClass : inactiveLinkClass}
-          style={{ color: isGlobalActive ? '#751639' : '#4d4d4d', textDecoration: isGlobalActive ? 'underline' : 'none' }}
+          style={isGlobalActive ? { color: '#751639', textDecoration: 'underline', textUnderlineOffset: '5px', textDecorationColor: '#751639' } : {}}
           onClick={(e) => handleTopicClick(e, 'global')}
           aria-expanded={activeMega === 'global'}
         >
@@ -176,6 +177,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
           src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
           alt="" 
           className={`chevron ${isGlobalActive ? 'rotate-180' : ''}`} 
+          style={isGlobalActive ? { filter: 'brightness(0) saturate(100%) invert(13%) sepia(61%) saturate(3736%) hue-rotate(323deg) brightness(85%) contrast(97%)' } : {}}
         />
         
         {activeMega === 'global' && (
@@ -339,7 +341,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
           href="/About/About-Us/Cag-Of-India" 
           id="about-us-trigger"
           className={isAboutActive ? activeLinkClass : inactiveLinkClass}
-          style={{ color: isAboutActive ? '#751639' : '#4d4d4d', textDecoration: isAboutActive ? 'underline' : 'none' }}
+          style={isAboutActive ? { color: '#751639', textDecoration: 'underline', textUnderlineOffset: '5px', textDecorationColor: '#751639' } : {}}
           onClick={(e) => handleTopicClick(e, 'about')}
           aria-expanded={activeMega === 'about'}
         >
@@ -349,6 +351,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
           src="/assets/32d6d59de0cd297086b7b32eb17e03e23b4ac03d.svg" 
           alt="" 
           className={`chevron ${isAboutActive ? 'rotate-180' : ''}`} 
+          style={isAboutActive ? { filter: 'brightness(0) saturate(100%) invert(13%) sepia(61%) saturate(3736%) hue-rotate(323deg) brightness(85%) contrast(97%)' } : {}}
         />
 
         {activeMega === 'about' && (
@@ -365,25 +368,25 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
               <div className="about-menu__column">
                 <p className="about-menu__heading text-left">{isHindi ? 'हम कौन हैं' : 'Who We Are'}</p>
                 <ul className="about-menu__list">
-                  <li><Link href="/About/About-Us/Cag-Of-India" onClick={() => setActiveMega(null)}>{isHindi ? 'भारत के सीएजी' : 'CAG of India'}</Link></li>
-                  <li><Link href="/About/About-Us/Our-Vision,-Mission-&-Core-Values" onClick={() => setActiveMega(null)}>{isHindi ? 'दृष्टिकोण, ध्येय और मूल्य' : 'Our Vision, Mission and Core Values'}</Link></li>
-                  <li><Link href="/About/About-Us/Organisation-Chart" onClick={() => setActiveMega(null)}>{isHindi ? 'संगठन चार्ट' : 'Organization Chart'}</Link></li>
+                  <li><Link href="/About/About-Us/Cag-Of-India" onClick={() => setActiveMega(null)}>{isHindi ? 'भारत के सीएजी की प्रोफाइल' : 'CAG of India Profile'}</Link></li>
+                  <li><Link href="/About/About-Us/Our-Vision,-Mission-&-Core-Values" onClick={() => setActiveMega(null)}>{isHindi ? 'दृष्टिकोण, ध्येय और मूल्य' : 'Our Vision, Mission & Core Values'}</Link></li>
+                  <li><Link href="/About/About-Us/Organisation-Chart" onClick={() => setActiveMega(null)}>{isHindi ? 'संगठन चार्ट' : 'Organisation-Chart'}</Link></li>
                 </ul>
               </div>
               <div className="about-menu__column">
                 <p className="about-menu__heading text-left">{isHindi ? 'नेतृत्व और विरासत' : 'Leadership & Legacy'}</p>
                 <ul className="about-menu__list">
-                  <li><Link href="/About/About-Us/Former-Comptroller-and-Auditors-General" onClick={() => setActiveMega(null)}>{isHindi ? 'पूर्व सीएजी गैलरी' : 'Former CAGs'}</Link></li>
+                  <li><Link href="/About/About-Us/Former-Comptroller-and-Auditors-General" onClick={() => setActiveMega(null)}>{isHindi ? 'पूर्व सीएजी गैलरी' : 'Former CAGs Gallery'}</Link></li>
                   <li><Link href="/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department" onClick={() => setActiveMega(null)}>{isHindi ? 'आईएएडी का इतिहास' : 'History of IAAD'}</Link></li>
-                  <li><Link href="/About/About-Us/Audit-Advisory-Board" onClick={() => setActiveMega(null)}>{isHindi ? 'लेखा परीक्षा सलाहकार बोर्ड' : 'Audit Advisory Board'}</Link></li>
+                  <li><Link href="/About/About-Us/Audit-Advisory-Board" onClick={() => setActiveMega(null)}>{isHindi ? 'लेखा परीक्षा सलाहकार बोर्ड' : 'Audit-Advisory-Board'}</Link></li>
                 </ul>
               </div>
               <div className="about-menu__column">
                 <p className="about-menu__heading text-left">{isHindi ? 'शासन और अधिदेश' : 'Governance & Mandate'}</p>
                 <ul className="about-menu__list">
-                  <li><Link href="/About/About-Us/Constitutional-Provisions" onClick={() => setActiveMega(null)}>{isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional Provisions'}</Link></li>
-                  <li><Link href="/About/About-Us/Duties-&-Powers-Act" onClick={() => setActiveMega(null)}>{isHindi ? 'कर्तव्य और शक्तियां अधिनियम' : 'Duties & Powers Act'}</Link></li>
-                  <li><Link href="/About/About-Us/Audit-Regulation" onClick={() => setActiveMega(null)}>{isHindi ? 'लेखा परीक्षा विनियम' : 'Audit Regulation'}</Link></li>
+                  <li><Link href="/About/About-Us/Constitutional-Provisions" onClick={() => setActiveMega(null)}>{isHindi ? 'संवैधानिक प्रावधान' : 'Constitutional-Provisions'}</Link></li>
+                  <li><Link href="/About/About-Us/Duties-&-Powers-Act" onClick={() => setActiveMega(null)}>{isHindi ? 'कर्तव्य और शक्तियां अधिनियम' : 'Duties-&-Powers-Act'}</Link></li>
+                  <li><Link href="/About/About-Us/Audit-Regulation" onClick={() => setActiveMega(null)}>{isHindi ? 'लेखा परीक्षा विनियम' : 'Audit-Regulation'}</Link></li>
                 </ul>
               </div>
             </div>

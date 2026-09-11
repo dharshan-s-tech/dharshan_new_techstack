@@ -9,15 +9,16 @@ from app.core.database import Base, engine
 from app.api.router import api_router
 
 # Ensure models are registered before create_all
-from app.models import admin_user, audit_log, news, page, report, event, menu  # noqa: F401
+from app.models import admin_user, audit_log, news, page, report, event, menu, organisation_chart, former_cag  # noqa: F401
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     with engine.begin() as conn:
-        schema = settings.DB_SCHEMA
-        if schema:
-            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+        if engine.dialect.name == "postgresql":
+            schema = settings.DB_SCHEMA
+            if schema:
+                conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
         Base.metadata.create_all(bind=conn)
     yield
 
@@ -38,6 +39,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api")
+app.include_router(api_router, prefix="/api/v1")
 
 
 @app.get("/health")

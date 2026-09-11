@@ -3,16 +3,39 @@ import { Office } from '@/types';
 export interface ReportItem {
   id: string;
   title: string;
+  title_hi?: string;
   image: string;
   tag: string;
   date: string;
   year: string;
   sector: string;
-  level: string;
-  type: string;
+  level: string; // 'Union' | 'States' | 'Local Bodies'
+  type: string;  // 'Performance' | 'Compliance' | 'Financial' | 'ADC Reports'
+  state?: string;
   isFeatured?: boolean;
+  isActive?: boolean;
   label?: string;
   desc?: string;
+  pdfUrl?: string;
+  fileSize?: string;
+  ministry?: string;
+  tabledDate?: string;
+  executiveSummary?: string;
+  keyFindings?: string[];
+  recommendations?: string[];
+  videoUrl?: string;
+}
+
+export interface CombinedAccountItem {
+  id: number;
+  title_en: string;
+  title_hi?: string;
+  category: 'combined' | 'conference';
+  account_year: string;
+  volume?: string;
+  size: string;
+  file_url: string;
+  is_active: boolean;
 }
 
 export interface NewsItem {
@@ -50,24 +73,53 @@ export interface BannerItem {
   is_active: boolean;
 }
 
-export interface TenderItem {
-  id: number;
+export interface AccountItem {
+  id: string | number;
   title_en: string;
   title_hi?: string;
+  title?: string;
+  state_name_en?: string;
+  state_name_hi?: string;
+  category: string;
+  financial_year?: string;
+  date_of_upload?: string;
+  pdf_url?: string;
+  is_active?: boolean;
+  [key: string]: any;
+}
+
+export interface StateAccountItem extends AccountItem {}
+
+export interface TenderItem {
+  id: number;
+  title_en?: string;
+  title_hi?: string;
+  title?: string;
   reference_no?: string;
+  tenderNo?: string;
   closing_date?: string;
+  closingDate?: string;
+  status?: string;
   tender_file_url?: string;
+  docUrl?: string;
   is_active: boolean;
+  [key: string]: any;
 }
 
 export interface CircularItem {
   id: number;
-  title_en: string;
+  title_en?: string;
   title_hi?: string;
+  title?: string;
   circular_no?: string;
+  refNo?: string;
+  category?: string;
   issue_date?: string;
+  date?: string;
   file_url?: string;
+  docUrl?: string;
   is_active: boolean;
+  [key: string]: any;
 }
 
 export interface CagProfileItem {
@@ -142,14 +194,23 @@ export interface DutiesPowersChapterItem {
 
 export interface AuditRegulationItem {
   id: string;
-  titleEn: string;
-  titleHi: string;
+  titleEn?: string;
+  titleHi?: string;
+  title_en?: string;
+  title_hi?: string;
   descEn?: string;
   descHi?: string;
+  desc_en?: string;
+  desc_hi?: string;
   pdfUrl?: string;
+  file_url?: string;
   size?: string;
+  file_size?: string;
+  file_format?: string;
+  icon_type?: string;
   displayOrder?: number;
   isActive?: boolean;
+  is_active?: boolean;
 }
 
 export interface ConstitutionalProvisionItem {
@@ -173,6 +234,85 @@ export interface AuditAdvisoryMemberItem {
   displayOrder?: number;
   isActive?: boolean;
 }
+
+export const DEFAULT_CAG_PROFILE: CagProfileItem = {
+  name_en: 'Shri K. Sanjay Murthy',
+  name_hi: 'श्री के. संजय मूर्ति',
+  designation_en: 'Comptroller and Auditor General of India',
+  designation_hi: 'भारत के नियंत्रक और महालेखापरीक्षक',
+  photo_url: '/assets/cag-desk-photo.png',
+  bio_paragraphs_en: [
+    'Shri K. Sanjay Murthy assumed the office of Comptroller and Auditor General of India on November 21, 2024.'
+  ],
+  bio_paragraphs_hi: [
+    'श्री के. संजय मूर्ति ने 21 नवंबर, 2024 को भारत के नियंत्रक और महालेखापरीक्षक का पदभार संभाला।'
+  ]
+};
+
+export const DEFAULT_VISION_MISSION: VisionMissionItem = {
+  vision_title_en: 'Vision',
+  vision_title_hi: 'दृष्टिकोण',
+  vision_sub_en: 'Supreme Audit Institution of India',
+  vision_sub_hi: 'भारत का सर्वोच्च लेखापरीक्षा संस्थान',
+  vision_desc_en: 'We strive to be a global leader and catalyst for improved public sector accountability.',
+  vision_desc_hi: 'हम बेहतर सार्वजनिक क्षेत्र की जवाबदेही के लिए एक वैश्विक नेता और उत्प्रेरक बनने का प्रयास करते हैं।',
+  mission_title_en: 'Mission',
+  mission_title_hi: 'ध्येय',
+  mission_sub_en: 'Accountability and Governance',
+  mission_sub_hi: 'जवाबदेही और शासन',
+  mission_desc_en: 'Mandated by the Constitution of India, we promote accountability, transparency and good governance.',
+  mission_desc_hi: 'भारत के संविधान द्वारा प्रदत्त, हम जवाबदेही, पारदर्शिता और सुशासन को बढ़ावा देते हैं।',
+  values_title_en: 'Core Values',
+  values_title_hi: 'मूल मूल्य',
+  values_sub_en: 'Integrity and Professionalism',
+  values_sub_hi: 'सत्यनिष्ठा और व्यावसायिकता',
+  values_desc_en: 'Independence, Objectivity, Integrity, Reliability, Professional Excellence, Transparency, Positive Approach.',
+  values_desc_hi: 'स्वतंत्रता, निष्पक्षता, सत्यनिष्ठा, विश्वसनीयता, व्यावसायिक उत्कृष्टता, पारदर्शिता, सकारात्मक दृष्टिकोण।'
+};
+
+export const DEFAULT_ORG_OFFICERS: OrgOfficerItem[] = [];
+export const DEFAULT_HISTORY_DOCUMENTS: HistoryDocumentItem[] = [];
+export const DEFAULT_DUTIES_POWERS_CHAPTERS: DutiesPowersChapterItem[] = [];
+export const DEFAULT_AUDIT_REGULATIONS: AuditRegulationItem[] = [
+  {
+    id: 'reg-1',
+    title_en: 'Gazette publication-Regulations on Audit & Accounts -2020',
+    title_hi: 'लेखापरीक्षा एवं लेखा विनियम - 2020 का राजपत्र प्रकाशन',
+    file_format: 'PDF',
+    file_size: '34.7 MB',
+    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2020-Gazette-60b73c4d7d91e8-78235251.pdf',
+    icon_type: 'gazette',
+    is_active: true,
+    isActive: true,
+    displayOrder: 1,
+  },
+  {
+    id: 'reg-2',
+    title_en: 'Book - Regulations on Audit & Accounts -2020',
+    title_hi: 'पुस्तक - लेखापरीक्षा एवं लेखा विनियम - 2020',
+    file_format: 'PDF',
+    file_size: '34.7 MB',
+    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2020-60b73b5f00e954-46908386.pdf',
+    icon_type: 'book',
+    is_active: true,
+    isActive: true,
+    displayOrder: 2,
+  },
+  {
+    id: 'reg-3',
+    title_en: 'Earlier Version on Regulation on Audit & Accounts - 2007',
+    title_hi: 'लेखापरीक्षा एवं लेखा विनियम का पूर्व संस्करण - 2007',
+    file_format: 'PDF',
+    file_size: '34.7 MB',
+    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2007-5f7560da1d0347-15102559.pdf',
+    icon_type: 'archive',
+    is_active: true,
+    isActive: true,
+    displayOrder: 3,
+  },
+];
+export const DEFAULT_CONSTITUTIONAL_PROVISIONS: ConstitutionalProvisionItem[] = [];
+export const DEFAULT_AUDIT_ADVISORY_MEMBERS: AuditAdvisoryMemberItem[] = [];
 
 export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
   {
@@ -480,100 +620,470 @@ export const DEFAULT_CIRCULARS: CircularItem[] = [
   }
 ];
 
-// Default initial data matching site contents (9 featured reports in total)
+// CloudFront Union Department Assets (verified live CDN)
+export const CDN_UNION_DEPARTMENTS = {
+  civil: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg',
+  railway: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/railway.jpg',
+  commercial: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/commercial.jpg',
+  tax: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/tax.jpg',
+  indirect_tax: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/indirect-tax.jpg',
+  defence: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/defence.jpg',
+  scientific: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/scientific.jpg',
+  it: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/it-communication.jpg',
+};
+
+// Live verified sector-wise images from http://d7i5wg8xwe4hf.cloudfront.net/en/home
+export const SECTOR_WISE_IMAGES: Record<string, string> = {
+  "24": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Local_Bodies.jpg",
+  "26": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Environment_and_Sustainable_Development.png",
+  "27": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Finance.png",
+  "28": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Science_and_Technology.png",
+  "29": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Industry_and_commerce.png",
+  "30": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Agriculture_and_Rural_Development.jfif",
+  "31": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Art_Culture_and_Sports.png",
+  "32": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/social_welfare.jpeg",
+  "34": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Social_infrastructure.jfif",
+  "35": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/education_health_and_family_welfare.png",
+  "36": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/general_sector_ministry_and_constitutional_bodies.jfif",
+  "41": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Defence_and_national_security.png",
+  "42": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/information_and_communication.jfif",
+  "43": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/power_and_energy.jpg",
+  "44": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Transport_and_Infrastructure.jfif",
+  "45": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Taxes_and_duties.png",
+};
+
+export const REPORT_CDN_ASSETS = {
+  recentReportBadge: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/01-recent-report-logo.jpg',
+  digitalReportHero: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/digital_report.png',
+  comptrollerBgLogo: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/comptroller-bg-logo.png',
+  noImageFallback: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/noimage.jpg',
+  extlinkIcon: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/extlink-icon.png',
+  sectorWiseImages: SECTOR_WISE_IMAGES,
+  getStateCrestUrl: (stateName: string) => 
+    `https://d7i5wg8xwe4hf.cloudfront.net/assets/images/states_images/${encodeURIComponent(stateName)}.png`,
+  departments: {
+    civil: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg',
+    railway: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/railway.jpg',
+    commercial: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/commercial.jpg',
+    tax: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/tax.jpg',
+    indirect_tax: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/indirect-tax.jpg',
+    defence: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/defence.jpg',
+    scientific: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/scientific.jpg',
+    it: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/it-communication.jpg',
+  }
+};
+
+export function resolveReportCdnAsset(sector = '', title = ''): string {
+  const s = `${sector} ${title}`.toLowerCase();
+  if (s.includes('health') || s.includes('medic') || s.includes('vaccin') || s.includes('polio') || s.includes('family welfare') || s.includes('education')) {
+    return SECTOR_WISE_IMAGES['35'];
+  }
+  if (s.includes('defence') || s.includes('defense') || s.includes('military') || s.includes('border') || s.includes('security') || s.includes('army')) {
+    return SECTOR_WISE_IMAGES['41'];
+  }
+  if (s.includes('railway') || s.includes('train') || s.includes('transport') || s.includes('highway') || s.includes('road') || s.includes('toll')) {
+    return SECTOR_WISE_IMAGES['44'];
+  }
+  if (s.includes('tax') || s.includes('duties') || s.includes('duty') || s.includes('gst') || s.includes('excise') || s.includes('customs') || s.includes('revenue')) {
+    return SECTOR_WISE_IMAGES['45'];
+  }
+  if (s.includes('power') || s.includes('energy') || s.includes('solar') || s.includes('electricity') || s.includes('grid') || s.includes('renewable')) {
+    return SECTOR_WISE_IMAGES['43'];
+  }
+  if (s.includes('local bodies') || s.includes('municipal') || s.includes('civic') || s.includes('panchayat') || s.includes('urban') || s.includes('waste')) {
+    return SECTOR_WISE_IMAGES['24'];
+  }
+  if (s.includes('environment') || s.includes('sustainable') || s.includes('pollution') || s.includes('coastal') || s.includes('climate')) {
+    return SECTOR_WISE_IMAGES['26'];
+  }
+  if (s.includes('it') || s.includes('cyber') || s.includes('telecom') || s.includes('communication') || s.includes('technology') || s.includes('software') || s.includes('digital')) {
+    return SECTOR_WISE_IMAGES['42'];
+  }
+  if (s.includes('commercial') || s.includes('psu') || s.includes('trade') || s.includes('enterprise') || s.includes('industry') || s.includes('commerce') || s.includes('mineral') || s.includes('mining')) {
+    return SECTOR_WISE_IMAGES['29'];
+  }
+  if (s.includes('agriculture') || s.includes('rural') || s.includes('irrigation') || s.includes('canal') || s.includes('farming')) {
+    return SECTOR_WISE_IMAGES['30'];
+  }
+  if (s.includes('art') || s.includes('culture') || s.includes('sport')) {
+    return SECTOR_WISE_IMAGES['31'];
+  }
+  if (s.includes('social infrastructure')) {
+    return SECTOR_WISE_IMAGES['34'];
+  }
+  if (s.includes('social') || s.includes('welfare')) {
+    return SECTOR_WISE_IMAGES['32'];
+  }
+  if (s.includes('science') || s.includes('scientific') || s.includes('atomic') || s.includes('space')) {
+    return SECTOR_WISE_IMAGES['28'];
+  }
+  if (s.includes('adc') || s.includes('autonomous district') || s.includes('constitutional') || s.includes('general sector')) {
+    return SECTOR_WISE_IMAGES['36'];
+  }
+  if (s.includes('finance') || s.includes('treasury') || s.includes('accounts') || s.includes('financial')) {
+    return SECTOR_WISE_IMAGES['27'];
+  }
+  return REPORT_CDN_ASSETS.recentReportBadge;
+}
+
+export const resolveDepartmentAsset = resolveReportCdnAsset;
+
+// Default initial data matching site contents (12 featured reports + home reports)
 export const DEFAULT_REPORTS: ReportItem[] = [
   {
     id: 'rep-1',
-    title: 'Audit Report on Health Services and Polio Vaccination Administrations in Rural Districts',
-    image: '/assets/4c1eaa81c93edbe02d6f7d5437565571dcec4b04.png',
+    title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
+    title_hi: 'रिपोर्ट का शीर्षक यह दो पंक्तियों में हो सकता है, संक्षिप्त विवरण और मुख्य बिंदु',
+    image: SECTOR_WISE_IMAGES['35'],
     tag: 'Finance',
     date: 'Jun 4, 2026',
     year: '2026',
-    sector: 'Social Welfare',
+    sector: '',
     level: 'States',
     type: 'Performance',
-    label: 'Health Audit',
-    desc: 'Review of vaccine distribution logistics, primary health center infrastructure, and public health fund implementation.',
-    isFeatured: true
+    label: 'Download Full Report',
+    desc: 'Review of vaccine distribution logistics, primary health center infrastructure, and public health fund implementation across district health societies.',
+    ministry: 'Ministry of Health & Family Welfare / State Health Departments',
+    tabledDate: '24 February 2026',
+    fileSize: '12.8 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'This Performance Audit was conducted pursuant to Article 151 of the Constitution of India to examine whether rural health infrastructure, cold chain equipment, and pharmaceutical inventories were maintained in accordance with national public health standards.',
+    keyFindings: [
+      'Cold chain equipment in 34% of Primary Health Centres (PHCs) operated beyond recommended replacement cycles.',
+      'Unspent vaccination grants totaling ₹428 Crore remained parked in non-interest-bearing bank accounts for over 24 months.',
+      'Staff shortages in rural pediatric centers resulted in an 18% variance in booster dose delivery schedules.'
+    ],
+    recommendations: [
+      'Establish real-time IoT temperature monitoring across all district vaccine storage hubs.',
+      'Streamline treasury drawdowns directly to frontline accredited social health activists (ASHA).',
+      'Institute mandatory quarterly stock reconciliation between state medical supply corporations and regional clinics.'
+    ]
   },
   {
     id: 'rep-2',
-    title: 'Defence Audit Report on Border Security Procurement and Modernization Schemes',
-    image: '/assets/269d11ffce72c4343f0fa24955e0dc48a33d8255.png',
+    title: 'Annual Marketing Strategy Overview with insights into trends and projections',
+    title_hi: 'रुझानों और अनुमानों में अंतर्दृष्टि के साथ वार्षिक विपणन रणनीति का अवलोकन',
+    image: SECTOR_WISE_IMAGES['41'],
+    tag: 'Marketing',
+    date: 'Jul 15, 2026',
+    year: '2026',
+    sector: 'Finance | Information and Communication',
+    level: 'Union',
+    type: 'Compliance',
+    label: 'Access Full Strategy Document',
+    desc: 'Detailed compliance assessment of security hardware acquisitions, border fence structures, surveillance towers, and modern tactical systems procurement.',
+    ministry: 'Ministry of Defence',
+    tabledDate: '18 March 2026',
+    fileSize: '15.4 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'The compliance audit evaluated procurement contracts valued at ₹18,400 Crore executed between 2021 and 2025, assessing adherence to Defence Acquisition Procedure (DAP) guidelines and delivery milestones.',
+    keyFindings: [
+      'Delays in site readiness led to prolonged storage of specialized sensor systems at forward depots.',
+      'Liquidated damages amounting to ₹112 Crore were not levied on non-compliant vendors in three procurement tranches.',
+      'Maintenance support contracts were concluded 14 months after warranty expiration.'
+    ],
+    recommendations: [
+      'Incorporate integrated lifecycle cost and milestone tracking in all capital acquisition contracts.',
+      'Enforce automated penalty calculation within the defence procurement portal.'
+    ]
+  },
+  {
+    id: 'rep-3',
+    title: 'Emerging Tech Innovations and their Impact on the Industry Landscape',
+    title_hi: 'उभरते तकनीकी नवाचार और उद्योग परिदृश्य पर उनका प्रभाव',
+    image: CDN_UNION_DEPARTMENTS.railway,
+    tag: 'Technology',
+    date: 'Aug 30, 2026',
+    year: '2026',
+    sector: 'Finance',
+    level: 'Union',
+    type: 'Performance',
+    label: 'View Complete Analysis',
+    desc: 'Signaling upgrade projects review evaluating budget allocations, Kavach electronic interlocking installations, and system integration reliability benchmarks.',
+    ministry: 'Ministry of Railways',
+    tabledDate: '12 April 2026',
+    fileSize: '19.2 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'This audit examined the roll-out of electronic interlocking, automatic block signaling, and indigenous train collision avoidance systems across high-density railway corridors.',
+    keyFindings: [
+      'Kavach train protection system deployment covered only 1,465 route kilometers against the target of 5,000 route km.',
+      'Signal failure incident response protocols were updated irregularly across six zonal railway divisions.',
+      'Expenditure of ₹890 Crore on track-circuit modernization suffered delays due to non-availability of power blocks.'
+    ],
+    recommendations: [
+      'Accelerate unified vendor empanelment for high-density safety networks.',
+      'Deploy automated fault-detection telemetry to predict track circuit failures before service disruption.'
+    ]
+  },
+  {
+    id: 'rep-4',
+    title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
+    title_hi: 'रिपोर्ट का शीर्षक यह दो पंक्तियों में हो सकता है, संक्षिप्त विवरण और मुख्य बिंदु',
+    image: SECTOR_WISE_IMAGES['41'],
+    tag: 'Finance',
+    date: 'Jun 4, 2026',
+    year: '2026',
+    sector: 'Finance',
+    level: 'Union',
+    type: 'Compliance',
+    label: 'Download Full Report',
+    desc: 'Audit evaluating compliance of corporate tax exemptions, transfer pricing assessments, and direct receipt accounts clearance under the Income Tax Act.',
+    ministry: 'Ministry of Finance / Central Board of Direct Taxes',
+    tabledDate: '08 December 2025',
+    fileSize: '14.1 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'Compliance verification of 4,200 corporate scrutiny assessments conducted across Mumbai, Delhi, Bengaluru, and Chennai assessing correct computational treatment of depreciation and cross-border transactions.',
+    keyFindings: [
+      'Under-assessment of tax amounting to ₹640 Crore was observed in 82 corporate assessment orders.',
+      'Allowances of unverified R&D write-offs resulted in revenue leakage of ₹184 Crore.'
+    ],
+    recommendations: [
+      'Incorporate AI-based risk screening in the faceless assessment system to cross-reference claimed exemptions with GSTN return data.'
+    ]
+  },
+  {
+    id: 'rep-5',
+    title: 'Annual Marketing Strategy Overview with insights into trends and projections',
+    title_hi: 'रुझानों और अनुमानों में अंतर्दृष्टि के साथ वार्षिक विपणन रणनीति का अवलोकन',
+    image: CDN_UNION_DEPARTMENTS.railway,
     tag: 'Marketing',
     date: 'Jul 15, 2026',
     year: '2026',
     sector: 'Finance',
-    level: 'Union',
+    level: 'Local Bodies',
     type: 'Compliance',
-    label: 'Defence Audit',
-    desc: 'Detailed compliance assessment of security hardware acquisitions, border fence structures, and modern systems procurement.',
-    isFeatured: true
-  },
-  {
-    id: 'rep-3',
-    title: 'Performance Audit on Indian Railways Signaling Systems and Modernization Schemes',
-    image: '/assets/6574e2c9289333c9bdf86fe596a04b3f1c0238c3.png',
-    tag: 'Technology',
-    date: 'Aug 30, 2026',
-    year: '2026',
-    sector: 'Transport',
-    level: 'Union',
-    type: 'Performance',
-    label: 'Railways Audit',
-    desc: 'Signaling upgrade projects review evaluating budget allocations, installation timelines, and system integration reliability checks.',
-    isFeatured: true
-  },
-  {
-    id: 'rep-4',
-    title: 'Compliance Audit of Direct Tax Receipts and Corporate Assessments in Metro Regions',
-    image: '/assets/269d11ffce72c4343f0fa24955e0dc48a33d8255.png',
-    tag: 'Finance',
-    date: 'Jun 4, 2026',
-    year: '2025',
-    sector: 'Finance',
-    level: 'Union',
-    type: 'Compliance',
-    label: 'Direct Tax Audit',
-    desc: 'Audit evaluating compliance of corporate tax exemptions, assessment timelines, and direct receipt accounts clearance.',
-    isFeatured: true
-  },
-  {
-    id: 'rep-5',
-    title: 'Audit Report on Municipal Corporation Revenue and Property Tax Assessments',
-    image: '/assets/12e6d254adf33bbd46537f45eb8f9ecd50a15e55.png',
-    tag: 'Finance',
-    date: 'Sep 10, 2026',
-    year: '2026',
-    sector: 'Social Welfare',
-    level: 'States',
-    type: 'Compliance',
-    label: 'Revenue Audit',
-    desc: 'Review of local property assessments, tax collectors efficiency, and municipal development fund distributions.',
-    isFeatured: true
+    label: 'Access Full Strategy Document',
+    desc: 'Review of local property assessments, GIS survey implementation, tax collection efficiency, and municipal development fund distributions.',
+    ministry: 'Ministry of Housing and Urban Affairs / State Urban Development',
+    tabledDate: '15 January 2026',
+    fileSize: '11.3 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'Assessment of property tax collections and GIS-based property mapping across 14 Grade-A Municipal Corporations.',
+    keyFindings: [
+      'Unassessed commercial properties in newly expanded urban corridors resulted in ₹310 Crore foregone annual property tax revenue.',
+      'Discrepancies in GIS boundary surveys were unresolved for over three fiscal cycles.'
+    ],
+    recommendations: [
+      'Integrate state electricity billing meter identifiers with municipal property registry records.'
+    ]
   },
   {
     id: 'rep-6',
-    title: 'Performance Evaluation of Information Technology Systems in Central Excise Department',
-    image: '/assets/cc8a1a5614f48c98f397dcafcf38e8f22843dc2a.png',
+    title: 'Emerging Tech Innovations and their Impact on the Industry Landscape',
+    title_hi: 'उभरते तकनीकी नवाचार और उद्योग परिदृश्य पर उनका प्रभाव',
+    image: SECTOR_WISE_IMAGES['35'],
     tag: 'Technology',
-    date: 'Oct 05, 2026',
+    date: 'Aug 30, 2026',
     year: '2026',
-    sector: 'Transport',
+    sector: 'Tax and Duties',
     level: 'Union',
     type: 'Performance',
-    label: 'Excise IT Audit',
-    desc: 'Audit reviewing custom software deployments, server security frameworks, and processing performance benchmarks.',
-    isFeatured: true
+    label: 'View Complete Analysis',
+    desc: 'Audit reviewing custom software deployments, server security frameworks, automated reconciliation routines, and processing performance benchmarks.',
+    ministry: 'Ministry of Finance / CBIC',
+    tabledDate: '02 March 2026',
+    fileSize: '16.7 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'Comprehensive technical and procedural audit of customs and excise processing engines handling ₹4.8 Lakh Crore in customs declarations annually.',
+    keyFindings: [
+      'Database access control audits revealed shared privileged credentials in 6 field commissionerates.',
+      'Disaster recovery site switchover drills were not conducted during the 2024-25 reporting year.'
+    ],
+    recommendations: [
+      'Enforce role-based single sign-on (SSO) with multi-factor authentication across all customs gateways.'
+    ]
+  },
+  {
+    id: 'rep-7',
+    title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
+    title_hi: 'रिपोर्ट का शीर्षक यह दो पंक्तियों में हो सकता है, संक्षिप्त विवरण और मुख्य बिंदु',
+    image: CDN_UNION_DEPARTMENTS.railway,
+    tag: 'Finance',
+    date: 'Jun 4, 2026',
+    year: '2026',
+    sector: 'Environment and Sustainable Development',
+    level: 'Union',
+    type: 'Performance',
+    label: 'Download Full Report',
+    desc: 'Evaluation of transmission corridor development, battery energy storage system pilot projects, and feed-in tariff management for solar parks.',
+    ministry: 'Ministry of New and Renewable Energy',
+    tabledDate: '19 November 2025',
+    fileSize: '21.5 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'Audit of the Green Energy Corridors initiative examining inter-state transmission lines designed to evacuate 40 GW of renewable energy capacity.',
+    keyFindings: [
+      'Transmission line construction lagged solar park commissioning by up to 18 months, leading to generation curtailment of 840 GWh.',
+      'Subsidies of ₹560 Crore remained undisbursed due to delay in certification of local module manufacturing.'
+    ],
+    recommendations: [
+      'Synchronize transmission network commissioning schedules with renewable power purchase agreements.'
+    ]
+  },
+  {
+    id: 'rep-8',
+    title: 'Annual Marketing Strategy Overview with insights into trends and projections',
+    title_hi: 'रुझानों और अनुमानों में अंतर्दृष्टि के साथ वार्षिक विपणन रणनीति का अवलोकन',
+    image: SECTOR_WISE_IMAGES['35'],
+    tag: 'Marketing',
+    date: 'Jul 15, 2026',
+    year: '2026',
+    sector: 'Finance',
+    level: 'States',
+    type: 'Performance',
+    label: 'Access Full Strategy Document',
+    desc: 'Review of toll concession agreements, electronic toll collection (FASTag) audit trails, road surface quality indices, and user fee calculations.',
+    ministry: 'Ministry of Road Transport and Highways / NHAI',
+    tabledDate: '14 December 2025',
+    fileSize: '18.9 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'Scrutiny of 24 Build-Operate-Transfer (BOT) and Hybrid Annuity Model (HAM) highway projects assessing contract execution and revenue sharing compliance.',
+    keyFindings: [
+      'FASTag toll collection reconciliation differences totaled ₹76 Crore across 11 high-volume toll plazas.',
+      'Pavement quality index surveys were overdue on 1,200 km of national highway stretches.'
+    ],
+    recommendations: [
+      'Mandate automated weigh-in-motion (WIM) sensors linked to concessionaire toll payment ledgers.'
+    ]
+  },
+  {
+    id: 'rep-9',
+    title: 'Emerging Tech Innovations and their Impact on the Industry Landscape',
+    title_hi: 'उभरते तकनीकी नवाचार और उद्योग परिदृश्य पर उनका प्रभाव',
+    image: SECTOR_WISE_IMAGES['41'],
+    tag: 'Technology',
+    date: 'Aug 30, 2026',
+    year: '2026',
+    sector: 'Finance',
+    level: 'Union',
+    type: 'Compliance',
+    label: 'View Complete Analysis',
+    desc: 'Financial position, capital investments, dividend yields, accumulated losses, and operational viability of state government owned enterprises.',
+    ministry: 'State Finance Departments / State Public Sector Undertakings',
+    tabledDate: '06 February 2024',
+    fileSize: '23.4 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: true,
+    executiveSummary: 'Analysis of 180 state government enterprises covering paid-up equity, loan guarantees, and financial restructuring packages.',
+    keyFindings: [
+      'Accumulated losses of 42 non-operating enterprises exceeded their combined net worth by 320%.',
+      'Timely accounts submission had a backlog of 3 years in 28 statutory boards.'
+    ],
+    recommendations: [
+      'Initiate closure or disinvestment proceedings for chronically loss-making non-operational state undertakings.'
+    ]
+  },
+  {
+    id: 'rep-10',
+    title: 'Compliance Audit on Cyber Security Architecture and Cloud Adoption in Digital India Initiatives',
+    title_hi: 'डिजिटल इंडिया पहलों में साइबर सुरक्षा वास्तुकला और क्लाउड अपनाने पर अनुपालन लेखापरीक्षा',
+    image: SECTOR_WISE_IMAGES['42'],
+    tag: 'Technology',
+    date: 'Feb 15, 2024',
+    year: '2024',
+    sector: 'Information and Communication',
+    level: 'Union',
+    type: 'Compliance',
+    label: 'Cyber Audit',
+    desc: 'Auditing data sovereignty, security operations centre monitoring, incident response compliance, and third-party vendor audits across central digital public platforms.',
+    ministry: 'Ministry of Electronics and Information Technology (MeitY)',
+    tabledDate: '20 March 2024',
+    fileSize: '17.1 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: false,
+    executiveSummary: 'Audit assessing cloud data residency, end-to-end encryption standards, and threat mitigation policies across 12 national mission-mode e-governance systems.',
+    keyFindings: [
+      'Third-party cloud security audits were incomplete in 5 government cloud host environments.',
+      'Vulnerability assessments were not conducted following major software updates in 3 citizen services portals.'
+    ],
+    recommendations: [
+      'Institute mandatory continuous security monitoring certifications by CERT-In empaneled auditors.'
+    ]
+  },
+  {
+    id: 'rep-11',
+    title: 'Financial and Compliance Audit of District Mineral Foundation Trust Funds',
+    title_hi: 'जिला खनिज फाउंडेशन ट्रस्ट फंड की वित्तीय और अनुपालन लेखापरीक्षा',
+    image: SECTOR_WISE_IMAGES['32'],
+    tag: 'Social Welfare',
+    date: 'Apr 10, 2024',
+    year: '2024',
+    sector: 'Social Welfare',
+    level: 'Local Bodies',
+    type: 'Financial',
+    label: 'Mining Trust Audit',
+    desc: 'Verification of mining royalties contributions, trust fund allocations for clean drinking water, education, and healthcare in mining affected areas.',
+    ministry: 'Ministry of Mines / State Mining Departments',
+    tabledDate: '28 April 2024',
+    fileSize: '13.6 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: false,
+    executiveSummary: 'Scrutiny of ₹8,200 Crore accrued in District Mineral Foundation (DMF) Trusts across 48 mining districts.',
+    keyFindings: [
+      '42% of trust funds were deployed for general administrative civil works rather than high-priority drinking water and health interventions.',
+      'Beneficiary community councils were not consulted in project sanctioning in 18 districts.'
+    ],
+    recommendations: [
+      'Enforce strict adherence to the 60% high-priority expenditure mandate under Pradhan Mantri Khanij Kshetra Kalyan Yojana.'
+    ]
+  },
+  {
+    id: 'rep-12',
+    title: 'Financial and Accounts Audit of Autonomous District Councils in North Eastern States',
+    title_hi: 'पूर्वोत्तर राज्यों में स्वायत्त जिला परिषदों का वित्तीय और लेखा लेखापरीक्षा',
+    image: SECTOR_WISE_IMAGES['27'],
+    tag: 'Finance',
+    date: 'May 14, 2023',
+    year: '2023',
+    sector: 'Finance',
+    level: 'Local Bodies',
+    type: 'ADC Reports',
+    label: 'ADC Audit',
+    desc: 'Audit of grants-in-aid, tax devolution, customary court expenditures, and developmental schemes administered by Sixth Schedule Autonomous District Councils.',
+    ministry: 'Ministry of Development of North Eastern Region / State Home Departments',
+    tabledDate: '19 June 2023',
+    fileSize: '15.9 MB',
+    pdfUrl: '/assets/sample-cag-audit-report.pdf',
+    isActive: true,
+    isFeatured: false,
+    executiveSummary: 'Constitutional audit under the Sixth Schedule of the Constitution evaluating financial management in 10 Autonomous District Councils.',
+    keyFindings: [
+      'Absence of double-entry accounting led to unverified advances of ₹84 Crore.',
+      'Utilization certificates for tribal development grants were pending for over 3 years.'
+    ],
+    recommendations: [
+      'Adopt standardized computerized accounting software developed by iCAL for all Autonomous District Councils.'
+    ]
   },
   {
     id: 'home-rep-1',
     title: 'Audit Report on Infrastructure Development and Municipal Solid Waste Management',
-    image: '/assets/d14889fd29ae93bd23d9b51c4dad883e07f826bf.png',
+    image: SECTOR_WISE_IMAGES['24'],
     tag: 'Text',
     date: 'Jun 4, 2026',
     year: '2026',
-    sector: 'Civic / Urban Development',
+    sector: 'Local Bodies',
     level: 'States',
     type: 'Performance',
     isFeatured: true,
@@ -583,11 +1093,11 @@ export const DEFAULT_REPORTS: ReportItem[] = [
   {
     id: 'home-rep-2',
     title: 'Thematic Audit on Environmental Management in Coastal Districts of Tamil Nadu',
-    image: '/assets/56272e2a85b8227dfa00af6d4065211e9ac5de8f.png',
+    image: SECTOR_WISE_IMAGES['26'],
     tag: 'Text',
     date: 'Jun 4, 2026',
     year: '2026',
-    sector: 'Tamil Nadu / Environmental Management',
+    sector: 'Environment and Sustainable Development',
     level: 'States',
     type: 'Performance',
     isFeatured: true,
@@ -597,16 +1107,74 @@ export const DEFAULT_REPORTS: ReportItem[] = [
   {
     id: 'home-rep-3',
     title: 'Performance Audit on Irrigation Schemes and Canal Networks in Andhra Pradesh',
-    image: '/assets/28f782be18b6cfdf23aa0c90ec681e3916b8d6c7.png',
+    image: SECTOR_WISE_IMAGES['30'],
     tag: 'Text',
     date: 'Jun 4, 2026',
     year: '2026',
-    sector: 'Andhra Pradesh / Irrigation Schemes',
+    sector: 'Agriculture and Rural Development',
     level: 'States',
     type: 'Performance',
     isFeatured: true,
     label: 'Andhra Pradesh',
     desc: 'Evaluation of major and medium irrigation projects, command area development, and drinking water supply provisions.'
+  }
+];
+
+export const DEFAULT_COMBINED_ACCOUNTS: CombinedAccountItem[] = [
+  {
+    id: 1,
+    title_en: 'Combined Finance and Revenue Accounts of Union and State Governments in India (2024 - 25)',
+    title_hi: 'भारत में संघ और राज्य सरकारों के संयुक्त वित्त और राजस्व खाते (2024 - 25)',
+    category: 'combined',
+    account_year: '2024 - 25',
+    volume: 'Full Comprehensive Volume',
+    size: '18.5 MB',
+    file_url: '#',
+    is_active: true
+  },
+  {
+    id: 2,
+    title_en: 'Combined Finance and Revenue Accounts of Union and State Governments in India (2023 - 24)',
+    title_hi: 'भारत में संघ और राज्य सरकारों के संयुक्त वित्त और राजस्व खाते (2023 - 24)',
+    category: 'combined',
+    account_year: '2023 - 24',
+    volume: 'Full Comprehensive Volume',
+    size: '17.2 MB',
+    file_url: '#',
+    is_active: true
+  },
+  {
+    id: 3,
+    title_en: 'Combined Finance and Revenue Accounts of Union and State Governments in India (2022 - 23)',
+    title_hi: 'भारत में संघ और राज्य सरकारों के संयुक्त वित्त और राजस्व खाते (2022 - 23)',
+    category: 'combined',
+    account_year: '2022 - 23',
+    volume: 'Full Comprehensive Volume',
+    size: '16.8 MB',
+    file_url: '#',
+    is_active: true
+  },
+  {
+    id: 4,
+    title_en: 'Proceedings and Compendium of 34th Annual Conference of State Finance Secretaries (2024)',
+    title_hi: 'राज्य वित्त सचिवों के 34वें वार्षिक सम्मेलन की कार्यवाही (2024)',
+    category: 'conference',
+    account_year: '2024',
+    volume: 'Proceedings & Action Points',
+    size: '4.5 MB',
+    file_url: '#',
+    is_active: true
+  },
+  {
+    id: 5,
+    title_en: 'Proceedings and Compendium of 33rd Annual Conference of State Finance Secretaries (2023)',
+    title_hi: 'राज्य वित्त सचिवों के 33वें वार्षिक सम्मेलन की कार्यवाही (2023)',
+    category: 'conference',
+    account_year: '2023',
+    volume: 'Proceedings & Action Points',
+    size: '3.8 MB',
+    file_url: '#',
+    is_active: true
   }
 ];
 
@@ -634,7 +1202,7 @@ const DEFAULT_OFFICES: Office[] = [
     lng: 72.8264,
     type: 'state'
   },
-
+  
   // Central Audit Offices
   {
     id: 'c-def',
@@ -795,6 +1363,37 @@ const DEFAULT_NEWS: NewsItem[] = [
 ];
 
 export const dataManager = {
+  // --- Live Backend API Connectors for About Us & Governance ---
+  async fetchPageData(slugOrId: string, culture = 'en') {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/pages/${encodeURIComponent(slugOrId)}?culture=${culture}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Graceful fallback
+    }
+    return null;
+  },
+
+  async fetchOrganisationChart(culture = 'en') {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/organisation-chart?culture=${culture}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Graceful fallback
+    }
+    return { officers: [] };
+  },
+
+  async fetchFormerCags(culture = 'en') {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/former-cag?culture=${culture}`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Graceful fallback
+    }
+    return this.getFormerCags();
+  },
+
   getLanguage(): 'English' | 'हिन्दी' {
     if (typeof window === 'undefined') return 'English';
     return (localStorage.getItem('cag_language') as any) || 'English';
@@ -959,7 +1558,43 @@ export const dataManager = {
         return DEFAULT_REPORTS;
       }
       const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : DEFAULT_REPORTS;
+      if (!Array.isArray(parsed)) {
+        localStorage.setItem('cag_reports', JSON.stringify(DEFAULT_REPORTS));
+        return DEFAULT_REPORTS;
+      }
+
+
+      // Auto-migrate & sanitize: actively purge any stale local asset paths (/assets/..., placeholder hashes)
+      // and map to authentic CloudFront sector images from http://d7i5wg8xwe4hf.cloudfront.net/en/home
+      let hasLocalAssets = false;
+      const sanitized = parsed.map((r: ReportItem) => {
+        const isLocalOrBroken = !r.image || 
+          r.image.startsWith('/assets') || 
+          r.image.includes('17a8a6edf') || 
+          r.image.includes('56272e2a') || 
+          r.image.includes('28f782be') || 
+          r.image.includes('d14889fd') || 
+          r.image.includes('e2c5a3b8') ||
+          r.image.includes('c4913da1') ||
+          !r.image.startsWith('http');
+        
+        if (isLocalOrBroken) {
+          hasLocalAssets = true;
+          const defMatch = DEFAULT_REPORTS.find(d => d.id === r.id);
+          return {
+            ...r,
+            image: defMatch ? defMatch.image : resolveReportCdnAsset(r.sector, r.title)
+          };
+        }
+        return r;
+      });
+
+      if (hasLocalAssets) {
+        localStorage.setItem('cag_reports', JSON.stringify(sanitized));
+        return sanitized;
+      }
+
+      return parsed;
     } catch (e) {
       console.error('Error reading reports from localStorage:', e);
       return DEFAULT_REPORTS;
@@ -968,6 +1603,10 @@ export const dataManager = {
 
   saveReport(report: ReportItem) {
     if (typeof window === 'undefined') return;
+    // Ensure image is a valid CDN URL if empty or local
+    if (!report.image || report.image.startsWith('/assets') || !report.image.startsWith('http')) {
+      report.image = resolveReportCdnAsset(report.sector, report.title);
+    }
     const reports = this.getReports();
     const idx = reports.findIndex(r => r.id === report.id);
     if (idx >= 0) {
@@ -985,6 +1624,43 @@ export const dataManager = {
     const filtered = reports.filter(r => r.id !== id);
     localStorage.setItem('cag_reports', JSON.stringify(filtered));
     window.dispatchEvent(new Event('reportsChange'));
+  },
+
+  getCombinedAccounts(): CombinedAccountItem[] {
+    if (typeof window === 'undefined') return DEFAULT_COMBINED_ACCOUNTS;
+    try {
+      const stored = localStorage.getItem('cag_combined_accounts');
+      if (!stored || stored === 'undefined' || stored === 'null') {
+        localStorage.setItem('cag_combined_accounts', JSON.stringify(DEFAULT_COMBINED_ACCOUNTS));
+        return DEFAULT_COMBINED_ACCOUNTS;
+      }
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : DEFAULT_COMBINED_ACCOUNTS;
+    } catch (e) {
+      console.error('Error reading combined accounts from localStorage:', e);
+      return DEFAULT_COMBINED_ACCOUNTS;
+    }
+  },
+
+  saveCombinedAccount(item: CombinedAccountItem) {
+    if (typeof window === 'undefined') return;
+    const items = this.getCombinedAccounts();
+    const idx = items.findIndex(c => c.id === item.id);
+    if (idx >= 0) {
+      items[idx] = item;
+    } else {
+      items.push(item);
+    }
+    localStorage.setItem('cag_combined_accounts', JSON.stringify(items));
+    window.dispatchEvent(new Event('combinedAccountsChange'));
+  },
+
+  deleteCombinedAccount(id: number) {
+    if (typeof window === 'undefined') return;
+    const items = this.getCombinedAccounts();
+    const filtered = items.filter(c => c.id !== id);
+    localStorage.setItem('cag_combined_accounts', JSON.stringify(filtered));
+    window.dispatchEvent(new Event('combinedAccountsChange'));
   },
 
   getOffices(): Office[] {
@@ -1388,6 +2064,35 @@ export const dataManager = {
     const list = this.getAuditAdvisoryMembers().filter(m => m.id !== id);
     localStorage.setItem('cag_audit_advisory_members', JSON.stringify(list));
     window.dispatchEvent(new Event('auditAdvisoryMembersChange'));
+  },
+
+  getStateAccounts(): any[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('cag_state_accounts');
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveStateAccount(item: any) {
+    if (typeof window === 'undefined') return;
+    const list = this.getStateAccounts();
+    const idx = list.findIndex(a => (a.rawId && a.rawId === item.rawId) || a.id === item.id);
+    if (idx >= 0) list[idx] = item;
+    else list.push(item);
+    localStorage.setItem('cag_state_accounts', JSON.stringify(list));
+    window.dispatchEvent(new Event('stateAccountsChange'));
+  },
+
+  deleteStateAccount(id: string) {
+    if (typeof window === 'undefined') return;
+    const list = this.getStateAccounts().filter(a => a.rawId !== id && a.id !== id);
+    localStorage.setItem('cag_state_accounts', JSON.stringify(list));
+    window.dispatchEvent(new Event('stateAccountsChange'));
   }
 };
 
@@ -1432,35 +2137,35 @@ export interface GlobalRelationItem {
 }
 
 export const DEFAULT_FORMER_CAGS: FormerCAGItem[] = [
-  { id: 'fc-1', name: 'Girish Chandra Murmu', tenure: '(2020 - 2024)', image_url: '/assets/Images/former cag/image 1.svg' },
-  { id: 'fc-2', name: 'Rajiv Mehrishi', tenure: '(2017 - 2020)', image_url: '/assets/Images/former cag/image 2.svg' },
-  { id: 'fc-3', name: 'Shashi Kant Sharma', tenure: '(2013 - 2017)', image_url: '/assets/Images/former cag/image 3.svg' },
-  { id: 'fc-4', name: 'Vinod Rai', tenure: '(2008 - 2013)', image_url: '/assets/Images/former cag/image 4.svg' },
-  { id: 'fc-5', name: 'V.N. Kaul', tenure: '(2002 - 2008)', image_url: '/assets/Images/former cag/image 5.svg' },
-  { id: 'fc-6', name: 'V.K. Shunglu', tenure: '(1996 - 2002)', image_url: '/assets/Images/former cag/image 6.svg' },
-  { id: 'fc-7', name: 'C.G. Somiah', tenure: '(1990 - 1996)', image_url: '/assets/Images/former cag/image 7.svg' },
-  { id: 'fc-8', name: 'T.N. Chaturvedi', tenure: '(1984 - 1990)', image_url: '/assets/Images/former cag/image 8.svg' },
-  { id: 'fc-9', name: 'Gian Prakash', tenure: '(1978 - 1984)', image_url: '/assets/Images/former cag/image 9.svg' },
-  { id: 'fc-10', name: 'A. Baksi', tenure: '(1972 - 1978)', image_url: '/assets/Images/former cag/image 10.svg' },
-  { id: 'fc-11', name: 'S. Ranganathan', tenure: '(1966 - 1972)', image_url: '/assets/Images/former cag/image 11.svg' },
-  { id: 'fc-12', name: 'A.K. Roy', tenure: '(1960 - 1966)', image_url: '/assets/Images/former cag/image 12.svg' },
-  { id: 'fc-13', name: 'A.K. Chanda', tenure: '(1954 - 1960)', image_url: '/assets/Images/former cag/image 13.svg' },
-  { id: 'fc-14', name: 'V. Narahari Rao', tenure: '(1948 - 1954)', image_url: '/assets/Images/former cag/image 14.svg' },
-  { id: 'fc-15', name: 'Sir Bertie Staig', tenure: '(1945 - 1948)', image_url: '/assets/Images/former cag/image 15.svg' },
-  { id: 'fc-16', name: 'Sir. Alexander Cameron Badenoch', tenure: '(1940 - 1945)', image_url: '/assets/Images/former cag/image 16.svg' },
-  { id: 'fc-17', name: 'Sir. Ernest Burdon', tenure: '(1929 - 1940)', image_url: '/assets/Images/former cag/image 17.svg' },
-  { id: 'fc-18', name: 'Sir Frederic Gauntlett', tenure: '(1918 - 1929)', image_url: '/assets/Images/former cag/image 18.svg' },
-  { id: 'fc-19', name: 'Sir R.A. Gamble', tenure: '(1914 - 1918)', image_url: '/assets/Images/former cag/image 19.svg' },
-  { id: 'fc-20', name: 'R.W. Gillan', tenure: '(1910 - 1912)', image_url: '/assets/Images/former cag/image 20.svg' },
-  { id: 'fc-21', name: 'O. J. Barrow', tenure: '(1906 - 1910)', image_url: '/assets/Images/former cag/image 21.svg' },
-  { id: 'fc-22', name: 'A.F. Cox', tenure: '(1898 - 1906)', image_url: '/assets/Images/former cag/image 22.svg' },
-  { id: 'fc-23', name: 'S. Jacob', tenure: '(1891 - 1898)', image_url: '/assets/Images/former cag/no image.svg' },
-  { id: 'fc-24', name: 'E. Gay', tenure: '(1889 - 1891)', image_url: '/assets/Images/former cag/no image.svg' },
-  { id: 'fc-25', name: 'James Westland', tenure: '(1881 - 1889)', image_url: '/assets/Images/former cag/no image.svg' },
-  { id: 'fc-26', name: 'W. Waterfield', tenure: '(1879 - 1881)', image_url: '/assets/Images/former cag/no image.svg' },
-  { id: 'fc-27', name: 'E. F. Harrison', tenure: '(1867 - 1879)', image_url: '/assets/Images/former cag/no image.svg' },
-  { id: 'fc-28', name: 'R. P. Harrison', tenure: '(1862 - 1867)', image_url: '/assets/Images/former cag/no image.svg' },
-  { id: 'fc-29', name: 'Hon. Edmund Drummond', tenure: '(1860 - 1862)', image_url: '/assets/Images/former cag/no image.svg' }
+  { id: 'fc-1', name: 'Girish Chandra Murmu', tenure: '(2020 - 2024)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-FG-Girish-0673ead2d5dcc41-56012319.jpg' },
+  { id: 'fc-2', name: 'Rajiv Mehrishi', tenure: '(2017 - 2020)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-Rajiv-05f3c0e1acaff31-44023461.jpg' },
+  { id: 'fc-3', name: 'Shashi Kant Sharma', tenure: '(2013 - 2017)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-shashi-05de4f20e412159-43528983.jpg' },
+  { id: 'fc-4', name: 'Vinod Rai', tenure: '(2008 - 2013)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-20-05de4f26d189092-01819458.jpg' },
+  { id: 'fc-5', name: 'V.N. Kaul', tenure: '(2002 - 2008)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-19-05de4f2a89a6655-77279258.jpg' },
+  { id: 'fc-6', name: 'V.K. Shunglu', tenure: '(1996 - 2002)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-18-05de4f2ea4f3913-35294852.jpg' },
+  { id: 'fc-7', name: 'C.G. Somiah', tenure: '(1990 - 1996)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-17-05de4f32fd82f40-71710021.jpg' },
+  { id: 'fc-8', name: 'T.N. Chaturvedi', tenure: '(1984 - 1990)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-16-05e69dc63495a63-58455972.jpg' },
+  { id: 'fc-9', name: 'Gian Prakash', tenure: '(1978 - 1984)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-15-05de4f3b6139fc4-77603869.jpg' },
+  { id: 'fc-10', name: 'A. Baksi', tenure: '(1972 - 1978)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-14-05de4f3e9a23e92-06148388.jpg' },
+  { id: 'fc-11', name: 'S. Ranganathan', tenure: '(1966 - 1972)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-13-05de4f42bc9fc33-07074595.jpg' },
+  { id: 'fc-12', name: 'A.K. Roy', tenure: '(1960 - 1966)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-12-05de4f456be6206-12327052.jpg' },
+  { id: 'fc-13', name: 'A.K. Chanda', tenure: '(1954 - 1960)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-11-05de4f481501010-16235001.jpg' },
+  { id: 'fc-14', name: 'V. Narahari Rao', tenure: '(1948 - 1954)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-10-05de4f4cc261e13-47267885.jpg' },
+  { id: 'fc-15', name: 'Sir Bertie Staig', tenure: '(1945 - 1948)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-9-05de4f54b1fabd5-53902094.jpg' },
+  { id: 'fc-16', name: 'Sir. Alexander Cameron Badenoch', tenure: '(1940 - 1945)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-8-05de4f57627dea2-22232732.jpg' },
+  { id: 'fc-17', name: 'Sir. Ernest Burdon', tenure: '(1929 - 1940)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-7-05de4f5c7f10c05-58162084.jpg' },
+  { id: 'fc-18', name: 'Sir Frederic Gauntlett', tenure: '(1918 - 1929)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-6-05de4f5ed7bb875-61566010.jpg' },
+  { id: 'fc-19', name: 'Sir R.A. Gamble', tenure: '(1914 - 1918)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-5-05de4f6428c41d0-49017641.jpg' },
+  { id: 'fc-20', name: 'R.W. Gillan', tenure: '(1910 - 1912)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-3-05de4f69b3c4846-44641253.jpg' },
+  { id: 'fc-21', name: 'O. J. Barrow', tenure: '(1906 - 1910)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-2-05de4f6ce250c79-14412728.jpg' },
+  { id: 'fc-22', name: 'A.F. Cox', tenure: '(1898 - 1906)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-1-05de4f813876643-53936215.jpg' },
+  { id: 'fc-23', name: 'S. Jacob', tenure: '(1891 - 1898)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de5246ef3fab3-06278788.jpg' },
+  { id: 'fc-24', name: 'E. Gay', tenure: '(1889 - 1891)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de52426934276-79982112.jpg' },
+  { id: 'fc-25', name: 'James Westland', tenure: '(1881 - 1889)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de523eb3ac268-09337961.jpg' },
+  { id: 'fc-26', name: 'W. Waterfield', tenure: '(1879 - 1881)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de523a2db4837-09057348.jpg' },
+  { id: 'fc-27', name: 'E. F. Harrison', tenure: '(1867 - 1879)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de52354106ab6-42880017.jpg' },
+  { id: 'fc-28', name: 'R. P. Harrison', tenure: '(1862 - 1867)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de5230322b459-45273489.jpg' },
+  { id: 'fc-29', name: 'Hon. Edmund Drummond', tenure: '(1860 - 1862)', image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/FG-NO-IMAGE-05de522a9e3f6e3-85634168.jpg' }
 ];
 
 export const DEFAULT_GLOBAL_RELATIONS: GlobalRelationItem[] = [
@@ -1469,7 +2174,7 @@ export const DEFAULT_GLOBAL_RELATIONS: GlobalRelationItem[] = [
     title: 'INTOSAI (International Organization of Supreme Audit Institutions)',
     category: 'Multilateral',
     desc: 'CAG of India actively participates in INTOSAI governing board and committees on public audit standards.',
-    image_url: '/assets/4c1eaa81c93edbe02d6f7d5437565571dcec4b04.png',
+    image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg',
     link_url: '#'
   },
   {
@@ -1477,7 +2182,7 @@ export const DEFAULT_GLOBAL_RELATIONS: GlobalRelationItem[] = [
     title: 'United Nations Panel of External Auditors',
     category: 'UN Audit',
     desc: 'Audit of United Nations Secretariat, specialized agencies, and peacekeeping operations worldwide.',
-    image_url: '/assets/269d11ffce72c4343f0fa24955e0dc48a33d8255.png',
+    image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/commercial.jpg',
     link_url: '#'
   },
   {
@@ -1485,7 +2190,7 @@ export const DEFAULT_GLOBAL_RELATIONS: GlobalRelationItem[] = [
     title: 'ASOSAI (Asian Organization of Supreme Audit Institutions)',
     category: 'Regional',
     desc: 'Promoting regional cooperation, joint audits, and capacity development across Asian audit institutions.',
-    image_url: '/assets/6574e2c9289333c9bdf86fe596a04b3f1c0238c3.png',
+    image_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/scientific.jpg',
     link_url: '#'
   }
 ];

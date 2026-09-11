@@ -1,6 +1,6 @@
 import AdminHeader from '@/components/admin/AdminHeader';
 import Link from 'next/link';
-import { Plus, Eye, Pencil, Search } from 'lucide-react';
+import { Plus, Eye, Pencil, Search, Filter, RotateCcw } from 'lucide-react';
 import { DeleteErrorAlert, PaginationLinks, DeleteButton, FilePreviewAction } from './ListClientHelpers';
 
 // ─── Shared rendering helpers ─────────────────────────────────────────────────
@@ -37,51 +37,139 @@ interface Col { key: string; label: string; type?: string; render?: (row: any) =
 interface GenListPageProps {
   title: string; table: string; addHref: string; editBase: string; viewBase?: string;
   searchCol: string; cols: Col[]; page: number; search: string;
+  lang?: string; status?: string; sort?: string;
   extraQuery?: string; extraParams?: any[];
 }
 
 export async function GenListPage({
-  title, table, addHref, editBase, viewBase, searchCol, cols, page, search, extraQuery, extraParams
+  title, table, addHref, editBase, viewBase, searchCol, cols, page, search, lang = 'all', status = 'all', sort = 'newest', extraQuery, extraParams
 }: GenListPageProps) {
   let rows: any[] = [];
   let total = 0;
 
   try {
-    const searchParam = search ? `&search=${encodeURIComponent(search)}&searchCol=${searchCol}` : '';
-    const res = await fetch(`http://127.0.0.1:8000/api/admin/crud?table=${table}&page=${page}&limit=20${searchParam}`, {
+    const params = new URLSearchParams();
+    params.set('table', table);
+    params.set('page', String(page));
+    params.set('limit', '20');
+    if (search) {
+      params.set('search', search);
+      params.set('searchCol', searchCol);
+    }
+    if (lang && lang !== 'all') params.set('language', lang);
+    if (status && status !== 'all') params.set('status', status);
+    if (sort) params.set('sort', sort);
+
+    const res = await fetch(`http://127.0.0.1:8000/api/admin/crud?${params.toString()}`, {
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store'
     });
     const json = await res.json();
     rows = Array.isArray(json.data) ? json.data : [];
-    total = json.total || 0;
+    total = json.total || rows.length || 0;
   } catch (e) {
     rows = [];
     total = 0;
   }
 
-  const totalPages = Math.ceil(total / 20);
+  // Client-side filtering fallback if backend returned full set
+  if (lang && lang !== 'all') {
+    rows = rows.filter(r => !r.language || r.language === lang);
+  }
+  if (status && status !== 'all') {
+    const isAct = status === 'active';
+    rows = rows.filter(r => r.is_active === undefined || r.is_active === isAct || r.status === (isAct ? 1 : 0));
+  }
+
+  const totalPages = Math.ceil(total / 20) || 1;
+  const basePath = addHref.replace('/add', '');
+  const hasFilters = search || (lang && lang !== 'all') || (status && status !== 'all') || (sort && sort !== 'newest');
 
   return (
     <div className="flex flex-col min-h-screen">
       <AdminHeader title={title} subtitle={`${total} total records`} />
       <main className="flex-1 p-6">
         <DeleteErrorAlert />
-        <div className="flex flex-col sm:flex-row gap-3 justify-between mb-4">
-          <form className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input name="search" defaultValue={search} placeholder="Search..."
-                className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 w-56" />
+
+        {/* ─── Universal Filter Toolbar on Every Admin Menu ─── */}
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
+          <form method="GET" className="flex flex-wrap items-center gap-3 justify-between">
+            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+              {/* Search Box */}
+              <div className="relative min-w-[220px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  name="search"
+                  defaultValue={search}
+                  placeholder={`Search by ${searchCol.replace('_', ' ')}...`}
+                  className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 w-full"
+                />
+              </div>
+
+              {/* Language Filter */}
+              <select
+                name="lang"
+                defaultValue={lang}
+                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 bg-white text-gray-700"
+              >
+                <option value="all">All Languages</option>
+                <option value="en">English (EN)</option>
+                <option value="hi">हिन्दी (HI)</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                name="status"
+                defaultValue={status}
+                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 bg-white text-gray-700"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+
+              {/* Sort Order Filter */}
+              <select
+                name="sort"
+                defaultValue={sort}
+                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 bg-white text-gray-700"
+              >
+                <option value="newest">Sort: Newest First</option>
+                <option value="oldest">Sort: Oldest First</option>
+                <option value="asc">Sort: Title / Name (A-Z)</option>
+                <option value="desc">Sort: Title / Name (Z-A)</option>
+              </select>
+
+              {/* Submit & Reset Buttons */}
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#751639] hover:bg-[#5f0f2d] text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+              >
+                <Filter className="w-3.5 h-3.5" /> Apply Filter
+              </button>
+
+              {hasFilters && (
+                <Link
+                  href={basePath}
+                  className="flex items-center gap-1 px-3 py-2 border border-gray-200 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Reset
+                </Link>
+              )}
             </div>
-            <button type="submit" className="px-4 py-2 bg-[#751639] hover:bg-[#5f0f2d] text-white text-sm rounded-lg transition-colors">Search</button>
-            {search && <Link href={addHref.replace('/add', '')} className="px-4 py-2 border border-gray-200 text-sm rounded-lg hover:bg-gray-50">Clear</Link>}
+
+            {/* Add New Action */}
+            <Link
+              href={addHref}
+              className="flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f0f2d] text-white text-sm rounded-lg font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer shadow-sm"
+            >
+              <Plus className="w-4 h-4" /> Add New
+            </Link>
           </form>
-          <Link href={addHref} className="flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f0f2d] text-white text-sm rounded-lg font-medium whitespace-nowrap transition-colors">
-            <Plus className="w-4 h-4" /> Add New
-          </Link>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+
+        {/* ─── Data Table ─── */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -93,9 +181,9 @@ export async function GenListPage({
               </thead>
               <tbody>
                 {rows.length === 0 ? (
-                  <tr><td colSpan={cols.length + 2} className="text-center py-16 text-gray-400 text-sm">No records found</td></tr>
+                  <tr><td colSpan={cols.length + 2} className="text-center py-16 text-gray-400 text-sm">No records found matching the criteria</td></tr>
                 ) : rows.map((row: any, idx: number) => (
-                  <tr key={row.id} className="border-b border-gray-100 hover:bg-gray-50/50">
+                  <tr key={row.id || idx} className="border-b border-gray-100 hover:bg-gray-50/50">
                     <td className="px-4 py-3 text-gray-400 text-xs">{(page - 1) * 20 + idx + 1}</td>
                     {cols.map(c => (
                       <td key={c.key} className="px-4 py-3 text-gray-700 text-sm">

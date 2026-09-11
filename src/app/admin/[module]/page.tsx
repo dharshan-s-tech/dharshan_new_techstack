@@ -7,7 +7,7 @@ export default async function DynamicAdminModuleListPage({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ page?: string; search?: string }>;
+  searchParams: Promise<{ page?: string; search?: string; lang?: string; status?: string; sort?: string }>;
 }) {
   const { module: moduleKey } = await params;
   const config = ADMIN_MODULES[moduleKey];
@@ -19,6 +19,9 @@ export default async function DynamicAdminModuleListPage({
   const sp = await searchParams;
   const page = parseInt(sp?.page || '1');
   const search = sp?.search || '';
+  const lang = sp?.lang || 'all';
+  const status = sp?.status || 'all';
+  const sort = sp?.sort || 'newest';
 
   return (
     <GenListPage
@@ -31,6 +34,9 @@ export default async function DynamicAdminModuleListPage({
       cols={config.columns}
       page={page}
       search={search}
+      lang={lang}
+      status={status}
+      sort={sort}
     />
   );
 }
