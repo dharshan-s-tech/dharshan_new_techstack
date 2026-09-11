@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+
         // ============================================================
         // Docker Hub
         // ============================================================
@@ -54,13 +55,18 @@ pipeline {
         // ============================================================
         stage('Checkout Code') {
             steps {
+
                 echo "=============================================="
                 echo "CHECKOUT CODE"
                 echo "=============================================="
 
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "${env.BRANCH_NAME ?: '*/Dev'}"]],
+
+                    branches: [[
+                        name: "${env.BRANCH_NAME ?: '*/Dev'}"
+                    ]],
+
                     userRemoteConfigs: [[
                         url: 'https://github.com/Keerthiga-S/CAG_Website_v2.git',
                         credentialsId: "${GITHUB_CREDENTIALS}"
@@ -68,6 +74,8 @@ pipeline {
                 ])
 
                 sh '''
+                    set -e
+
                     echo "Git commit:"
                     git rev-parse HEAD
 
@@ -87,6 +95,7 @@ pipeline {
         // ============================================================
         stage('Check Raw Files') {
             steps {
+
                 sh '''
                     set -e
 
@@ -104,6 +113,7 @@ pipeline {
 
                     echo ""
                     echo "Required files:"
+
                     test -f Dockerfile
                     test -f package.json
                     test -f back_end/Dockerfile
@@ -111,6 +121,7 @@ pipeline {
 
                     echo ""
                     echo "Dockerfiles:"
+
                     echo "----- Frontend Dockerfile -----"
                     cat Dockerfile
 
@@ -133,14 +144,17 @@ pipeline {
         // ============================================================
         stage('SonarQube Scan') {
             steps {
+
                 echo "=============================================="
                 echo "SONARQUBE SCAN"
                 echo "=============================================="
 
                 withSonarQubeEnv("${SONAR_SERVER}") {
+
                     withEnv([
                         "SONAR_SCANNER_HOME=${tool "${SONAR_SCANNER}"}"
                     ]) {
+
                         sh '''
                             set -e
 
@@ -160,6 +174,7 @@ pipeline {
         // ============================================================
         stage('Create CI Network') {
             steps {
+
                 sh '''
                     set -e
 
@@ -172,6 +187,7 @@ pipeline {
                     echo ""
                     docker network inspect "${CI_NETWORK}" >/dev/null
 
+                    echo ""
                     echo "CI network created successfully:"
                     echo "${CI_NETWORK}"
                 '''
@@ -183,6 +199,7 @@ pipeline {
         // ============================================================
         stage('Start PostgreSQL') {
             steps {
+
                 sh '''
                     set -e
 
@@ -207,13 +224,20 @@ pipeline {
                         if docker exec "${POSTGRES_CONTAINER}" \
                             pg_isready \
                             -U "${POSTGRES_USER}" \
-                            -d "${POSTGRES_DB}" >/dev/null 2>&1
+                            -d "${POSTGRES_DB}" \
+                            >/dev/null 2>&1
                         then
+
                             echo "PostgreSQL is ready."
+
                             break
                         fi
 
+                        echo "PostgreSQL not ready. Attempt ${i}/60..."
+
                         if [ "$i" -eq 60 ]; then
+
+                            echo ""
                             echo "PostgreSQL failed to become ready."
 
                             docker logs "${POSTGRES_CONTAINER}" || true
@@ -226,7 +250,9 @@ pipeline {
 
                     echo ""
                     echo "PostgreSQL status:"
-                    docker ps --filter "name=${POSTGRES_CONTAINER}"
+
+                    docker ps \
+                        --filter "name=${POSTGRES_CONTAINER}"
                 '''
             }
         }
@@ -236,6 +262,7 @@ pipeline {
         // ============================================================
         stage('Build Backend Docker Image') {
             steps {
+
                 sh '''
                     set -e
 
@@ -251,13 +278,19 @@ pipeline {
 
                     echo ""
                     echo "Backend image created:"
-                    docker images "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+                    docker images \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
                     echo ""
-                    echo "Backend image architecture:"
+                    echo "Backend image platform:"
+
                     docker image inspect \
                         "${BACKEND_IMAGE}:${GIT_COMMIT}" \
                         --format '{{.Os}}/{{.Architecture}}'
+
+                    echo ""
+                    echo "Backend image build completed successfully."
                 '''
             }
         }
@@ -267,6 +300,7 @@ pipeline {
         // ============================================================
         stage('Build Frontend Docker Image') {
             steps {
+
                 sh '''
                     set -e
 
@@ -282,13 +316,19 @@ pipeline {
 
                     echo ""
                     echo "Frontend image created:"
-                    docker images "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+
+                    docker images \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}"
 
                     echo ""
-                    echo "Frontend image architecture:"
+                    echo "Frontend image platform:"
+
                     docker image inspect \
                         "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
                         --format '{{.Os}}/{{.Architecture}}'
+
+                    echo ""
+                    echo "Frontend image build completed successfully."
                 '''
             }
         }
@@ -298,6 +338,7 @@ pipeline {
         // ============================================================
         stage('Trivy Backend Image Scan') {
             steps {
+
                 sh '''
                     set -e
 
@@ -328,6 +369,7 @@ pipeline {
         // ============================================================
         stage('Trivy Frontend Image Scan') {
             steps {
+
                 sh '''
                     set -e
 
@@ -358,6 +400,7 @@ pipeline {
         // ============================================================
         stage('Start Backend Test Container') {
             steps {
+
                 sh '''
                     set -e
 
@@ -380,19 +423,29 @@ pipeline {
 
                     echo ""
                     echo "Backend container started:"
-                    docker ps --filter "name=${BACKEND_CONTAINER}"
+
+                    docker ps \
+                        --filter "name=${BACKEND_CONTAINER}"
 
                     echo ""
                     echo "Backend image:"
+
                     docker inspect \
                         "${BACKEND_CONTAINER}" \
                         --format '{{.Config.Image}}'
 
                     echo ""
-                    echo "Backend platform:"
-                    docker inspect \
-                        "${BACKEND_CONTAINER}" \
-                        --format '{{.Os}}/{{.Architecture}}'
+                    echo "Backend container started successfully."
+
+                    # IMPORTANT:
+                    # Do NOT use:
+                    # docker inspect <container> --format '{{.Os}}/{{.Architecture}}'
+                    #
+                    # Container inspect does not expose these image
+                    # platform fields in this template.
+                    #
+                    # Architecture was already verified during
+                    # docker image inspect in the build stage.
                 '''
             }
         }
@@ -402,6 +455,7 @@ pipeline {
         // ============================================================
         stage('Backend Health Check') {
             steps {
+
                 sh '''
                     set -e
 
@@ -409,6 +463,7 @@ pipeline {
                     echo "BACKEND HEALTH CHECK"
                     echo "=============================================="
 
+                    echo ""
                     echo "Waiting for backend to become healthy..."
 
                     for i in $(seq 1 60); do
@@ -417,6 +472,7 @@ pipeline {
                             python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read().decode())" \
                             >/tmp/backend-health-${BUILD_NUMBER}.log 2>&1
                         then
+
                             echo ""
                             echo "Backend health check PASSED."
 
@@ -425,19 +481,25 @@ pipeline {
                             break
                         fi
 
-                        echo "Attempt ${i}/60 failed. Waiting..."
+                        echo "Backend health check attempt ${i}/60 failed."
 
                         if [ "$i" -eq 60 ]; then
+
                             echo ""
                             echo "Backend health check FAILED."
 
                             echo ""
                             echo "Backend container status:"
-                            docker ps -a --filter "name=${BACKEND_CONTAINER}"
+
+                            docker ps -a \
+                                --filter "name=${BACKEND_CONTAINER}"
 
                             echo ""
                             echo "Backend logs:"
-                            docker logs "${BACKEND_CONTAINER}" || true
+
+                            docker logs \
+                                "${BACKEND_CONTAINER}" \
+                                || true
 
                             exit 1
                         fi
@@ -453,6 +515,7 @@ pipeline {
         // ============================================================
         stage('Start Frontend Test Container') {
             steps {
+
                 sh '''
                     set -e
 
@@ -469,19 +532,23 @@ pipeline {
 
                     echo ""
                     echo "Frontend container started:"
-                    docker ps --filter "name=${FRONTEND_CONTAINER}"
+
+                    docker ps \
+                        --filter "name=${FRONTEND_CONTAINER}"
 
                     echo ""
                     echo "Frontend image:"
+
                     docker inspect \
                         "${FRONTEND_CONTAINER}" \
                         --format '{{.Config.Image}}'
 
                     echo ""
-                    echo "Frontend platform:"
-                    docker inspect \
-                        "${FRONTEND_CONTAINER}" \
-                        --format '{{.Os}}/{{.Architecture}}'
+                    echo "Frontend container started successfully."
+
+                    # IMPORTANT:
+                    # Architecture is already verified against the image
+                    # during the frontend image build stage.
                 '''
             }
         }
@@ -491,6 +558,7 @@ pipeline {
         // ============================================================
         stage('Frontend Health Check') {
             steps {
+
                 sh '''
                     set -e
 
@@ -498,6 +566,7 @@ pipeline {
                     echo "FRONTEND HEALTH CHECK"
                     echo "=============================================="
 
+                    echo ""
                     echo "Waiting for frontend..."
 
                     for i in $(seq 1 60); do
@@ -506,6 +575,7 @@ pipeline {
                             node -e "fetch('http://127.0.0.1:3000').then(r => { if (!r.ok) process.exit(1); console.log('HTTP', r.status); }).catch(() => process.exit(1))" \
                             >/tmp/frontend-health-${BUILD_NUMBER}.log 2>&1
                         then
+
                             echo ""
                             echo "Frontend health check PASSED."
 
@@ -514,19 +584,25 @@ pipeline {
                             break
                         fi
 
-                        echo "Attempt ${i}/60 failed. Waiting..."
+                        echo "Frontend health check attempt ${i}/60 failed."
 
                         if [ "$i" -eq 60 ]; then
+
                             echo ""
                             echo "Frontend health check FAILED."
 
                             echo ""
                             echo "Frontend container status:"
-                            docker ps -a --filter "name=${FRONTEND_CONTAINER}"
+
+                            docker ps -a \
+                                --filter "name=${FRONTEND_CONTAINER}"
 
                             echo ""
                             echo "Frontend logs:"
-                            docker logs "${FRONTEND_CONTAINER}" || true
+
+                            docker logs \
+                                "${FRONTEND_CONTAINER}" \
+                                || true
 
                             exit 1
                         fi
@@ -542,6 +618,7 @@ pipeline {
         // ============================================================
         stage('Trivy Backend Filesystem Scan') {
             steps {
+
                 sh '''
                     set -e
 
@@ -572,6 +649,7 @@ pipeline {
         // ============================================================
         stage('Push Images to Docker Hub') {
             steps {
+
                 echo "=============================================="
                 echo "PUSH DOCKER IMAGES"
                 echo "=============================================="
@@ -583,6 +661,7 @@ pipeline {
                         passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
+
                     sh '''
                         set -e
 
@@ -596,13 +675,15 @@ pipeline {
                         echo "Docker Hub login successful."
 
                         echo ""
-                        echo "Checking backend image platform:"
+                        echo "Backend image platform:"
+
                         docker image inspect \
                             "${BACKEND_IMAGE}:${GIT_COMMIT}" \
                             --format '{{.Os}}/{{.Architecture}}'
 
                         echo ""
-                        echo "Checking frontend image platform:"
+                        echo "Frontend image platform:"
+
                         docker image inspect \
                             "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
                             --format '{{.Os}}/{{.Architecture}}'
@@ -649,6 +730,7 @@ pipeline {
         // ============================================================
         stage('Publish Build Information') {
             steps {
+
                 sh '''
                     set -e
 
@@ -658,7 +740,7 @@ pipeline {
 
                     echo ""
                     echo "Project:"
-                    echo "CAG_Website_v2"
+                    echo "CAG_Website_V2"
 
                     echo ""
                     echo "Branch:"
@@ -678,12 +760,14 @@ pipeline {
 
                     echo ""
                     echo "Backend Platform:"
+
                     docker image inspect \
                         "${BACKEND_IMAGE}:${GIT_COMMIT}" \
                         --format '{{.Os}}/{{.Architecture}}'
 
                     echo ""
                     echo "Frontend Platform:"
+
                     docker image inspect \
                         "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
                         --format '{{.Os}}/{{.Architecture}}'
@@ -701,41 +785,6 @@ pipeline {
                 '''
             }
         }
-
-        // ============================================================
-        // 17. DEPLOY PRODUCTION
-        // ============================================================
-        stage('Deploy Prod') {
-            when {
-                branch 'Prod'
-            }
-
-            steps {
-                echo "=============================================="
-                echo "PRODUCTION DEPLOYMENT"
-                echo "=============================================="
-
-                script {
-                    def commitSha = sh(
-                        script: 'git rev-parse HEAD',
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Deploying commit: ${commitSha}"
-
-                    env.DEPLOY_IMAGE_TAG = commitSha
-
-                    def cdJenkinsfile = readFile('CD/Jenkinsfile')
-
-                    writeFile(
-                        file: 'CD/Jenkinsfile.generated',
-                        text: cdJenkinsfile
-                    )
-
-                    load 'CD/Jenkinsfile.generated'
-                }
-            }
-        }
     }
 
     // ================================================================
@@ -744,27 +793,48 @@ pipeline {
     post {
 
         success {
+
             echo "=============================================="
-            echo "PIPELINE SUCCESS"
+            echo "CI PIPELINE SUCCESS"
             echo "=============================================="
 
-            echo "Build Number: ${BUILD_NUMBER}"
-            echo "Git Commit: ${GIT_COMMIT}"
-            echo "Backend Image: ${BACKEND_IMAGE}:${GIT_COMMIT}"
-            echo "Frontend Image: ${FRONTEND_IMAGE}:${GIT_COMMIT}"
+            echo ""
+            echo "Build Number:"
+            echo "${BUILD_NUMBER}"
+
+            echo ""
+            echo "Git Commit:"
+            echo "${GIT_COMMIT}"
+
+            echo ""
+            echo "Backend Image:"
+            echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+            echo ""
+            echo "Frontend Image:"
+            echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
         }
 
         failure {
+
             echo "=============================================="
-            echo "PIPELINE FAILED"
+            echo "CI PIPELINE FAILED"
             echo "=============================================="
 
-            echo "Build Number: ${BUILD_NUMBER}"
-            echo "Git Commit: ${GIT_COMMIT}"
+            echo ""
+            echo "Build Number:"
+            echo "${BUILD_NUMBER}"
+
+            echo ""
+            echo "Git Commit:"
+            echo "${GIT_COMMIT}"
 
             sh '''
+                set +e
+
                 echo ""
                 echo "Running CI containers:"
+
                 docker ps -a \
                     --filter "name=${POSTGRES_CONTAINER}" \
                     --filter "name=${BACKEND_CONTAINER}" \
@@ -773,15 +843,24 @@ pipeline {
 
                 echo ""
                 echo "Backend logs:"
-                docker logs "${BACKEND_CONTAINER}" 2>&1 || true
+
+                docker logs \
+                    "${BACKEND_CONTAINER}" \
+                    2>&1 \
+                    || true
 
                 echo ""
                 echo "Frontend logs:"
-                docker logs "${FRONTEND_CONTAINER}" 2>&1 || true
+
+                docker logs \
+                    "${FRONTEND_CONTAINER}" \
+                    2>&1 \
+                    || true
             '''
         }
 
         always {
+
             echo "=============================================="
             echo "CLEANUP"
             echo "=============================================="
@@ -795,14 +874,16 @@ pipeline {
                     "${FRONTEND_CONTAINER}" \
                     "${BACKEND_CONTAINER}" \
                     "${POSTGRES_CONTAINER}" \
-                    2>/dev/null || true
+                    2>/dev/null \
+                    || true
 
                 echo ""
                 echo "Removing CI network..."
 
                 docker network rm \
                     "${CI_NETWORK}" \
-                    2>/dev/null || true
+                    2>/dev/null \
+                    || true
 
                 echo ""
                 echo "Removing temporary health files..."
@@ -810,7 +891,8 @@ pipeline {
                 rm -f \
                     "/tmp/backend-health-${BUILD_NUMBER}.log" \
                     "/tmp/frontend-health-${BUILD_NUMBER}.log" \
-                    2>/dev/null || true
+                    2>/dev/null \
+                    || true
 
                 echo ""
                 echo "Docker cleanup completed."
