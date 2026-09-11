@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     // ============================================================
-    // PRODUCTION IMAGE TAG
+    // IMAGE TO DEPLOY
     // ============================================================
     parameters {
         string(
             name: 'IMAGE_TAG',
             defaultValue: '',
-            description: 'Exact Git SHA tag of the CI image to deploy from Docker Hub'
+            description: 'Exact 40-character Git SHA tag pushed by the successful CI build'
         )
     }
 
@@ -28,25 +28,12 @@ pipeline {
         AWS_HOST = '13.202.245.81'
         AWS_USER = 'ubuntu'
 
-        // Jenkins credential containing the Jenkins-to-AWS SSH key
         AWS_SSH_CREDENTIALS = 'cag-website-v2-aws-ssh'
 
         // ========================================================
-        // Production deployment directory
+        // AWS deployment directory
         // ========================================================
         DEPLOY_DIR = '/home/ubuntu/cag_website_v2'
-
-        // ========================================================
-        // Production containers
-        // ========================================================
-        FRONTEND_CONTAINER = 'cag-website-v2-web'
-        BACKEND_CONTAINER  = 'cag-website-v2-api'
-
-        // ========================================================
-        // Production ports
-        // ========================================================
-        FRONTEND_PORT = '3000'
-        BACKEND_PORT  = '8000'
     }
 
     stages {
@@ -58,111 +45,46 @@ pipeline {
             steps {
                 script {
 
-                    if (!params.IMAGE_TAG?.trim()) {
+                    def tag = params.IMAGE_TAG?.trim()
+
+                    if (!tag) {
                         error(
-                            'IMAGE_TAG is required. Enter the exact Git SHA of a successful CI build.'
+                            'IMAGE_TAG is required. Enter the exact 40-character Git SHA from a successful CI build.'
                         )
                     }
 
-                    if (!(params.IMAGE_TAG ==~ /^[0-9a-f]{40}$/)) {
+                    if (!(tag ==~ /^[0-9a-fA-F]{40}$/)) {
                         error(
-                            "Invalid IMAGE_TAG: ${params.IMAGE_TAG}. Expected a 40-character Git SHA."
+                            "Invalid IMAGE_TAG: ${tag}. Expected a 40-character Git SHA."
                         )
                     }
 
-                    env.DEPLOY_TAG = params.IMAGE_TAG.trim()
+                    env.DEPLOY_TAG = tag.toLowerCase()
 
                     echo "=============================================="
-                    echo "PRODUCTION IMAGE TAG"
+                    echo "CD IMAGE TAG"
                     echo "=============================================="
 
+                    echo ""
                     echo "Deploy tag:"
                     echo "${env.DEPLOY_TAG}"
 
                     echo ""
-                    echo "Backend:"
+                    echo "Backend image:"
                     echo "${BACKEND_IMAGE}:${env.DEPLOY_TAG}"
 
                     echo ""
-                    echo "Frontend:"
+                    echo "Frontend image:"
                     echo "${FRONTEND_IMAGE}:${env.DEPLOY_TAG}"
                 }
             }
         }
 
         // ========================================================
-        // 2. VERIFY IMAGES EXIST IN DOCKER HUB
-        // ========================================================
-        stage('Verify Docker Hub Images') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: "${DOCKER_CREDENTIALS}",
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
-
-                    sh '''
-                        set -e
-
-                        echo "=============================================="
-                        echo "VERIFY DOCKER HUB IMAGES"
-                        echo "=============================================="
-
-                        echo "${DOCKER_PASSWORD}" | docker login \
-                            -u "${DOCKER_USERNAME}" \
-                            --password-stdin
-
-                        echo ""
-                        echo "Pulling backend image..."
-
-                        docker pull \
-                            "${BACKEND_IMAGE}:${DEPLOY_TAG}"
-
-                        echo ""
-                        echo "Pulling frontend image..."
-
-                        docker pull \
-                            "${FRONTEND_IMAGE}:${DEPLOY_TAG}"
-
-                        echo ""
-                        echo "Docker Hub images are available."
-
-                        echo ""
-                        echo "Backend image:"
-                        docker image inspect \
-                            "${BACKEND_IMAGE}:${DEPLOY_TAG}" \
-                            --format '{{.RepoTags}}'
-
-                        echo ""
-                        echo "Backend platform:"
-                        docker image inspect \
-                            "${BACKEND_IMAGE}:${DEPLOY_TAG}" \
-                            --format '{{.Os}}/{{.Architecture}}'
-
-                        echo ""
-                        echo "Frontend image:"
-                        docker image inspect \
-                            "${FRONTEND_IMAGE}:${DEPLOY_TAG}" \
-                            --format '{{.RepoTags}}'
-
-                        echo ""
-                        echo "Frontend platform:"
-                        docker image inspect \
-                            "${FRONTEND_IMAGE}:${DEPLOY_TAG}" \
-                            --format '{{.Os}}/{{.Architecture}}'
-
-                        docker logout
-                    '''
-                }
-            }
-        }
-
-        // ========================================================
-        // 3. DEPLOY TO AWS
+        // 2. DEPLOY DIRECTLY TO AWS
         // ========================================================
         stage('Deploy to AWS') {
+
             steps {
 
                 withCredentials([
@@ -171,6 +93,7 @@ pipeline {
                         usernameVariable: 'DOCKER_USERNAME',
                         passwordVariable: 'DOCKER_PASSWORD'
                     ),
+
                     sshUserPrivateKey(
                         credentialsId: "${AWS_SSH_CREDENTIALS}",
                         keyFileVariable: 'SSH_KEY',
@@ -182,12 +105,16 @@ pipeline {
                         set -e
 
                         echo "=============================================="
-                        echo "DEPLOY TO AWS"
+                        echo "AWS DEPLOYMENT"
                         echo "=============================================="
 
                         echo ""
                         echo "AWS host:"
                         echo "${AWS_HOST}"
+
+                        echo ""
+                        echo "AWS user:"
+                        echo "${SSH_USER}"
 
                         echo ""
                         echo "Deployment directory:"
@@ -205,16 +132,21 @@ pipeline {
                         ssh \
                             -o StrictHostKeyChecking=no \
                             -o ConnectTimeout=10 \
+                            -o IdentitiesOnly=yes \
                             -i "${SSH_KEY}" \
                             "${SSH_USER}@${AWS_HOST}" \
                             "echo 'AWS SSH connection successful'"
 
                         echo ""
-                        echo "Deploying production application..."
+                        echo "SSH connection successful."
+
+                        echo ""
+                        echo "Starting deployment on AWS..."
 
                         ssh \
                             -o StrictHostKeyChecking=no \
                             -o ConnectTimeout=10 \
+                            -o IdentitiesOnly=yes \
                             -i "${SSH_KEY}" \
                             "${SSH_USER}@${AWS_HOST}" \
                             "DOCKER_USERNAME='${DOCKER_USERNAME}' DOCKER_PASSWORD='${DOCKER_PASSWORD}' DEPLOY_TAG='${DEPLOY_TAG}' DEPLOY_DIR='${DEPLOY_DIR}' bash -s" <<'REMOTE_SCRIPT'
@@ -226,7 +158,7 @@ echo "AWS PRODUCTION DEPLOYMENT"
 echo "=============================================="
 
 echo ""
-echo "Host:"
+echo "Hostname:"
 hostname
 
 echo ""
@@ -240,56 +172,113 @@ echo "Current directory:"
 pwd
 
 echo ""
-echo "Checking Docker..."
+echo "Docker version:"
 docker --version
 
 echo ""
-echo "Checking Docker Compose..."
+echo "Docker Compose version:"
 docker compose version
+
+# ============================================================
+# Docker Hub login
+# ============================================================
 
 echo ""
 echo "Logging into Docker Hub..."
 
 echo "${DOCKER_PASSWORD}" | docker login \
-    -u "${DOCKER_USERNAME}" \
+    --username "${DOCKER_USERNAME}" \
     --password-stdin
 
-echo ""
 echo "Docker Hub login successful."
 
+# ============================================================
+# Pull exact CI images DIRECTLY ON AWS
+# ============================================================
+
 echo ""
-echo "Pulling backend image..."
+echo "=============================================="
+echo "PULL BACKEND IMAGE"
+echo "=============================================="
 
 docker pull \
     "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}"
 
 echo ""
-echo "Pulling frontend image..."
+echo "Backend image pulled successfully."
+
+echo ""
+echo "=============================================="
+echo "PULL FRONTEND IMAGE"
+echo "=============================================="
 
 docker pull \
     "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}"
 
 echo ""
-echo "Images pulled successfully."
+echo "Frontend image pulled successfully."
+
+# ============================================================
+# Verify pulled image tags on AWS
+# ============================================================
+
+echo ""
+echo "=============================================="
+echo "VERIFY PULLED IMAGES"
+echo "=============================================="
 
 echo ""
 echo "Backend image:"
+
 docker image inspect \
     "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}" \
     --format '{{.RepoTags}}'
 
 echo ""
+echo "Backend platform:"
+
+docker image inspect \
+    "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}" \
+    --format '{{.Os}}/{{.Architecture}}'
+
+echo ""
 echo "Frontend image:"
+
 docker image inspect \
     "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}" \
     --format '{{.RepoTags}}'
 
 echo ""
+echo "Frontend platform:"
+
+docker image inspect \
+    "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}" \
+    --format '{{.Os}}/{{.Architecture}}'
+
+# ============================================================
+# Deploy using production Compose
+# ============================================================
+
+echo ""
 echo "=============================================="
-echo "STARTING PRODUCTION CONTAINERS"
+echo "START PRODUCTION APPLICATION"
 echo "=============================================="
 
 export DEPLOY_TAG="${DEPLOY_TAG}"
+
+echo ""
+echo "Using image tag:"
+echo "${DEPLOY_TAG}"
+
+echo ""
+echo "Docker Compose configuration:"
+
+docker compose \
+    -f docker-compose.yml \
+    config
+
+echo ""
+echo "Starting containers..."
 
 docker compose \
     -f docker-compose.yml \
@@ -298,6 +287,10 @@ docker compose \
 
 echo ""
 echo "Docker Compose deployment completed."
+
+# ============================================================
+# Show running containers
+# ============================================================
 
 echo ""
 echo "=============================================="
@@ -308,15 +301,85 @@ docker compose \
     -f docker-compose.yml \
     ps
 
-echo ""
-echo "=============================================="
-echo "PRODUCTION HEALTH CHECK"
-echo "=============================================="
+# ============================================================
+# Verify exact image used by containers
+# ============================================================
 
 echo ""
-echo "Checking frontend..."
+echo "=============================================="
+echo "VERIFY DEPLOYED IMAGES"
+echo "=============================================="
 
-for i in \$(seq 1 30); do
+BACKEND_RUNNING_IMAGE=$(docker compose \
+    -f docker-compose.yml \
+    ps -q api | xargs docker inspect --format '{{.Config.Image}}')
+
+FRONTEND_RUNNING_IMAGE=$(docker compose \
+    -f docker-compose.yml \
+    ps -q web | xargs docker inspect --format '{{.Config.Image}}')
+
+echo ""
+echo "Running backend image:"
+echo "${BACKEND_RUNNING_IMAGE}"
+
+echo ""
+echo "Running frontend image:"
+echo "${FRONTEND_RUNNING_IMAGE}"
+
+echo ""
+echo "Expected backend:"
+echo "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}"
+
+echo ""
+echo "Expected frontend:"
+echo "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}"
+
+if [ "${BACKEND_RUNNING_IMAGE}" != \
+    "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}" ]; then
+
+    echo ""
+    echo "ERROR: Backend image mismatch."
+
+    docker compose \
+        -f docker-compose.yml \
+        ps
+
+    exit 1
+fi
+
+if [ "${FRONTEND_RUNNING_IMAGE}" != \
+    "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}" ]; then
+
+    echo ""
+    echo "ERROR: Frontend image mismatch."
+
+    docker compose \
+        -f docker-compose.yml \
+        ps
+
+    exit 1
+fi
+
+echo ""
+echo "Exact image verification PASSED."
+
+# ============================================================
+# Deployment health checks
+# ============================================================
+
+echo ""
+echo "=============================================="
+echo "DEPLOYMENT HEALTH CHECKS"
+echo "=============================================="
+
+# ------------------------------------------------------------
+# Frontend
+# ------------------------------------------------------------
+
+echo ""
+echo "Checking frontend on port 3000..."
+
+for i in $(seq 1 30); do
 
     if curl \
         --fail \
@@ -327,6 +390,7 @@ for i in \$(seq 1 30); do
         >/tmp/cag-website-v2-frontend-health.log 2>&1
     then
 
+        echo ""
         echo "Frontend health check PASSED."
 
         cat /tmp/cag-website-v2-frontend-health.log
@@ -334,12 +398,15 @@ for i in \$(seq 1 30); do
         break
     fi
 
-    echo "Frontend health check attempt \${i}/30 failed."
+    echo "Frontend health check attempt ${i}/30 failed."
 
-    if [ "\${i}" -eq 30 ]; then
+    if [ "${i}" -eq 30 ]; then
 
         echo ""
         echo "Frontend health check FAILED."
+
+        echo ""
+        echo "Compose status:"
 
         docker compose \
             -f docker-compose.yml \
@@ -360,10 +427,14 @@ for i in \$(seq 1 30); do
     sleep 2
 done
 
-echo ""
-echo "Checking backend..."
+# ------------------------------------------------------------
+# Backend
+# ------------------------------------------------------------
 
-for i in \$(seq 1 30); do
+echo ""
+echo "Checking backend health on port 8000..."
+
+for i in $(seq 1 30); do
 
     if curl \
         --fail \
@@ -374,6 +445,7 @@ for i in \$(seq 1 30); do
         >/tmp/cag-website-v2-backend-health.log 2>&1
     then
 
+        echo ""
         echo "Backend health check PASSED."
 
         cat /tmp/cag-website-v2-backend-health.log
@@ -381,12 +453,15 @@ for i in \$(seq 1 30); do
         break
     fi
 
-    echo "Backend health check attempt \${i}/30 failed."
+    echo "Backend health check attempt ${i}/30 failed."
 
-    if [ "\${i}" -eq 30 ]; then
+    if [ "${i}" -eq 30 ]; then
 
         echo ""
         echo "Backend health check FAILED."
+
+        echo ""
+        echo "Compose status:"
 
         docker compose \
             -f docker-compose.yml \
@@ -407,68 +482,22 @@ for i in \$(seq 1 30); do
     sleep 2
 done
 
-echo ""
-echo "=============================================="
-echo "VERIFY DEPLOYED IMAGE TAGS"
-echo "=============================================="
-
-echo ""
-echo "Backend container image:"
-
-docker inspect \
-    cag-website-v2-api \
-    --format '{{.Config.Image}}'
-
-echo ""
-echo "Frontend container image:"
-
-docker inspect \
-    cag-website-v2-web \
-    --format '{{.Config.Image}}'
-
-echo ""
-echo "Expected backend:"
-echo "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}"
-
-echo ""
-echo "Expected frontend:"
-echo "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}"
-
-BACKEND_RUNNING_IMAGE=\$(docker inspect \
-    cag-website-v2-api \
-    --format '{{.Config.Image}}')
-
-FRONTEND_RUNNING_IMAGE=\$(docker inspect \
-    cag-website-v2-web \
-    --format '{{.Config.Image}}')
-
-if [ "\${BACKEND_RUNNING_IMAGE}" != \
-    "iitmpravartak/cag-website-v2-backend:${DEPLOY_TAG}" ]; then
-
-    echo "ERROR: Backend image tag mismatch."
-
-    exit 1
-fi
-
-if [ "\${FRONTEND_RUNNING_IMAGE}" != \
-    "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}" ]; then
-
-    echo "ERROR: Frontend image tag mismatch."
-
-    exit 1
-fi
-
-echo ""
-echo "Image tag verification PASSED."
+# ============================================================
+# Docker Hub logout
+# ============================================================
 
 echo ""
 echo "Logging out from Docker Hub..."
 
-docker logout
+docker logout || true
+
+# ============================================================
+# FINAL RESULT
+# ============================================================
 
 echo ""
 echo "=============================================="
-echo "AWS PRODUCTION DEPLOYMENT SUCCESS"
+echo "AWS DEPLOYMENT SUCCESS"
 echo "=============================================="
 
 echo ""
@@ -480,31 +509,37 @@ echo "Frontend:"
 echo "iitmpravartak/cag-website-v2-frontend:${DEPLOY_TAG}"
 
 echo ""
-echo "Frontend:"
+echo "Frontend URL:"
 echo "http://13.202.245.81:3000"
 
 echo ""
-echo "Backend:"
+echo "Backend health URL:"
 echo "http://13.202.245.81:8000/health"
 
 REMOTE_SCRIPT
+
+                        echo ""
+                        echo "=============================================="
+                        echo "AWS DEPLOYMENT FINISHED"
+                        echo "=============================================="
                     '''
                 }
             }
         }
 
         // ========================================================
-        // 4. DEPLOYMENT INFORMATION
+        // 3. DEPLOYMENT INFORMATION
         // ========================================================
         stage('Deployment Information') {
             steps {
+
                 echo "=============================================="
                 echo "PRODUCTION DEPLOYMENT COMPLETED"
                 echo "=============================================="
 
                 echo ""
                 echo "AWS:"
-                echo "13.202.245.81"
+                echo "${AWS_HOST}"
 
                 echo ""
                 echo "Image tag:"
@@ -520,11 +555,11 @@ REMOTE_SCRIPT
 
                 echo ""
                 echo "Frontend URL:"
-                echo "http://13.202.245.81:3000"
+                echo "http://${AWS_HOST}:3000"
 
                 echo ""
                 echo "Backend health:"
-                echo "http://13.202.245.81:8000/health"
+                echo "http://${AWS_HOST}:8000/health"
             }
         }
     }
@@ -535,26 +570,35 @@ REMOTE_SCRIPT
     post {
 
         success {
+
             echo "=============================================="
             echo "CD PIPELINE SUCCESS"
             echo "=============================================="
 
-            echo "Production deployment successful."
+            echo ""
+            echo "AWS production deployment successful."
 
-            echo "Image tag: ${env.DEPLOY_TAG}"
+            echo ""
+            echo "Image tag:"
+            echo "${env.DEPLOY_TAG}"
         }
 
         failure {
+
             echo "=============================================="
             echo "CD PIPELINE FAILED"
             echo "=============================================="
 
-            echo "Production deployment failed."
+            echo ""
+            echo "AWS production deployment failed."
 
-            echo "Image tag: ${params.IMAGE_TAG}"
+            echo ""
+            echo "Image tag:"
+            echo "${params.IMAGE_TAG}"
         }
 
         always {
+
             echo "=============================================="
             echo "CD PIPELINE FINISHED"
             echo "=============================================="
