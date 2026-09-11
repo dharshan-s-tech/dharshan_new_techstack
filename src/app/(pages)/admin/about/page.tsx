@@ -375,7 +375,6 @@ function AdminAboutRegistryContent() {
 
     let updated: AboutRecord[];
     if (editingRawId) {
-      updated = allAboutRecords.map(r => r.rawId === editingRawId ? newRecord : r);
       try {
         await fetch(`${API_URL}/api/admin/crud?table=about&id=${encodeURIComponent(editingRawId)}`, {
           method: 'PUT',
@@ -383,15 +382,23 @@ function AdminAboutRegistryContent() {
           body: JSON.stringify(newRecord),
         });
       } catch (e) {}
+      updated = allAboutRecords.map(r => r.rawId === editingRawId ? newRecord : r);
     } else {
-      updated = [newRecord, ...allAboutRecords];
       try {
-        await fetch(`${API_URL}/api/admin/crud?table=about`, {
+        const res = await fetch(`${API_URL}/api/admin/crud?table=about`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newRecord),
         });
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.id) {
+            newRecord.rawId = resData.id;
+            newRecord.id = resData.id;
+          }
+        }
       } catch (e) {}
+      updated = [newRecord, ...allAboutRecords];
     }
 
     setAllAboutRecords(updated);

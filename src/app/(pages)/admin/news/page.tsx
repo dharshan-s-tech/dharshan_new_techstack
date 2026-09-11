@@ -18,7 +18,7 @@ export default function AdminNews() {
   const API_URL = getApiBaseUrl();
   const [news, setNews] = useState<NewsDisplayItem[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -44,7 +44,7 @@ export default function AdminNews() {
       const res = await fetch(`${API_URL}/api/news`);
       if (!res.ok) throw new Error('API offline');
       const data = await res.json();
-      
+
       let rawList: any[] = Array.isArray(data) && data.length > 0 ? data : dataManager.getNews();
       let formatted: NewsDisplayItem[] = rawList.map((item: any) => ({
         id: item.id?.toString() || Math.random().toString(),
@@ -57,7 +57,7 @@ export default function AdminNews() {
       }));
 
       if (appliedSearch) {
-        formatted = formatted.filter((item) => 
+        formatted = formatted.filter((item) =>
           item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
         );
       }
@@ -89,7 +89,7 @@ export default function AdminNews() {
       }));
 
       if (appliedSearch) {
-        formatted = formatted.filter((item) => 
+        formatted = formatted.filter((item) =>
           item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
         );
       }
@@ -206,7 +206,7 @@ export default function AdminNews() {
 
   return (
     <div className="space-y-6 text-xs text-zinc-700">
-      
+
       {/* 1. TOP FILTERS PANEL */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -316,7 +316,7 @@ export default function AdminNews() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
+              <tr
                 className="text-white border-b border-[#5c102c] font-bold"
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
@@ -352,7 +352,7 @@ export default function AdminNews() {
                     <td className="px-4 py-3 border-r border-[#e2e5e7] capitalize font-medium">{item.news_type}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] text-zinc-600">{item.tag}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-mono text-zinc-500">{item.publish_date}</td>
-                    
+
                     <td className="px-4 py-3 text-center space-x-1.5">
                       <button
                         onClick={() => handleOpenEdit(item.id)}

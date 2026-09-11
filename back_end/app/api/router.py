@@ -23,5 +23,6 @@ api_router.include_router(former_cag.router, prefix="/former-cag", tags=["former
 # Admin V1 Routes
 api_router.include_router(admin_auth.router, prefix="/admin/auth", tags=["admin-auth"])
 api_router.include_router(admin_crud.router, prefix="/admin/crud", tags=["admin-crud"])
+api_router.include_router(news.admin_router, prefix="/admin/news", tags=["admin-news"])
 api_router.include_router(admin_options.router, prefix="/admin/options", tags=["admin-options"])
 api_router.include_router(admin_upload.router, prefix="/admin/upload", tags=["admin-upload"])

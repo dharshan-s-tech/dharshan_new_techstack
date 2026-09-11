@@ -404,3 +404,54 @@ async def delete_crud(
 
     return {"success": True}
 
+
+# Path-based routes for /api/admin/{table_name}
+@router.get("/{table_name}")
+async def list_by_path(
+    table_name: str,
+    page: int = Query(1),
+    limit: int = Query(50),
+    search: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return await list_or_get_crud(table=table_name, page=page, limit=limit, search=search, db=db)
+
+
+@router.get("/{table_name}/{record_id}")
+async def get_by_path(
+    table_name: str,
+    record_id: str,
+    db: Session = Depends(get_db)
+):
+    return await list_or_get_crud(table=table_name, id=record_id, db=db)
+
+
+@router.post("/{table_name}")
+async def create_by_path(
+    table_name: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await create_crud(request=request, table=table_name, db=db)
+
+
+@router.put("/{table_name}/{record_id}")
+async def update_by_path(
+    table_name: str,
+    record_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await update_crud(request=request, table=table_name, id=record_id, db=db)
+
+
+@router.delete("/{table_name}/{record_id}")
+async def delete_by_path(
+    table_name: str,
+    record_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await delete_crud(request=request, table=table_name, id=record_id, db=db)
+
+

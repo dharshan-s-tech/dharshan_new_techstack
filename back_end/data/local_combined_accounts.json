@@ -1,5 +1,64 @@
 [
   {
+    "title": "Verification Combined Account Statement 2026 (Updated)",
+    "year": "2024-25",
+    "category": "combined",
+    "id": "89935",
+    "rawId": "89935",
+    "source": "remote_db",
+    "is_deleted": true
+  },
+  {
+    "title": "Automated Lifecycle Combined Account 2026 (Updated)",
+    "title_hi": "स्वचालित संयुक्त वित्त खाते 2026",
+    "year": "2024-25",
+    "category": "combined",
+    "id": "89934",
+    "rawId": "89934",
+    "source": "remote_db",
+    "is_deleted": true
+  },
+  {
+    "title": "CRUD Combined Accounts Test 2026 (Updated)",
+    "title_hi": "संयुक्त वित्त खाते 2026",
+    "year": "2026",
+    "category": "combined",
+    "id": "89933",
+    "rawId": "89933",
+    "source": "remote_db",
+    "is_deleted": true
+  },
+  {
+    "title": "Combined Union & States Revenue Statement 2026 (Updated)",
+    "year": "2026",
+    "category": "combined",
+    "id": "89932",
+    "rawId": "89932",
+    "source": "remote_db",
+    "is_deleted": true
+  },
+  {
+    "title": "CRUD Combined Accounts Test 2026",
+    "title_hi": "संयुक्त वित्त खाते 2026",
+    "year": "2026",
+    "category": "combined",
+    "id": "89931",
+    "rawId": "89931",
+    "source": "remote_db"
+  },
+  {
+    "title": "CRUD Test UPDATED Title",
+    "year": "2026",
+    "volume": "Volume 1",
+    "desc": "Testing combined accounts CRUD",
+    "is_active": true,
+    "id": "89930",
+    "rawId": "89930",
+    "source": "remote_db",
+    "title_en": "CRUD Test UPDATED Title",
+    "is_deleted": true
+  },
+  {
     "title": "Proceedings of 36th National Conference of State Finance Secretaries (2027)",
     "title_en": "Proceedings of 36th National Conference of State Finance Secretaries (2027)",
     "account_year": "2027",

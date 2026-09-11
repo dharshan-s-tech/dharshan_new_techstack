@@ -58,21 +58,39 @@ class AboutAdminService:
                         COALESCE(pt.excerpt, '') as excerpt_hi
                     FROM cag_revamp.pages p
                     LEFT JOIN cag_revamp.page_translations pt ON pt.page_id = p.id AND pt.culture = 'hi'
-                    WHERE p.id IN (1, 2, 3, 10, 11, 16, 17, 40, 41, 6315, 6685, 6688)
-                       OR p.slug IN (
-                           'page-cag-of-india', 'page-our-vision-mission-values', 'page-history-of-indian-audit-and-accounts-department',
-                           'page-audit-advisory-board', 'page-constitutional-provisions', 'page-duties-power-and-conditions-of-services-act',
-                           'page-cag-audit-regulations', 'page-audit-regulations'
-                       )
+                    WHERE (
+                        p.id IN (1, 2, 3, 10, 11, 16, 17, 40, 41, 6315, 6685, 6688)
+                        OR p.slug IN (
+                            'page-cag-of-india', 'page-our-vision-mission-values', 'page-history-of-indian-audit-and-accounts-department',
+                            'page-audit-advisory-board', 'page-constitutional-provisions', 'page-duties-power-and-conditions-of-services-act',
+                            'page-cag-audit-regulations', 'page-audit-regulations', 'page-earlier-versions-regulation-audit-accounts-2007',
+                            'page-regulations-audit-accounts-2007', 'page-cag-s-auditing-standards-2017'
+                        )
+                        OR p.slug LIKE 'page-cag-of-india-%'
+                        OR p.slug LIKE 'page-our-vision-mission-values-%'
+                        OR p.slug LIKE 'page-history-of-indian-audit-and-accounts-department-%'
+                        OR p.slug LIKE 'page-audit-advisory-board-%'
+                        OR p.slug LIKE 'page-constitutional-provisions-%'
+                        OR p.slug LIKE 'page-duties-power-and-conditions-of-services-act-%'
+                        OR p.slug LIKE 'page-cag-audit-regulations-%'
+                        OR p.slug LIKE 'page-audit-regulations-%'
+                        OR p.slug LIKE 'page-about-%'
+                    )
                     ORDER BY p.id;
                 """)
                 page_rows = db.execute(q_pages).mappings().fetchall()
                 seen_pids = set()
+                import re
                 for p in page_rows:
                     if p['id'] in seen_pids:
                         continue
                     seen_pids.add(p['id'])
-                    cat, st, pub_url = SLUG_TO_META.get(p['slug'], ('Governance & Mandate', p['title_en'], '/About/About-Us/Cag-Of-India'))
+                    slug_str = str(p['slug'])
+                    base_slug = re.sub(r'-[a-f0-9]{6,8}$', '', slug_str)
+                    cat, st, pub_url = SLUG_TO_META.get(
+                        slug_str,
+                        SLUG_TO_META.get(base_slug, ('Governance & Mandate', p['title_en'], '/About/About-Us/Cag-Of-India'))
+                    )
                     f_url = f"https://cag.gov.in/uploads/cms_pages_files/{p['upload_file']}" if p.get('upload_file') else ""
                     all_records.append({
                         "id": rec_id,
@@ -80,7 +98,7 @@ class AboutAdminService:
                         "formattedId": f"#AB-PG{str(p['id']).zfill(3)}",
                         "category": cat,
                         "subTopic": st,
-                        "subTopicSlug": p['slug'].replace('page-', ''),
+                        "subTopicSlug": base_slug.replace('page-', ''),
                         "title_en": p['title_en'] or p['slug'],
                         "title_hi": p.get('title_hi') or '',
                         "desc": p.get('excerpt_en') or f"Statutory CMS content for {p['title_en']} from cag_revamp.pages",
@@ -372,17 +390,19 @@ class AboutAdminService:
 
         raw_id = str(data.get("rawId") or data.get("id") or "")
         is_active = 1 if data.get("is_active", True) else 0
+        title_en = data.get("title_en") or data.get("title") or "New Section Record"
+        title_hi = data.get("title_hi") or ""
+        desc = data.get("desc") or data.get("excerpt") or ""
+        file_name = data.get("file_name") or data.get("upload_file") or data.get("image") or data.get("profile_image") or ""
+        subtopic = data.get("subTopic") or ""
+        table_name = data.get("table_name") or ""
 
         try:
+            # 1. Update Existing Page
             if raw_id.startswith("page-"):
                 pid_str = raw_id.replace("page-", "")
                 if pid_str.isdigit():
                     pid = int(pid_str)
-                    title_en = data.get("title_en") or data.get("title") or ""
-                    title_hi = data.get("title_hi") or ""
-                    desc = data.get("desc") or data.get("excerpt") or ""
-                    file_name = data.get("file_name") or data.get("upload_file") or ""
-
                     db.execute(text("""
                         UPDATE cag_revamp.pages
                         SET title = :title,
@@ -400,7 +420,6 @@ class AboutAdminService:
                     })
 
                     if title_hi:
-                        # Check if translation exists
                         exists = db.execute(text("""
                             SELECT id FROM cag_revamp.page_translations
                             WHERE page_id = :pid AND culture = 'hi';
@@ -418,13 +437,13 @@ class AboutAdminService:
                                 VALUES (:pid, 'hi', :title, :excerpt);
                             """), {"pid": pid, "title": title_hi, "excerpt": desc})
                     db.commit()
+                    return data
 
+            # 2. Update Existing Former CAG
             elif raw_id.startswith("former-cag-"):
                 fcid_str = raw_id.replace("former-cag-", "")
                 if fcid_str.isdigit():
                     fcid = int(fcid_str)
-                    title_en = data.get("title_en") or data.get("title") or ""
-                    file_name = data.get("file_name") or data.get("image") or ""
                     db.execute(text("""
                         UPDATE cag_revamp.former_cag
                         SET tenure = :tenure,
@@ -439,13 +458,13 @@ class AboutAdminService:
                         "id": fcid
                     })
                     db.commit()
+                    return data
 
+            # 3. Update Existing Organisation Chart
             elif raw_id.startswith("org-chart-"):
                 ocid_str = raw_id.replace("org-chart-", "")
                 if ocid_str.isdigit():
                     ocid = int(ocid_str)
-                    title_en = data.get("title_en") or data.get("full_name") or ""
-                    file_name = data.get("file_name") or data.get("profile_image") or ""
                     db.execute(text("""
                         UPDATE cag_revamp.organisation_chart
                         SET full_name = :name,
@@ -460,6 +479,111 @@ class AboutAdminService:
                         "id": ocid
                     })
                     db.commit()
+                    return data
+
+            # 4. INSERT NEW RECORD
+            if subtopic == "Former CAGs Gallery" or table_name == "cag_revamp.former_cag":
+                res = db.execute(text("""
+                    INSERT INTO cag_revamp.former_cag (
+                        title, language, tenure, tenure_from, tenure_to, image, status, created_by, created, modified
+                    ) VALUES (
+                        :title, 'en', :tenure, '2026', '2030', :image, :status, 1, NOW(), NOW()
+                    ) RETURNING id;
+                """), {
+                    "title": title_en,
+                    "tenure": title_en,
+                    "image": file_name,
+                    "status": is_active
+                })
+                new_id = res.scalar()
+                db.commit()
+                data["rawId"] = f"former-cag-{new_id}"
+                data["id"] = new_id
+                data["formattedId"] = f"#AB-FC{str(new_id).zfill(3)}"
+                return data
+
+            elif subtopic == "Organisation-Chart" or table_name == "cag_revamp.organisation_chart":
+                res = db.execute(text("""
+                    INSERT INTO cag_revamp.organisation_chart (
+                        full_name, designation, designation_display_name, language, prefix_name, email, mobile_no, department,
+                        designation_hierarchy_id, org_charge_master_id,
+                        additional_reporting_to, additional_charge, dept_description, created_by, modified_by,
+                        charge_assumption_date, charge_assumption_to_date, no_charge_remark, std_code,
+                        display_name, seniority_confirmed, reporting_history_from, reporting_history_to,
+                        reporting_to_history_ids, reporting_history_offices, status, created, modified
+                    ) VALUES (
+                        :full_name, 1, :desig, 'en', '', '', '', :dept,
+                        2, 1,
+                        '', '', '', 1, 1,
+                        '', '', '', '',
+                        1, 0, '', '',
+                        '', '', :status, NOW(), NOW()
+                    ) RETURNING id;
+                """), {
+                    "full_name": title_en,
+                    "desig": data.get("desc") or "Executive Officer",
+                    "dept": "IA&AD Executive Portfolio",
+                    "status": is_active
+                })
+                new_id = res.scalar()
+                db.commit()
+                data["rawId"] = f"org-chart-{new_id}"
+                data["id"] = new_id
+                data["formattedId"] = f"#AB-OC{str(new_id).zfill(3)}"
+                return data
+
+            else:
+                # Default: Insert into cag_revamp.pages
+                import re
+                import uuid
+                slug_prefix_map = {
+                    'CAG of India Profile': 'page-cag-of-india',
+                    'Our Vision, Mission & Core Values': 'page-our-vision-mission-values',
+                    'History of IAAD': 'page-history-of-indian-audit-and-accounts-department',
+                    'Audit-Advisory-Board': 'page-audit-advisory-board',
+                    'Constitutional-Provisions': 'page-constitutional-provisions',
+                    'Duties-&-Powers-Act': 'page-duties-power-and-conditions-of-services-act',
+                    'Audit-Regulation': 'page-cag-audit-regulations',
+                }
+                base = slug_prefix_map.get(subtopic) or (f"page-{data.get('subTopicSlug')}" if data.get('subTopicSlug') else 'page-about')
+                unique_suffix = uuid.uuid4().hex[:6]
+                slug = f"{base}-{unique_suffix}"
+                res = db.execute(text("""
+                    INSERT INTO cag_revamp.pages (
+                        title, slug, excerpt, content, is_home, upload_file, status, created_by, updated_by, show_on_home_page, created_at, modified_at
+                    ) VALUES (
+                        :title, :slug, :excerpt, :content, 0, :upload_file, :status, 1, 1, 0, NOW(), NOW()
+                    ) RETURNING id;
+                """), {
+                    "title": title_en,
+                    "slug": slug,
+                    "excerpt": desc,
+                    "content": desc or title_en,
+                    "upload_file": file_name,
+                    "status": is_active
+                })
+                new_id = res.scalar()
+
+                if title_hi:
+                    db.execute(text("""
+                        INSERT INTO cag_revamp.page_translations (
+                            page_id, language_id, culture, title, slug, excerpt, content
+                        ) VALUES (
+                            :pid, 2, 'hi', :title, :slug, :excerpt, :content
+                        );
+                    """), {
+                        "pid": new_id,
+                        "title": title_hi,
+                        "slug": f"{slug}-hi",
+                        "excerpt": desc,
+                        "content": desc or title_hi
+                    })
+
+                db.commit()
+                data["rawId"] = f"page-{new_id}"
+                data["id"] = new_id
+                data["formattedId"] = f"#AB-PG{str(new_id).zfill(3)}"
+                return data
 
         except Exception as e:
             logger.error(f"[AboutAdminService] Failed to save DB record {raw_id}: {e}")

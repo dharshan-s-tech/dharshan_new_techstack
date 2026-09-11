@@ -9,8 +9,8 @@ router = APIRouter()
 @router.get("/")
 async def get_reports(
     page: int = Query(1, ge=1),
-    pageSize: Optional[int] = Query(None, ge=1, le=100),
-    page_size: Optional[int] = Query(None, ge=1, le=100),
+    pageSize: Optional[int] = Query(None, ge=1, le=1000),
+    page_size: Optional[int] = Query(None, ge=1, le=1000),
     query: Optional[str] = Query(None, description="Search term in title or overview"),
     search: Optional[str] = Query(None, description="Alternative search parameter"),
     level: str = Query("", description="Government level (Union, States, Local Bodies)"),
