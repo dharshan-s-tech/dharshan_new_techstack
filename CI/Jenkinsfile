@@ -1,470 +1,194 @@
 pipeline {
-
     agent any
 
-
-    /*
-     * ================================================================
-     * CAG WEBSITE V2 - CI PIPELINE
-     * ================================================================
-     *
-     * Repository:
-     *
-     *     https://github.com/Keerthiga-S/CAG_Website_V2.git
-     *
-     * CI FLOW:
-     *
-     *     1.  Checkout Code
-     *     2.  Check Raw Files
-     *     3.  SonarQube Scan
-     *     4.  Create CI Network
-     *     5.  Start PostgreSQL
-     *     6.  Build Backend Docker Image
-     *     7.  Build Frontend Docker Image
-     *     8.  Trivy Backend Image Scan
-     *     9.  Trivy Frontend Image Scan
-     *     10. Start Backend Test Container
-     *     11. Backend Health Check
-     *     12. Start Frontend Test Container
-     *     13. Frontend Health Check
-     *     14. Trivy Backend Filesystem Scan
-     *     15. Push Images to Docker Hub
-     *     16. Publish Build Information
-     *     17. Deploy Prod
-     *
-     *
-     * IMPORTANT:
-     *
-     *     CI NEVER connects to the production PostgreSQL database.
-     *
-     *     CI uses an isolated temporary PostgreSQL container.
-     *
-     *     CI creates a unique Docker network per build.
-     *
-     *     CI builds immutable Docker images using Git SHA.
-     *
-     *     CI does not modify developer source code.
-     *
-     *     CI does not bypass TypeScript / Next.js build errors.
-     *
-     *     CD deploys the exact Docker images created by CI.
-     *
-     * ================================================================
-     */
-
-
     environment {
+        // ============================================================
+        // Docker Hub
+        // ============================================================
+        DOCKER_CREDENTIALS = 'dockerhub-creds'
 
+        BACKEND_IMAGE  = 'iitmpravartak/cag-website-v2-backend'
+        FRONTEND_IMAGE = 'iitmpravartak/cag-website-v2-frontend'
 
-        /*
-         * ============================================================
-         * DOCKER HUB
-         * ============================================================
-         */
+        // ============================================================
+        // GitHub
+        // ============================================================
+        GITHUB_CREDENTIALS = 'github-token'
 
-        DOCKERHUB_CREDENTIALS_ID = "dockerhub-creds"
+        // ============================================================
+        // SonarQube
+        // ============================================================
+        SONAR_SERVER  = 'sonar-server'
+        SONAR_SCANNER = 'SonarScanner'
 
-        DOCKERHUB_NAMESPACE = "iitmpravartak"
+        SONAR_PROJECT_KEY  = 'CAG_Website_V2'
+        SONAR_PROJECT_NAME = 'CAG_Website_V2'
 
-        BACKEND_IMAGE = "iitmpravartak/cag-website-v2-backend"
-
-        FRONTEND_IMAGE = "iitmpravartak/cag-website-v2-frontend"
-
-
-        /*
-         * ============================================================
-         * GITHUB
-         * ============================================================
-         */
-
-        GITHUB_CREDENTIALS_ID = "github-token"
-
-
-        /*
-         * ============================================================
-         * SONARQUBE
-         * ============================================================
-         */
-
-        SONARQUBE_SERVER = "sonar-server"
-
-        SONAR_SCANNER = "SonarScanner"
-
-        SONAR_PROJECT_KEY = "CAG_Website_V2"
-
-        SONAR_PROJECT_NAME = "CAG Website V2"
-
-
-        /*
-         * ============================================================
-         * CI NETWORK
-         * ============================================================
-         */
-
+        // ============================================================
+        // CI Docker Network / Containers
+        // ============================================================
         CI_NETWORK = "cag-website-v2-ci-${BUILD_NUMBER}"
 
-
-        /*
-         * ============================================================
-         * CI CONTAINERS
-         * ============================================================
-         */
-
         POSTGRES_CONTAINER = "cag-website-v2-ci-postgres-${BUILD_NUMBER}"
-
-        BACKEND_CONTAINER = "cag-website-v2-ci-backend-${BUILD_NUMBER}"
-
+        BACKEND_CONTAINER  = "cag-website-v2-ci-backend-${BUILD_NUMBER}"
         FRONTEND_CONTAINER = "cag-website-v2-ci-frontend-${BUILD_NUMBER}"
 
+        // ============================================================
+        // CI PostgreSQL
+        // ============================================================
+        POSTGRES_IMAGE    = 'postgres:17'
+        POSTGRES_DB       = 'cag_test'
+        POSTGRES_USER     = 'cag_test'
+        POSTGRES_PASSWORD = 'cag_test_password'
 
-        /*
-         * ============================================================
-         * CI POSTGRESQL
-         * ============================================================
-         *
-         * TEST DATABASE ONLY.
-         *
-         * NEVER production credentials.
-         * ============================================================
-         */
-
-        POSTGRES_IMAGE = "postgres:17"
-
-        POSTGRES_DB = "cag_test"
-
-        POSTGRES_USER = "cag_test"
-
-        POSTGRES_PASSWORD = "cag_test_password"
-
-
-        /*
-         * ============================================================
-         * TRIVY
-         * ============================================================
-         */
-
+        // ============================================================
+        // Trivy
+        // ============================================================
         TRIVY_CACHE_DIR = "${WORKSPACE}/.trivy-cache"
-
     }
-
 
     stages {
 
-
-        /*
-         * ============================================================
-         * 1. CHECKOUT CODE
-         * ============================================================
-         */
-
-        stage("1. Checkout Code") {
-
+        // ============================================================
+        // 1. CHECKOUT CODE
+        // ============================================================
+        stage('Checkout Code') {
             steps {
+                echo "=============================================="
+                echo "CHECKOUT CODE"
+                echo "=============================================="
 
-                echo """
-============================================================
-CAG WEBSITE V2 - CHECKOUT
-============================================================
-"""
-
-
-                checkout scm
-
-
-                script {
-
-                    /*
-                     * Get the exact commit after checkout.
-                     *
-                     * We intentionally use a Jenkins runtime variable
-                     * instead of declaring IMAGE_TAG/GIT_SHA as empty
-                     * Declarative environment variables.
-                     */
-
-
-                    def gitSha = sh(
-                        script: "git rev-parse --short=12 HEAD",
-                        returnStdout: true
-                    ).trim()
-
-
-                    /*
-                     * Make the values available to later stages.
-                     */
-
-
-                    env.GIT_SHA = gitSha
-
-                    env.IMAGE_TAG = gitSha
-
-
-                    echo ""
-
-                    echo "Repository:"
-                    echo "${env.GIT_URL ?: 'Jenkins SCM'}"
-
-
-                    echo ""
-
-                    echo "Branch:"
-                    echo "${env.BRANCH_NAME}"
-
-
-                    echo ""
-
-                    echo "Pull Request:"
-                    echo "${env.CHANGE_ID ?: 'No'}"
-
-
-                    echo ""
-
-                    echo "Git Commit:"
-                    echo "${env.GIT_COMMIT}"
-
-
-                    echo ""
-
-                    echo "Git SHA:"
-                    echo "${env.GIT_SHA}"
-
-
-                    echo ""
-
-                    echo "Image Tag:"
-                    echo "${env.IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Backend Image:"
-                    echo "${BACKEND_IMAGE}:${env.IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Frontend Image:"
-                    echo "${FRONTEND_IMAGE}:${env.IMAGE_TAG}"
-                }
-            }
-        }
-
-
-        /*
-         * ============================================================
-         * 2. CHECK RAW FILES
-         * ============================================================
-         */
-
-        stage("2. Check Raw Files") {
-
-            steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - SOURCE VALIDATION
-============================================================
-"""
-
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "${env.BRANCH_NAME ?: '*/Dev'}"]],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Keerthiga-S/CAG_Website_v2.git',
+                        credentialsId: "${GITHUB_CREDENTIALS}"
+                    ]]
+                ])
 
                 sh '''
-                    set -eu
-
+                    echo "Git commit:"
+                    git rev-parse HEAD
 
                     echo ""
-                    echo "Current directory:"
-                    pwd
-
+                    echo "Git branch:"
+                    git branch --show-current || true
 
                     echo ""
                     echo "Git status:"
                     git status --short
-
-
-                    echo ""
-                    echo "Top-level files:"
-                    ls -la
-
-
-                    echo ""
-                    echo "Checking frontend Dockerfile..."
-
-                    test -f Dockerfile
-
-
-                    echo ""
-                    echo "Checking backend directory..."
-
-                    test -d back_end
-
-
-                    echo ""
-                    echo "Checking backend Dockerfile..."
-
-                    test -f back_end/Dockerfile
-
-
-                    echo ""
-                    echo "Checking package.json..."
-
-                    test -f package.json
-
-
-                    echo ""
-                    echo "Checking package-lock.json..."
-
-                    test -f package-lock.json
-
-
-                    echo ""
-                    echo "Checking docker-compose.yml..."
-
-                    test -f docker-compose.yml
-
-
-                    echo ""
-                    echo "Checking frontend source..."
-
-                    test -d src
-
-
-                    echo ""
-                    echo "Checking backend application..."
-
-                    test -d back_end/app
-
-
-                    echo ""
-                    echo "Checking Python requirements..."
-
-                    test -f back_end/requirements.txt
-
-
-                    echo ""
-                    echo "Source validation completed successfully."
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 3. SONARQUBE SCAN
-         * ============================================================
-         */
-
-        stage("3. SonarQube Scan") {
-
+        // ============================================================
+        // 2. CHECK RAW FILES
+        // ============================================================
+        stage('Check Raw Files') {
             steps {
+                sh '''
+                    set -e
 
-                echo """
-============================================================
-CAG WEBSITE V2 - SONARQUBE SCAN
-============================================================
-"""
+                    echo "=============================================="
+                    echo "CHECKING PROJECT FILES"
+                    echo "=============================================="
 
+                    echo ""
+                    echo "Root files:"
+                    ls -la
 
-                script {
+                    echo ""
+                    echo "Backend files:"
+                    ls -la back_end
 
-                    def scannerHome = tool "${SONAR_SCANNER}"
+                    echo ""
+                    echo "Required files:"
+                    test -f Dockerfile
+                    test -f package.json
+                    test -f back_end/Dockerfile
+                    test -f back_end/requirements.txt
 
+                    echo ""
+                    echo "Dockerfiles:"
+                    echo "----- Frontend Dockerfile -----"
+                    cat Dockerfile
 
-                    withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    echo ""
+                    echo "----- Backend Dockerfile -----"
+                    cat back_end/Dockerfile
 
-                        sh """
-                            set -eu
+                    echo ""
+                    echo "----- Backend requirements -----"
+                    cat back_end/requirements.txt
 
+                    echo ""
+                    echo "Raw file check completed successfully."
+                '''
+            }
+        }
 
-                            echo "SonarQube scanner:"
-                            echo "${scannerHome}"
+        // ============================================================
+        // 3. SONARQUBE SCAN
+        // ============================================================
+        stage('SonarQube Scan') {
+            steps {
+                echo "=============================================="
+                echo "SONARQUBE SCAN"
+                echo "=============================================="
 
+                withSonarQubeEnv("${SONAR_SERVER}") {
+                    withEnv([
+                        "SONAR_SCANNER_HOME=${tool "${SONAR_SCANNER}"}"
+                    ]) {
+                        sh '''
+                            set -e
 
-                            echo ""
-                            echo "Running SonarQube analysis..."
-
-
-                            "${scannerHome}/bin/sonar-scanner" \
+                            "${SONAR_SCANNER_HOME}/bin/sonar-scanner" \
                                 -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
                                 -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
                                 -Dsonar.sources=. \
-                                -Dsonar.exclusions="**/node_modules/**,**/.next/**,**/__pycache__/**,**/*.jpg,**/*.jpeg,**/*.png,**/*.gif,**/*.svg,**/.git/**"
-
-
-                            echo ""
-                            echo "SonarQube scan completed."
-                        """
+                                -Dsonar.exclusions="node_modules/**,.next/**,back_end/__pycache__/**,back_end/.pytest_cache/**,*.lock"
+                        '''
                     }
                 }
             }
         }
 
-
-        /*
-         * ============================================================
-         * 4. CREATE CI NETWORK
-         * ============================================================
-         */
-
-        stage("4. Create CI Network") {
-
+        // ============================================================
+        // 4. CREATE CI NETWORK
+        // ============================================================
+        stage('Create CI Network') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - CREATE CI NETWORK
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
+                    echo "=============================================="
+                    echo "CREATE CI NETWORK"
+                    echo "=============================================="
 
-                    echo "Creating Docker network:"
-
-
-                    echo "${CI_NETWORK}"
-
-
-                    docker network create \
-                        "${CI_NETWORK}"
-
+                    docker network create "${CI_NETWORK}"
 
                     echo ""
+                    docker network inspect "${CI_NETWORK}" >/dev/null
 
-                    echo "Created CI network:"
-
-
-                    docker network inspect \
-                        "${CI_NETWORK}" \
-                        --format '{{.Name}}'
+                    echo "CI network created successfully:"
+                    echo "${CI_NETWORK}"
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 5. START POSTGRESQL
-         * ============================================================
-         */
-
-        stage("5. Start PostgreSQL") {
-
+        // ============================================================
+        // 5. START POSTGRESQL
+        // ============================================================
+        stage('Start PostgreSQL') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - START CI POSTGRESQL
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
-
-                    echo "Starting PostgreSQL CI container..."
-
+                    echo "=============================================="
+                    echo "START CI POSTGRESQL"
+                    echo "=============================================="
 
                     docker run -d \
                         --name "${POSTGRES_CONTAINER}" \
@@ -475,352 +199,157 @@ CAG WEBSITE V2 - START CI POSTGRESQL
                         -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
                         "${POSTGRES_IMAGE}"
 
-
                     echo ""
-
-                    echo "PostgreSQL container:"
-
-
-                    docker ps \
-                        --filter "name=${POSTGRES_CONTAINER}"
-
-
-                    echo ""
-
                     echo "Waiting for PostgreSQL..."
 
+                    for i in $(seq 1 60); do
 
-                    for i in $(seq 1 60)
-                    do
-
-                        if docker exec \
-                            "${POSTGRES_CONTAINER}" \
+                        if docker exec "${POSTGRES_CONTAINER}" \
                             pg_isready \
                             -U "${POSTGRES_USER}" \
-                            -d "${POSTGRES_DB}" \
-                            >/dev/null 2>&1
+                            -d "${POSTGRES_DB}" >/dev/null 2>&1
                         then
-
-                            echo "PostgreSQL is READY."
-
-                            exit 0
-
+                            echo "PostgreSQL is ready."
+                            break
                         fi
 
+                        if [ "$i" -eq 60 ]; then
+                            echo "PostgreSQL failed to become ready."
 
-                        echo "PostgreSQL not ready - attempt ${i}/60"
+                            docker logs "${POSTGRES_CONTAINER}" || true
 
+                            exit 1
+                        fi
 
                         sleep 2
-
                     done
 
-
                     echo ""
-
-                    echo "PostgreSQL failed to become ready."
-
-
-                    docker logs \
-                        "${POSTGRES_CONTAINER}" \
-                        || true
-
-
-                    exit 1
+                    echo "PostgreSQL status:"
+                    docker ps --filter "name=${POSTGRES_CONTAINER}"
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 6. BUILD BACKEND DOCKER IMAGE
-         * ============================================================
-         */
-
-        stage("6. Build Backend Docker Image") {
-
+        // ============================================================
+        // 6. BUILD BACKEND IMAGE
+        // ============================================================
+        stage('Build Backend Docker Image') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - BUILD BACKEND IMAGE
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
-
-                    echo "Git SHA:"
-                    echo "${GIT_SHA}"
-
-
-                    echo ""
-
-                    echo "Image tag:"
-                    echo "${IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Backend image:"
-                    echo "${BACKEND_IMAGE}:${IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Building backend Docker image..."
-
+                    echo "=============================================="
+                    echo "BUILD BACKEND DOCKER IMAGE"
+                    echo "=============================================="
 
                     docker build \
                         --pull \
-                        -f back_end/Dockerfile \
-                        -t "${BACKEND_IMAGE}:${IMAGE_TAG}" \
-                        -t "${BACKEND_IMAGE}:ci-${BUILD_NUMBER}" \
+                        -t "${BACKEND_IMAGE}:${GIT_COMMIT}" \
                         ./back_end
 
-
                     echo ""
-
-                    echo "Checking backend image..."
-
-
-                    docker image inspect \
-                        "${BACKEND_IMAGE}:${IMAGE_TAG}" \
-                        >/dev/null
-
-
-                    echo ""
-
-                    echo "Backend image created successfully."
-
-
-                    docker images \
-                        "${BACKEND_IMAGE}" \
-                        --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+                    echo "Backend image created:"
+                    docker images "${BACKEND_IMAGE}:${GIT_COMMIT}"
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 7. BUILD FRONTEND DOCKER IMAGE
-         * ============================================================
-         */
-
-        stage("7. Build Frontend Docker Image") {
-
+        // ============================================================
+        // 7. BUILD FRONTEND IMAGE
+        // ============================================================
+        stage('Build Frontend Docker Image') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - BUILD FRONTEND IMAGE
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
-
-                    echo "Git SHA:"
-                    echo "${GIT_SHA}"
-
-
-                    echo ""
-
-                    echo "Image tag:"
-                    echo "${IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Frontend image:"
-                    echo "${FRONTEND_IMAGE}:${IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Building frontend Docker image..."
-
+                    echo "=============================================="
+                    echo "BUILD FRONTEND DOCKER IMAGE"
+                    echo "=============================================="
 
                     docker build \
                         --pull \
-                        -f Dockerfile \
-                        -t "${FRONTEND_IMAGE}:${IMAGE_TAG}" \
-                        -t "${FRONTEND_IMAGE}:ci-${BUILD_NUMBER}" \
+                        -t "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
                         .
 
-
                     echo ""
-
-                    echo "Checking frontend image..."
-
-
-                    docker image inspect \
-                        "${FRONTEND_IMAGE}:${IMAGE_TAG}" \
-                        >/dev/null
-
-
-                    echo ""
-
-                    echo "Frontend image created successfully."
-
-
-                    docker images \
-                        "${FRONTEND_IMAGE}" \
-                        --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+                    echo "Frontend image created:"
+                    docker images "${FRONTEND_IMAGE}:${GIT_COMMIT}"
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 8. TRIVY BACKEND IMAGE SCAN
-         * ============================================================
-         */
-
-        stage("8. Trivy Backend Image Scan") {
-
+        // ============================================================
+        // 8. TRIVY BACKEND IMAGE SCAN
+        // ============================================================
+        stage('Trivy Backend Image Scan') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - TRIVY BACKEND IMAGE SCAN
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
+                    echo "=============================================="
+                    echo "TRIVY BACKEND IMAGE SCAN"
+                    echo "=============================================="
 
-                    mkdir -p \
-                        "${TRIVY_CACHE_DIR}"
+                    mkdir -p "${TRIVY_CACHE_DIR}"
 
-
-                    echo "Scanning backend image:"
-
-
-                    echo "${BACKEND_IMAGE}:${IMAGE_TAG}"
-
-
-                    trivy image \
-                        --cache-dir "${TRIVY_CACHE_DIR}" \
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v "${TRIVY_CACHE_DIR}:/root/.cache/" \
+                        aquasec/trivy:latest \
+                        image \
                         --scanners vuln \
                         --severity HIGH,CRITICAL \
-                        --format table \
-                        --output "trivy-backend-image-${BUILD_NUMBER}.txt" \
-                        --exit-code 0 \
-                        --timeout 15m \
-                        "${BACKEND_IMAGE}:${IMAGE_TAG}"
-
+                        --ignore-unfixed \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
                     echo ""
-
-                    echo "Backend Trivy report:"
-
-
-                    cat \
-                        "trivy-backend-image-${BUILD_NUMBER}.txt" \
-                        || true
-
-
-                    echo ""
-
-                    echo "Backend image scan completed."
+                    echo "Backend image security scan completed."
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 9. TRIVY FRONTEND IMAGE SCAN
-         * ============================================================
-         */
-
-        stage("9. Trivy Frontend Image Scan") {
-
+        // ============================================================
+        // 9. TRIVY FRONTEND IMAGE SCAN
+        // ============================================================
+        stage('Trivy Frontend Image Scan') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - TRIVY FRONTEND IMAGE SCAN
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
+                    echo "=============================================="
+                    echo "TRIVY FRONTEND IMAGE SCAN"
+                    echo "=============================================="
 
-                    mkdir -p \
-                        "${TRIVY_CACHE_DIR}"
+                    mkdir -p "${TRIVY_CACHE_DIR}"
 
-
-                    echo "Scanning frontend image:"
-
-
-                    echo "${FRONTEND_IMAGE}:${IMAGE_TAG}"
-
-
-                    trivy image \
-                        --cache-dir "${TRIVY_CACHE_DIR}" \
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v "${TRIVY_CACHE_DIR}:/root/.cache/" \
+                        aquasec/trivy:latest \
+                        image \
                         --scanners vuln \
                         --severity HIGH,CRITICAL \
-                        --format table \
-                        --output "trivy-frontend-image-${BUILD_NUMBER}.txt" \
-                        --exit-code 0 \
-                        --timeout 15m \
-                        "${FRONTEND_IMAGE}:${IMAGE_TAG}"
-
+                        --ignore-unfixed \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}"
 
                     echo ""
-
-                    echo "Frontend Trivy report:"
-
-
-                    cat \
-                        "trivy-frontend-image-${BUILD_NUMBER}.txt" \
-                        || true
-
-
-                    echo ""
-
-                    echo "Frontend image scan completed."
+                    echo "Frontend image security scan completed."
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 10. START BACKEND TEST CONTAINER
-         * ============================================================
-         */
-
-        stage("10. Start Backend Test Container") {
-
+        // ============================================================
+        // 10. START BACKEND TEST CONTAINER
+        // ============================================================
+        stage('Start Backend Test Container') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - START BACKEND TEST CONTAINER
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
-
-                    echo "Starting backend test container..."
-
+                    echo "=============================================="
+                    echo "START BACKEND TEST CONTAINER"
+                    echo "=============================================="
 
                     docker run -d \
                         --name "${BACKEND_CONTAINER}" \
@@ -832,942 +361,393 @@ CAG WEBSITE V2 - START BACKEND TEST CONTAINER
                         -e DB_USER="${POSTGRES_USER}" \
                         -e DB_PASSWORD="${POSTGRES_PASSWORD}" \
                         -e DB_SCHEMA=cag_new \
-                        "${BACKEND_IMAGE}:${IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Backend container:"
-
-
-                    docker ps \
-                        --filter "name=${BACKEND_CONTAINER}"
-
+                        -e DATABASE_URL="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}" \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
                     echo ""
+                    echo "Backend container started:"
+                    docker ps --filter "name=${BACKEND_CONTAINER}"
 
-                    echo "Backend environment configuration:"
-
-
-                    docker inspect \
-                        "${BACKEND_CONTAINER}" \
-                        --format '{{range .Config.Env}}{{println .}}{{end}}' \
-                        | grep -E '^(ENVIRONMENT|DB_HOST|DB_PORT|DB_NAME|DB_USER|DB_SCHEMA)=' \
-                        || true
+                    echo ""
+                    echo "Backend environment variables:"
+                    docker exec "${BACKEND_CONTAINER}" env | grep -E '^(ENVIRONMENT|DB_HOST|DB_PORT|DB_NAME|DB_USER|DB_SCHEMA|DATABASE_URL)=' | sed 's/DB_PASSWORD=.*/DB_PASSWORD=*** /' || true
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 11. BACKEND HEALTH CHECK
-         * ============================================================
-         */
-
-        stage("11. Backend Health Check") {
-
+        // ============================================================
+        // 11. BACKEND HEALTH CHECK
+        // ============================================================
+        stage('Backend Health Check') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - BACKEND HEALTH CHECK
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
+                    echo "=============================================="
+                    echo "BACKEND HEALTH CHECK"
+                    echo "=============================================="
 
-                    echo "Waiting for backend..."
+                    echo "Waiting for backend to become healthy..."
 
+                    for i in $(seq 1 60); do
 
-                    for i in $(seq 1 60)
-                    do
-
-                        if docker run \
-                            --rm \
-                            --network "${CI_NETWORK}" \
-                            curlimages/curl:8.11.1 \
-                            -fsS \
-                            "http://${BACKEND_CONTAINER}:8000/health" \
-                            >/tmp/cag-website-v2-backend-health.json \
-                            2>/dev/null
+                        if docker exec "${BACKEND_CONTAINER}" \
+                            python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read().decode())" \
+                            >/tmp/backend-health-${BUILD_NUMBER}.log 2>&1
                         then
-
                             echo ""
-
                             echo "Backend health check PASSED."
 
+                            cat /tmp/backend-health-${BUILD_NUMBER}.log
 
-                            echo ""
-
-                            echo "Backend response:"
-
-
-                            cat \
-                                /tmp/cag-website-v2-backend-health.json
-
-
-                            exit 0
-
+                            break
                         fi
 
+                        echo "Attempt ${i}/60 failed. Waiting..."
 
-                        echo "Backend not ready - attempt ${i}/60"
+                        if [ "$i" -eq 60 ]; then
+                            echo ""
+                            echo "Backend health check FAILED."
 
+                            echo ""
+                            echo "Backend container status:"
+                            docker ps -a --filter "name=${BACKEND_CONTAINER}"
+
+                            echo ""
+                            echo "Backend logs:"
+                            docker logs "${BACKEND_CONTAINER}" || true
+
+                            exit 1
+                        fi
 
                         sleep 2
-
                     done
-
-
-                    echo ""
-
-                    echo "Backend health check FAILED."
-
-
-                    echo ""
-
-                    echo "Backend container status:"
-
-
-                    docker ps -a \
-                        --filter "name=${BACKEND_CONTAINER}"
-
-
-                    echo ""
-
-                    echo "Backend logs:"
-
-
-                    docker logs \
-                        "${BACKEND_CONTAINER}" \
-                        || true
-
-
-                    exit 1
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 12. START FRONTEND TEST CONTAINER
-         * ============================================================
-         */
-
-        stage("12. Start Frontend Test Container") {
-
+        // ============================================================
+        // 12. START FRONTEND TEST CONTAINER
+        // ============================================================
+        stage('Start Frontend Test Container') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - START FRONTEND TEST CONTAINER
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
-
-                    echo "Starting frontend test container..."
-
+                    echo "=============================================="
+                    echo "START FRONTEND TEST CONTAINER"
+                    echo "=============================================="
 
                     docker run -d \
                         --name "${FRONTEND_CONTAINER}" \
                         --network "${CI_NETWORK}" \
                         -e NODE_ENV=production \
                         -e NEXT_PUBLIC_API_URL="http://${BACKEND_CONTAINER}:8000" \
-                        "${FRONTEND_IMAGE}:${IMAGE_TAG}"
-
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}"
 
                     echo ""
-
-                    echo "Frontend container:"
-
-
-                    docker ps \
-                        --filter "name=${FRONTEND_CONTAINER}"
+                    echo "Frontend container started:"
+                    docker ps --filter "name=${FRONTEND_CONTAINER}"
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 13. FRONTEND HEALTH CHECK
-         * ============================================================
-         */
-
-        stage("13. Frontend Health Check") {
-
+        // ============================================================
+        // 13. FRONTEND HEALTH CHECK
+        // ============================================================
+        stage('Frontend Health Check') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - FRONTEND HEALTH CHECK
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
+                    echo "=============================================="
+                    echo "FRONTEND HEALTH CHECK"
+                    echo "=============================================="
 
                     echo "Waiting for frontend..."
 
+                    for i in $(seq 1 60); do
 
-                    for i in $(seq 1 60)
-                    do
-
-                        if docker run \
-                            --rm \
-                            --network "${CI_NETWORK}" \
-                            curlimages/curl:8.11.1 \
-                            -fsS \
-                            "http://${FRONTEND_CONTAINER}:3000/" \
-                            >/tmp/cag-website-v2-frontend-health.html \
-                            2>/dev/null
+                        if docker exec "${FRONTEND_CONTAINER}" \
+                            node -e "fetch('http://127.0.0.1:3000').then(r => { if (!r.ok) process.exit(1); console.log('HTTP', r.status); }).catch(() => process.exit(1))" \
+                            >/tmp/frontend-health-${BUILD_NUMBER}.log 2>&1
                         then
-
                             echo ""
-
                             echo "Frontend health check PASSED."
 
+                            cat /tmp/frontend-health-${BUILD_NUMBER}.log
 
-                            echo ""
-
-                            echo "Frontend HTTP response received."
-
-
-                            echo ""
-
-                            echo "HTTP response preview:"
-
-
-                            head -c 500 \
-                                /tmp/cag-website-v2-frontend-health.html \
-                                || true
-
-
-                            echo ""
-
-
-                            exit 0
-
+                            break
                         fi
 
+                        echo "Attempt ${i}/60 failed. Waiting..."
 
-                        echo "Frontend not ready - attempt ${i}/60"
+                        if [ "$i" -eq 60 ]; then
+                            echo ""
+                            echo "Frontend health check FAILED."
 
+                            echo ""
+                            echo "Frontend container status:"
+                            docker ps -a --filter "name=${FRONTEND_CONTAINER}"
+
+                            echo ""
+                            echo "Frontend logs:"
+                            docker logs "${FRONTEND_CONTAINER}" || true
+
+                            exit 1
+                        fi
 
                         sleep 2
-
                     done
-
-
-                    echo ""
-
-                    echo "Frontend health check FAILED."
-
-
-                    echo ""
-
-                    echo "Frontend container status:"
-
-
-                    docker ps -a \
-                        --filter "name=${FRONTEND_CONTAINER}"
-
-
-                    echo ""
-
-                    echo "Frontend logs:"
-
-
-                    docker logs \
-                        "${FRONTEND_CONTAINER}" \
-                        || true
-
-
-                    exit 1
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 14. TRIVY BACKEND FILESYSTEM SCAN
-         * ============================================================
-         */
-
-        stage("14. Trivy Backend Filesystem Scan") {
-
+        // ============================================================
+        // 14. TRIVY BACKEND FILESYSTEM SCAN
+        // ============================================================
+        stage('Trivy Backend Filesystem Scan') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - BACKEND FILESYSTEM SCAN
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
+                    echo "=============================================="
+                    echo "TRIVY BACKEND FILESYSTEM SCAN"
+                    echo "=============================================="
 
-                    ROOTFS_DIR="${WORKSPACE}/trivy-backend-rootfs"
+                    mkdir -p "${TRIVY_CACHE_DIR}"
 
-                    ROOTFS_TAR="${WORKSPACE}/backend-rootfs.tar"
-
-
-                    rm -rf \
-                        "${ROOTFS_DIR}"
-
-
-                    rm -f \
-                        "${ROOTFS_TAR}"
-
-
-                    mkdir -p \
-                        "${ROOTFS_DIR}"
-
-
-                    echo "Exporting backend container..."
-
-
-                    docker export \
-                        "${BACKEND_CONTAINER}" \
-                        -o "${ROOTFS_TAR}"
-
-
-                    echo ""
-
-                    echo "Extracting backend filesystem..."
-
-
-                    tar -xf \
-                        "${ROOTFS_TAR}" \
-                        -C "${ROOTFS_DIR}"
-
-
-                    echo ""
-
-                    echo "Running Trivy filesystem scan..."
-
-
-                    mkdir -p \
-                        "${TRIVY_CACHE_DIR}"
-
-
-                    trivy fs \
-                        --cache-dir "${TRIVY_CACHE_DIR}" \
+                    docker run --rm \
+                        -v "${WORKSPACE}/back_end:/scan:ro" \
+                        -v "${TRIVY_CACHE_DIR}:/root/.cache/" \
+                        aquasec/trivy:latest \
+                        fs \
                         --scanners vuln \
                         --severity HIGH,CRITICAL \
-                        --format table \
-                        --output "trivy-backend-rootfs-${BUILD_NUMBER}.txt" \
-                        --exit-code 0 \
-                        --timeout 15m \
-                        "${ROOTFS_DIR}"
-
+                        --ignore-unfixed \
+                        /scan
 
                     echo ""
-
-                    echo "Backend filesystem Trivy report:"
-
-
-                    cat \
-                        "trivy-backend-rootfs-${BUILD_NUMBER}.txt" \
-                        || true
-
-
-                    echo ""
-
-                    echo "Backend filesystem scan completed."
+                    echo "Backend filesystem security scan completed."
                 '''
             }
         }
 
-
-        /*
-         * ============================================================
-         * 15. PUSH IMAGES TO DOCKER HUB
-         * ============================================================
-         */
-
-        stage("15. Push Images to Docker Hub") {
-
-            when {
-
-                anyOf {
-
-                    branch "Dev"
-
-                    branch "Prod"
-
-                    changeRequest()
-                }
-            }
-
-
+        // ============================================================
+        // 15. PUSH IMAGES TO DOCKER HUB
+        // ============================================================
+        stage('Push Images to Docker Hub') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - PUSH IMAGES TO DOCKER HUB
-============================================================
-"""
-
+                echo "=============================================="
+                echo "PUSH DOCKER IMAGES"
+                echo "=============================================="
 
                 withCredentials([
-
                     usernamePassword(
-
-                        credentialsId: "${DOCKERHUB_CREDENTIALS_ID}",
-
-                        usernameVariable: "DOCKERHUB_USERNAME",
-
-                        passwordVariable: "DOCKERHUB_TOKEN"
+                        credentialsId: "${DOCKER_CREDENTIALS}",
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
-
-
                     sh '''
-                        set -eu
-
+                        set -e
 
                         echo "Logging into Docker Hub..."
 
-
-                        echo "${DOCKERHUB_TOKEN}" | \
-                            docker login \
-                            --username "${DOCKERHUB_USERNAME}" \
+                        echo "${DOCKER_PASSWORD}" | docker login \
+                            -u "${DOCKER_USERNAME}" \
                             --password-stdin
 
-
                         echo ""
-
-                        echo "Pushing backend image:"
-
-
-                        echo "${BACKEND_IMAGE}:${IMAGE_TAG}"
-
+                        echo "Pushing backend image..."
 
                         docker push \
-                            "${BACKEND_IMAGE}:${IMAGE_TAG}"
-
+                            "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
                         echo ""
-
-                        echo "Pushing frontend image:"
-
-
-                        echo "${FRONTEND_IMAGE}:${IMAGE_TAG}"
-
+                        echo "Pushing frontend image..."
 
                         docker push \
-                            "${FRONTEND_IMAGE}:${IMAGE_TAG}"
-
-
-                        echo ""
-
-                        echo "Docker Hub push completed successfully."
-
+                            "${FRONTEND_IMAGE}:${GIT_COMMIT}"
 
                         echo ""
+                        echo "Docker images pushed successfully."
 
-                        echo "Logging out from Docker Hub..."
+                        echo ""
+                        echo "Backend:"
+                        echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
+                        echo ""
+                        echo "Frontend:"
+                        echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
 
-                        docker logout \
-                            || true
+                        docker logout
                     '''
                 }
             }
         }
 
-
-        /*
-         * ============================================================
-         * 16. PUBLISH BUILD INFORMATION
-         * ============================================================
-         */
-
-        stage("16. Publish Build Information") {
-
+        // ============================================================
+        // 16. PUBLISH BUILD INFORMATION
+        // ============================================================
+        stage('Publish Build Information') {
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - BUILD INFORMATION
-============================================================
-"""
-
-
                 sh '''
-                    set -eu
+                    set -e
 
-
-                    cat > build-info.txt <<EOF
-
-CAG Website V2 CI Build Information
-===================================
-
-Jenkins Build:
-${BUILD_NUMBER}
-
-Job:
-${JOB_NAME}
-
-Branch:
-${BRANCH_NAME}
-
-Pull Request:
-${CHANGE_ID:-No}
-
-Git Commit:
-${GIT_COMMIT}
-
-Git SHA:
-${GIT_SHA}
-
-Image Tag:
-${IMAGE_TAG}
-
-Backend Image:
-${BACKEND_IMAGE}:${IMAGE_TAG}
-
-Frontend Image:
-${FRONTEND_IMAGE}:${IMAGE_TAG}
-
-Backend Health Endpoint:
-/health
-
-Frontend Health Endpoint:
-/
-
-CI Docker Network:
-${CI_NETWORK}
-
-Production Database:
-NOT USED
-
-Production Deployment:
-NOT PERFORMED BY CI
-
-Build Date:
-$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-
-EOF
-
+                    echo "=============================================="
+                    echo "BUILD INFORMATION"
+                    echo "=============================================="
 
                     echo ""
+                    echo "Project:"
+                    echo "CAG_Website_v2"
 
-                    echo "==========================================="
+                    echo ""
+                    echo "Branch:"
+                    echo "${BRANCH_NAME}"
 
-                    echo "BUILD INFORMATION"
+                    echo ""
+                    echo "Git Commit:"
+                    echo "${GIT_COMMIT}"
 
-                    echo "==========================================="
+                    echo ""
+                    echo "Backend Image:"
+                    echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
+                    echo ""
+                    echo "Frontend Image:"
+                    echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
 
-                    cat build-info.txt
+                    echo ""
+                    echo "CI PostgreSQL:"
+                    echo "${POSTGRES_DB}"
+
+                    echo ""
+                    echo "Build Number:"
+                    echo "${BUILD_NUMBER}"
+
+                    echo ""
+                    echo "CI completed successfully."
                 '''
-
-
-                archiveArtifacts(
-
-                    artifacts: "build-info.txt",
-
-                    fingerprint: true,
-
-                    allowEmptyArchive: false
-                )
             }
         }
 
-
-        /*
-         * ============================================================
-         * 17. DEPLOY PROD
-         * ============================================================
-         */
-
-        stage("17. Deploy Prod") {
-
+        // ============================================================
+        // 17. DEPLOY PRODUCTION
+        // ============================================================
+        stage('Deploy Prod') {
             when {
-
-                allOf {
-
-                    branch "Prod"
-
-                    not {
-                        changeRequest()
-                    }
-                }
+                branch 'Prod'
             }
 
-
             steps {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - PRODUCTION DEPLOYMENT
-============================================================
-"""
-
+                echo "=============================================="
+                echo "PRODUCTION DEPLOYMENT"
+                echo "=============================================="
 
                 script {
+                    def commitSha = sh(
+                        script: 'git rev-parse HEAD',
+                        returnStdout: true
+                    ).trim()
 
-                    echo "Production deployment requested."
+                    echo "Deploying commit: ${commitSha}"
 
+                    env.DEPLOY_IMAGE_TAG = commitSha
 
-                    echo ""
+                    def cdJenkinsfile = readFile('CD/Jenkinsfile')
 
-                    echo "Git SHA:"
-                    echo "${env.GIT_SHA}"
-
-
-                    echo ""
-
-                    echo "Backend:"
-                    echo "${BACKEND_IMAGE}:${env.IMAGE_TAG}"
-
-
-                    echo ""
-
-                    echo "Frontend:"
-                    echo "${FRONTEND_IMAGE}:${env.IMAGE_TAG}"
-
-
-                    /*
-                     * CD/Jenkinsfile must exist in Prod.
-                     */
-
-                    if (!fileExists("CD/Jenkinsfile")) {
-
-                        error(
-                            "PRODUCTION DEPLOYMENT BLOCKED: CD/Jenkinsfile was not found."
-                        )
-                    }
-
-
-                    echo ""
-
-                    echo "Loading CD/Jenkinsfile..."
-
-
-                    def deployCD = load "CD/Jenkinsfile"
-
-
-                    deployCD.deploy(
-
-                        env.IMAGE_TAG,
-
-                        env.BACKEND_IMAGE,
-
-                        env.FRONTEND_IMAGE
+                    writeFile(
+                        file: 'CD/Jenkinsfile.generated',
+                        text: cdJenkinsfile
                     )
 
-
-                    echo ""
-
-                    echo "Production deployment completed."
+                    load 'CD/Jenkinsfile.generated'
                 }
             }
         }
     }
 
-
-    /*
-     * ================================================================
-     * POST ACTIONS
-     * ================================================================
-     */
-
+    // ================================================================
+    // POST ACTIONS
+    // ================================================================
     post {
 
-
-        /*
-         * ============================================================
-         * SUCCESS
-         * ============================================================
-         */
-
         success {
+            echo "=============================================="
+            echo "PIPELINE SUCCESS"
+            echo "=============================================="
 
-            script {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - CI PIPELINE SUCCESS
-============================================================
-
-Repository Validation       : PASSED
-SonarQube Scan              : COMPLETED
-Backend Docker Build        : PASSED
-Frontend Docker Build       : PASSED
-Trivy Backend Scan          : COMPLETED
-Trivy Frontend Scan         : COMPLETED
-PostgreSQL CI Test          : PASSED
-Backend Health Check        : PASSED
-Frontend Health Check       : PASSED
-Filesystem Scan             : COMPLETED
-Docker Hub Push             : COMPLETED
-
-Git SHA:
-${env.GIT_SHA}
-
-Backend Image:
-${BACKEND_IMAGE}:${env.IMAGE_TAG}
-
-Frontend Image:
-${FRONTEND_IMAGE}:${env.IMAGE_TAG}
-
-============================================================
-"""
-
-
-                if (env.CHANGE_ID) {
-
-                    echo ""
-
-                    echo "Pull Request:"
-                    echo "#${env.CHANGE_ID}"
-
-                    echo ""
-
-                    echo "PR CI validation completed successfully."
-                }
-            }
+            echo "Build Number: ${BUILD_NUMBER}"
+            echo "Git Commit: ${GIT_COMMIT}"
+            echo "Backend Image: ${BACKEND_IMAGE}:${GIT_COMMIT}"
+            echo "Frontend Image: ${FRONTEND_IMAGE}:${GIT_COMMIT}"
         }
-
-
-        /*
-         * ============================================================
-         * FAILURE
-         * ============================================================
-         */
 
         failure {
+            echo "=============================================="
+            echo "PIPELINE FAILED"
+            echo "=============================================="
 
-            script {
+            echo "Build Number: ${BUILD_NUMBER}"
+            echo "Git Commit: ${GIT_COMMIT}"
 
-                echo """
-============================================================
-CAG WEBSITE V2 - CI PIPELINE FAILED
-============================================================
-
-Build Number:
-${BUILD_NUMBER}
-
-Branch:
-${env.BRANCH_NAME}
-
-Git SHA:
-${env.GIT_SHA ?: "unknown"}
-
-============================================================
-
-Please check the Jenkins Console Output.
-
-IMPORTANT:
-
-CI did NOT perform production deployment.
-
-No production database was used by the CI test environment.
-
-============================================================
-"""
-
-
-                if (env.CHANGE_ID) {
-
-                    echo ""
-
-                    echo "Pull Request:"
-                    echo "#${env.CHANGE_ID}"
-
-                    echo ""
-
-                    echo "PR CI validation FAILED."
-
-                    echo "Review the Jenkins console output."
-                }
-            }
-        }
-
-
-        /*
-         * ============================================================
-         * ALWAYS
-         * ============================================================
-         */
-
-        always {
-
-            script {
-
-                echo """
-============================================================
-CAG WEBSITE V2 - POST BUILD ACTIONS
-============================================================
-"""
-
-
-                /*
-                 * Archive Trivy reports.
-                 */
-
-                echo "Archiving Trivy reports..."
-
-
-                archiveArtifacts(
-
-                    artifacts:
-                        "trivy-backend-image-${BUILD_NUMBER}.txt," +
-                        "trivy-frontend-image-${BUILD_NUMBER}.txt," +
-                        "trivy-backend-rootfs-${BUILD_NUMBER}.txt",
-
-                    allowEmptyArchive: true,
-
-                    fingerprint: true
-                )
-
-
-                /*
-                 * Cleanup CI resources.
-                 */
+            sh '''
+                echo ""
+                echo "Running CI containers:"
+                docker ps -a \
+                    --filter "name=${POSTGRES_CONTAINER}" \
+                    --filter "name=${BACKEND_CONTAINER}" \
+                    --filter "name=${FRONTEND_CONTAINER}" \
+                    || true
 
                 echo ""
+                echo "Backend logs:"
+                docker logs "${BACKEND_CONTAINER}" 2>&1 || true
 
-                echo "Cleaning CI containers..."
-
-
-                sh '''
-                    set +e
-
-
-                    echo ""
-
-                    echo "Removing frontend CI container..."
-
-
-                    docker rm -f \
-                        "${FRONTEND_CONTAINER}" \
-                        >/dev/null 2>&1 \
-                        || true
-
-
-                    echo ""
-
-                    echo "Removing backend CI container..."
-
-
-                    docker rm -f \
-                        "${BACKEND_CONTAINER}" \
-                        >/dev/null 2>&1 \
-                        || true
-
-
-                    echo ""
-
-                    echo "Removing PostgreSQL CI container..."
-
-
-                    docker rm -f \
-                        "${POSTGRES_CONTAINER}" \
-                        >/dev/null 2>&1 \
-                        || true
-
-
-                    echo ""
-
-                    echo "Removing CI network..."
-
-
-                    docker network rm \
-                        "${CI_NETWORK}" \
-                        >/dev/null 2>&1 \
-                        || true
-
-
-                    echo ""
-
-                    echo "Removing temporary health files..."
-
-
-                    rm -f \
-                        /tmp/cag-website-v2-backend-health.json \
-                        /tmp/cag-website-v2-frontend-health.html
-
-
-                    echo ""
-
-                    echo "Removing temporary backend filesystem..."
-
-
-                    rm -rf \
-                        "${WORKSPACE}/trivy-backend-rootfs"
-
-
-                    echo ""
-
-                    echo "Removing temporary backend tar..."
-
-
-                    rm -f \
-                        "${WORKSPACE}/backend-rootfs.tar"
-
-
-                    echo ""
-
-                    echo "CI container cleanup completed."
-
-
-                    echo ""
-
-                    echo "Remaining CAG Website V2 CI containers:"
-
-
-                    docker ps -a \
-                        --filter "name=cag-website-v2-ci-" \
-                        || true
-
-
-                    echo ""
-
-                    echo "Remaining CAG Website V2 CI networks:"
-
-
-                    docker network ls \
-                        --filter "name=cag-website-v2-ci-" \
-                        || true
-                '''
-            }
+                echo ""
+                echo "Frontend logs:"
+                docker logs "${FRONTEND_CONTAINER}" 2>&1 || true
+            '''
         }
 
+        always {
+            echo "=============================================="
+            echo "CLEANUP"
+            echo "=============================================="
 
-        /*
-         * ============================================================
-         * CLEAN WORKSPACE
-         * ============================================================
-         */
+            sh '''
+                set +e
 
-        cleanup {
+                echo "Stopping CI containers..."
 
-            echo """
-============================================================
-CAG WEBSITE V2 - CLEAN WORKSPACE
-============================================================
-"""
+                docker rm -f \
+                    "${FRONTEND_CONTAINER}" \
+                    "${BACKEND_CONTAINER}" \
+                    "${POSTGRES_CONTAINER}" \
+                    2>/dev/null || true
 
+                echo ""
+                echo "Removing CI network..."
 
-            cleanWs()
+                docker network rm \
+                    "${CI_NETWORK}" \
+                    2>/dev/null || true
+
+                echo ""
+                echo "Removing temporary health files..."
+
+                rm -f \
+                    "/tmp/backend-health-${BUILD_NUMBER}.log" \
+                    "/tmp/frontend-health-${BUILD_NUMBER}.log" \
+                    2>/dev/null || true
+
+                echo ""
+                echo "Docker cleanup completed."
+            '''
+
+            deleteDir()
         }
     }
 }
