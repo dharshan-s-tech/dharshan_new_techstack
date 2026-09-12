@@ -8,7 +8,7 @@ pipeline {
         string(
             name: 'IMAGE_TAG',
             defaultValue: '',
-            description: 'Exact 40-character Git SHA tag pushed by the successful CI build'
+            description: 'Exact 40-character Git SHA to deploy a specific CI build. Leave BLANK to auto-deploy the latest tested build (used automatically when triggered by a merge into Prod).'
         )
     }
 
@@ -48,14 +48,15 @@ pipeline {
                     def tag = params.IMAGE_TAG?.trim()
 
                     if (!tag) {
-                        error(
-                            'IMAGE_TAG is required. Enter the exact 40-character Git SHA from a successful CI build.'
-                        )
-                    }
 
-                    if (!(tag ==~ /^[0-9a-fA-F]{40}$/)) {
+                        echo "No IMAGE_TAG provided \u2014 defaulting to 'tested' (latest CI-verified build)."
+
+                        tag = 'tested'
+
+                    } else if (!(tag ==~ /^[0-9a-fA-F]{40}$/)) {
+
                         error(
-                            "Invalid IMAGE_TAG: ${tag}. Expected a 40-character Git SHA."
+                            "Invalid IMAGE_TAG: ${tag}. Expected a 40-character Git SHA, or leave blank to deploy the latest tested build."
                         )
                     }
 
@@ -594,7 +595,7 @@ REMOTE_SCRIPT
 
             echo ""
             echo "Image tag:"
-            echo "${params.IMAGE_TAG}"
+            echo "${env.DEPLOY_TAG ?: params.IMAGE_TAG}"
         }
 
         always {

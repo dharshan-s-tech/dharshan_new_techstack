@@ -708,16 +708,49 @@ pipeline {
 
                         echo ""
                         echo "=============================================="
+                        echo "TAGGING AND PUSHING AS tested"
+                        echo "=============================================="
+
+                        echo ""
+                        echo "Tagging backend image as tested..."
+
+                        docker tag \
+                            "${BACKEND_IMAGE}:${GIT_COMMIT}" \
+                            "${BACKEND_IMAGE}:tested"
+
+                        docker push \
+                            "${BACKEND_IMAGE}:tested"
+
+                        echo ""
+                        echo "Backend tested tag pushed successfully."
+
+                        echo ""
+                        echo "Tagging frontend image as tested..."
+
+                        docker tag \
+                            "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
+                            "${FRONTEND_IMAGE}:tested"
+
+                        docker push \
+                            "${FRONTEND_IMAGE}:tested"
+
+                        echo ""
+                        echo "Frontend tested tag pushed successfully."
+
+                        echo ""
+                        echo "=============================================="
                         echo "DOCKER HUB PUSH SUCCESS"
                         echo "=============================================="
 
                         echo ""
                         echo "Backend:"
                         echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
+                        echo "${BACKEND_IMAGE}:tested"
 
                         echo ""
                         echo "Frontend:"
                         echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+                        echo "${FRONTEND_IMAGE}:tested"
 
                         docker logout
                     '''
