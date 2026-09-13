@@ -20,7 +20,8 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
   const showGlobalBreadcrumbWrapper =
     !isHome &&
     !isReports &&
-    !pathname?.toLowerCase().includes('global-relations');
+    !pathname?.toLowerCase().includes('global-relations') &&
+    !pathname?.toLowerCase().startsWith('/resources');
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
