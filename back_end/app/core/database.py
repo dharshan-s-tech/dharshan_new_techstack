@@ -8,13 +8,9 @@ logger = logging.getLogger("uvicorn")
 
 def create_resilient_engine():
     try:
-        connect_args = {}
-        if "postgresql" in settings.sqlalchemy_database_url:
-            connect_args = {"connect_timeout": 3}
         pg_engine = create_engine(
             settings.sqlalchemy_database_url,
             pool_pre_ping=True,
-            connect_args=connect_args,
         )
         # Test connection
         with pg_engine.connect() as conn:

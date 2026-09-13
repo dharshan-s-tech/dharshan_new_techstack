@@ -700,8 +700,8 @@ function AdminAboutRegistryContent() {
                     {/* Category */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block rounded-xs ${item.category === 'Who We Are' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
-                          item.category === 'Leadership & Legacy' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
-                            'bg-amber-50 text-amber-800 border border-amber-200'
+                        item.category === 'Leadership & Legacy' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
+                          'bg-amber-50 text-amber-800 border border-amber-200'
                         }`}>
                         {item.category}
                       </span>
@@ -716,8 +716,8 @@ function AdminAboutRegistryContent() {
                     {/* DB Table */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] font-mono text-[11px] text-zinc-600">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${item.table_name.includes('pages') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                          item.table_name.includes('former_cag') ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                            'bg-teal-50 text-teal-700 border border-teal-200'
+                        item.table_name.includes('former_cag') ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                          'bg-teal-50 text-teal-700 border border-teal-200'
                         }`}>
                         {item.table_name.replace('cag_revamp.', '')}
                       </span>
