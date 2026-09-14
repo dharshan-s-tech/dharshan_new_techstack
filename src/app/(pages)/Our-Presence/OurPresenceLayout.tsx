@@ -53,10 +53,10 @@ export default function OurPresenceLayout({
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 op-page">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-[64px] pt-[24px] pb-8 op-page">
       <div className="about-layout flex flex-col lg:flex-row gap-8 items-start">
         {/* Left Sidebar Menu */}
-        <aside className="about-sidebar w-full lg:w-[260px] shrink-0">
+        <aside className="about-sidebar w-full lg:w-[310px] h-[734px] shrink-0">
           <div className="about-sidebar__menus" data-name="Menus">
             {groups.map((grp, idx) => (
               <div key={idx} data-name={grp.heading} className="mb-4">
@@ -82,8 +82,8 @@ export default function OurPresenceLayout({
         
         {/* Main Content Area */}
         <main className="about-content flex-grow w-full min-w-0">
-          <h1 className="text-2xl font-bold text-[#000000] text-left mb-3 font-sans tracking-tight">{title}</h1>
-          <div className="w-full h-[1px] bg-[#EFEFEF] mb-6" aria-hidden="true"></div>
+          <h1 className="text-2xl font-bold text-[#751639] text-left mb-3 font-sans tracking-tight">{title}</h1>
+          <div className="w-full h-[1px] bg-[#B0B0B0] mb-6" aria-hidden="true"></div>
           {children}
         </main>
       </div>

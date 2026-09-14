@@ -628,7 +628,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
   // --- About Us 9 Subpages Modules ---
   'cag-of-india': {
     table: 'pages',
-    title: 'CAG of India Profile',
+    title: 'CAG of India',
     addTitle: 'Update CAG Profile',
     searchColumn: 'title_en',
     columns: [
@@ -652,7 +652,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
   },
   'our-vision-mission-values': {
     table: 'pages',
-    title: 'Our Vision, Mission & Core Values',
+    title: 'Our Vision, Mission and Core Values',
     addTitle: 'Update Vision & Mission',
     searchColumn: 'title_en',
     columns: [
@@ -674,7 +674,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
   },
   'organisation-chart': {
     table: 'organisation_chart',
-    title: 'Organisation Chart',
+    title: 'Organization Chart',
     addTitle: 'Add Officer to Hierarchy',
     searchColumn: 'name',
     columns: [
@@ -703,7 +703,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
   },
   'former-cags': {
     table: 'former_cag',
-    title: 'Former CAGs Gallery',
+    title: 'Former CAGs',
     addTitle: 'Add Former CAG',
     searchColumn: 'name',
     columns: [

@@ -59,12 +59,12 @@ const SEGMENT_DISPLAY_NAMES_EN: Record<string, string> = {
   'constitutional provisions': 'Constitutional Provisions',
   'duties-&-powers-act': 'Duties & Powers Act',
   'duties & powers act': 'Duties & Powers Act',
-  'our-vision,-mission-&-core-values': 'Our Vision, Mission & Core Values',
-  'former-comptroller-and-auditors-general': 'Former CAGs Gallery',
+  'our-vision,-mission-&-core-values': 'Our Vision, Mission and Core Values',
+  'former-comptroller-and-auditors-general': 'Former CAGs',
   'history-of-indian-audit-ans-accounts-department': 'History of IAAD',
   'audit-advisory-board': 'Audit Advisory Board',
-  'organisation-chart': 'Organisation Chart',
-  'cag-of-india': 'CAG of India Profile',
+  'organisation-chart': 'Organization Chart',
+  'cag-of-india': 'CAG of India',
   'overseas audit offices': 'Audit Engagements',
   'overseas-audit-offices': 'Audit Engagements',
   'un panel of external auditors': 'Audit Engagements',
@@ -108,11 +108,11 @@ const SEGMENT_DISPLAY_NAMES_HI: Record<string, string> = {
   'duties-&-powers-act': 'कर्तव्य और शक्तियां अधिनियम',
   'duties & powers act': 'कर्तव्य और शक्तियां अधिनियम',
   'our-vision,-mission-&-core-values': 'दृष्टिकोण, ध्येय और मूल्य',
-  'former-comptroller-and-auditors-general': 'पूर्व सीएजी गैलरी',
+  'former-comptroller-and-auditors-general': 'पूर्व सीएजी',
   'history-of-indian-audit-ans-accounts-department': 'आईएएडी का इतिहास',
   'audit-advisory-board': 'लेखा परीक्षा सलाहकार बोर्ड',
   'organisation-chart': 'संगठन चार्ट',
-  'cag-of-india': 'भारत के सीएजी की प्रोफाइल',
+  'cag-of-india': 'भारत के सीएजी',
   'overseas audit offices': 'लेखा परीक्षा सहभागिता',
   'overseas-audit-offices': 'लेखा परीक्षा सहभागिता',
   'un panel of external auditors': 'लेखा परीक्षा सहभागिता',
@@ -147,7 +147,7 @@ export default function Breadcrumb() {
     return () => window.removeEventListener('languageChange', handleLangChange);
   }, []);
 
-  if (pathname === '/' || pathname === '/Home-page') return null;
+  if (pathname === '/' || pathname === '/Home-page' || pathname?.toLowerCase().includes('our-presence')) return null;
 
   const rawPaths = (pathname || '').split('/').filter(Boolean);
 
@@ -202,16 +202,16 @@ export default function Breadcrumb() {
         return (
           <React.Fragment key={item.url + idx}>
             <svg
-              className="w-2.5 h-2.5 text-[#565656] shrink-0"
-              viewBox="0 0 24 24"
+              className="w-[10px] h-[10px] text-[#565656] shrink-0"
+              viewBox="0 0 10 10"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <polyline points="9 18 15 12 9 6"></polyline>
+              <path d="M2.8 0.6L7.2 5L2.8 9.4" />
             </svg>
             {isLast ? (
               <span className="text-[#1A1A1A] font-bold text-[12px] leading-[16px] font-['Noto_Sans',sans-serif]">{displayName}</span>

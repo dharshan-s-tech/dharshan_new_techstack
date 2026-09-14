@@ -4,55 +4,27 @@ import React, { useState, useEffect } from 'react';
 import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager, AuditRegulationItem, DEFAULT_AUDIT_REGULATIONS } from '@/lib/dataManager';
 
-// Vector Icon 1: Gazette Publication
-function GazetteIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="18" height="18" rx="2" stroke="#FFFFFF" strokeWidth="1.8" />
-      <path d="M7 7H17" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M7 11H17" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M7 15H13" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="16" cy="15" r="1.5" fill="#FFFFFF" />
-    </svg>
-  );
-}
-
-// Vector Icon 2: Book - Regulations
-function BookIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M6.5 2H20V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M8 7H16" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M8 11H16" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M8 15H12" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// Vector Icon 3: Earlier Version
-function ArchiveIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2 3H8C9.06087 3 10.0783 3.42143 10.8284 4.17157C11.5786 4.92172 12 5.93913 12 7V21C12 20.2044 11.6839 19.4413 11.1213 18.8787C10.5587 18.3161 9.79565 18 9 18H2V3Z" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M22 3H16C14.9391 3 13.9217 3.42143 13.1716 4.17157C12.4214 4.92172 12 5.93913 12 7V21C12 20.2044 12.3161 19.4413 12.8787 18.8787C13.4413 18.3161 14.2044 18 15 18H22V3Z" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5 7H9" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M5 11H9" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M15 7H19" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M15 11H19" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
+// Local exported SVG icon path helper
+const getSvgIconPath = (iconType: string | undefined, index: number) => {
+  if (iconType === 'gazette' || index === 0) {
+    return '/assets/Images/auditregulation/auditregulation1.svg';
+  }
+  if (iconType === 'book' || index === 1) {
+    return '/assets/Images/auditregulation/auditregulation2.svg';
+  }
+  return '/assets/Images/auditregulation/auditregulation3.svg';
+};
 
 // PDF Document Icon Badge
 function PdfBadgeIcon() {
   return (
-    <svg width="27" height="32" viewBox="0 0 26 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-      <path d="M3 1C1.89543 1 1 1.89543 1 3V29C1 30.1046 1.89543 31 3 31H23C24.1046 31 25 30.1046 25 29V9L17 1H3Z" fill="#FFFFFF" stroke="#E02424" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M17 1V7C17 8.10457 17.8954 9 19 9H25" fill="#FDE8E8" stroke="#E02424" strokeWidth="1.8" strokeLinejoin="round" />
-      <rect x="0.5" y="14" width="20" height="11" rx="2.5" fill="#E02424" />
-      <text x="10.5" y="22.5" fill="#FFFFFF" fontSize="7.5" fontFamily="'Noto Sans', Arial, sans-serif" fontWeight="bold" textAnchor="middle" letterSpacing="0.4">PDF</text>
-    </svg>
+    <img 
+      src="/assets/pdf-red-icon.png" 
+      alt="PDF" 
+      width={27} 
+      height={32} 
+      className="w-[27px] h-[32px] object-contain shrink-0" 
+    />
   );
 }
 
@@ -86,15 +58,7 @@ export default function AuditRegulationPage() {
 
   const isHindi = lang === 'हिन्दी';
 
-  const renderBadgeIcon = (iconType: string | undefined, index: number) => {
-    if (iconType === 'gazette' || index === 0) {
-      return <GazetteIcon />;
-    }
-    if (iconType === 'book' || index === 1) {
-      return <BookIcon />;
-    }
-    return <ArchiveIcon />;
-  };
+
 
   return (
     <AboutLayout title="Audit Regulation" hideTitleBorder={true}>
@@ -125,19 +89,14 @@ export default function AuditRegulationPage() {
               <section key={item.id || index} className="w-full flex flex-col gap-2">
                 {/* Accordion Header Row */}
                 <div className="flex items-center gap-4 w-full">
-                  {/* Round Circle Badge: width: 32px, height: 32px, background: #751639 */}
-                  <div
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      backgroundColor: '#751639',
-                      borderRadius: '50%',
-                    }}
-                    className="flex items-center justify-center shrink-0 shadow-sm"
-                    aria-hidden="true"
-                  >
-                    {renderBadgeIcon(item.icon_type, index)}
-                  </div>
+                  {/* Round Circle Badge: exported local SVG asset */}
+                  <img 
+                    src={getSvgIconPath(item.icon_type, index)} 
+                    alt="" 
+                    width={32} 
+                    height={32} 
+                    className="w-[32px] h-[32px] rounded-full shrink-0 object-contain shadow-sm" 
+                  />
 
                   {/* Title Box with bottom divider line */}
                   <div className="flex-1 py-2 border-b border-[#D7D7D7] flex items-center justify-between">

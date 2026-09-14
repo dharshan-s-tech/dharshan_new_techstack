@@ -58,7 +58,7 @@ export default function OurPresenceLayout({
       <div className="op-page__divider" aria-hidden="true"></div>
       
       <div className="about-layout flex flex-col lg:flex-row gap-8 items-start">
-        <aside className="about-sidebar w-full lg:w-80 shrink-0">
+        <aside className="about-sidebar w-full lg:w-[310px] h-[734px] shrink-0">
           <div className="about-sidebar__divider" aria-hidden="true"></div>
           <div className="about-sidebar__menus" data-name="Menus">
             {groups.map((grp, idx) => (

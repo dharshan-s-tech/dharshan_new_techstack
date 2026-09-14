@@ -21,7 +21,7 @@ interface SectionItem {
   titleHi: string;
   subEn?: string;
   subHi?: string;
-  iconType: 'analytical' | 'thematic';
+  iconPath: string;
   volumes: VolumeItem[];
 }
 
@@ -30,7 +30,7 @@ const HISTORY_SECTIONS: SectionItem[] = [
     id: 'analytical',
     titleEn: 'CAG of India-Analytical History 1947-1989',
     titleHi: 'भारत के सीएजी - विश्लेषणात्मक इतिहास 1947-1989',
-    iconType: 'analytical',
+    iconPath: '/assets/Images/history of iaad/Analytical History 1.svg',
     volumes: [
       {
         id: 'a-1',
@@ -56,7 +56,7 @@ const HISTORY_SECTIONS: SectionItem[] = [
     titleHi: 'एक विषयगत इतिहास 1990-2007 (भाग - १)',
     subEn: 'The Comptroller & Auditor General of India - "A Thematic History 1990-2007" VOL-I',
     subHi: 'भारत के नियंत्रक और महालेखापरीक्षक - "एक विषयगत इतिहास 1990-2007" भाग-I',
-    iconType: 'thematic',
+    iconPath: '/assets/Images/history of iaad/Analytical History2.svg',
     volumes: [
       {
         id: 't1-1',
@@ -104,7 +104,7 @@ const HISTORY_SECTIONS: SectionItem[] = [
     id: 'thematic-2',
     titleEn: 'A Thematic History 1990-2007 (Vol - 2)',
     titleHi: 'एक विषयगत इतिहास 1990-2007 (भाग - २)',
-    iconType: 'thematic',
+    iconPath: '/assets/Images/history of iaad/Analytical History 3.svg',
     volumes: [
       {
         id: 't2-1',
@@ -247,10 +247,14 @@ export default function HistoryPage() {
               >
                 {/* Section Header */}
                 <div className="flex items-center gap-4">
-                  {/* Styled Circle with white outline SVG */}
-                  <div className="w-8 h-8 rounded-full bg-[#751639] flex items-center justify-center text-white flex-shrink-0" aria-hidden="true">
-                    {renderIcon(section.iconType)}
-                  </div>
+                  {/* Local SVG icon exported from Figma */}
+                  <img 
+                    src={section.iconPath} 
+                    alt="" 
+                    width={32} 
+                    height={32} 
+                    className="w-[32px] h-[32px] rounded-full flex-shrink-0 object-contain" 
+                  />
                   <h3 id={`sec-heading-${section.id}`} className="text-lg md:text-xl font-bold text-[#2E2E31] m-0" style={{ fontFamily: 'Noto Sans' }}>
                     {secTitle}
                   </h3>
@@ -275,7 +279,7 @@ export default function HistoryPage() {
                     return (
                       <div 
                         key={vol.id}
-                        className="w-full p-3 px-4 bg-[#FAFAFA] border-l-2 border-[#751639] flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-r-lg"
+                        className="w-full p-3 px-4 bg-[#FAFAFA] border-l-2 border-[#FAFAFA] hover:border-[#500C25] flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-r-lg transition-colors duration-150"
                       >
                         {/* Text Details */}
                         <div className="flex flex-col gap-1 text-left">

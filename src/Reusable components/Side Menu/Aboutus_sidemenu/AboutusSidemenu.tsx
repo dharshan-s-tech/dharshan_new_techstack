@@ -210,7 +210,7 @@ export default function AboutusSidemenu() {
         <h3 className="about-sidebar__group-heading text-left">
           {isHindi ? groupData.groupHeadingHi : groupData.groupHeadingEn}
         </h3>
-        <nav className="flex flex-col gap-1 w-full" aria-label={`${groupData.groupHeadingEn} Navigation`}>
+        <nav className="about-sidebar__sublist" aria-label={`${groupData.groupHeadingEn} Navigation`}>
           {groupData.links.map((link) => {
             const isActive = isLinkActive(link.href, pathname);
             
