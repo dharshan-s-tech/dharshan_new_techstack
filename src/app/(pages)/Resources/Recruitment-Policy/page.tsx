@@ -93,6 +93,7 @@ export default function RecruitmentPolicyPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Recruitment Policy"
       pageTitleHi="भर्ती नीति"
+      apiSlug="recruitment-policy"
       items={RECRUITMENT_POLICY_DOCS}
     />
   );

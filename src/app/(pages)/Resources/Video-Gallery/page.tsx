@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import ResourcesLayout from '../ResourcesLayout';
 import { dataManager } from '@/lib/dataManager';
+import { api } from '@/lib/api';
 
 interface VideoItem {
   id: string;
@@ -21,7 +22,8 @@ const VIDEO_GALLERY_DATA: VideoItem[] = [
     titleHi: 'भारतीय लेखापरीक्षा और लेखा विभाग (आईएएडी) की 160+ वर्षों की यात्रा पर वृत्तचित्र',
     duration: '18:45',
     date: '16 Nov 2023',
-    thumbnail: '/assets/61f2249e917d5c5faeb50b4ec748367aa419f85c.png'
+    thumbnail: '/assets/61f2249e917d5c5faeb50b4ec748367aa419f85c.png',
+    videoUrl: 'https://www.youtube.com/embed/SWSXKcJ4irQ'
   },
   {
     id: 'vg-2',
@@ -29,7 +31,8 @@ const VIDEO_GALLERY_DATA: VideoItem[] = [
     titleHi: 'डिजिटल लेखापरीक्षा प्रतिमान: वन आईएएडी वन सिस्टम (ओआईओएस) का कार्यान्वयन',
     duration: '12:20',
     date: '10 Feb 2024',
-    thumbnail: '/assets/9e9d6d62858888b5ecf0a28f41e57c6b546d16f8.png'
+    thumbnail: '/assets/9e9d6d62858888b5ecf0a28f41e57c6b546d16f8.png',
+    videoUrl: 'https://www.youtube.com/embed/SWSXKcJ4irQ'
   },
   {
     id: 'vg-3',
@@ -37,7 +40,8 @@ const VIDEO_GALLERY_DATA: VideoItem[] = [
     titleHi: 'पर्यावरण लेखापरीक्षा और सतत विकास लक्ष्य - इंटोसाई डब्ल्यूजीईए में साई भारत',
     duration: '15:10',
     date: '24 Apr 2024',
-    thumbnail: '/assets/557f9ea1496a79ee82b683efb1c0eb7040fd8522.png'
+    thumbnail: '/assets/557f9ea1496a79ee82b683efb1c0eb7040fd8522.png',
+    videoUrl: 'https://www.youtube.com/embed/SWSXKcJ4irQ'
   },
   {
     id: 'vg-4',
@@ -45,18 +49,50 @@ const VIDEO_GALLERY_DATA: VideoItem[] = [
     titleHi: 'सार्वजनिक वित्तीय प्रबंधन और सर्वोच्च लेखापरीक्षा संस्थानों की भूमिका',
     duration: '22:05',
     date: '15 Dec 2023',
-    thumbnail: '/assets/c5aee22d7d8f5cb4eb5f78ee9d1a3c7ddac67cf6.png'
+    thumbnail: '/assets/c5aee22d7d8f5cb4eb5f78ee9d1a3c7ddac67cf6.png',
+    videoUrl: 'https://www.youtube.com/embed/SWSXKcJ4irQ'
   }
 ];
 
 export default function VideoGalleryPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [items, setItems] = useState<VideoItem[]>(VIDEO_GALLERY_DATA);
+  const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     setLang(dataManager.getLanguage());
     const handleLangChange = () => setLang(dataManager.getLanguage());
     window.addEventListener('languageChange', handleLangChange);
     return () => window.removeEventListener('languageChange', handleLangChange);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getResources('video-gallery', { page_size: 20 })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.items && res.items.length > 0) {
+          const mapped: VideoItem[] = res.items.map((it: any, idx: number) => ({
+            id: String(it.id || idx),
+            titleEn: it.title || it.titleEn || 'Video Feature',
+            titleHi: it.titleHi || it.title || 'वीडियो',
+            duration: 'Video Stream',
+            date: it.date || it.year || '2024',
+            thumbnail: '/assets/61f2249e917d5c5faeb50b4ec748367aa419f85c.png',
+            videoUrl: it.videoUrl || it.fileUrl || ''
+          }));
+          setItems(mapped);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
@@ -87,12 +123,25 @@ export default function VideoGalleryPage() {
           </div>
         </div>
 
+        {/* Loading Spinner */}
+        {isLoading && (
+          <div className="w-full py-8 flex items-center justify-center gap-3 text-[#751639]">
+            <div className="w-5 h-5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Loading videos...</span>
+          </div>
+        )}
+
         {/* Video Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-          {VIDEO_GALLERY_DATA.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+          {items.map((item) => (
             <div 
               key={item.id}
-              className="group bg-white border border-[#E6E6E6] rounded-[8px] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
+              onClick={() => {
+                if (item.videoUrl) {
+                  setSelectedVideo(item);
+                }
+              }}
+              className="group cursor-pointer bg-white border border-[#E6E6E6] rounded-[8px] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
             >
               <div className="relative w-full h-48 bg-zinc-900 overflow-hidden flex items-center justify-center">
                 <img 
@@ -106,7 +155,6 @@ export default function VideoGalleryPage() {
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 </div>
-                {/* Duration Badge */}
                 <span className="absolute bottom-3 right-3 bg-black/80 text-white text-[11px] font-mono px-2 py-0.5 rounded">
                   {item.duration}
                 </span>
@@ -122,6 +170,53 @@ export default function VideoGalleryPage() {
             </div>
           ))}
         </div>
+
+        {/* Modal for viewing video embed */}
+        {selectedVideo && (
+          <div 
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+            onClick={() => setSelectedVideo(null)}
+          >
+            <div 
+              className="bg-black rounded-lg max-w-4xl w-full overflow-hidden shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative w-full aspect-video bg-black flex items-center justify-center">
+                {selectedVideo.videoUrl?.includes('youtube') || selectedVideo.videoUrl?.includes('youtu.be') ? (
+                  <iframe
+                    src={selectedVideo.videoUrl.replace('watch?v=', 'embed/')}
+                    title={selectedVideo.titleEn}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={selectedVideo.videoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedVideo(null)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black border border-white/20"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4 bg-zinc-900 text-white flex flex-col gap-1">
+                <span className="text-xs font-bold text-[#f27a9b]">
+                  {selectedVideo.date}
+                </span>
+                <h2 className="text-sm font-semibold">
+                  {isHindi ? selectedVideo.titleHi : selectedVideo.titleEn}
+                </h2>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </ResourcesLayout>

@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import ResourcesLayout from '../ResourcesLayout';
 import { dataManager, TenderItem } from '@/lib/dataManager';
+import { api } from '@/lib/api';
 
 export default function TendersPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
   const [tenders, setTenders] = useState<TenderItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     setTenders(dataManager.getTenders());
@@ -24,6 +26,40 @@ export default function TendersPage() {
       window.removeEventListener('tendersChange', handleTendersChange);
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getResources('tenders', { query: searchQuery.trim() || undefined, page_size: 50 })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.items && res.items.length > 0) {
+          const mapped: TenderItem[] = res.items.map((it: any) => ({
+            id: it.id,
+            title: it.title || 'Tender Notification',
+            title_en: it.title || 'Tender Notification',
+            title_hi: it.titleHi || 'निविदा सूचना',
+            tenderNo: it.category || 'Tender Notice',
+            reference_no: it.category || 'Tender Notice',
+            closingDate: it.date || it.year || '2025',
+            closing_date: it.date || it.year || '2025',
+            docUrl: it.fileUrl || '/assets/sample.pdf',
+            tender_file_url: it.fileUrl || '/assets/sample.pdf',
+            is_active: true
+          }));
+          setTenders(mapped);
+        } else if (res && res.items && res.items.length === 0 && searchQuery.trim()) {
+          setTenders([]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchQuery]);
 
   const isHindi = lang === 'हिन्दी';
 
@@ -85,64 +121,74 @@ export default function TendersPage() {
           </span>
         </div>
 
-        {/* Tenders List Cards */}
-        <div className="w-full flex flex-col gap-3">
-          {filteredTenders.length === 0 ? (
-            <div className="w-full py-12 px-6 text-center bg-[#FAFAFA] border border-dashed border-zinc-300 rounded-[8px]">
-              <p className="text-[15px] font-semibold text-[#2A2A2A]">No tenders found</p>
-              <p className="text-[13px] text-zinc-500 mt-1">
-                {searchQuery ? 'Try adjusting your search terms.' : 'No active tender notices at this time.'}
-              </p>
-            </div>
-          ) : (
-            filteredTenders.map((item) => (
-              <div
-                key={item.id}
-                className="w-full min-h-[56px] py-2.5 px-4 bg-[#FAFAFA] border-l-[3px] border-[#751639] rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:bg-[#F2F2F2] transition-colors"
-              >
-                <div className="flex flex-col gap-0.5 flex-1 pr-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-mono font-bold text-[#751639]">
-                      {(item as any).tenderNo || (item as any).reference_no || `#${item.id}`}
-                    </span>
-                    <span className={`inline-block px-2 py-0.2 rounded text-[10px] font-bold ${
-                      item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
-                    }`}>
-                      {item.is_active ? 'Active' : 'Closed'}
-                    </span>
-                  </div>
-                  <h3 className="text-[14px] font-semibold leading-[19px] text-[#000000]">
-                    {(item as any).title || (item as any).title_en || 'Tender Notice'}
-                  </h3>
-                  <p className="text-[12px] text-[#565656]">
-                    Closing Date: {(item as any).closingDate || (item as any).closing_date || 'N/A'}
-                  </p>
-                </div>
+        {/* Loading Spinner */}
+        {isLoading && (
+          <div className="w-full py-8 flex items-center justify-center gap-3 text-[#751639]">
+            <div className="w-5 h-5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Loading tenders...</span>
+          </div>
+        )}
 
-                <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                  <div className="w-[27px] h-[32px] flex items-center justify-center shrink-0">
-                    <svg width="26" height="30" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="26" height="30" rx="3" fill="#D92D20"/>
-                      <path d="M17 0L26 9H17V0Z" fill="#B42318"/>
-                      <text x="3" y="21" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="sans-serif">PDF</text>
-                    </svg>
+        {/* Tenders List Cards */}
+        {!isLoading && (
+          <div className="w-full flex flex-col gap-3">
+            {filteredTenders.length === 0 ? (
+              <div className="w-full py-12 px-6 text-center bg-[#FAFAFA] border border-dashed border-zinc-300 rounded-[8px]">
+                <p className="text-[15px] font-semibold text-[#2A2A2A]">No tenders found</p>
+                <p className="text-[13px] text-zinc-500 mt-1">
+                  {searchQuery ? 'Try adjusting your search terms.' : 'No active tender notices at this time.'}
+                </p>
+              </div>
+            ) : (
+              filteredTenders.map((item) => (
+                <div
+                  key={item.id}
+                  className="w-full min-h-[56px] py-2.5 px-4 bg-[#FAFAFA] border-l-[3px] border-[#751639] rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:bg-[#F2F2F2] transition-colors"
+                >
+                  <div className="flex flex-col gap-0.5 flex-1 pr-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-mono font-bold text-[#751639]">
+                        {(item as any).tenderNo || (item as any).reference_no || `#${item.id}`}
+                      </span>
+                      <span className={`inline-block px-2 py-0.2 rounded text-[10px] font-bold ${
+                        item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
+                      }`}>
+                        {item.is_active ? 'Active' : 'Closed'}
+                      </span>
+                    </div>
+                    <h3 className="text-[14px] font-semibold leading-[19px] text-[#000000]">
+                      {(item as any).title || (item as any).title_en || 'Tender Notice'}
+                    </h3>
+                    <p className="text-[12px] text-[#565656]">
+                      Date / Reference: {(item as any).closingDate || (item as any).closing_date || 'N/A'}
+                    </p>
                   </div>
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-[10px] text-[#565656]">Document</span>
-                    <a
-                      href={(item as any).docUrl || (item as any).tender_file_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[12px] font-medium text-[#0D61AE] hover:underline"
-                    >
-                      Download Notice
-                    </a>
+
+                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                    <div className="w-[27px] h-[32px] flex items-center justify-center shrink-0">
+                      <svg width="26" height="30" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="26" height="30" rx="3" fill="#D92D20"/>
+                        <path d="M17 0L26 9H17V0Z" fill="#B42318"/>
+                        <text x="3" y="21" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="sans-serif">PDF</text>
+                      </svg>
+                    </div>
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-[10px] text-[#565656]">Document</span>
+                      <a
+                        href={(item as any).docUrl || (item as any).tender_file_url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[12px] font-medium text-[#0D61AE] hover:underline"
+                      >
+                        Download Notice
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
 
       </div>
     </ResourcesLayout>

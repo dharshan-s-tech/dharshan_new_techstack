@@ -53,6 +53,7 @@ export default function RightToInformationPolicyPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Right to Information Policy"
       pageTitleHi="सूचना का अधिकार नीति"
+      apiSlug="right-to-information-policy"
       items={RTI_DOCS}
     />
   );

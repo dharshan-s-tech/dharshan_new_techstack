@@ -43,6 +43,7 @@ export default function StatusOfAccountsOfStatePSUsPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Status of Accounts of State PSUs"
       pageTitleHi="राज्य सार्वजनिक उपक्रमों के खातों की स्थिति"
+      apiSlug="status-of-accounts-of-state-psus"
       items={STATE_PSU_DOCS}
     />
   );

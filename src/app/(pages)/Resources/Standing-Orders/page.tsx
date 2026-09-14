@@ -53,6 +53,7 @@ export default function StandingOrdersPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Standing Orders"
       pageTitleHi="स्थायी आदेश"
+      apiSlug="standing-orders"
       items={STANDING_ORDERS_DOCS}
     />
   );

@@ -63,6 +63,7 @@ export default function ManualsPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Manuals"
       pageTitleHi="नियमावली (मैनुअल)"
+      apiSlug="manuals"
       items={MANUALS_DOCS}
     />
   );

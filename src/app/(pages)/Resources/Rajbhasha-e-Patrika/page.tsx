@@ -53,6 +53,7 @@ export default function RajbhashaEPatrikaPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Rajbhasha e-Patrika"
       pageTitleHi="राजभाषा ई-पत्रिका"
+      apiSlug="rajbhasha-e-patrika"
       items={RAJBHASHA_DOCS}
     />
   );

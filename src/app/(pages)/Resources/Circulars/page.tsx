@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import ResourcesLayout from '../ResourcesLayout';
 import { dataManager, CircularItem } from '@/lib/dataManager';
+import { api } from '@/lib/api';
 
 export default function CircularsPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
   const [circulars, setCirculars] = useState<CircularItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     setCirculars(dataManager.getCirculars());
@@ -24,6 +26,41 @@ export default function CircularsPage() {
       window.removeEventListener('circularsChange', handleCircularsChange);
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getResources('circulars', { query: searchQuery.trim() || undefined, page_size: 50 })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.items && res.items.length > 0) {
+          const mapped: CircularItem[] = res.items.map((it: any) => ({
+            id: it.id,
+            title: it.title || 'Official Circular',
+            title_en: it.title || 'Official Circular',
+            title_hi: it.titleHi || 'आधिकारिक परिपत्र',
+            refNo: it.category || 'Circular',
+            circular_no: it.category || 'Circular',
+            category: it.category || 'General Circular',
+            date: it.date || it.year || '2025',
+            issue_date: it.date || it.year || '2025',
+            docUrl: it.fileUrl || '/assets/sample.pdf',
+            file_url: it.fileUrl || '/assets/sample.pdf',
+            is_active: true
+          }));
+          setCirculars(mapped);
+        } else if (res && res.items && res.items.length === 0 && searchQuery.trim()) {
+          setCirculars([]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchQuery]);
 
   const isHindi = lang === 'हिन्दी';
 
@@ -87,62 +124,72 @@ export default function CircularsPage() {
           </span>
         </div>
 
-        {/* Circulars List Cards */}
-        <div className="w-full flex flex-col gap-3">
-          {filteredCirculars.length === 0 ? (
-            <div className="w-full py-12 px-6 text-center bg-[#FAFAFA] border border-dashed border-zinc-300 rounded-[8px]">
-              <p className="text-[15px] font-semibold text-[#2A2A2A]">No circulars found</p>
-              <p className="text-[13px] text-zinc-500 mt-1">
-                {searchQuery ? 'Try adjusting your search terms.' : 'No circular records available.'}
-              </p>
-            </div>
-          ) : (
-            filteredCirculars.map((item) => (
-              <div
-                key={item.id}
-                className="w-full min-h-[56px] py-2.5 px-4 bg-[#FAFAFA] border-l-[3px] border-[#751639] rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:bg-[#F2F2F2] transition-colors"
-              >
-                <div className="flex flex-col gap-0.5 flex-1 pr-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-mono font-bold text-[#751639]">
-                      {(item as any).refNo || (item as any).circular_no || `#${item.id}`}
-                    </span>
-                    <span className="inline-block bg-zinc-200 text-zinc-700 px-1.5 py-0.2 rounded text-[10px] font-semibold">
-                      {(item as any).category || 'Circular'}
-                    </span>
-                  </div>
-                  <h3 className="text-[14px] font-semibold leading-[19px] text-[#000000]">
-                    {(item as any).title || (item as any).title_en || 'Circular Item'}
-                  </h3>
-                  <p className="text-[12px] text-[#565656]">
-                    Issued: {(item as any).date || (item as any).issue_date || 'N/A'}
-                  </p>
-                </div>
+        {/* Loading Spinner */}
+        {isLoading && (
+          <div className="w-full py-8 flex items-center justify-center gap-3 text-[#751639]">
+            <div className="w-5 h-5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Loading circulars...</span>
+          </div>
+        )}
 
-                <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                  <div className="w-[27px] h-[32px] flex items-center justify-center shrink-0">
-                    <svg width="26" height="30" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="26" height="30" rx="3" fill="#D92D20"/>
-                      <path d="M17 0L26 9H17V0Z" fill="#B42318"/>
-                      <text x="3" y="21" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="sans-serif">PDF</text>
-                    </svg>
+        {/* Circulars List Cards */}
+        {!isLoading && (
+          <div className="w-full flex flex-col gap-3">
+            {filteredCirculars.length === 0 ? (
+              <div className="w-full py-12 px-6 text-center bg-[#FAFAFA] border border-dashed border-zinc-300 rounded-[8px]">
+                <p className="text-[15px] font-semibold text-[#2A2A2A]">No circulars found</p>
+                <p className="text-[13px] text-zinc-500 mt-1">
+                  {searchQuery ? 'Try adjusting your search terms.' : 'No circular records available.'}
+                </p>
+              </div>
+            ) : (
+              filteredCirculars.map((item) => (
+                <div
+                  key={item.id}
+                  className="w-full min-h-[56px] py-2.5 px-4 bg-[#FAFAFA] border-l-[3px] border-[#751639] rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:bg-[#F2F2F2] transition-colors"
+                >
+                  <div className="flex flex-col gap-0.5 flex-1 pr-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-mono font-bold text-[#751639]">
+                        {(item as any).refNo || (item as any).circular_no || `#${item.id}`}
+                      </span>
+                      <span className="inline-block bg-zinc-200 text-zinc-700 px-1.5 py-0.2 rounded text-[10px] font-semibold">
+                        {(item as any).category || 'Circular'}
+                      </span>
+                    </div>
+                    <h3 className="text-[14px] font-semibold leading-[19px] text-[#000000]">
+                      {(item as any).title || (item as any).title_en || 'Circular Item'}
+                    </h3>
+                    <p className="text-[12px] text-[#565656]">
+                      Date / Ref: {(item as any).date || (item as any).issue_date || 'N/A'}
+                    </p>
                   </div>
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-[10px] text-[#565656]">PDF Doc</span>
-                    <a
-                      href={(item as any).docUrl || (item as any).file_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[12px] font-medium text-[#0D61AE] hover:underline"
-                    >
-                      View PDF
-                    </a>
+
+                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                    <div className="w-[27px] h-[32px] flex items-center justify-center shrink-0">
+                      <svg width="26" height="30" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="26" height="30" rx="3" fill="#D92D20"/>
+                        <path d="M17 0L26 9H17V0Z" fill="#B42318"/>
+                        <text x="3" y="21" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="sans-serif">PDF</text>
+                      </svg>
+                    </div>
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-[10px] text-[#565656]">PDF Doc</span>
+                      <a
+                        href={(item as any).docUrl || (item as any).file_url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[12px] font-medium text-[#0D61AE] hover:underline"
+                      >
+                        View PDF
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
 
       </div>
     </ResourcesLayout>

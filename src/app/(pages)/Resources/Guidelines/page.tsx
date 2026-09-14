@@ -63,6 +63,7 @@ export default function GuidelinesPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Guidelines"
       pageTitleHi="दिशा-निर्देश"
+      apiSlug="guidelines"
       items={GUIDELINES_DOCS}
     />
   );

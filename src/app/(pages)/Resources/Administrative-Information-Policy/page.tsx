@@ -43,6 +43,7 @@ export default function AdministrativeInformationPolicyPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Administrative Information Policy"
       pageTitleHi="प्रशासनिक सूचना नीति"
+      apiSlug="administrative-information-policy"
       items={ADMIN_INFO_DOCS}
     />
   );

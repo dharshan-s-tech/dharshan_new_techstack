@@ -43,6 +43,7 @@ export default function SocialMediaPolicyPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Social Media Policy"
       pageTitleHi="सोशल मीडिया नीति"
+      apiSlug="social-media-policy"
       items={SOCIAL_MEDIA_DOCS}
     />
   );

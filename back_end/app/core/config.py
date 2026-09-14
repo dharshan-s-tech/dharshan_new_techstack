@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     DB_USER: str = "kreethi"
     DB_PASSWORD: str = "kreethi@123"
     DB_SCHEMA: str = "cag_revamp"
+    SECURITY_SALT: str = "c3fd7183d431b3f8967db69db1d089200427fa226185a9af60e16a1d19312368"
+    ENCRYPTION_KEY: str = "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA"
     DATABASE_URL: str | None = None
 
     @property

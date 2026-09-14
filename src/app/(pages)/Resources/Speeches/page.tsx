@@ -53,6 +53,7 @@ export default function SpeechesPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Speeches"
       pageTitleHi="भाषण एवं वक्तव्य"
+      apiSlug="speeches"
       items={SPEECHES_DOCS}
     />
   );

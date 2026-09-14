@@ -51,8 +51,9 @@ export default function StudyReportsAndCompendiaPage() {
     <PolicyPageTemplate
       categoryTitleEn="Resources"
       categoryTitleHi="संसाधन"
-      pageTitleEn="Study Reports & Compendia Compendium on Audit of the Education Sector in India"
-      pageTitleHi="भारत में शिक्षा क्षेत्र के लेखापरीक्षा पर अध्ययन रिपोर्ट एवं संग्रह"
+      pageTitleEn="Study Reports & Compendia"
+      pageTitleHi="अध्ययन रिपोर्ट एवं संग्रह"
+      apiSlug="study-reports"
       items={STUDY_REPORTS_DOCS}
     />
   );

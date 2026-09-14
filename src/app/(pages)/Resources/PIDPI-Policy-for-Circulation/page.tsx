@@ -43,6 +43,7 @@ export default function PidpiPolicyPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="PIDPI Policy for Circulation"
       pageTitleHi="प्रसार के लिए पीआईडीपीआई नीति"
+      apiSlug="pidpi-policy-for-circulation"
       items={PIDPI_DOCS}
     />
   );

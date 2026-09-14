@@ -53,6 +53,7 @@ export default function PressReleasesPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Press Releases"
       pageTitleHi="प्रेस विज्ञप्तियां"
+      apiSlug="press-releases"
       items={PRESS_RELEASES_DOCS}
     />
   );

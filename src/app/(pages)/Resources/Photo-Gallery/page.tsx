@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import ResourcesLayout from '../ResourcesLayout';
 import { dataManager } from '@/lib/dataManager';
+import { api } from '@/lib/api';
 
 interface GalleryImage {
   id: string;
@@ -55,13 +56,43 @@ const PHOTO_GALLERY_DATA: GalleryImage[] = [
 
 export default function PhotoGalleryPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [items, setItems] = useState<GalleryImage[]>(PHOTO_GALLERY_DATA);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     setLang(dataManager.getLanguage());
     const handleLangChange = () => setLang(dataManager.getLanguage());
     window.addEventListener('languageChange', handleLangChange);
     return () => window.removeEventListener('languageChange', handleLangChange);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getResources('photo-gallery', { page_size: 20 })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.items && res.items.length > 0) {
+          const mapped: GalleryImage[] = res.items.map((it: any, idx: number) => ({
+            id: String(it.id || idx),
+            titleEn: it.title || it.titleEn || 'Photo Event',
+            titleHi: it.titleHi || it.title || 'फोटो कार्यक्रम',
+            categoryEn: it.category || 'Photo Gallery',
+            categoryHi: 'फोटो गैलरी',
+            date: it.date || it.year || '2024',
+            imageUrl: it.imageUrl || it.fileUrl || '/assets/61f2249e917d5c5faeb50b4ec748367aa419f85c.png'
+          }));
+          setItems(mapped);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
@@ -92,9 +123,17 @@ export default function PhotoGalleryPage() {
           </div>
         </div>
 
+        {/* Loading Spinner */}
+        {isLoading && (
+          <div className="w-full py-8 flex items-center justify-center gap-3 text-[#751639]">
+            <div className="w-5 h-5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Loading photos...</span>
+          </div>
+        )}
+
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-          {PHOTO_GALLERY_DATA.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+          {items.map((item) => (
             <div 
               key={item.id}
               onClick={() => setSelectedImage(item)}
@@ -105,6 +144,9 @@ export default function PhotoGalleryPage() {
                   src={item.imageUrl} 
                   alt={isHindi ? item.titleHi : item.titleEn}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/assets/61f2249e917d5c5faeb50b4ec748367aa419f85c.png';
+                  }}
                 />
                 <div className="absolute top-3 left-3 bg-[#751639]/90 text-white text-[11px] font-semibold px-2.5 py-1 rounded-[4px] backdrop-blur-xs">
                   {isHindi ? item.categoryHi : item.categoryEn}

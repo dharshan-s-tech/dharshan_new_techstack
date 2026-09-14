@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import home, news, events, accounts, reports, pages, states, organisation_chart, former_cag, tenders_circulars
+from app.api.v1 import home, news, events, accounts, reports, pages, states, organisation_chart, former_cag, tenders_circulars, resources, subscribers
 from app.api.v1.admin import auth as admin_auth
 from app.api.v1.admin import crud as admin_crud
 from app.api.v1.admin import options as admin_options
@@ -26,6 +26,8 @@ api_router.include_router(organisation_chart.router, prefix="/organisation-chart
 api_router.include_router(former_cag.router, prefix="/former-cag", tags=["former-cag"])
 api_router.include_router(tenders_circulars.tenders_router, prefix="/tenders", tags=["tenders"])
 api_router.include_router(tenders_circulars.circulars_router, prefix="/circulars", tags=["circulars"])
+api_router.include_router(resources.router, prefix="/resources", tags=["resources"])
+api_router.include_router(subscribers.router, prefix="/subscribers", tags=["subscribers"])
 
 # Admin V1 Routes
 api_router.include_router(admin_auth.router, prefix="/admin/auth", tags=["admin-auth"])

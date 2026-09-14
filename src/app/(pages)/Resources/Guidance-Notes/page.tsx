@@ -53,6 +53,7 @@ export default function GuidanceNotesPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Guidance Notes, Practice Guides & Concept Notes"
       pageTitleHi="मार्गदर्शन नोट, अभ्यास गाइड और अवधारणा नोट"
+      apiSlug="guidance-notes"
       items={GUIDANCE_NOTES_DOCS}
     />
   );

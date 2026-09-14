@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ResourcesLayout from './ResourcesLayout';
+import { api } from '@/lib/api';
 
 export interface ResourceDocumentItem {
   id: string | number;
@@ -12,6 +13,8 @@ export interface ResourceDocumentItem {
   size?: string;
   date?: string;
   fileUrl?: string;
+  imageUrl?: string;
+  videoUrl?: string;
   isArchived?: boolean;
 }
 
@@ -22,7 +25,8 @@ interface PolicyPageTemplateProps {
   pageTitleHi?: string;
   subtitleEn?: string;
   subtitleHi?: string;
-  items: ResourceDocumentItem[];
+  apiSlug?: string;
+  items?: ResourceDocumentItem[];
   customTopContent?: React.ReactNode;
 }
 
@@ -33,16 +37,93 @@ export default function PolicyPageTemplate({
   pageTitleHi,
   subtitleEn,
   subtitleHi,
-  items,
+  apiSlug,
+  items: initialItems = [],
   customTopContent
 }: PolicyPageTemplateProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'title'>('newest');
   const [showArchived, setShowArchived] = useState(false);
   const [isArchiveActive, setIsArchiveActive] = useState(false);
+  const [liveItems, setLiveItems] = useState<ResourceDocumentItem[]>(initialItems);
+  const [isLoading, setIsLoading] = useState<boolean>(Boolean(apiSlug));
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(initialItems.length);
 
-  const filteredItems = useMemo(() => {
-    return items
+  useEffect(() => {
+    if (!apiSlug) {
+      setLiveItems(initialItems);
+      setTotalCount(initialItems.length);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoading(true);
+
+    const sortMap: Record<string, string> = {
+      newest: 'newest',
+      oldest: 'oldest',
+      title: 'title_asc'
+    };
+
+    api.getResources(apiSlug, {
+      query: searchQuery.trim() || undefined,
+      sort_by: sortMap[sortOrder] || 'newest',
+      page: currentPage,
+      page_size: 50
+    })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.items && res.items.length > 0) {
+          const mapped: ResourceDocumentItem[] = res.items.map((it: any) => ({
+            id: it.id,
+            titleEn: it.title || it.titleEn || 'Document',
+            titleHi: it.titleHi,
+            groupEn: it.category || it.groupEn,
+            groupHi: it.groupHi,
+            size: it.fileSize || it.size || '1.2 MB',
+            date: it.date || it.year || '',
+            fileUrl: it.fileUrl,
+            imageUrl: it.imageUrl,
+            videoUrl: it.videoUrl,
+            isArchived: it.isArchived || false,
+          }));
+          setLiveItems(mapped);
+          setTotalCount(res.total || mapped.length);
+        } else if (res && res.items && res.items.length === 0 && searchQuery.trim()) {
+          setLiveItems([]);
+          setTotalCount(0);
+        } else {
+          // Fallback to initial items if API returned empty
+          setLiveItems(initialItems);
+          setTotalCount(initialItems.length);
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setLiveItems(initialItems);
+        setTotalCount(initialItems.length);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [apiSlug, searchQuery, sortOrder, currentPage, initialItems]);
+
+  const displayedItems = useMemo(() => {
+    // If apiSlug is present, sorting/filtering is already applied server-side; we just filter archived if needed
+    if (apiSlug) {
+      return liveItems.filter((item) => {
+        if (!showArchived && item.isArchived) return false;
+        if (showArchived && !item.isArchived) return false;
+        return true;
+      });
+    }
+
+    return liveItems
       .filter((item) => {
         if (!showArchived && item.isArchived) return false;
         if (showArchived && !item.isArchived) return false;
@@ -70,7 +151,7 @@ export default function PolicyPageTemplate({
         }
         return (b.date || '').localeCompare(a.date || '');
       });
-  }, [items, searchQuery, sortOrder, showArchived]);
+  }, [liveItems, apiSlug, searchQuery, sortOrder, showArchived]);
 
   return (
     <ResourcesLayout
@@ -145,7 +226,6 @@ export default function PolicyPageTemplate({
               }`}
               title={showArchived ? 'View Active Documents' : 'View Archived Documents'}
             >
-              {/* Archive Vector Icon */}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M2 3.5C2 2.67157 2.67157 2 3.5 2H12.5C13.3284 2 14 2.67157 14 3.5V5H2V3.5Z" stroke="#FFFFFF" strokeWidth="1.2"/>
                 <path d="M3 5V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V5" stroke="#FFFFFF" strokeWidth="1.2"/>
@@ -154,19 +234,20 @@ export default function PolicyPageTemplate({
               <span>{showArchived ? 'Active Files' : 'Archive'}</span>
             </button>
 
-            {/* Vertical Divider (Figma Line 1607) */}
             <div className="hidden sm:block h-[28px] w-0 border-r border-[#8E8E93]" aria-hidden="true" />
           </div>
 
-          {/* Right: Search Input (350px × 40px) + Sort By Dropdown */}
+          {/* Right: Search Input + Sort By Dropdown */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Search Input Box */}
             <div className="relative w-full sm:w-[280px] md:w-[350px]">
               <input
                 type="search"
                 placeholder="Search by title..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full h-[40px] pl-4 pr-10 bg-white border border-[#4D4D4D] rounded-[8px] text-[14px] text-[#2A2A2A] placeholder-[#717171] focus:outline-none focus:ring-1 focus:ring-[#751639] transition-all"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#4D4D4D]">
@@ -177,12 +258,14 @@ export default function PolicyPageTemplate({
               </div>
             </div>
 
-            {/* Sort By Dropdown */}
             <div className="flex items-center gap-2">
               <span className="text-[14px] text-[#717171] whitespace-nowrap">Sort By:</span>
               <select
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as any)}
+                onChange={(e) => {
+                  setSortOrder(e.target.value as any);
+                  setCurrentPage(1);
+                }}
                 className="h-[36px] px-3 bg-white border border-[#E5E5EA] rounded-[4px] text-[13px] text-[#2A2A2A] font-medium focus:outline-none focus:border-[#751639]"
               >
                 <option value="newest">Newest first</option>
@@ -197,13 +280,17 @@ export default function PolicyPageTemplate({
         {/* Results Count & Active Filter Indicator */}
         <div className="flex items-center justify-between text-[12px] text-zinc-500">
           <span>
-            Showing <strong className="text-[#751639]">{filteredItems.length}</strong> {filteredItems.length === 1 ? 'document' : 'documents'}
+            Showing <strong className="text-[#751639]">{displayedItems.length}</strong> of{' '}
+            <strong className="text-[#751639]">{totalCount}</strong> {totalCount === 1 ? 'document' : 'documents'}
             {showArchived && ' (Archived)'}
           </span>
           {searchQuery && (
             <button 
               type="button" 
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setCurrentPage(1);
+              }}
               className="text-[#751639] hover:underline font-medium"
             >
               Clear search
@@ -211,68 +298,97 @@ export default function PolicyPageTemplate({
           )}
         </div>
 
+        {/* Loading Spinner */}
+        {isLoading && (
+          <div className="w-full py-8 flex items-center justify-center gap-3 text-[#751639]">
+            <div className="w-5 h-5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">Fetching documents...</span>
+          </div>
+        )}
+
         {/* Document Cards List (Figma 930px × 56px Card) */}
-        <div className="w-full flex flex-col gap-3">
-          {filteredItems.length === 0 ? (
-            <div className="w-full py-12 px-6 text-center bg-[#FAFAFA] border border-dashed border-zinc-300 rounded-[8px]">
-              <p className="text-[15px] font-semibold text-[#2A2A2A]">No documents found</p>
-              <p className="text-[13px] text-zinc-500 mt-1">
-                {searchQuery ? 'Try adjusting your search terms.' : 'No policy records currently in this section.'}
-              </p>
-            </div>
-          ) : (
-            filteredItems.map((doc) => (
-              <div
-                key={doc.id}
-                className="w-full min-h-[56px] py-2.5 px-4 bg-[#FAFAFA] border-l-[3px] border-[#751639] rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:bg-[#F2F2F2] transition-colors"
-              >
-                {/* Left Title & Group/Meta */}
-                <div className="flex flex-col gap-0.5 flex-1 pr-4">
-                  <h3 className="text-[14px] font-semibold leading-[19px] text-[#000000]">
-                    {doc.titleEn}
-                  </h3>
-                  {doc.titleHi && (
-                    <p className="text-[12px] font-normal text-zinc-600">
-                      {doc.titleHi}
-                    </p>
-                  )}
-                  {doc.groupEn && (
-                    <p className="text-[12px] font-normal leading-[16px] text-[#565656]">
-                      {doc.groupEn} {doc.date ? `• ${doc.date}` : ''}
-                    </p>
-                  )}
-                </div>
-
-                {/* Right PDF Info & Link */}
-                <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                  {/* Red PDF Icon */}
-                  <div className="w-[27px] h-[32px] flex items-center justify-center shrink-0">
-                    <svg width="26" height="30" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="26" height="30" rx="3" fill="#D92D20"/>
-                      <path d="M17 0L26 9H17V0Z" fill="#B42318"/>
-                      <text x="3" y="21" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="sans-serif">PDF</text>
-                    </svg>
-                  </div>
-
-                  {/* Size and View Link */}
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-[10px] font-normal text-[#565656]">
-                      {doc.size || '4.50 MB'}
-                    </span>
-                    <a
-                      href={doc.fileUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[12px] font-medium text-[#0D61AE] hover:underline"
-                    >
-                      View PDF
-                    </a>
-                  </div>
-                </div>
+        {!isLoading && (
+          <div className="w-full flex flex-col gap-3">
+            {displayedItems.length === 0 ? (
+              <div className="w-full py-12 px-6 text-center bg-[#FAFAFA] border border-dashed border-zinc-300 rounded-[8px]">
+                <p className="text-[15px] font-semibold text-[#2A2A2A]">No documents found</p>
+                <p className="text-[13px] text-zinc-500 mt-1">
+                  {searchQuery ? 'Try adjusting your search terms.' : 'No policy records currently in this section.'}
+                </p>
               </div>
-            ))
-          )}
-        </div>
+            ) : (
+              displayedItems.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="w-full min-h-[56px] py-2.5 px-4 bg-[#FAFAFA] border-l-[3px] border-[#751639] rounded-[2px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs hover:bg-[#F2F2F2] transition-colors"
+                >
+                  {/* Left Title & Group/Meta */}
+                  <div className="flex flex-col gap-0.5 flex-1 pr-4">
+                    <h3 className="text-[14px] font-semibold leading-[19px] text-[#000000]">
+                      {doc.titleEn}
+                    </h3>
+                    {doc.titleHi && (
+                      <p className="text-[12px] font-normal text-zinc-600">
+                        {doc.titleHi}
+                      </p>
+                    )}
+                    {doc.groupEn && (
+                      <p className="text-[12px] font-normal leading-[16px] text-[#565656]">
+                        {doc.groupEn} {doc.date ? `• ${doc.date}` : ''}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Right Actions (PDF / Video / Image) */}
+                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                    {doc.videoUrl ? (
+                      <a
+                        href={doc.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 bg-[#751639] text-white text-xs font-semibold rounded hover:bg-[#8b1e46] transition-colors"
+                      >
+                        Watch Video
+                      </a>
+                    ) : doc.imageUrl && !doc.fileUrl?.endsWith('.pdf') ? (
+                      <a
+                        href={doc.imageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 bg-[#751639] text-white text-xs font-semibold rounded hover:bg-[#8b1e46] transition-colors"
+                      >
+                        View Photo
+                      </a>
+                    ) : (
+                      <>
+                        <div className="w-[27px] h-[32px] flex items-center justify-center shrink-0">
+                          <svg width="26" height="30" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="26" height="30" rx="3" fill="#D92D20"/>
+                            <path d="M17 0L26 9H17V0Z" fill="#B42318"/>
+                            <text x="3" y="21" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="sans-serif">PDF</text>
+                          </svg>
+                        </div>
+                        <div className="flex flex-col items-start leading-tight">
+                          <span className="text-[10px] font-normal text-[#565656]">
+                            {doc.size || '1.20 MB'}
+                          </span>
+                          <a
+                            href={doc.fileUrl || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[12px] font-medium text-[#0D61AE] hover:underline"
+                          >
+                            View PDF
+                          </a>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
       </div>
     </ResourcesLayout>

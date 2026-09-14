@@ -54,6 +54,7 @@ export default function AnnualReportPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Annual Report"
       pageTitleHi="वार्षिक प्रतिवेदन"
+      apiSlug="annual-report"
       items={ANNUAL_REPORT_DOCS}
     />
   );

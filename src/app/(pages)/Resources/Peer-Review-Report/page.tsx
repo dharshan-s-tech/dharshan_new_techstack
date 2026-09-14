@@ -44,6 +44,7 @@ export default function PeerReviewReportPage() {
       categoryTitleHi="संसाधन"
       pageTitleEn="Peer Review Report"
       pageTitleHi="पीयर रिव्यू रिपोर्ट"
+      apiSlug="peer-review-report"
       items={PEER_REVIEW_DOCS}
     />
   );
