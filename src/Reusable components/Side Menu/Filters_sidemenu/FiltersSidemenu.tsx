@@ -46,10 +46,54 @@ export default function FiltersSidemenu({
   const levels = ['All', 'Union', 'States', 'Local Bodies'];
   const sectors = sectorsList && sectorsList.length > 0
     ? sectorsList
-    : ['All Sectors', 'Finance', 'Transport & Infrastructure', 'Education, Health & Family Welfare', 'Environment and Sustainable Development', 'IT Audit', 'Defence and National Security', 'Commercial', 'Agriculture and Rural Development', 'Tax and Duties'];
+    : ['All Sectors', 'IT Audit', 'Finance', 'Tax and Duties', 'Transport & Infrastructure', 'Education, Health & Family Welfare', 'Environment and Sustainable Development', 'Defence and National Security', 'Commercial', 'Agriculture and Rural Development'];
   const types = typesList && typesList.length > 0
     ? typesList
     : ['All', 'ADC reports', 'Compliance', 'Financial', 'Performance'];
+
+  const sectorListRef = React.useRef<HTMLDivElement>(null);
+  const [sectorScrollRatio, setSectorScrollRatio] = useState(0);
+
+  const handleSectorScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const maxScroll = el.scrollHeight - el.clientHeight;
+    if (maxScroll > 0) {
+      setSectorScrollRatio(el.scrollTop / maxScroll);
+    } else {
+      setSectorScrollRatio(0);
+    }
+  };
+
+  const handleScrollbarTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!sectorListRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+    const maxScroll = sectorListRef.current.scrollHeight - sectorListRef.current.clientHeight;
+    const ratio = Math.max(0, Math.min(1, (clickY - 25) / (221 - 50)));
+    sectorListRef.current.scrollTop = ratio * maxScroll;
+  };
+
+  const typeListRef = React.useRef<HTMLDivElement>(null);
+  const [typeScrollRatio, setTypeScrollRatio] = useState(0);
+
+  const handleTypeScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const maxScroll = el.scrollHeight - el.clientHeight;
+    if (maxScroll > 0) {
+      setTypeScrollRatio(el.scrollTop / maxScroll);
+    } else {
+      setTypeScrollRatio(0);
+    }
+  };
+
+  const handleTypeScrollbarTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!typeListRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+    const maxScroll = typeListRef.current.scrollHeight - typeListRef.current.clientHeight;
+    const ratio = Math.max(0, Math.min(1, (clickY - 25) / (176 - 50)));
+    typeListRef.current.scrollTop = ratio * maxScroll;
+  };
 
   const datePickerRef = React.useRef<HTMLDivElement>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -144,14 +188,25 @@ export default function FiltersSidemenu({
       current.push(i);
     }
 
-    const total = prev.length + current.length <= 35 ? 35 : 42;
+    const total = 42;
     const next: number[] = [];
     const remaining = total - (prev.length + current.length);
     for (let i = 1; i <= remaining; i++) {
       next.push(i);
     }
 
-    return { prev, current, next };
+    const allCells: Array<{ type: 'prev' | 'current' | 'next'; day: number }> = [
+      ...prev.map((d) => ({ type: 'prev' as const, day: d })),
+      ...current.map((d) => ({ type: 'current' as const, day: d })),
+      ...next.map((d) => ({ type: 'next' as const, day: d })),
+    ];
+
+    const rows: Array<Array<{ type: 'prev' | 'current' | 'next'; day: number }>> = [];
+    for (let i = 0; i < allCells.length; i += 7) {
+      rows.push(allCells.slice(i, i + 7));
+    }
+
+    return { prev, current, next, rows };
   };
 
   const formatDateShort = (year: number, month: number, day: number) => {
@@ -228,147 +283,278 @@ export default function FiltersSidemenu({
     onPrev: () => void,
     onNext: () => void
   ) => {
-    const { prev, current, next } = getMonthGrid(year, month);
+    const { rows } = getMonthGrid(year, month);
 
     return (
-      <div className="flex-1 flex flex-col min-w-[245px]">
-        {/* Header Month / Year & Prev / Next */}
-        <div className="flex items-center justify-between mb-3">
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: '0px',
+          gap: '16px',
+          width: '336px',
+          height: '360px',
+          flex: 'none',
+          flexGrow: 0,
+        }}
+      >
+        {/* Calendar Header */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0px',
+            width: '336px',
+            height: '36px',
+            flex: 'none',
+            order: 0,
+            alignSelf: 'stretch',
+            flexGrow: 0,
+          }}
+        >
+          {/* Nav Prev Month */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onPrev();
             }}
-            className="w-7 h-7 rounded-lg border border-[#e5e7eb] flex items-center justify-center text-gray-700 hover:bg-gray-50 bg-white cursor-pointer"
+            style={{
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '8px',
+              width: '36px',
+              height: '36px',
+              background: '#FFFFFF',
+              border: '1px solid #E5E5EA',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0,
+            }}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E2E31" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
 
-          <span className="font-bold text-[14px] text-[#111827]">
+          {/* August 2026 Title */}
+          <span
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontStyle: 'normal',
+              fontWeight: 700,
+              fontSize: '16px',
+              lineHeight: '22px',
+              color: '#2E2E31',
+              flex: 'none',
+              order: 1,
+              flexGrow: 0,
+              textAlign: 'center',
+            }}
+          >
             {isHindi ? `${monthNamesHi[month]} ${year}` : `${monthNamesEn[month]} ${year}`}
           </span>
 
+          {/* Nav Next Month */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onNext();
             }}
-            className="w-7 h-7 rounded-lg border border-[#e5e7eb] flex items-center justify-center text-gray-700 hover:bg-gray-50 bg-white cursor-pointer"
+            style={{
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '8px',
+              width: '36px',
+              height: '36px',
+              background: '#FFFFFF',
+              border: '1px solid #E5E5EA',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              flex: 'none',
+              order: 2,
+              flexGrow: 0,
+            }}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E2E31" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
         </div>
 
-        {/* Weekdays */}
-        <div className="grid grid-cols-7 mb-2 text-center text-[12px] font-semibold">
+        {/* Weekday Headers */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            padding: '0px',
+            width: '336px',
+            height: '32px',
+            flex: 'none',
+            order: 1,
+            alignSelf: 'stretch',
+            flexGrow: 0,
+          }}
+        >
           {(isHindi ? weekdaysHi : weekdaysEn).map((day, idx) => (
-            <span
+            <div
               key={day}
-              className={idx === 0 || idx === 6 ? 'text-[#751639]' : 'text-[#6b7280]'}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '0px',
+                width: '48px',
+                height: '32px',
+                flex: 'none',
+                order: idx,
+                flexGrow: 0,
+              }}
             >
-              {day}
-            </span>
+              <span
+                style={{
+                  fontFamily: "'Noto Sans', sans-serif",
+                  fontStyle: 'normal',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  lineHeight: '18px',
+                  textAlign: 'center',
+                  color: idx === 0 || idx === 6 ? '#751639' : '#8A8A8F',
+                }}
+              >
+                {day}
+              </span>
+            </div>
           ))}
         </div>
 
-        {/* Days Grid */}
-        <div className="grid grid-cols-7 text-center text-[12.5px]">
-          {prev.map((d) => (
-            <div key={`prev-${d}`} className="h-7 w-full flex items-center justify-center my-0.5">
-              <span className="text-[#9ca3af] py-1 select-none text-[12.5px]">{d}</span>
-            </div>
-          ))}
-          {current.map((d) => {
-            const dateObj = { year, month, day: d };
-            const isStart = isSameDay(dateObj, rangeStart);
-            const isEnd = isSameDay(dateObj, rangeEnd);
-            const isSingle = !rangeStart && isSameDay(dateObj, selectedDay);
-            const inBetween = isBetween(dateObj, rangeStart, rangeEnd);
+        {/* Month Grid */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: '0px',
+            gap: '4px',
+            width: '336px',
+            height: '260px',
+            flex: 'none',
+            order: 2,
+            alignSelf: 'stretch',
+            flexGrow: 0,
+          }}
+        >
+          {rows.map((row, rowIdx) => (
+            <div
+              key={`row-${rowIdx}`}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                padding: '0px',
+                width: '336px',
+                height: '40px',
+                flex: 'none',
+                order: rowIdx,
+                alignSelf: 'stretch',
+                flexGrow: 0,
+              }}
+            >
+              {row.map((cell, cellIdx) => {
+                const cellYear = cell.type === 'prev' ? (month === 0 ? year - 1 : year) : cell.type === 'next' ? (month === 11 ? year + 1 : year) : year;
+                const cellMonth = cell.type === 'prev' ? (month === 0 ? 11 : month - 1) : cell.type === 'next' ? (month === 11 ? 0 : month + 1) : month;
+                const dateObj = { year: cellYear, month: cellMonth, day: cell.day };
+                const isSelected = !rangeStart && isSameDay(dateObj, selectedDay);
+                const isStart = isSameDay(dateObj, rangeStart);
+                const isEnd = isSameDay(dateObj, rangeEnd);
+                const inBetween = isBetween(dateObj, rangeStart, rangeEnd);
 
-            if (isStart || isEnd || isSingle) {
-              return (
-                <div
-                  key={`curr-${d}`}
-                  className="h-7 w-full flex items-center justify-center my-0.5"
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleDayClick(year, month, d)}
-                    className="w-7 h-7 mx-auto rounded-full bg-[#751639] text-white font-bold shadow-sm flex items-center justify-center cursor-pointer border-none text-[12.5px]"
+                return (
+                  <div
+                    key={`cell-${rowIdx}-${cellIdx}`}
+                    onClick={() => handleDayClick(cellYear, cellMonth, cell.day)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '0px',
+                      width: '48px',
+                      height: '40px',
+                      flex: 'none',
+                      order: cellIdx,
+                      flexGrow: 0,
+                      cursor: 'pointer',
+                      position: 'relative',
+                      background: inBetween
+                        ? 'rgba(117, 22, 57, 0.08)'
+                        : (isStart && rangeEnd)
+                        ? 'rgba(117, 22, 57, 0.08)'
+                        : (isEnd && rangeStart)
+                        ? 'rgba(117, 22, 57, 0.08)'
+                        : 'transparent',
+                      borderRadius: (isStart && rangeEnd)
+                        ? '20px 0px 0px 20px'
+                        : (isEnd && rangeStart)
+                        ? '0px 20px 20px 0px'
+                        : '0px',
+                    }}
                   >
-                    {d}
-                  </button>
-                </div>
-              );
-            }
-
-            if (inBetween) {
-              const dayOfWeek = new Date(year, month, d).getDay();
-              const daysInMonth = new Date(year, month + 1, 0).getDate();
-              const isRowStart = dayOfWeek === 0;
-              const isRowEnd = dayOfWeek === 6;
-              const isMonthStart = d === 1;
-              const isMonthEnd = d === daysInMonth;
-              const isDayAfterRangeStart =
-                rangeStart &&
-                rangeStart.year === year &&
-                rangeStart.month === month &&
-                d === rangeStart.day + 1;
-              const isDayBeforeRangeEnd =
-                rangeEnd &&
-                rangeEnd.year === year &&
-                rangeEnd.month === month &&
-                d === rangeEnd.day - 1;
-
-              const hasRoundedLeft = isRowStart || isMonthStart || isDayAfterRangeStart;
-              const hasRoundedRight = isRowEnd || isMonthEnd || isDayBeforeRangeEnd;
-
-              const roundClass =
-                hasRoundedLeft && hasRoundedRight
-                  ? 'rounded-md'
-                  : hasRoundedLeft
-                  ? 'rounded-l-md'
-                  : hasRoundedRight
-                  ? 'rounded-r-md'
-                  : '';
-
-              return (
-                <div
-                  key={`curr-${d}`}
-                  className={`h-7 w-full bg-[#fdf2f4] flex items-center justify-center my-0.5 ${roundClass}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleDayClick(year, month, d)}
-                    className="w-full h-full text-[#751639] font-bold flex items-center justify-center cursor-pointer border-none bg-transparent hover:opacity-80 text-[12.5px]"
-                  >
-                    {d}
-                  </button>
-                </div>
-              );
-            }
-
-            return (
-              <div key={`curr-${d}`} className="h-7 w-full flex items-center justify-center my-0.5">
-                <button
-                  type="button"
-                  onClick={() => handleDayClick(year, month, d)}
-                  className="w-7 h-7 mx-auto rounded-full text-[#111827] font-medium hover:bg-gray-100 flex items-center justify-center cursor-pointer border-none bg-transparent text-[12.5px]"
-                >
-                  {d}
-                </button>
-              </div>
-            );
-          })}
-          {next.map((d) => (
-            <div key={`next-${d}`} className="h-7 w-full flex items-center justify-center my-0.5">
-              <span className="text-[#9ca3af] py-1 select-none text-[12.5px]">{d}</span>
+                    {isSelected || isStart || isEnd ? (
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: '#751639',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#FFFFFF',
+                          fontFamily: "'Noto Sans', sans-serif",
+                          fontStyle: 'normal',
+                          fontWeight: 700,
+                          fontSize: '14px',
+                          lineHeight: '19px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {cell.day}
+                      </div>
+                    ) : (
+                      <span
+                        style={{
+                          fontFamily: "'Noto Sans', sans-serif",
+                          fontStyle: 'normal',
+                          fontWeight: inBetween ? 600 : 500,
+                          fontSize: '14px',
+                          lineHeight: '19px',
+                          textAlign: 'center',
+                          color: cell.type === 'current' ? (inBetween ? '#751639' : '#2E2E31') : '#8E8E93',
+                        }}
+                      >
+                        {cell.day}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -378,24 +564,77 @@ export default function FiltersSidemenu({
 
   return (
     <div
-      className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] flex flex-col"
-      style={{ width: '255px', minWidth: '255px', maxWidth: '255px', minHeight: '920px', boxSizing: 'border-box' }}
+      className="bg-white border border-[#E6E6E6] rounded-[8px] shadow-[4px_4px_20px_rgba(0,0,0,0.04)] flex flex-col"
+      style={{
+        position: 'relative',
+        width: '320px',
+        minWidth: '320px',
+        maxWidth: '320px',
+        height: '1043px',
+        minHeight: '1043px',
+        paddingTop: '24px',
+        paddingBottom: '24px',
+        paddingLeft: '24px',
+        paddingRight: '24px',
+        gap: '10px',
+        borderRadius: '8px',
+        borderWidth: '1px',
+        borderColor: '#E6E6E6',
+        boxSizing: 'border-box',
+        opacity: 1,
+        transform: 'rotate(0deg)',
+        zIndex: isDatePickerOpen ? 1000 : 1
+      }}
     >
       {/* Title */}
-      <h2 className="text-[18px] font-bold text-[#111827] m-0 mb-3.5 tracking-tight">
+      <h2
+        className="m-0 font-['Noto_Sans'] font-semibold text-[20px] leading-[27px] text-[#000000]"
+        style={{
+          width: '272px',
+          height: '27px',
+          fontFamily: "'Noto Sans', sans-serif",
+          fontStyle: 'normal',
+          fontWeight: 600,
+          fontSize: '20px',
+          lineHeight: '27px',
+          color: '#000000',
+          flex: 'none',
+          alignSelf: 'stretch',
+          flexGrow: 0,
+        }}
+      >
         {isHindi ? 'फ़िल्टर' : 'Filters'}
       </h2>
 
-      <div className="border-t border-[#e5e7eb] my-3"></div>
+      {/* Line 1586 */}
+      <div
+        className="w-[272px] border-t border-[#D7D7D7]"
+        style={{
+          width: '272px',
+          height: '0px',
+          borderTop: '1px solid #D7D7D7',
+          flex: 'none',
+          alignSelf: 'stretch',
+          flexGrow: 0,
+          boxSizing: 'border-box',
+          marginTop: '24px',
+          marginBottom: '24px',
+          opacity: 1,
+          transform: 'rotate(0deg)'
+        }}
+      />
 
       {/* Segmented Control [ Reports | Accounts ] */}
-      <div className="flex bg-[#f3f4f6] p-1 rounded-md mb-4 gap-1">
+      <div 
+        className="w-[272px] h-[32px] bg-[#F5F4F7] border border-[#EDEDED] rounded-[8px] p-[2px] flex items-center box-border"
+        style={{ width: '272px', height: '32px', boxSizing: 'border-box', flex: 'none', alignSelf: 'stretch', flexGrow: 0 }}
+      >
         <button
           type="button"
-          className={`flex-1 py-2 px-3 text-[12px] font-semibold rounded text-center transition-all cursor-pointer border-none ${
+          className={`flex-1 h-[28px] text-[14px] leading-[19px] rounded-[8px] flex items-center justify-center transition-all cursor-pointer border-none font-['Noto_Sans'] ${
             segment === 'reports'
-              ? 'bg-[#751639] text-white shadow-sm'
-              : 'bg-transparent text-gray-600 hover:text-gray-900'
+              ? 'bg-[#751639] text-[#FFFFFF] font-semibold shadow-[0px_1px_10px_1px_rgba(0,0,0,0.03)]'
+              : 'bg-transparent text-[#565656] font-normal hover:text-gray-900'
           }`}
           onClick={() => setSegment('reports')}
         >
@@ -403,10 +642,10 @@ export default function FiltersSidemenu({
         </button>
         <button
           type="button"
-          className={`flex-1 py-2 px-3 text-[12px] font-semibold rounded text-center transition-all cursor-pointer border-none ${
+          className={`flex-1 h-[28px] text-[14px] leading-[19px] rounded-[8px] flex items-center justify-center transition-all cursor-pointer border-none font-['Noto_Sans'] ${
             segment === 'accounts'
-              ? 'bg-[#751639] text-white shadow-sm'
-              : 'bg-transparent text-gray-600 hover:text-gray-900'
+              ? 'bg-[#751639] text-[#FFFFFF] font-semibold shadow-[0px_1px_10px_1px_rgba(0,0,0,0.03)]'
+              : 'bg-transparent text-[#565656] font-normal hover:text-gray-900'
           }`}
           onClick={() => {
             setSegment('accounts');
@@ -417,28 +656,95 @@ export default function FiltersSidemenu({
         </button>
       </div>
 
-      {/* Select Date with Custom Popover */}
-      <div className="mb-2 relative" ref={datePickerRef}>
-        <label className="block text-[12px] font-semibold text-[#374151] mb-2">
-          {isHindi ? 'तारीख चुनें' : 'Select Date'}
+      {/* Select Year with Custom Popover */}
+      <div
+        ref={datePickerRef}
+        className="relative"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: '0px',
+          gap: '10px',
+          width: '272px',
+          height: '65px',
+          boxSizing: 'border-box',
+          flex: 'none',
+          alignSelf: 'stretch',
+          flexGrow: 0,
+          marginTop: '14px',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+          zIndex: isDatePickerOpen ? 1000 : 1
+        }}
+      >
+        <label
+          style={{
+            width: '66px',
+            height: '15px',
+            fontFamily: "'Inter', sans-serif",
+            fontStyle: 'normal',
+            fontWeight: 600,
+            fontSize: '12px',
+            lineHeight: '15px',
+            textTransform: 'capitalize',
+            color: '#2E2E31',
+            flex: 'none',
+            order: 0,
+            flexGrow: 0,
+            display: 'block'
+          }}
+        >
+          {isHindi ? 'वर्ष चुनें' : 'Select Year'}
         </label>
         
         <div
           role="button"
           tabIndex={0}
           onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-          className={`w-full h-9 px-3 text-[12px] bg-white border ${
-            isDatePickerOpen ? 'border-[#751639] ring-1 ring-[#751639]' : 'border-[#d1d5db]'
-          } rounded flex items-center justify-between cursor-pointer transition-colors`}
+          style={{
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 16px',
+            width: '272px',
+            height: '40px',
+            background: '#FFFFFF',
+            border: isDatePickerOpen ? '1px solid #751639' : '1px solid #D7D7D7',
+            borderRadius: '4px',
+            flex: 'none',
+            order: 1,
+            alignSelf: 'stretch',
+            flexGrow: 0,
+            cursor: 'pointer'
+          }}
         >
-          <span className={displayDate ? 'text-gray-900 font-medium' : 'text-gray-500'}>
-            {displayDate || (isHindi ? 'तारीख चुनें' : 'Select date')}
+          <span
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontStyle: 'normal',
+              fontWeight: 500,
+              fontSize: '12px',
+              lineHeight: '16px',
+              color: displayDate ? '#2E2E31' : '#818181'
+            }}
+          >
+            {displayDate || (isHindi ? 'वर्ष चुनें' : 'Select year')}
           </span>
           <svg
-            className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDatePickerOpen ? 'rotate-180' : ''}`}
+            className={`transition-transform duration-200 ${isDatePickerOpen ? 'rotate-180' : ''}`}
             fill="none"
-            stroke="currentColor"
+            stroke="#8A8A8F"
             viewBox="0 0 24 24"
+            style={{
+              width: '16px',
+              height: '16px',
+              flex: 'none',
+              order: 1,
+              flexGrow: 0
+            }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
           </svg>
@@ -447,11 +753,40 @@ export default function FiltersSidemenu({
         {/* Date Picker Popover */}
         {isDatePickerOpen && (
           <div
-            className="absolute top-[calc(100%+6px)] left-0 z-50 bg-white rounded-2xl border border-[#e5e7eb] shadow-[0_12px_36px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] p-5 flex flex-row transition-all duration-200"
-            style={{ width: selectedPreset === 'Between' ? '700px' : '440px' }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              padding: '24px',
+              gap: '16px',
+              position: 'absolute',
+              width: selectedPreset === 'Between' ? '904px' : '536px',
+              height: '408px',
+              left: '0px',
+              top: 'calc(100% + 6px)',
+              background: '#FFFFFF',
+              border: '1px solid #E5E5EA',
+              boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.0627451)',
+              borderRadius: '4px',
+              zIndex: 99999,
+            }}
           >
-            {/* Left Column: Quick Presets */}
-            <div className="w-[125px] flex flex-col gap-1 pr-4 border-r border-[#e5e7eb] shrink-0">
+            {/* Preset List */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '0px',
+                gap: '8px',
+                width: '120px',
+                height: '344px',
+                flex: 'none',
+                flexGrow: 0,
+              }}
+            >
               {presets.map((preset) => {
                 const isSelected = selectedPreset === preset.labelEn;
                 return (
@@ -459,108 +794,209 @@ export default function FiltersSidemenu({
                     key={preset.id}
                     type="button"
                     onClick={() => handleSelectPreset(preset)}
-                    className={`w-full text-left py-1.5 px-3 text-[13px] rounded-lg transition-colors cursor-pointer border-none ${
-                      isSelected
-                        ? 'bg-[#fdf2f4] text-[#751639] font-bold'
-                        : 'bg-transparent text-[#374151] font-semibold hover:bg-gray-50'
-                    }`}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: '8px 12px',
+                      width: '120px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: isSelected ? 'rgba(117, 22, 57, 0.0784314)' : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      boxSizing: 'border-box',
+                      flex: 'none',
+                      alignSelf: 'stretch',
+                      flexGrow: 0,
+                      transition: 'background-color 0.15s ease',
+                    }}
                   >
-                    {isHindi ? preset.labelHi : preset.labelEn}
+                    <span
+                      style={{
+                        fontFamily: "'Noto Sans', sans-serif",
+                        fontStyle: 'normal',
+                        fontWeight: isSelected ? 700 : 600,
+                        fontSize: '14px',
+                        lineHeight: '19px',
+                        color: isSelected ? '#751639' : '#2E2E31',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {isHindi ? preset.labelHi : preset.labelEn}
+                    </span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Right Column: Calendars */}
-            <div className="flex-1 pl-5 flex flex-row">
-              {/* Calendar 1 */}
-              <div className={`flex-1 flex flex-col ${selectedPreset === 'Between' ? 'pr-5 border-r border-[#e5e7eb]' : ''}`}>
+            {/* Line (vertical divider between Presets and Calendar 1) */}
+            <div
+              style={{
+                boxSizing: 'border-box',
+                width: '0px',
+                height: '360px',
+                borderLeft: '1px solid #E5E5EA',
+                flex: 'none',
+                flexGrow: 0,
+              }}
+            />
+
+            {/* Calendar 1 */}
+            {renderCalendar(
+              viewYear1,
+              viewMonth1,
+              () => {
+                if (viewMonth1 === 0) {
+                  setViewMonth1(11);
+                  setViewYear1((y) => y - 1);
+                } else {
+                  setViewMonth1((m) => m - 1);
+                }
+              },
+              () => {
+                if (viewMonth1 === 11) {
+                  setViewMonth1(0);
+                  setViewYear1((y) => y + 1);
+                } else {
+                  setViewMonth1((m) => m + 1);
+                }
+              }
+            )}
+
+            {/* Second Calendar with Divider in between (if Between mode) */}
+            {selectedPreset === 'Between' && (
+              <>
+                {/* Line (vertical divider between Calendar 1 and Calendar 2) */}
+                <div
+                  style={{
+                    boxSizing: 'border-box',
+                    width: '0px',
+                    height: '360px',
+                    borderLeft: '1px solid #E5E5EA',
+                    flex: 'none',
+                    flexGrow: 0,
+                  }}
+                />
                 {renderCalendar(
-                  viewYear1,
-                  viewMonth1,
+                  viewYear2,
+                  viewMonth2,
                   () => {
-                    if (viewMonth1 === 0) {
-                      setViewMonth1(11);
-                      setViewYear1((y) => y - 1);
+                    if (viewMonth2 === 0) {
+                      setViewMonth2(11);
+                      setViewYear2((y) => y - 1);
                     } else {
-                      setViewMonth1((m) => m - 1);
+                      setViewMonth2((m) => m - 1);
                     }
                   },
                   () => {
-                    if (viewMonth1 === 11) {
-                      setViewMonth1(0);
-                      setViewYear1((y) => y + 1);
+                    if (viewMonth2 === 11) {
+                      setViewMonth2(0);
+                      setViewYear2((y) => y + 1);
                     } else {
-                      setViewMonth1((m) => m + 1);
+                      setViewMonth2((m) => m + 1);
                     }
                   }
                 )}
-              </div>
-
-              {/* Calendar 2 (shown in Between mode) */}
-              {selectedPreset === 'Between' && (
-                <div className="flex-1 pl-5 flex flex-col">
-                  {renderCalendar(
-                    viewYear2,
-                    viewMonth2,
-                    () => {
-                      if (viewMonth2 === 0) {
-                        setViewMonth2(11);
-                        setViewYear2((y) => y - 1);
-                      } else {
-                        setViewMonth2((m) => m - 1);
-                      }
-                    },
-                    () => {
-                      if (viewMonth2 === 11) {
-                        setViewMonth2(0);
-                        setViewYear2((y) => y + 1);
-                      } else {
-                        setViewMonth2((m) => m + 1);
-                      }
-                    }
-                  )}
-                </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         )}
       </div>
 
-      {/* Clear All under Select Date */}
-      <div className="flex justify-end mt-2 mb-3">
-        <button
-          type="button"
-          onClick={() => {
-            setDisplayDate('');
-            setSelectedDay(null);
-            setRangeStart(null);
-            setRangeEnd(null);
-            setSelectedPreset('');
-            setIsDatePickerOpen(false);
-            clearAllFilters();
+      {/* Clear All when filters active */}
+      {(displayDate || selectedLevels.length > 0 || selectedSectors.length > 0 || selectedTypes.length > 0) && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            padding: '0px',
+            gap: '10px',
+            width: '272px',
+            height: '16px',
+            boxSizing: 'border-box',
+            flex: 'none',
+            alignSelf: 'stretch',
+            flexGrow: 0,
+            marginTop: '10px',
+            marginBottom: '10px',
+            opacity: 1,
+            transform: 'rotate(0deg)'
           }}
-          className="inline-flex items-center gap-1 text-[11.5px] font-medium text-[#0284c7] hover:underline bg-transparent border-none cursor-pointer p-0"
         >
-          <span>✕</span>
-          <span>{isHindi ? 'सभी साफ़ करें' : 'Clear All'}</span>
-        </button>
-      </div>
-
-      <div className="border-t border-[#e5e7eb] my-3"></div>
+          <button
+            type="button"
+            onClick={() => {
+              setDisplayDate('');
+              setSelectedDay(null);
+              setRangeStart(null);
+              setRangeEnd(null);
+              setSelectedPreset('');
+              setIsDatePickerOpen(false);
+              clearAllFilters();
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              padding: '0px',
+              gap: '6px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              height: '16px',
+              flex: 'none',
+              flexGrow: 0
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ width: '14px', height: '14px', flex: 'none' }}
+            >
+              <path
+                d="M4 4L12 12M12 4L4 12"
+                stroke="#0D61AE"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span
+              style={{
+                fontFamily: "'Noto Sans', sans-serif",
+                fontStyle: 'normal',
+                fontWeight: 400,
+                fontSize: '12px',
+                lineHeight: '16px',
+                textDecorationLine: 'underline',
+                color: '#0D61AE'
+              }}
+            >
+              {isHindi ? 'सभी साफ़ करें' : 'Clear All'}
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Accordion 1: Administrative Level */}
-      <div className="mb-3">
+      <div className="w-[272px] flex flex-col">
         <button
           type="button"
           onClick={() => setLevelOpen(!levelOpen)}
-          className="w-full flex items-center justify-between py-1 bg-transparent border-none cursor-pointer text-left"
+          className="w-full flex items-center justify-between py-0 bg-transparent border-none cursor-pointer text-left"
         >
-          <span className="text-[13px] font-bold text-[#1f2937]">
+          <span className="text-[16px] font-semibold text-[#111827] font-['Noto_Sans'] leading-[22px]">
             {isHindi ? 'प्रशासनिक स्तर' : 'Administrative Level'}
           </span>
           <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${levelOpen ? '' : 'rotate-180'}`}
+            className={`w-4 h-4 text-[#111827] transition-transform ${levelOpen ? '' : 'rotate-180'}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -568,19 +1004,99 @@ export default function FiltersSidemenu({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
           </svg>
         </button>
+
+        {/* Divider line directly below the title */}
+        <div
+          className="w-[272px] border-t border-[#D7D7D7] mt-3"
+          style={{
+            width: '272px',
+            height: '0px',
+            borderTop: '1px solid #D7D7D7',
+            boxSizing: 'border-box'
+          }}
+        />
+
         {levelOpen && (
-          <div className="mt-3 space-y-2.5">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '0px',
+              gap: '24px',
+              width: '240px',
+              boxSizing: 'border-box',
+              marginTop: '16px'
+            }}
+          >
             {levels.map((lvl) => {
               const isChecked = selectedLevels.includes(lvl);
               return (
-                <label key={lvl} className="flex items-center gap-2.5 text-[12px] text-[#374151] cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleLevel(lvl)}
-                    className="w-4 h-4 rounded text-[#751639] accent-[#751639] cursor-pointer"
-                  />
-                  <span>{lvl}</span>
+                <label
+                  key={lvl}
+                  onClick={() => toggleLevel(lvl)}
+                  className="flex items-center gap-2 cursor-pointer select-none"
+                  style={{
+                    width: '240px',
+                    height: '22px',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      minWidth: '16px',
+                      minHeight: '16px',
+                      borderRadius: '2px',
+                      backgroundColor: isChecked ? '#751639' : '#FFFFFF',
+                      border: isChecked ? 'none' : '1px solid #717171',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxSizing: 'border-box',
+                      cursor: 'pointer',
+                      position: 'relative'
+                    }}
+                  >
+                    {isChecked && (
+                      <svg
+                        width="10"
+                        height="8"
+                        viewBox="0 0 10 8"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 4L3.5 6.5L9 1"
+                          stroke="#FFFFFF"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <span
+                    style={{
+                      width: '216px',
+                      height: '22px',
+                      fontFamily: "'Noto Sans', sans-serif",
+                      fontStyle: 'normal',
+                      fontWeight: 400,
+                      fontSize: '16px',
+                      lineHeight: '22px',
+                      color: '#2E2E31',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    {lvl}
+                  </span>
                 </label>
               );
             })}
@@ -588,85 +1104,483 @@ export default function FiltersSidemenu({
         )}
       </div>
 
-      <div className="border-t border-[#e5e7eb] my-3"></div>
-
       {/* Accordion 2: Sector */}
-      <div className="mb-3">
+      <div
+        className="flex flex-col"
+        style={{
+          position: 'relative',
+          width: '272px',
+          height: sectorOpen ? '275px' : '38px',
+          padding: '0px',
+          gap: '16px',
+          isolation: 'isolate',
+          flex: 'none',
+          alignSelf: 'stretch',
+          flexGrow: 0,
+          boxSizing: 'border-box'
+        }}
+      >
         <button
           type="button"
           onClick={() => setSectorOpen(!sectorOpen)}
-          className="w-full flex items-center justify-between py-1 bg-transparent border-none cursor-pointer text-left"
+          className="w-full flex items-center justify-between bg-transparent border-none cursor-pointer text-left"
+          style={{
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px 0px',
+            width: '272px',
+            height: '38px',
+            borderBottom: '1px solid #D7D7D7',
+            flex: 'none',
+            order: 0,
+            alignSelf: 'stretch',
+            flexGrow: 0,
+            zIndex: 0
+          }}
         >
-          <span className="text-[13px] font-bold text-[#1f2937]">
+          <span
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontStyle: 'normal',
+              fontWeight: 700,
+              fontSize: '16px',
+              lineHeight: '22px',
+              color: '#2E2E31',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0
+            }}
+          >
             {isHindi ? 'क्षेत्र' : 'Sector'}
           </span>
-          <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${sectorOpen ? '' : 'rotate-180'}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 'none',
+              order: 1,
+              flexGrow: 0,
+              marginRight: '-2px'
+            }}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
-          </svg>
-        </button>
-        {sectorOpen && (
-          <div className="mt-3 space-y-2.5 max-h-44 overflow-y-scroll filter-scrollbar pr-2">
-            {sectors.map((sec) => {
-              const isChecked = selectedSectors.includes(sec);
-              return (
-                <label key={sec} className="flex items-center gap-2.5 text-[12px] text-[#374151] cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleSector(sec)}
-                    className="w-4 h-4 rounded text-[#751639] accent-[#751639] cursor-pointer"
-                  />
-                  <span>{sec}</span>
-                </label>
-              );
-            })}
+            <svg
+              className={`w-4 h-4 text-[#2A2A2A] transition-transform duration-200 ${sectorOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              style={{
+                width: '16px',
+                height: '16px'
+              }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
+        </button>
+
+        {sectorOpen && (
+          <>
+            {/* Scrollbar Track & Thumb vertically aligned to Chevron arrow */}
+            <div
+              onClick={handleScrollbarTrackClick}
+              style={{
+                position: 'absolute',
+                width: '4px',
+                height: '221px',
+                left: '264px',
+                top: '54px',
+                flex: 'none',
+                order: 1,
+                flexGrow: 0,
+                zIndex: 1,
+                cursor: 'pointer',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              {/* Scrollbar Track */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '4px',
+                  height: '221px',
+                  left: '0px',
+                  top: '0px',
+                  backgroundColor: '#EBEBEB',
+                  borderRadius: '2px'
+                }}
+              />
+
+              {/* Scrollbar Thumb */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '4px',
+                  height: '50px',
+                  left: '0px',
+                  top: `${sectorScrollRatio * (221 - 50)}px`,
+                  backgroundColor: '#BFBFBF',
+                  borderRadius: '2px',
+                  transition: 'top 0.05s ease-out'
+                }}
+              />
+            </div>
+
+            {/* Checkboxes List */}
+            <div
+              ref={sectorListRef}
+              onScroll={handleSectorScroll}
+              className="no-scrollbar"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '0px 0px 16px',
+                gap: '24px',
+                width: '240px',
+                height: '221px',
+                boxSizing: 'border-box',
+                flex: 'none',
+                order: 2,
+                flexGrow: 0,
+                zIndex: 2,
+                overflowX: 'hidden',
+                overflowY: 'auto'
+              }}
+            >
+              {sectors.map((sec, idx) => {
+                const isChecked = selectedSectors.includes(sec);
+                return (
+                  <label
+                    key={sec}
+                    onClick={() => toggleSector(sec)}
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                    style={{
+                      width: '100%',
+                      maxWidth: '240px',
+                      minHeight: '22px',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxSizing: 'border-box',
+                      flex: 'none',
+                      order: idx,
+                      alignSelf: 'stretch',
+                      flexGrow: 0
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        minWidth: '16px',
+                        minHeight: '16px',
+                        borderRadius: '2px',
+                        backgroundColor: isChecked ? '#751639' : '#FFFFFF',
+                        border: isChecked ? 'none' : '1px solid #565656',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        flex: 'none',
+                        order: 0,
+                        flexGrow: 0
+                      }}
+                    >
+                      {isChecked && (
+                        <svg
+                          width="10"
+                          height="8"
+                          viewBox="0 0 10 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M1 4L3.5 6.5L9 1"
+                            stroke="#FFFFFF"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        width: '216px',
+                        fontFamily: "'Noto Sans', sans-serif",
+                        fontStyle: 'normal',
+                        fontWeight: 400,
+                        fontSize: '16px',
+                        lineHeight: '22px',
+                        color: '#2E2E31',
+                        display: 'flex',
+                        alignItems: 'center',
+                        flex: 'none',
+                        order: 1,
+                        flexGrow: 1,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
+                      }}
+                    >
+                      {sec}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
-      <div className="border-t border-[#e5e7eb] my-3"></div>
-
       {/* Accordion 3: Report Type */}
-      <div className="mb-2">
+      <div
+        className="flex flex-col"
+        style={{
+          position: 'relative',
+          width: '272px',
+          height: typeOpen ? '230px' : '38px',
+          padding: '0px',
+          gap: '16px',
+          isolation: 'isolate',
+          flex: 'none',
+          alignSelf: 'stretch',
+          flexGrow: 0,
+          boxSizing: 'border-box'
+        }}
+      >
         <button
           type="button"
           onClick={() => setTypeOpen(!typeOpen)}
-          className="w-full flex items-center justify-between py-1 bg-transparent border-none cursor-pointer text-left"
+          className="w-full flex items-center justify-between bg-transparent border-none cursor-pointer text-left"
+          style={{
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px 0px',
+            gap: '96px',
+            width: '272px',
+            height: '38px',
+            borderBottom: '1px solid #D7D7D7',
+            flex: 'none',
+            order: 0,
+            alignSelf: 'stretch',
+            flexGrow: 0,
+            zIndex: 0
+          }}
         >
-          <span className="text-[13px] font-bold text-[#1f2937]">
+          <span
+            style={{
+              width: '97px',
+              height: '22px',
+              fontFamily: "'Noto Sans', sans-serif",
+              fontStyle: 'normal',
+              fontWeight: 700,
+              fontSize: '16px',
+              lineHeight: '22px',
+              color: '#2E2E31',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0,
+              whiteSpace: 'nowrap'
+            }}
+          >
             {isHindi ? 'रिपोर्ट प्रकार' : 'Report Type'}
           </span>
-          <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${typeOpen ? '' : 'rotate-180'}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 'none',
+              order: 1,
+              flexGrow: 0,
+              marginRight: '-2px'
+            }}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
-          </svg>
-        </button>
-        {typeOpen && (
-          <div className="mt-3 space-y-2.5 max-h-36 overflow-y-scroll filter-scrollbar pr-2">
-            {types.map((tp) => {
-              const isChecked = selectedTypes.includes(tp);
-              return (
-                <label key={tp} className="flex items-center gap-2.5 text-[12px] text-[#374151] cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleType(tp)}
-                    className="w-4 h-4 rounded text-[#751639] accent-[#751639] cursor-pointer"
-                  />
-                  <span>{tp}</span>
-                </label>
-              );
-            })}
+            <svg
+              className={`w-4 h-4 text-[#2A2A2A] transition-transform duration-200 ${typeOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              style={{
+                width: '16px',
+                height: '16px'
+              }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
+        </button>
+
+        {typeOpen && (
+          <>
+            {/* Scrollbar Track & Thumb vertically aligned to Chevron arrow */}
+            <div
+              onClick={handleTypeScrollbarTrackClick}
+              style={{
+                position: 'absolute',
+                width: '4px',
+                height: '176px',
+                left: '264px',
+                top: '54px',
+                flex: 'none',
+                order: 1,
+                flexGrow: 0,
+                zIndex: 1,
+                cursor: 'pointer',
+                opacity: 1,
+                transform: 'rotate(0deg)'
+              }}
+            >
+              {/* Scrollbar Track */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '4px',
+                  height: '176px',
+                  left: '0px',
+                  top: '0px',
+                  backgroundColor: '#EBEBEB',
+                  borderRadius: '2px'
+                }}
+              />
+
+              {/* Scrollbar Thumb */}
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '4px',
+                  height: '50px',
+                  left: '0px',
+                  top: `${typeScrollRatio * (176 - 50)}px`,
+                  backgroundColor: '#BFBFBF',
+                  borderRadius: '2px',
+                  transition: 'top 0.05s ease-out'
+                }}
+              />
+            </div>
+
+            {/* Checkboxes List */}
+            <div
+              ref={typeListRef}
+              onScroll={handleTypeScroll}
+              className="no-scrollbar"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '0px 0px 16px',
+                gap: '24px',
+                width: '240px',
+                height: '176px',
+                boxSizing: 'border-box',
+                flex: 'none',
+                order: 2,
+                flexGrow: 0,
+                zIndex: 2,
+                overflowX: 'hidden',
+                overflowY: 'auto'
+              }}
+            >
+              {types.map((tp, idx) => {
+                const isChecked = selectedTypes.includes(tp);
+                return (
+                  <label
+                    key={tp}
+                    onClick={() => toggleType(tp)}
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                    style={{
+                      width: '100%',
+                      maxWidth: '240px',
+                      minHeight: '22px',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxSizing: 'border-box',
+                      flex: 'none',
+                      order: idx,
+                      alignSelf: 'stretch',
+                      flexGrow: 0
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        minWidth: '16px',
+                        minHeight: '16px',
+                        borderRadius: '2px',
+                        backgroundColor: isChecked ? '#751639' : '#FFFFFF',
+                        border: isChecked ? 'none' : '1px solid #565656',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxSizing: 'border-box',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        flex: 'none',
+                        order: 0,
+                        flexGrow: 0
+                      }}
+                    >
+                      {isChecked && (
+                        <svg
+                          width="10"
+                          height="8"
+                          viewBox="0 0 10 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M1 4L3.5 6.5L9 1"
+                            stroke="#FFFFFF"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        width: '216px',
+                        fontFamily: "'Noto Sans', sans-serif",
+                        fontStyle: 'normal',
+                        fontWeight: 400,
+                        fontSize: '16px',
+                        lineHeight: '22px',
+                        color: '#2E2E31',
+                        display: 'flex',
+                        alignItems: 'center',
+                        flex: 'none',
+                        order: 1,
+                        flexGrow: 1,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
+                      }}
+                    >
+                      {tp}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>

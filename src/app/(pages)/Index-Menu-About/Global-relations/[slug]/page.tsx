@@ -125,34 +125,92 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[64px] pt-2 pb-[96px] font-['Noto_Sans'] tracking-normal">
-      {/* Dynamic Breadcrumbs */}
-      <nav className="breadcrumbs mb-4" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-2 text-[12px] leading-[16px] font-['Noto_Sans'] tracking-normal">
-          <li>
-            <Link href="/" className="text-[#565656] hover:text-[#751639] transition-colors">
-              {isHindi ? 'गृह' : 'Home'}
-            </Link>
-          </li>
-          <li className="text-[#565656] flex items-center">
-            <svg className="w-2.5 h-2.5 text-[#565656] transform -rotate-90" viewBox="0 0 10 6" fill="none" stroke="currentColor">
-              <path d="M1 1L5 5L9 1" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </li>
-          <li>
-            <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" className="text-[#565656] hover:text-[#751639] transition-colors">
-              {isHindi ? 'वैश्विक संबंध' : 'Global Relations'}
-            </Link>
-          </li>
-          <li className="text-[#565656] flex items-center">
-            <svg className="w-2.5 h-2.5 text-[#565656] transform -rotate-90" viewBox="0 0 10 6" fill="none" stroke="currentColor">
-              <path d="M1 1L5 5L9 1" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </li>
-          <li className="font-bold text-[#2A2A2A]">
-            {pageTitle}
-          </li>
-        </ol>
+    <div
+      style={{
+        width: '100%',
+        maxWidth: '1440px',
+        margin: '0 auto',
+        paddingTop: '24px',
+        paddingBottom: '96px',
+        paddingLeft: '64px',
+        paddingRight: '64px',
+        boxSizing: 'border-box',
+        fontFamily: "'Noto Sans', sans-serif"
+      }}
+    >
+      {/* Dynamic Breadcrumbs (Figma: width 286px, height 16px, left 64px, top 144px, gap 8px) */}
+      <nav
+        aria-label="Breadcrumb"
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: '0px',
+          gap: '8px',
+          height: '16px',
+          marginBottom: isBilateral ? '32px' : '24px',
+          fontFamily: "'Noto Sans', sans-serif"
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            fontFamily: "'Noto Sans', sans-serif",
+            fontSize: '12px',
+            lineHeight: '16px',
+            fontWeight: 400,
+            color: '#565656',
+            textDecoration: 'none',
+            flex: 'none',
+            order: 0,
+            flexGrow: 0
+          }}
+          className="hover:underline"
+        >
+          {isHindi ? 'गृह' : 'Home'}
+        </Link>
+
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, flex: 'none', order: 1, flexGrow: 0 }}>
+          <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+
+        <Link
+          href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI"
+          style={{
+            fontFamily: "'Noto Sans', sans-serif",
+            fontSize: '12px',
+            lineHeight: '16px',
+            fontWeight: 400,
+            color: '#565656',
+            textDecoration: 'none',
+            flex: 'none',
+            order: 2,
+            flexGrow: 0
+          }}
+          className="hover:underline"
+        >
+          {isHindi ? 'वैश्विक संबंध' : 'Global Relations'}
+        </Link>
+
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, flex: 'none', order: 3, flexGrow: 0 }}>
+          <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+
+        <span
+          style={{
+            fontFamily: "'Noto Sans', sans-serif",
+            fontSize: '12px',
+            lineHeight: '16px',
+            fontWeight: 600,
+            color: '#2E2E31',
+            whiteSpace: 'nowrap',
+            flex: 'none',
+            order: 4,
+            flexGrow: 0
+          }}
+        >
+          {pageTitle}
+        </span>
       </nav>
 
       {isBilateral ? (
@@ -240,24 +298,11 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
           <main className="flex-1 w-full min-w-0">
             {/* Top Hero Banner (Frame 2147227447) */}
             <div className="relative w-full h-[141.33px] bg-white rounded-[8px] overflow-hidden mb-6 shadow-sm">
-              {/* SVG ClipPath Definition for Burgundy Background */}
-              <svg className="absolute w-0 h-0" aria-hidden="true">
-                <defs>
-                  <clipPath id="header-burgundy-clip" clipPathUnits="objectBoundingBox">
-                    <path d="M 0 0 L 0.817 0 C 0.805 0.35, 0.780 0.70, 0.758 1 L 0 1 Z" />
-                  </clipPath>
-                </defs>
-              </svg>
-
-              {/* Background SVG exported from Figma (Clipped to expose white section on right) */}
+              {/* Background Banner Image */}
               <img 
-                src="/assets/Images/page-header-bg.svg" 
+                src="/assets/Images/banner.png" 
                 alt="Header Background" 
                 className="absolute inset-0 w-full h-full object-cover"
-                style={{
-                  clipPath: 'url(#header-burgundy-clip)',
-                  WebkitClipPath: 'url(#header-burgundy-clip)'
-                }}
               />
 
               {/* Left Title */}
@@ -268,33 +313,45 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
               </div>
 
               {/* Right Logo Section (Centered in White Background Area) */}
-              <div className="absolute right-0 top-0 bottom-0 w-[205px] z-10 flex items-center justify-center">
+              {isUnPanel ? (
                 <img 
-                  src={
-                    isIntosai 
-                      ? "/assets/Images/INTOSAI-logo.svg"
-                      : ((isPresentAudits || isPastAudits)
-                          ? "/assets/Images/presentIA-logo.svg"
-                          : (isUnPanel
-                              ? "/assets/Images/unpanel-logo.svg"
-                              : (isMultilateral 
-                                  ? "/assets/Images/multilateral-logo.svg" 
-                                  : (isAsosai ? "/assets/Images/ASOSAI-logo.svg" : "/assets/Images/INTOSAI-logo.svg"))))
-                  } 
-                  alt="Organization Logo" 
-                  className={
-                    isIntosai 
-                      ? "w-[80px] h-[77px] object-contain"
-                      : ((isPresentAudits || isPastAudits)
-                          ? "w-[167px] h-[120px] object-contain"
-                          : (isUnPanel
-                              ? "w-[141px] h-[101px] object-contain"
-                              : (isMultilateral 
-                                  ? "w-[103px] h-[103px] object-contain" 
-                                  : (isAsosai ? "w-[126px] h-[40px] object-contain" : "w-[80px] h-[77px] object-contain"))))
-                  }
+                  src="/assets/Images/unpanel-logo.svg" 
+                  alt="UN Panel of External Auditors Logo" 
+                  className="absolute z-10"
+                  style={{
+                    position: 'absolute',
+                    width: '141.39px',
+                    height: '101.24px',
+                    right: '32px',
+                    top: '20.05px',
+                    objectFit: 'contain'
+                  }}
                 />
-              </div>
+              ) : (
+                <div className="absolute right-0 top-0 bottom-0 w-[205px] z-10 flex items-center justify-center">
+                  <img 
+                    src={
+                      isIntosai 
+                        ? "/assets/Images/INTOSAI-logo.svg"
+                        : ((isPresentAudits || isPastAudits)
+                            ? "/assets/Images/presentIA-logo.svg"
+                            : (isMultilateral 
+                                ? "/assets/Images/multilateral-logo.svg" 
+                                : (isAsosai ? "/assets/Images/ASOSAI-logo.svg" : "/assets/Images/INTOSAI-logo.svg")))
+                    } 
+                    alt="Organization Logo" 
+                    className={
+                      isIntosai 
+                        ? "w-[80px] h-[77px] object-contain"
+                        : ((isPresentAudits || isPastAudits)
+                            ? "w-[167px] h-[120px] object-contain"
+                            : (isMultilateral 
+                                ? "w-[103px] h-[103px] object-contain" 
+                                : (isAsosai ? "w-[126px] h-[40px] object-contain" : "w-[80px] h-[77px] object-contain")))
+                    }
+                  />
+                </div>
+              )}
             </div>
 
             {/* Main Article Body Text */}

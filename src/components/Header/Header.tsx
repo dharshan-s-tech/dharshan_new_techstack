@@ -64,102 +64,116 @@ export default function Header() {
   const isHindi = language === 'हिन्दी';
 
   return (
-    <header className="site-header" data-node-id="115:2138" data-name="Menu">
+    <header className="site-header relative w-full" data-node-id="115:2138" data-name="Menu">
+      {/* 1440px container for absolute header logo */}
+      <div className="relative max-w-[1440px] mx-auto pointer-events-none">
+        <Link 
+          href="/" 
+          className="cag-logo pointer-events-auto"
+          aria-label="CAG Home"
+        >
+          <img 
+            src="/assets/Images/CAG Logo.svg" 
+            alt="Comptroller and Auditor General of India crest logo" 
+          />
+        </Link>
+      </div>
+
       {/* Utility Bar */}
-      <div className="utility-bar" data-node-id="115:2156">
-        <nav className="utility-links" aria-label="Utility links">
-          <Link href="/Resources" className="utility-link">{isHindi ? 'ज्ञान केंद्र' : 'Knowledge Hub'}</Link>
-          <a 
-            href="/admin" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="utility-link hover:underline"
-            onClick={(e) => {
-              e.preventDefault();
-              window.open('/admin', '_blank');
-            }}
-          >
-            {isHindi ? 'कर्मचारी पोर्टल (Admin)' : 'Employee Portal'}
-          </a>
-          <Link href="/#news-events-heading" className="utility-link">{isHindi ? 'समाचार एवं घटनाएँ' : 'News & Events'}</Link>
-          <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="utility-link">{isHindi ? 'संपर्क' : 'Contact'}</Link>
-        </nav>
-        <div className="accessibility">
-          <button 
-            type="button" 
-            className={`a11y-toggle ${highContrast ? 'a11y-toggle--active' : ''}`} 
-            aria-label="Toggle accessibility options"
-            onClick={toggleHighContrast}
-          >
-            <span className="a11y-toggle__bg"></span>
-            <span className="a11y-toggle__label">A</span>
-          </button>
-          <img src="/assets/375873ae673ed89a10f1c4f0795d68cf55801045.svg" alt="" className="chevron chevron--small" />
-          <button 
-            type="button"
-            className="lang-select cursor-pointer flex items-center gap-1 bg-transparent border-none text-[10px] text-zinc-600 hover:underline" 
-            onClick={toggleLanguage}
-            style={{ position: 'relative', zIndex: 50, cursor: 'pointer' }}
-          >
-            <span>{language}</span>
+      <div className="w-full bg-[#EEEEEE]">
+        <div className="utility-bar max-w-[1440px] mx-auto" data-node-id="115:2156">
+          <nav className="utility-links" aria-label="Utility links">
+            <Link href="/Resources" className="utility-link">{isHindi ? 'ज्ञान केंद्र' : 'Knowledge Hub'}</Link>
+            <a 
+              href="/admin" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="utility-link hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open('/admin', '_blank');
+              }}
+            >
+              {isHindi ? 'कर्मचारी पोर्टल (Admin)' : 'Employee Portal'}
+            </a>
+            <Link href="/#news-events-heading" className="utility-link">{isHindi ? 'समाचार एवं घटनाएँ' : 'News & Events'}</Link>
+            <Link href="/About/Index-Menu-About/Global-relations/International%20Relations%20Wing" className="utility-link">{isHindi ? 'संपर्क' : 'Contact'}</Link>
+          </nav>
+          <div className="accessibility">
+            <button 
+              type="button" 
+              className={`a11y-toggle ${highContrast ? 'a11y-toggle--active' : ''}`} 
+              aria-label="Toggle accessibility options"
+              onClick={toggleHighContrast}
+            >
+              <span className="a11y-toggle__bg"></span>
+              <span className="a11y-toggle__label">A</span>
+            </button>
             <img src="/assets/375873ae673ed89a10f1c4f0795d68cf55801045.svg" alt="" className="chevron chevron--small" />
-          </button>
+            <button 
+              type="button"
+              className="lang-select cursor-pointer flex items-center gap-1 bg-transparent border-none text-[10px] text-zinc-600 hover:underline" 
+              onClick={toggleLanguage}
+              style={{ position: 'relative', zIndex: 50, cursor: 'pointer' }}
+            >
+              <span>{language}</span>
+              <img src="/assets/375873ae673ed89a10f1c4f0795d68cf55801045.svg" alt="" className="chevron chevron--small" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Main Nav */}
-      <div className="main-nav">
-        <Link className="cag-logo" href="/">
-          <img src="/assets/12e6d254adf33bbd46537f45eb8f9ecd50a15e55.png" alt="Comptroller and Auditor General of India crest logo" />
-        </Link>
-        
-        {/* Render Menu Component */}
-        <Menu mobileMenuOpen={mobileMenuOpen} language={language} />
+      <div className="w-full bg-white border-b border-[#D7D7D7]">
+        <div className="main-nav max-w-[1440px] mx-auto border-none">
+          {/* Render Menu Component */}
+          <Menu mobileMenuOpen={mobileMenuOpen} language={language} />
 
-        <button 
-          type="button" 
-          className="nav-toggle" 
-          id="nav-toggle" 
-          aria-label="Toggle navigation menu" 
-          aria-expanded={mobileMenuOpen ? 'true' : 'false'}
-          onClick={toggleMobileMenu}
-        >
-          <span></span><span></span><span></span>
-        </button>
-        <div className="search-box">
-          <div className="search-box__inner flex items-center gap-2 px-2" style={{ position: 'relative', height: '100%' }}>
-            <img 
-              src="/assets/ef7eb7134dafeda4c8183619dad425b62c132784.svg" 
-              alt="Search" 
-              className="search-box__icon cursor-pointer" 
-              onClick={executeSearch}
-              style={{
-                position: 'relative',
-                zIndex: 10,
-                cursor: 'pointer',
-                width: '16px',
-                height: '16px',
-              }}
-            />
-            <input 
-              type="search" 
-              aria-label="Search"
-              value={searchVal}
-              onChange={(e) => setSearchVal(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              placeholder={isHindi ? 'खोजें...' : 'Search...'}
-              style={{
-                position: 'relative',
-                opacity: 1,
-                flex: 1,
-                height: '100%',
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: '#2a2a2a',
-                fontSize: '14px',
-              }}
-            />
+          <button 
+            type="button" 
+            className="nav-toggle" 
+            id="nav-toggle" 
+            aria-label="Toggle navigation menu" 
+            aria-expanded={mobileMenuOpen ? 'true' : 'false'}
+            onClick={toggleMobileMenu}
+          >
+            <span></span><span></span><span></span>
+          </button>
+          <div className="search-box">
+            <div className="search-box__inner flex items-center gap-2 px-2" style={{ position: 'relative', height: '100%' }}>
+              <img 
+                src="/assets/ef7eb7134dafeda4c8183619dad425b62c132784.svg" 
+                alt="Search" 
+                className="search-box__icon cursor-pointer" 
+                onClick={executeSearch}
+                style={{
+                  position: 'relative',
+                  zIndex: 10,
+                  cursor: 'pointer',
+                  width: '16px',
+                  height: '16px',
+                }}
+              />
+              <input 
+                type="search" 
+                aria-label="Search"
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder={isHindi ? 'खोजें...' : 'Search...'}
+                style={{
+                  position: 'relative',
+                  opacity: 1,
+                  flex: 1,
+                  height: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#2a2a2a',
+                  fontSize: '14px',
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

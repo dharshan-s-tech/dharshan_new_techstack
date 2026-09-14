@@ -663,10 +663,10 @@ function AccountsPageContent() {
       }));
     }
     return [
-      { title: isHindi ? 'अप्रैल, 2020' : 'April, 2020', size: '34.7 MB', href: '#' },
-      { title: isHindi ? 'मई, 2020' : 'May, 2020', size: '34.7 MB', href: '#' },
-      { title: isHindi ? 'जून, 2020' : 'June, 2020', size: '34.7 MB', href: '#' },
-      { title: isHindi ? 'जुलाई, 2020' : 'July, 2020', size: '34.7 MB', href: '#' }
+      { title: isHindi ? 'अप्रैल, 2026' : 'April, 2026', size: '34.7 MB', href: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf' },
+      { title: isHindi ? 'मई, 2026' : 'May, 2026', size: '34.7 MB', href: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf' },
+      { title: isHindi ? 'जून, 2026' : 'June, 2026', size: '34.7 MB', href: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf' },
+      { title: isHindi ? 'जुलाई, 2026' : 'July, 2026', size: '34.7 MB', href: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf' }
     ];
   }, [rawCombinedAccounts, isHindi]);
 
@@ -704,17 +704,100 @@ function AccountsPageContent() {
 
   return (
     <div className="w-full bg-white min-h-[600px]">
-      <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 py-6 font-sans">
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '1440px',
+          margin: '0 auto',
+          paddingTop: '40px',
+          paddingBottom: '64px',
+          paddingLeft: '64px',
+          paddingRight: '64px',
+          boxSizing: 'border-box'
+        }}
+      >
         
-        {/* Breadcrumb Trail */}
-        <nav className="flex items-center gap-2 text-[12px] text-[#565656] mb-6" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-[#0a3d30] transition-colors">{isHindi ? 'होम' : 'Home'}</Link>
-          <span className="text-[#888888] font-normal">&gt;</span>
-          <Link href="/Reports" className="hover:text-[#0a3d30] transition-colors">{isHindi ? 'रिपोर्ट्स' : 'Reports'}</Link>
-          <span className="text-[#888888] font-normal">&gt;</span>
-          <span className="text-[#565656]">{isHindi ? 'सरकारी खाते' : 'Accounts'}</span>
-          <span className="text-[#888888] font-normal">&gt;</span>
-          <span className="font-semibold text-[#2a2a2a]">
+        {/* Breadcrumbs: Home > Reports > Accounts > State Accounts (width: 297px, height: 16px, left: 64px, top: 160px, gap: 8px) */}
+        <nav
+          aria-label="Breadcrumb"
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: '0px',
+            gap: '8px',
+            height: '16px',
+            marginBottom: '24px',
+            fontFamily: "'Noto Sans', sans-serif"
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontSize: '12px',
+              lineHeight: '16px',
+              fontWeight: 400,
+              color: '#565656',
+              textDecoration: 'none'
+            }}
+            className="hover:underline"
+          >
+            {isHindi ? 'होम' : 'Home'}
+          </Link>
+
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+            <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
+          <Link
+            href="/Reports"
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontSize: '12px',
+              lineHeight: '16px',
+              fontWeight: 400,
+              color: '#565656',
+              textDecoration: 'none'
+            }}
+            className="hover:underline"
+          >
+            {isHindi ? 'रिपोर्ट्स' : 'Reports'}
+          </Link>
+
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+            <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
+          <Link
+            href="/Reports/accounts"
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontSize: '12px',
+              lineHeight: '16px',
+              fontWeight: 400,
+              color: '#565656',
+              textDecoration: 'none'
+            }}
+            className="hover:underline"
+          >
+            {isHindi ? 'सरकारी खाते' : 'Accounts'}
+          </Link>
+
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+            <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
+          <span
+            style={{
+              fontFamily: "'Noto Sans', sans-serif",
+              fontSize: '12px',
+              lineHeight: '16px',
+              fontWeight: 600,
+              color: '#2E2E31',
+              whiteSpace: 'nowrap'
+            }}
+          >
             {category === 'state-accounts' ? text.stateAccounts :
               category === 'territories-accounts' ? text.territoriesAccounts :
                 category === 'combined-finance-revenue' ? text.combinedFinance : text.annualConference}
@@ -722,91 +805,328 @@ function AccountsPageContent() {
         </nav>
 
         {/* Two-Column Layout */}
-        <div className="flex flex-col lg:flex-row items-start gap-8 w-full">
+        <div className="flex flex-col lg:flex-row items-start gap-6 w-full">
           
-          {/* Left Column: Filters Sidebar */}
-          <aside className="w-full lg:w-[280px] xl:w-[290px] flex-shrink-0 bg-white border border-[#e6e6e6] rounded-[8px] p-5 shadow-xs">
-            <h2 className="text-[18px] font-bold text-[#111827] m-0 mb-3">{text.filters}</h2>
-            <div className="border-t border-[#e5e7eb] mb-4"></div>
+          {/* Left Column: Filters Sidebar (320px width, 24px padding) */}
+          <aside
+            style={{
+              width: '320px',
+              minWidth: '320px',
+              maxWidth: '320px',
+              background: '#FFFFFF',
+              border: '1px solid #E6E6E6',
+              borderRadius: '8px',
+              padding: '24px',
+              boxSizing: 'border-box',
+              flexShrink: 0
+            }}
+          >
+            {/* Heading: Filters */}
+            <h2
+              style={{
+                fontFamily: "'Noto Sans', sans-serif",
+                fontStyle: 'normal',
+                fontWeight: 600,
+                fontSize: '20px',
+                lineHeight: '27px',
+                color: '#000000',
+                margin: 0
+              }}
+            >
+              {text.filters}
+            </h2>
 
-            {/* Segmented Control */}
-            <div className="flex bg-[#f5f4f7] border border-[#ededed] rounded-[8px] p-[3px] mb-4">
+            {/* Line 1586: Width 272px, Height 0px, 1px solid #D7D7D7 */}
+            <div
+              data-name="Line 1586"
+              style={{
+                width: '272px',
+                height: '0px',
+                borderTop: '1px solid #D7D7D7',
+                marginTop: '24px',
+                marginBottom: '24px',
+                boxSizing: 'border-box',
+                flex: 'none',
+                alignSelf: 'stretch',
+                flexGrow: 0
+              }}
+            />
+
+            {/* Segmented Control [ Reports | Accounts ] */}
+            <div
+              data-name="Segment Control"
+              style={{
+                width: '272px',
+                height: '32px',
+                background: '#F5F4F7',
+                border: '1px solid #EDEDED',
+                borderRadius: '8px',
+                padding: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+                marginBottom: '16px'
+              }}
+            >
               <Link
                 href="/Reports"
-                className="flex-1 py-1.5 text-center text-[12px] font-medium text-[#565656] hover:text-black rounded-[6px] transition-colors"
+                style={{
+                  width: '134px',
+                  height: '28px',
+                  fontSize: '14px',
+                  lineHeight: '19px',
+                  fontWeight: 400,
+                  color: '#565656',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  fontFamily: "'Noto Sans', sans-serif",
+                  boxSizing: 'border-box'
+                }}
+                className="hover:text-black transition-all"
               >
                 {text.reports}
               </Link>
               <button
                 type="button"
-                className="flex-1 py-1.5 text-center text-[12px] font-semibold text-white bg-[#751639] rounded-[6px] shadow-xs cursor-default"
+                style={{
+                  width: '134px',
+                  height: '28px',
+                  fontSize: '14px',
+                  lineHeight: '19px',
+                  fontWeight: 600,
+                  color: '#FFFFFF',
+                  background: '#751639',
+                  borderRadius: '8px',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0px 1px 10px 1px rgba(0, 0, 0, 0.03)',
+                  cursor: 'default',
+                  fontFamily: "'Noto Sans', sans-serif",
+                  boxSizing: 'border-box'
+                }}
               >
                 {text.accounts}
               </button>
             </div>
 
-            {/* Category List */}
-            <div className="flex flex-col gap-1 mb-5">
-              <button
-                type="button"
-                onClick={() => handleCategoryChange('state-accounts')}
-                className={`w-full text-left px-3.5 py-2 text-[13px] rounded-[6px] font-medium transition-colors cursor-pointer ${category === 'state-accounts' ? 'bg-[#fdf2f4] text-[#751639] font-bold' : 'text-[#374151] hover:bg-gray-50'}`}
-              >
-                {text.stateAccounts}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCategoryChange('territories-accounts')}
-                className={`w-full text-left px-3.5 py-2 text-[13px] rounded-[6px] font-medium transition-colors cursor-pointer ${category === 'territories-accounts' ? 'bg-[#fdf2f4] text-[#751639] font-bold' : 'text-[#374151] hover:bg-gray-50'}`}
-              >
-                {text.territoriesAccounts}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCategoryChange('combined-finance-revenue')}
-                className={`w-full text-left px-3.5 py-2 text-[13px] rounded-[6px] font-medium transition-colors cursor-pointer ${category === 'combined-finance-revenue' ? 'bg-[#fdf2f4] text-[#751639] font-bold' : 'text-[#374151] hover:bg-gray-50'}`}
-              >
-                {text.combinedFinance}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCategoryChange('annual-conference')}
-                className={`w-full text-left px-3.5 py-2 text-[13px] rounded-[6px] font-medium transition-colors cursor-pointer ${category === 'annual-conference' ? 'bg-[#fdf2f4] text-[#751639] font-bold' : 'text-[#374151] hover:bg-gray-50'}`}
-              >
-                {text.annualConference}
-              </button>
+            {/* Side Menu / Menus: Width 262px, Gap 16px */}
+            <div
+              data-name="Side Menu"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '0px',
+                gap: '16px',
+                width: '262px',
+                boxSizing: 'border-box',
+                marginBottom: '24px'
+              }}
+            >
+              {[
+                { id: 'state-accounts', label: text.stateAccounts },
+                { id: 'territories-accounts', label: text.territoriesAccounts },
+                { id: 'combined-finance-revenue', label: text.combinedFinance },
+                { id: 'annual-conference', label: text.annualConference }
+              ].map(item => {
+                const isActive = category === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleCategoryChange(item.id)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: '8px 16px',
+                      gap: '8px',
+                      width: '100%',
+                      background: isActive ? 'rgba(117, 22, 57, 0.08)' : '#FFFFFF',
+                      borderRadius: '4px',
+                      border: 'none',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      boxSizing: 'border-box',
+                      transition: 'all 0.15s ease'
+                    }}
+                    className={isActive ? '' : 'hover:bg-gray-50'}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "'Noto Sans', sans-serif",
+                        fontStyle: 'normal',
+                        fontWeight: isActive ? 700 : 600,
+                        fontSize: isActive ? '16px' : '14px',
+                        lineHeight: isActive ? '22px' : '19px',
+                        color: isActive ? '#751639' : '#2A2A2A'
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* States / UTs List */}
+            {/* States / UTs Section: Width 262px, Gap 16px */}
             {showGeoList && (
-              <div className="border-t border-[#e5e7eb] pt-4">
-                <h3 className="text-[14px] font-bold text-[#111827] mb-2.5">
+              <div
+                data-name="Side Menu - States"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '0px',
+                  gap: '16px',
+                  width: '262px',
+                  boxSizing: 'border-box'
+                }}
+              >
+                {/* Heading: States / Union Territories */}
+                <h3
+                  style={{
+                    fontFamily: "'Noto Sans', sans-serif",
+                    fontStyle: 'normal',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    lineHeight: '22px',
+                    color: '#000000',
+                    margin: 0,
+                    width: '262px'
+                  }}
+                >
                   {category === 'territories-accounts' ? text.territoriesLabel : text.statesLabel}
                 </h3>
-                <div className="relative mb-3">
-                  <input
-                    type="search"
-                    placeholder={text.searchPlaceholder}
-                    value={stateSearch}
-                    onChange={(e) => setStateSearch(e.target.value)}
-                    className="w-full text-[13px] border border-[#d1d5db] rounded-[4px] px-3 py-1.5 pr-8 focus:outline-none focus:border-[#751639]"
-                  />
-                  <svg className="w-4 h-4 text-gray-400 absolute right-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
 
-                <div className="flex flex-col gap-0.5 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
-                  {filteredGeo.map(geo => (
-                    <button
-                      key={geo.slug}
-                      type="button"
-                      onClick={() => setSelectedState(geo.name)}
-                      className={`w-full text-left px-3 py-1.5 text-[13px] rounded-[4px] transition-colors cursor-pointer ${selectedState === geo.name ? 'bg-[#fdf2f4] text-[#751639] font-bold' : 'text-[#374151] hover:bg-gray-50'}`}
-                    >
-                      {geo.name}
-                    </button>
-                  ))}
+                {/* Line 1586: Width 262px, Height 0px, 1px solid #D7D7D7 */}
+                <div
+                  data-name="Line 1586"
+                  style={{
+                    width: '262px',
+                    height: '0px',
+                    borderTop: '1px solid #D7D7D7',
+                    boxSizing: 'border-box',
+                    flex: 'none',
+                    alignSelf: 'stretch',
+                    flexGrow: 0
+                  }}
+                />
+
+                {/* Menus / Search & Items Container */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    padding: '0px',
+                    gap: '16px',
+                    width: '262px',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  {/* Search Input Box: Width 262px, Height 32px, Border #D7D7D7, Radius 4px */}
+                  <div
+                    style={{
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      padding: '4px 8px',
+                      gap: '8px',
+                      width: '262px',
+                      height: '32px',
+                      border: '1px solid #D7D7D7',
+                      borderRadius: '4px',
+                      background: '#FFFFFF'
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder={text.searchPlaceholder}
+                      value={stateSearch}
+                      onChange={(e) => setStateSearch(e.target.value)}
+                      style={{
+                        flex: 1,
+                        border: 'none',
+                        outline: 'none',
+                        fontFamily: "'Noto Sans', sans-serif",
+                        fontStyle: 'normal',
+                        fontWeight: 400,
+                        fontSize: '14px',
+                        lineHeight: '19px',
+                        color: '#2A2A2A',
+                        background: 'transparent',
+                        padding: 0
+                      }}
+                    />
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                      <circle cx="6.5" cy="6.5" r="5" stroke="#4D4D4D" strokeWidth="1.2" />
+                      <line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="#4D4D4D" strokeWidth="1.2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+
+                  {/* Scrollable States / UTs List: Width 262px, Height 341px, Gap 16px */}
+                  <div
+                    className="states-list-scrollbar"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: '16px',
+                      width: '262px',
+                      maxHeight: '341px',
+                      overflowY: 'auto',
+                      paddingRight: '6px',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    {filteredGeo.map(geo => {
+                      const isActive = selectedState === geo.name;
+                      return (
+                        <button
+                          key={geo.slug}
+                          type="button"
+                          onClick={() => setSelectedState(geo.name)}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            padding: '8px 16px',
+                            gap: '8px',
+                            width: '100%',
+                            minHeight: isActive ? '38px' : '35px',
+                            background: isActive ? 'rgba(117, 22, 57, 0.08)' : '#FFFFFF',
+                            borderRadius: '4px',
+                            border: 'none',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            boxSizing: 'border-box',
+                            transition: 'all 0.15s ease'
+                          }}
+                          className={isActive ? '' : 'hover:bg-gray-50'}
+                        >
+                          <span
+                            style={{
+                              fontFamily: "'Noto Sans', sans-serif",
+                              fontStyle: 'normal',
+                              fontWeight: isActive ? 700 : 600,
+                              fontSize: isActive ? '16px' : '14px',
+                              lineHeight: isActive ? '22px' : '19px',
+                              color: isActive ? '#751639' : '#2A2A2A'
+                            }}
+                          >
+                            {geo.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
@@ -888,25 +1208,56 @@ function AccountsPageContent() {
                 )}
               </div>
 
-              {/* Archive Toggle Button */}
-              <div className="flex items-center gap-2 mb-1.5">
-                <button
-                  type="button"
-                  onClick={() => setShowArchive(prev => !prev)}
-                  className={`px-3 py-1.5 rounded-[4px] text-[12px] font-medium transition-all border cursor-pointer ${showArchive ? 'bg-[#751639] text-white border-[#751639]' : 'bg-white text-[#751639] border-[#751639] hover:bg-[#fdf2f4]'}`}
+              {/* Single Archive Button on Right (width: 82px, height: 32px, padding: 8px, gap: 8px, bg: #751639, radius: 4px) */}
+              <button
+                type="button"
+                onClick={() => setIsArchiveOpen(true)}
+                data-name="Archive"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px',
+                  gap: '8px',
+                  width: '82px',
+                  height: '32px',
+                  background: '#751639',
+                  borderRadius: '4px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxSizing: 'border-box',
+                  flexShrink: 0,
+                  marginBottom: '4px',
+                  transition: 'background 0.15s ease'
+                }}
+                className="hover:bg-[#60122e]"
+                title={isHindi ? 'पुरालेख' : 'Archive'}
+              >
+                <img
+                  src="/assets/4e13abbcaf959461c9a14f6751f87fdb1d16a88e.svg"
+                  alt=""
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    flexShrink: 0,
+                    display: 'block'
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "'Noto Sans', sans-serif",
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#FFFFFF',
+                    whiteSpace: 'nowrap'
+                  }}
                 >
-                  {showArchive ? '← Active Accounts' : text.archive}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsArchiveOpen(prev => !prev)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[12px] font-medium text-white bg-[#751639] hover:bg-[#60122e] transition-all cursor-pointer"
-                  title="Open Archive Drawer"
-                >
-                  <img src="/assets/4e13abbcaf959461c9a14f6751f87fdb1d16a88e.svg" alt="" className="w-3.5 h-3.5" />
-                  <span>Drawer</span>
-                </button>
-              </div>
+                  {isHindi ? 'पुरालेख' : 'Archive'}
+                </span>
+              </button>
             </div>
 
             {/* Documents Section */}
@@ -1109,53 +1460,258 @@ function AccountsPageContent() {
         </div>
       </div>
 
-      {/* Archive Slide-over Drawer Modal */}
+      {/* Archive Slide-over Pop-up Drawer (Figma Frame 2147227411: width 600px, height 1081px, gap 616px, padding 24px) */}
       {isArchiveOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+        <div
+          className="fixed inset-0 z-50 flex justify-end overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="archive-popup-title"
+        >
+          {/* Backdrop Overlay */}
           <div
-            className="fixed inset-0 bg-black/50 transition-opacity"
+            className="fixed inset-0 bg-black/40 transition-opacity"
             onClick={() => setIsArchiveOpen(false)}
-            aria-hidden="true"
           />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex">
-            <div className="w-screen max-w-[430px] md:max-w-[450px] bg-white shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-right duration-200">
-              {/* Drawer Header */}
-              <div className="px-7 pt-6 pb-4 flex items-center justify-between border-b border-[#e5e7eb]">
-                <h2 className="text-[20px] font-bold text-[#751639] m-0">
-                  {text.archive}
+          {/* Pop-up Frame (Figma Frame 2147227411: width 600px, height 1081px, gap 616px, padding 24px, opacity 1, angle 0deg) */}
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              width: '600px',
+              height: '1081px',
+              background: '#FFFFFF',
+              padding: '24px',
+              gap: '616px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              boxSizing: 'border-box',
+              boxShadow: '-4px 0px 24px rgba(0, 0, 0, 0.15)',
+              flexShrink: 0
+            }}
+          >
+            {/* Top Section: Heading + Divider + PDFs (Archive: width 552px, height 358px, gap 24px) */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '0px',
+                gap: '24px',
+                width: '552px',
+                height: '358px',
+                flex: 'none',
+                order: 0,
+                alignSelf: 'stretch',
+                flexGrow: 0,
+                boxSizing: 'border-box'
+              }}
+            >
+              {/* Heading Row */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0px',
+                  width: '552px',
+                  height: '38px',
+                  flex: 'none',
+                  order: 0,
+                  alignSelf: 'stretch',
+                  flexGrow: 0,
+                  boxSizing: 'border-box'
+                }}
+              >
+                {/* Archive Title */}
+                <h2
+                  id="archive-popup-title"
+                  style={{
+                    fontFamily: "'Noto Sans', sans-serif",
+                    fontStyle: 'normal',
+                    fontWeight: 700,
+                    fontSize: '24px',
+                    lineHeight: '38px',
+                    color: '#000000',
+                    margin: 0
+                  }}
+                >
+                  {isHindi ? 'पुरालेख' : 'Archive'}
                 </h2>
+
+                {/* Close Icon Button (Top Right) */}
                 <button
                   type="button"
                   onClick={() => setIsArchiveOpen(false)}
-                  className="text-gray-400 hover:text-gray-700 p-1 transition-colors cursor-pointer"
-                  aria-label="Close archive drawer"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    gap: '8px',
+                    width: '32px',
+                    height: '32px',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxSizing: 'border-box',
+                    borderRadius: '4px',
+                    flex: 'none',
+                    order: 1,
+                    flexGrow: 0
+                  }}
+                  className="hover:bg-gray-100 transition-colors"
+                  aria-label="Close Archive Popup"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 2L14 14M2 14L14 2" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                 </button>
               </div>
 
-              {/* Drawer Content Documents List */}
-              <div className="px-7 flex-1 overflow-y-auto flex flex-col gap-3 py-4 custom-scrollbar">
-                {archiveDrawerItems.map((doc, idx) => (
+              {/* Line 1614: Width 552px, Height 0px, 1px solid #D7D7D7 */}
+              <div
+                style={{
+                  width: '552px',
+                  height: '0px',
+                  borderTop: '1px solid #D7D7D7',
+                  flex: 'none',
+                  order: 1,
+                  alignSelf: 'stretch',
+                  flexGrow: 0,
+                  boxSizing: 'border-box'
+                }}
+              />
+
+              {/* PDFs List: Width 552px, Height 272px, Gap 16px */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '0px',
+                  gap: '16px',
+                  width: '552px',
+                  height: '272px',
+                  flex: 'none',
+                  order: 2,
+                  flexGrow: 0,
+                  boxSizing: 'border-box'
+                }}
+              >
+                {archiveDrawerItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between bg-[#fafafa] border-l-[3px] border-[#751639] px-5 py-3.5 h-[58px] rounded-r-[4px] hover:bg-[#f5f5f5] transition-colors flex-shrink-0"
+                    style={{
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '8px 16px',
+                      gap: '4px',
+                      width: '552px',
+                      height: '56px',
+                      minHeight: '56px',
+                      background: '#FAFAFA',
+                      borderLeft: '2px solid #751639',
+                      borderRadius: '0px 4px 4px 0px',
+                      flex: 'none',
+                      order: idx,
+                      flexGrow: 0
+                    }}
+                    className="hover:bg-[#F2F2F2] transition-colors"
                   >
-                    <span className="font-bold text-[13px] text-[#111827] truncate max-w-[200px]" title={doc.title}>
-                      {doc.title}
+                    {/* Document / Month Title */}
+                    <span
+                      style={{
+                        fontFamily: "'Noto Sans', sans-serif",
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        lineHeight: '19px',
+                        color: '#000000',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '380px'
+                      }}
+                    >
+                      {item.title}
                     </span>
-                    <div className="flex items-center gap-3">
-                      <PdfIcon className="w-6 h-7.5" />
-                      <div className="flex flex-col text-right leading-tight">
-                        <span className="text-[10px] text-[#6b7280]">{doc.size}</span>
+
+                    {/* Right PDF Block (width: 87px, height: 40px) */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        padding: '0px',
+                        gap: '8px',
+                        width: '87px',
+                        height: '40px',
+                        flexShrink: 0
+                      }}
+                    >
+                      {/* PDF Icon from assets */}
+                      <img
+                        src="/assets/Images/pdficon.svg"
+                        alt="PDF"
+                        style={{
+                          width: '27px',
+                          height: '32px',
+                          flexShrink: 0,
+                          display: 'block'
+                        }}
+                      />
+
+                      {/* PDF Details (Size & View Link) */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          padding: '0px',
+                          gap: '4px',
+                          width: '52px',
+                          height: '39px',
+                          flexShrink: 0
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: "'Noto Sans', sans-serif",
+                            fontStyle: 'normal',
+                            fontWeight: 400,
+                            fontSize: '10px',
+                            lineHeight: '16px',
+                            color: '#565656',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {item.size || '34.7 MB'}
+                        </span>
                         <a
-                          href={doc.href}
-                          onClick={(e) => handlePdfClick(e, doc.href, doc.title)}
-                          className="pdf-view-link text-[12px] text-[#0d61ae] underline font-medium hover:text-[#08437a] cursor-pointer"
-                          style={{ color: '#0d61ae', textDecoration: 'underline' }}
+                          href={item.href || '#'}
+                          onClick={(e) => handlePdfClick(e, item.href || '#', item.title)}
+                          style={{
+                            fontFamily: "'Noto Sans', sans-serif",
+                            fontStyle: 'normal',
+                            fontWeight: 400,
+                            fontSize: '12px',
+                            lineHeight: '19px',
+                            textDecorationLine: 'underline',
+                            color: '#0D61AE',
+                            whiteSpace: 'nowrap',
+                            cursor: 'pointer'
+                          }}
+                          className="hover:text-[#08437a]"
                         >
                           {text.viewPdf}
                         </a>
@@ -1164,17 +1720,76 @@ function AccountsPageContent() {
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Drawer Footer with Divider and Close button */}
-              <div className="px-7 py-5 border-t border-[#e5e7eb] flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsArchiveOpen(false)}
-                  className="px-4 py-1.5 text-[12px] font-medium text-white bg-[#751639] rounded-[4px] hover:bg-[#60122e] transition-colors cursor-pointer"
+            {/* Footer Section: Divider + Close Button (Footer: width 552px, height 58px, gap 24px) */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                padding: '0px',
+                gap: '24px',
+                width: '552px',
+                height: '58px',
+                flex: 'none',
+                order: 1,
+                alignSelf: 'stretch',
+                flexGrow: 0,
+                boxSizing: 'border-box'
+              }}
+            >
+              {/* Line 1615: Width 552px, Height 0px, 1px solid #D7D7D7 */}
+              <div
+                style={{
+                  width: '552px',
+                  height: '0px',
+                  borderTop: '1px solid #D7D7D7',
+                  flex: 'none',
+                  order: 0,
+                  alignSelf: 'stretch',
+                  flexGrow: 0,
+                  boxSizing: 'border-box'
+                }}
+              />
+
+              {/* Bottom Close Button (width: 49px, height: 34px, border: 1px solid #2A2A2A, radius: 4px) */}
+              <button
+                type="button"
+                onClick={() => setIsArchiveOpen(false)}
+                style={{
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px',
+                  gap: '8px',
+                  width: '49px',
+                  height: '34px',
+                  border: '1px solid #2A2A2A',
+                  borderRadius: '4px',
+                  background: '#FFFFFF',
+                  cursor: 'pointer',
+                  flex: 'none',
+                  order: 1,
+                  flexGrow: 0
+                }}
+                className="hover:bg-gray-50 transition-colors"
+              >
+                <span
+                  style={{
+                    fontFamily: "'Noto Sans', sans-serif",
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#2A2A2A'
+                  }}
                 >
                   {text.close}
-                </button>
-              </div>
+                </span>
+              </button>
             </div>
           </div>
         </div>

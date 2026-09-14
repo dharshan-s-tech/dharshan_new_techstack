@@ -204,16 +204,38 @@ function ReportsPageContent() {
         const local = dataManager.getReports().filter(r => !r.id.startsWith('home-rep-'));
         let filtered = local;
         if (searchQuery) {
-          filtered = filtered.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()));
+          const q = searchQuery.toLowerCase().trim();
+          filtered = filtered.filter(r => 
+            (r.title || '').toLowerCase().includes(q) ||
+            (r.desc || '').toLowerCase().includes(q) ||
+            (r.ministry || '').toLowerCase().includes(q) ||
+            (r.sector || '').toLowerCase().includes(q) ||
+            (r.tag || '').toLowerCase().includes(q)
+          );
         }
         if (selectedYear) {
-          filtered = filtered.filter(r => r.year === selectedYear);
+          filtered = filtered.filter(r => r.year === selectedYear || (r.date && r.date.includes(selectedYear)));
+        }
+        if (selectedLevels.length > 0 && !selectedLevels.includes('All')) {
+          filtered = filtered.filter(r => 
+            selectedLevels.some(l => (r.level || '').toLowerCase() === l.toLowerCase() || (r.level || '').toLowerCase().includes(l.toLowerCase()))
+          );
         }
         if (selectedSectors.length > 0 && !selectedSectors.includes('All Sectors')) {
-          filtered = filtered.filter(r => selectedSectors.some(s => r.sector.toLowerCase().includes(s.toLowerCase())));
+          filtered = filtered.filter(r => 
+            selectedSectors.some(s => 
+              (r.sector || '').toLowerCase().includes(s.toLowerCase()) ||
+              (r.tag || '').toLowerCase().includes(s.toLowerCase())
+            )
+          );
         }
         if (selectedTypes.length > 0 && !selectedTypes.includes('All')) {
-          filtered = filtered.filter(r => selectedTypes.some(t => r.type.toLowerCase().includes(t.toLowerCase())));
+          filtered = filtered.filter(r => 
+            selectedTypes.some(t => 
+              (r.type || '').toLowerCase().includes(t.toLowerCase()) ||
+              (r.type || '').toLowerCase() === t.toLowerCase()
+            )
+          );
         }
 
         const parseId = (val: any) => {
@@ -303,7 +325,21 @@ function ReportsPageContent() {
   };
 
   return (
-    <div className="reports-page" data-node-id="364:18601" data-name="Reports">
+    <div
+      className="reports-page"
+      data-node-id="364:18601"
+      data-name="Reports"
+      style={{
+        width: '100%',
+        maxWidth: '1440px',
+        margin: '0 auto',
+        paddingTop: '48px',
+        paddingBottom: '64px',
+        paddingLeft: '64px',
+        paddingRight: '64px',
+        boxSizing: 'border-box'
+      }}
+    >
       <div className="reports-layout">
         {/* Left Column: Sidebar Card (FiltersSidemenu) */}
         <aside className="filters-panel">
@@ -331,10 +367,82 @@ function ReportsPageContent() {
         {/* Right Column: Main Content */}
         <div className="reports-main-content">
           {/* Top Title & Search Bar Row */}
-          <div className="page-title-row" data-node-id="364:18645">
-            <div className="page-title">
-              <h1 className="page-title__heading">{isHindi ? 'रिपोर्ट' : 'Reports'}</h1>
-              <p className="page-title__count">
+          <div
+            className="page-title-row"
+            data-node-id="364:18645"
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0px',
+              width: '968px',
+              height: '44px',
+              top: '168px',
+              left: '408px',
+              boxSizing: 'border-box',
+              flex: 'none',
+              alignSelf: 'stretch',
+              flexGrow: 0,
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}
+          >
+            {/* Reports */}
+            <div
+              className="page-title"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                padding: '0px',
+                gap: '6px',
+                width: '99px',
+                height: '44px',
+                flex: 'none',
+                order: 0,
+                flexGrow: 0
+              }}
+            >
+              <h1
+                className="page-title__heading"
+                style={{
+                  margin: 0,
+                  width: '61px',
+                  height: '22px',
+                  fontFamily: "'Noto Sans', sans-serif",
+                  fontStyle: 'normal',
+                  fontWeight: 600,
+                  fontSize: '16px',
+                  lineHeight: '22px',
+                  color: '#000000',
+                  flex: 'none',
+                  order: 0,
+                  flexGrow: 0,
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {isHindi ? 'रिपोर्ट' : 'Reports'}
+              </h1>
+              <p
+                className="page-title__count"
+                style={{
+                  margin: 0,
+                  width: '99px',
+                  height: '16px',
+                  fontFamily: "'Noto Sans', sans-serif",
+                  fontStyle: 'normal',
+                  fontWeight: 400,
+                  fontSize: '12px',
+                  lineHeight: '16px',
+                  color: '#7A7A7A',
+                  flex: 'none',
+                  order: 1,
+                  flexGrow: 0,
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 {loading
                   ? (isHindi ? 'खोज रहे हैं...' : 'Loading records...')
                   : (isHindi ? `${totalCount.toLocaleString()} परिणाम मिले` : `${totalCount.toLocaleString()} results found`)
@@ -342,8 +450,44 @@ function ReportsPageContent() {
               </p>
             </div>
 
-            <div className="page-search flex items-center gap-3">
-              <label className="page-search__inner flex-1">
+            {/* Search */}
+            <div
+              className="page-search"
+              style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '12px 24px',
+                gap: '8px',
+                width: '464px',
+                height: '43px',
+                background: '#FFFFFF',
+                border: '1px solid #D7D7D7',
+                borderRadius: '8px',
+                flex: 'none',
+                order: 1,
+                flexGrow: 0
+              }}
+            >
+              <label
+                className="page-search__inner"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: '0px',
+                  gap: '10px',
+                  width: '416px',
+                  height: '19px',
+                  boxSizing: 'border-box',
+                  flex: 'none',
+                  order: 0,
+                  flexGrow: 1,
+                  cursor: 'text'
+                }}
+              >
                 <input
                   type="search"
                   className="page-search__input"
@@ -353,30 +497,45 @@ function ReportsPageContent() {
                     setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
+                  style={{
+                    width: '390px',
+                    height: '19px',
+                    fontFamily: "'Noto Sans', sans-serif",
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '14px',
+                    lineHeight: '19px',
+                    color: '#717171',
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    padding: '0px',
+                    margin: '0px',
+                    flex: 'none',
+                    order: 0,
+                    flexGrow: 1
+                  }}
                 />
-                <span className="page-search__icon-wrap">
-                  <svg className="w-4 h-4 text-[#7A7A7A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <span
+                  className="page-search__icon-wrap"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flex: 'none',
+                    order: 1,
+                    flexGrow: 0,
+                    color: '#4D4D4D'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="6.815" cy="6.86" r="4.815" stroke="#4D4D4D" strokeWidth="1.2" />
+                    <line x1="10.25" y1="10.45" x2="14.5" y2="14.5" stroke="#4D4D4D" strokeWidth="1.2" strokeLinecap="round" />
                   </svg>
                 </span>
               </label>
-
-              <select
-                value={sortOrder}
-                onChange={(e) => {
-                  setSortOrder(e.target.value as any);
-                  setCurrentPage(1);
-                }}
-                className="h-[42px] px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-md text-gray-700 font-medium focus:outline-none focus:border-[#751639] cursor-pointer shadow-xs whitespace-nowrap"
-                aria-label="Sort reports"
-              >
-                <option value="newest">{isHindi ? 'नवीनतम पहले' : 'Newly Added First'}</option>
-                <option value="year_desc">{isHindi ? 'वर्ष (नवीनतम पहले)' : 'Year (Newest First)'}</option>
-                <option value="year_asc">{isHindi ? 'वर्ष (पुरातन पहले)' : 'Year (Oldest First)'}</option>
-                <option value="oldest">{isHindi ? 'पुरातन पहले' : 'Oldest Added First'}</option>
-                <option value="title_asc">{isHindi ? 'शीर्षक (A से Z)' : 'Title (A to Z)'}</option>
-                <option value="title_desc">{isHindi ? 'शीर्षक (Z से A)' : 'Title (Z to A)'}</option>
-              </select>
             </div>
           </div>
 

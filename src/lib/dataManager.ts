@@ -1558,7 +1558,7 @@ export const dataManager = {
         return DEFAULT_REPORTS;
       }
       const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) {
+      if (!Array.isArray(parsed) || parsed.length < DEFAULT_REPORTS.length) {
         localStorage.setItem('cag_reports', JSON.stringify(DEFAULT_REPORTS));
         return DEFAULT_REPORTS;
       }

@@ -4,9 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { dataManager } from '@/lib/dataManager';
 import { getApiBaseUrl } from '@/lib/api';
-import imageBannerMain from '@/app/Assets/Images/4c1eaa81c93edbe02d6f7d5437565571dcec4b04.png';
-import imagePortrait from '@/app/Assets/Images/28f782be18b6cfdf23aa0c90ec681e3916b8d6c7.png';
-import ReportDownloadIcon from '@/components/common/ReportDownloadIcon';
 
 interface SubpageProps {
   params: Promise<{
@@ -46,12 +43,25 @@ export default function ReportDetailPage({ params }: SubpageProps) {
       if (isMounted) {
         setReport(local || {
           id: resolvedParams.id,
-          title: 'State Finances Audit Report of the Government for the year ended March 2025',
+          title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
           tag: 'Finance',
-          sector: 'Finance | Information & Communication',
+          sector: 'Finance | Information and Communication',
           date: 'Jun 4, 2026',
-          overview: 'Audit examination of government revenue, capital expenditure, public debt and financial liabilities pursuant to constitutional mandate under Article 149-151 of the Constitution of India.',
-          pdf_url: '#'
+          year: '2026',
+          overview: 'Review of vaccine distribution logistics, primary health center infrastructure, and public health fund implementation across district health societies.',
+          pdf_url: '/assets/sample-cag-audit-report.pdf',
+          image: '/assets/7997faf6dec5f05fce3ccef2b5c1d1d3b1dfedb8.png',
+          executiveSummary: 'This Performance Audit was conducted pursuant to Article 151 of the Constitution of India to examine whether public sector infrastructure, financial management, and departmental allocations adhered to established statutory benchmarks.',
+          keyFindings: [
+            'Cold chain equipment in 34% of Primary Health Centres (PHCs) operated beyond recommended replacement cycles.',
+            'Unspent vaccination grants totaling ₹428 Crore remained parked in non-interest-bearing bank accounts for over 24 months.',
+            'Staff shortages in rural pediatric centers resulted in an 18% variance in booster dose delivery schedules.'
+          ],
+          recommendations: [
+            'Establish real-time IoT temperature monitoring across all district vaccine storage hubs.',
+            'Streamline treasury drawdowns directly to frontline accredited social health activists (ASHA).',
+            'Institute mandatory quarterly stock reconciliation between state medical supply corporations and regional clinics.'
+          ]
         });
         setLoading(false);
       }
@@ -64,34 +74,41 @@ export default function ReportDetailPage({ params }: SubpageProps) {
     };
   }, [API_URL, resolvedParams.id]);
 
+  const fallbackBanner = '/assets/7997faf6dec5f05fce3ccef2b5c1d1d3b1dfedb8.png';
+  const fallbackPortrait = '/assets/28f782be18b6cfdf23aa0c90ec681e3916b8d6c7.png';
+
   const reportDetails = {
-    title: report?.title || 'Audit Report Details',
+    title: report?.title || 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
     tag: report?.tag || report?.sector || 'Finance',
-    date: report?.tabled_date || report?.date || report?.year || 'Jun 4, 2026',
+    date: report?.tabled_date || report?.date || (report?.year ? `Jun 4, ${report.year}` : 'Jun 4, 2026'),
     sector: (report?.sector && report.sector.trim() !== '') ? report.sector : 'Finance | Information and Communication',
-    pdfUrl: report?.pdf_url || report?.pdfUrl || '#',
-    overview: report?.overview || report?.desc || '',
+    pdfUrl: report?.pdf_url || report?.pdfUrl || '/assets/sample-cag-audit-report.pdf',
+    overview: report?.overview || report?.desc || report?.executiveSummary || '',
     videoUrl: report?.video_url || report?.videoUrl || '',
-    image: report?.image || imageBannerMain.src
+    image: report?.image || fallbackBanner,
+    keyFindings: report?.keyFindings || [],
+    recommendations: report?.recommendations || []
   };
 
+  const cleanSector = reportDetails.sector.replace(/^Sector:\s*/i, '');
+
   return (
-    <div className="w-full bg-white min-h-screen py-6">
-      <div className="report-detail-layout px-4 sm:px-8 lg:px-16">
-        {/* Breadcrumb Trail */}
+    <div className="w-full bg-white min-h-screen">
+      <div className="report-detail-page">
+        {/* Breadcrumb Trail: Home > Reports > Reports Details Page */}
         <nav className="report-detail-breadcrumbs" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
-          <span className="text-[#888888] font-normal">&gt;</span>
+          <span className="report-detail-breadcrumbs__chevron">&gt;</span>
           <Link href="/Reports">Reports</Link>
-          <span className="text-[#888888] font-normal">&gt;</span>
-          <span className="report-detail-breadcrumbs__current truncate max-w-md">Reports Details Page</span>
+          <span className="report-detail-breadcrumbs__chevron">&gt;</span>
+          <span className="report-detail-breadcrumbs__current">Reports Details Page</span>
         </nav>
 
         {/* Back to Reports Link */}
-        <div>
+        <div className="report-detail-back-container">
           <Link href="/Reports" className="report-detail-back-btn">
-            <svg className="w-2.5 h-2.5 rotate-90" viewBox="0 0 10 10" fill="none">
-              <path d="M9.375 3.125L5 7.5L0.625 3.125" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg className="report-detail-back-btn__icon" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 1.5L2.5 5L7 8.5" stroke="#565656" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span>Back to Reports</span>
           </Link>
@@ -99,6 +116,7 @@ export default function ReportDetailPage({ params }: SubpageProps) {
 
         {/* Report Heading and Metadata Row */}
         <div className="report-detail-heading">
+          {/* Top Row: Title + Date + Tag */}
           <div className="report-detail-heading__top">
             <h1 className="report-detail-heading__title">
               {reportDetails.title}
@@ -111,20 +129,24 @@ export default function ReportDetailPage({ params }: SubpageProps) {
             </span>
           </div>
 
+          {/* Description Row: Sector (Left) + Download Full Report CTA (Right) */}
           <div className="report-detail-heading__desc">
             <p className="report-detail-heading__sector">
-              <span className="font-semibold text-gray-800">Sector:</span> {reportDetails.sector.replace(/^Sector:\s*/i, '')}
+              Sector: {cleanSector}
             </p>
 
-            <div className="flex items-center ml-auto">
+            <div className="report-detail-heading__cta-wrap">
               {reportDetails.pdfUrl && reportDetails.pdfUrl !== '#' ? (
                 <a
                   href={reportDetails.pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="report-detail-cta"
+                  download
                 >
-                  <ReportDownloadIcon className="report-detail-cta__icon text-[#0D61AE]" />
+                  <svg className="report-detail-cta__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" stroke="#0D61AE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                   <span className="report-detail-cta__text">Download Full Report</span>
                 </a>
               ) : (
@@ -133,7 +155,9 @@ export default function ReportDetailPage({ params }: SubpageProps) {
                   onClick={() => alert('Official digital report copy is registered in national archives.')}
                   className="report-detail-cta cursor-pointer"
                 >
-                  <ReportDownloadIcon className="report-detail-cta__icon text-[#0D61AE]" />
+                  <svg className="report-detail-cta__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" stroke="#0D61AE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                   <span className="report-detail-cta__text">Download Full Report</span>
                 </button>
               )}
@@ -142,8 +166,8 @@ export default function ReportDetailPage({ params }: SubpageProps) {
         </div>
 
         {/* Card: 1312px, border 1px solid #E6E6E6, radius 8px, gap 24px */}
-        <div className="report-detail-card">
-          {/* Banner Image: 440px height, radius 4px 4px 0px 0px */}
+        <article className="report-detail-card">
+          {/* Banner Image: 1312px x 440px, radius 4px 4px 0px 0px */}
           <div className="report-detail-card__banner">
             <img
               src={reportDetails.image}
@@ -153,155 +177,94 @@ export default function ReportDetailPage({ params }: SubpageProps) {
 
           {/* Card Body */}
           <div className="report-detail-card__body">
-            {reportDetails.overview ? (
-              <div className="w-full bg-[#fafbfc] border-l-4 border-[#751639] p-5 rounded-r-lg shadow-2xs">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#751639] mb-2">Executive Summary & Audit Scope</h3>
-                <p className="report-detail-card__paragraph whitespace-pre-line">
-                  {reportDetails.overview}
-                </p>
-              </div>
-            ) : null}
+            {/* Image Label below Banner */}
+            <span className="report-detail-card__image-caption">Image</span>
 
+            {/* Introductory Paragraph 1 */}
             <p className="report-detail-card__paragraph">
-              The Comptroller and Auditor General of India conducts constitutional audits of departments and entities in accordance with the Regulations on Audit and Accounts. This report assesses compliance with statutory authorities, budget execution, internal control mechanisms, and public value realization.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vulputate, lorem eu pellentesque tincidunt, ex quam commodo sapien, at porttitor ante elit eu justo. Vivamus sit amet dapibus enim. Maecenas id odio tempus, eleifend urna at, fringilla nisl. Vivamus interdum, sem a vestibulum tincidunt, ante mi lacinia augue, sed lobortis mauris justo at sapien. Vivamus accumsan, mi eu rutrum accumsan, lorem ligula tempus justo, vel dapibus leo sem eget leo. Quisque sed nulla auctor libero feugiat congue. Quisque mattis lectus a enim congue dapibus. Fusce id neque interdum, lobortis massa vel, varius purus. In tristique libero non eros facilisis gravida. Sed non molestie quam. Sed ornare sapien a est luctus posuere.
             </p>
 
+            {/* Introductory Paragraph 2 with Maroon highlight */}
             <p className="report-detail-card__paragraph">
-              Audit findings and systemic recommendations contained in this volume have been communicated to executive ministries and tabled before the Legislature for scrutiny by Parliamentary/Legislative Committees.{' '}
-              <span className="font-bold text-[#751639]">Public accountability and financial transparency remain central to institutional governance.</span>
+              Phasellus enim nulla, sollicitudin hendrerit ullamcorper quis, tincidunt sit amet tortor. In nulla erat, rhoncus et luctus non, malesuada sit amet sem. Morbi consectetur tempus dignissim. Praesent leo enim, convallis eget ultrices id, lacinia et dolor. Ut nec urna tellus. Proin finibus egestas sapien, quis pharetra lacus porta ut.{' '}
+              <span className="text-[#751639] font-medium">Phasellus semper sapien a rhoncus consequat.</span>
             </p>
 
-            {/* 2-Column Split: 799px left, 481px right */}
-            <div className="report-detail-card__two-col my-4">
+            {/* Introductory Paragraph 3 - Full width (extended across full card width) */}
+            <p className="report-detail-card__paragraph">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vulputate, lorem eu pellentesque tincidunt, ex quam commodo sapien, at porttitor ante elit eu justo. Vivamus sit amet dapibus enim. Maecenas id odio tempus, eleifend urna at, fringilla nisl. Vivamus interdum, sem a vestibulum tincidunt, ante mi lacinia augue, sed lobortis mauris justo at sapien. Vivamus accumsan, mi eu rutrum accumsan, lorem ligula tempus justo, vel dapibus leo sem eget leo. Quisque sed nulla auctor libero feugiat congue. Quisque mattis lectus a enim congue dapibus. Fusce id neque interdum, lobortis massa vel, varius purus. In tristique libero non eros facilisis gravida. Sed non molestie quam. Sed ornare sapien a est luctus posuere.
+            </p>
+
+            {/* 2-Column Split: 799px Left Text, 481px Right Image */}
+            <div className="report-detail-card__two-col">
+              {/* Left Column (799px) */}
               <div className="report-detail-card__col-text">
-                <blockquote className="text-[20px] sm:text-[24px] font-bold text-[#751639] leading-[1.3] mb-4 tracking-tight">
-                  &ldquo;Independent constitutional audit empowers democratic governance through rigorous accountability and evidence-based reporting.&rdquo;
+                {/* Prominent Bold Maroon Quote */}
+                <blockquote className="report-detail-card__quote">
+                  &ldquo;Phasellus enim nulla, sollicitudin hendrerit ullamcorper quis, tincidunt sit amet tortor. Ut nec urna tellus. Phasellus semper sapien a rhoncus consequat.&rdquo;
                 </blockquote>
 
-                <p className="report-detail-card__paragraph mb-3">
-                  Audit examination follows standardized methodologies comprising risk assessment, sampling of field formations, vouching of sanctions, physical verification where applicable, and reconciliation with primary accounting records.
-                </p>
-
-                <p className="report-detail-card__paragraph mb-3">
-                  <span className="font-bold text-[#751639]">Recommendations and Remedial Actions:</span> The report underscores key corrective measures including automated ledger reconciliation, adherence to public procurement benchmarks, timely submission of utilization certificates, and robust internal audit oversight.
+                <p className="report-detail-card__paragraph">
+                  Donec ante massa, fringilla quis leo eu, fringilla ultrices eros. Nullam aliquam lacinia ligula sed laoreet. Nullam eu augue euismod urna ultricies sollicitudin. Pellentesque lorem ante, viverra ut posuere eget, rutrum ut arcu. Aenean pulvinar congue erat, aliquam gravida nisi laoreet sit amet. Donec eget purus cursus, ornare dui in, consequat augue. Maecenas consequat, nulla at venenatis pretium, nisl nisi porttitor leo, vel vulputate tellus sapien ut magna. Morbi erat nibh, condimentum non venenatis eu, laoreet ac augue. Nulla facilisi. Fusce ut nulla vel justo ultrices placerat. Fusce aliquet sed lacus in efficitur.
                 </p>
 
                 <p className="report-detail-card__paragraph">
-                  The recommendations are aimed at preventing recurrence of irregularities, optimizing resource deployment, and safeguarding public revenue.
+                  <span className="text-[#751639] font-medium">Recommendations and Remedial Actions:</span> The report underscores key corrective measures including automated ledger reconciliation, adherence to public procurement benchmarks, timely submission of utilization certificates, and robust internal audit oversight. The recommendations are aimed at preventing recurrence of irregularities, optimizing resource deployment, and safeguarding public revenue.
+                </p>
+
+                {/* Concluding Constitutional Scrutiny Paragraph */}
+                <p className="report-detail-card__paragraph">
+                  The Comptroller and Auditor General of India presents these findings in pursuance of Article 151 of the Constitution. Reports tabled in Parliament and State Legislatures stand referred to the Public Accounts Committee (PAC) and Committee on Public Undertakings (COPU) for detailed executive accountability hearings.
+                </p>
+
+                <p className="report-detail-card__paragraph">
+                  Aliquam vel est justo. Nulla facilisi. Morbi vulputate arcu quis tempor elementum. Maecenas aliquam dolor nec egestas tempor. Duis sit amet pellentesque odio. Sed laoreet odio eget turpis cursus, in lobortis tortor vulputate. Fusce eget tincidunt mi. In tellus libero, tempus ac viverra eu, pellentesque sed nibh.{' '}
+                  <span className="text-[#751639] font-medium">Sed ornare sapien a est luctus posuere.</span>
                 </p>
               </div>
 
+              {/* Right Column (481px x 672px) */}
               <div className="report-detail-card__col-img">
                 <img
-                  src={imagePortrait.src}
-                  alt="CAG Heritage Monument"
+                  src={fallbackPortrait}
+                  alt="Report Illustration"
                 />
               </div>
             </div>
-
-            <p className="report-detail-card__paragraph">
-              The Comptroller and Auditor General of India presents these findings in pursuance of Article 151 of the Constitution. Reports tabled in Parliament and State Legislatures stand referred to the Public Accounts Committee (PAC) and Committee on Public Undertakings (COPU) for detailed executive accountability hearings.
-            </p>
           </div>
-        </div>
-
-        {/* Section: Report Chapters & Multi-Part Volumes (if available) */}
-        {((report?.chapters && report.chapters.length > 0) || (report?.files && report.files.length > 0)) && (
-          <section className="w-full bg-[#fafbfc] border border-gray-200 rounded-lg p-6 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-gray-200">
-              <h3 className="text-base font-bold text-[#2a2a2a] flex items-center gap-2 m-0">
-                <svg className="w-5 h-5 text-[#751639]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Report Volumes, Chapters & Annexures ({(report.chapters?.length || 0) + (report.files?.length || 0)})</span>
-              </h3>
-              <span className="text-xs text-gray-500 font-medium">Official individual volume downloads</span>
-            </div>
-
-            <div className="divide-y divide-gray-100">
-              {(report.chapters || []).map((ch: any, idx: number) => (
-                <div key={ch.id || idx} className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-gray-50/80 px-2 rounded transition-colors">
-                  <div className="flex items-start gap-2.5">
-                    <span className="text-xs font-semibold text-gray-400 mt-0.5 min-w-[24px]">
-                      #{idx + 1}
-                    </span>
-                    <p className="text-[13.5px] font-medium text-gray-800 m-0 leading-snug">
-                      {ch.title}
-                    </p>
-                  </div>
-                  {ch.pdf_url && ch.pdf_url !== '#' ? (
-                    <a
-                      href={ch.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d61ae] hover:text-[#094780] bg-[#eef6fc] hover:bg-[#dbeafe] px-3 py-1.5 rounded transition-colors whitespace-nowrap self-end sm:self-auto"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      <span>Download PDF</span>
-                    </a>
-                  ) : (
-                    <span className="text-xs text-gray-400 italic">Available in national archives</span>
-                  )}
-                </div>
-              ))}
-
-              {(report.files || []).map((f: any, idx: number) => (
-                <div key={f.id || idx} className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-gray-50/80 px-2 rounded transition-colors">
-                  <div className="flex items-start gap-2.5">
-                    <span className="text-xs font-semibold text-amber-600 mt-0.5 min-w-[24px]">
-                      Att.
-                    </span>
-                    <p className="text-[13.5px] font-medium text-gray-800 m-0 leading-snug">
-                      {f.title}
-                    </p>
-                  </div>
-                  {f.pdf_url && f.pdf_url !== '#' ? (
-                    <a
-                      href={f.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d61ae] hover:text-[#094780] bg-[#eef6fc] hover:bg-[#dbeafe] px-3 py-1.5 rounded transition-colors whitespace-nowrap self-end sm:self-auto"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      <span>Download Attachment</span>
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        </article>
 
         {/* Section: Two Video Player Cards (651px x 272px, bg #2E2E31, radius 8px) */}
-        <div className="report-detail-videos">
+        <section className="report-detail-videos" aria-label="Multimedia presentations">
           <div
             onClick={() => setActiveVideoModal('Report Overview & Key Highlights')}
             className="report-detail-video-card"
             role="button"
+            tabIndex={0}
             aria-label="Play video 1"
           >
             <div className="report-detail-play-icon">
-              <div className="w-3 h-3 bg-white rounded-xs"></div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '2px' }}>
+                <path d="M8 5v14l11-7z" />
+              </svg>
             </div>
-            <span className="text-white text-xs font-semibold px-4 text-center">Watch Audit Presentation Video</span>
           </div>
 
           <div
             onClick={() => setActiveVideoModal('Field Observations & Implementation Summary')}
             className="report-detail-video-card"
             role="button"
+            tabIndex={0}
             aria-label="Play video 2"
           >
             <div className="report-detail-play-icon">
-              <div className="w-3 h-3 bg-white rounded-xs"></div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '2px' }}>
+                <path d="M8 5v14l11-7z" />
+              </svg>
             </div>
-            <span className="text-white text-xs font-semibold px-4 text-center">Watch Recommendations Briefing</span>
           </div>
-        </div>
+        </section>
 
         {/* Interactive Video Modal */}
         {activeVideoModal && (
@@ -317,7 +280,7 @@ export default function ReportDetailPage({ params }: SubpageProps) {
                 <h3 className="font-bold text-base text-white">{activeVideoModal}</h3>
                 <button
                   onClick={() => setActiveVideoModal(null)}
-                  className="text-zinc-400 hover:text-white p-1 rounded transition-colors text-lg"
+                  className="text-zinc-400 hover:text-white p-1 rounded transition-colors text-lg cursor-pointer"
                 >
                   ✕
                 </button>
