@@ -1,0 +1,937 @@
+pipeline {
+    agent any
+
+    environment {
+
+        // ============================================================
+        // Docker Hub
+        // ============================================================
+        DOCKER_CREDENTIALS = 'dockerhub-creds'
+
+        BACKEND_IMAGE  = 'iitmpravartak/cag-website-v2-backend'
+        FRONTEND_IMAGE = 'iitmpravartak/cag-website-v2-frontend'
+
+        // ============================================================
+        // GitHub
+        // ============================================================
+        GITHUB_CREDENTIALS = 'github-token'
+
+        // ============================================================
+        // SonarQube
+        // ============================================================
+        SONAR_SERVER  = 'sonar-server'
+        SONAR_SCANNER = 'SonarScanner'
+
+        SONAR_PROJECT_KEY  = 'CAG_Website_V2'
+        SONAR_PROJECT_NAME = 'CAG_Website_V2'
+
+        // ============================================================
+        // CI Docker Network / Containers
+        // ============================================================
+        CI_NETWORK = "cag-website-v2-ci-${BUILD_NUMBER}"
+
+        POSTGRES_CONTAINER = "cag-website-v2-ci-postgres-${BUILD_NUMBER}"
+        BACKEND_CONTAINER  = "cag-website-v2-ci-backend-${BUILD_NUMBER}"
+        FRONTEND_CONTAINER = "cag-website-v2-ci-frontend-${BUILD_NUMBER}"
+
+        // ============================================================
+        // CI PostgreSQL
+        // ============================================================
+        POSTGRES_IMAGE    = 'postgres:17'
+        POSTGRES_DB       = 'cag_test'
+        POSTGRES_USER     = 'cag_test'
+        POSTGRES_PASSWORD = 'cag_test_password'
+
+        // ============================================================
+        // Trivy
+        // ============================================================
+        TRIVY_CACHE_DIR = "${WORKSPACE}/.trivy-cache"
+    }
+
+    stages {
+
+        // ============================================================
+        // 1. CHECKOUT CODE
+        // ============================================================
+        stage('Checkout Code') {
+            steps {
+
+                echo "=============================================="
+                echo "CHECKOUT CODE"
+                echo "=============================================="
+
+                checkout([
+                    $class: 'GitSCM',
+
+                    branches: [[
+                        name: "${env.BRANCH_NAME ?: '*/Dev'}"
+                    ]],
+
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Keerthiga-S/CAG_Website_v2.git',
+                        credentialsId: "${GITHUB_CREDENTIALS}"
+                    ]]
+                ])
+
+                sh '''
+                    set -e
+
+                    echo "Git commit:"
+                    git rev-parse HEAD
+
+                    echo ""
+                    echo "Git branch:"
+                    git branch --show-current || true
+
+                    echo ""
+                    echo "Git status:"
+                    git status --short
+                '''
+            }
+        }
+
+        // ============================================================
+        // 2. CHECK RAW FILES
+        // ============================================================
+        stage('Check Raw Files') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "CHECKING PROJECT FILES"
+                    echo "=============================================="
+
+                    echo ""
+                    echo "Root files:"
+                    ls -la
+
+                    echo ""
+                    echo "Backend files:"
+                    ls -la back_end
+
+                    echo ""
+                    echo "Required files:"
+
+                    test -f Dockerfile
+                    test -f package.json
+                    test -f back_end/Dockerfile
+                    test -f back_end/requirements.txt
+
+                    echo ""
+                    echo "Dockerfiles:"
+
+                    echo "----- Frontend Dockerfile -----"
+                    cat Dockerfile
+
+                    echo ""
+                    echo "----- Backend Dockerfile -----"
+                    cat back_end/Dockerfile
+
+                    echo ""
+                    echo "----- Backend requirements -----"
+                    cat back_end/requirements.txt
+
+                    echo ""
+                    echo "Raw file check completed successfully."
+                '''
+            }
+        }
+
+        // ============================================================
+        // 3. SONARQUBE SCAN
+        // ============================================================
+        stage('SonarQube Scan') {
+            steps {
+
+                echo "=============================================="
+                echo "SONARQUBE SCAN"
+                echo "=============================================="
+
+                withSonarQubeEnv("${SONAR_SERVER}") {
+
+                    withEnv([
+                        "SONAR_SCANNER_HOME=${tool "${SONAR_SCANNER}"}"
+                    ]) {
+
+                        sh '''
+                            set -e
+
+                            "${SONAR_SCANNER_HOME}/bin/sonar-scanner" \
+                                -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+                                -Dsonar.projectName="${SONAR_PROJECT_NAME}" \
+                                -Dsonar.sources=. \
+                                -Dsonar.exclusions="node_modules/**,.next/**,back_end/__pycache__/**,back_end/.pytest_cache/**,*.lock"
+                        '''
+                    }
+                }
+            }
+        }
+
+        // ============================================================
+        // 4. CREATE CI NETWORK
+        // ============================================================
+        stage('Create CI Network') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "CREATE CI NETWORK"
+                    echo "=============================================="
+
+                    docker network create "${CI_NETWORK}"
+
+                    echo ""
+                    docker network inspect "${CI_NETWORK}" >/dev/null
+
+                    echo ""
+                    echo "CI network created successfully:"
+                    echo "${CI_NETWORK}"
+                '''
+            }
+        }
+
+        // ============================================================
+        // 5. START POSTGRESQL
+        // ============================================================
+        stage('Start PostgreSQL') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "START CI POSTGRESQL"
+                    echo "=============================================="
+
+                    docker run -d \
+                        --name "${POSTGRES_CONTAINER}" \
+                        --network "${CI_NETWORK}" \
+                        --network-alias postgres \
+                        -e POSTGRES_DB="${POSTGRES_DB}" \
+                        -e POSTGRES_USER="${POSTGRES_USER}" \
+                        -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+                        "${POSTGRES_IMAGE}"
+
+                    echo ""
+                    echo "Waiting for PostgreSQL..."
+
+                    for i in $(seq 1 60); do
+
+                        if docker exec "${POSTGRES_CONTAINER}" \
+                            pg_isready \
+                            -U "${POSTGRES_USER}" \
+                            -d "${POSTGRES_DB}" \
+                            >/dev/null 2>&1
+                        then
+
+                            echo "PostgreSQL is ready."
+
+                            break
+                        fi
+
+                        echo "PostgreSQL not ready. Attempt ${i}/60..."
+
+                        if [ "$i" -eq 60 ]; then
+
+                            echo ""
+                            echo "PostgreSQL failed to become ready."
+
+                            docker logs "${POSTGRES_CONTAINER}" || true
+
+                            exit 1
+                        fi
+
+                        sleep 2
+                    done
+
+                    echo ""
+                    echo "PostgreSQL status:"
+
+                    docker ps \
+                        --filter "name=${POSTGRES_CONTAINER}"
+                '''
+            }
+        }
+
+        // ============================================================
+        // 6. BUILD BACKEND DOCKER IMAGE
+        // ============================================================
+        stage('Build Backend Docker Image') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "BUILD BACKEND DOCKER IMAGE"
+                    echo "=============================================="
+
+                    docker build \
+                        --pull \
+                        --platform linux/amd64 \
+                        -t "${BACKEND_IMAGE}:${GIT_COMMIT}" \
+                        ./back_end
+
+                    echo ""
+                    echo "Backend image created:"
+
+                    docker images \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Backend image platform:"
+
+                    docker image inspect \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}" \
+                        --format '{{.Os}}/{{.Architecture}}'
+
+                    echo ""
+                    echo "Backend image build completed successfully."
+                '''
+            }
+        }
+
+        // ============================================================
+        // 7. BUILD FRONTEND DOCKER IMAGE
+        // ============================================================
+        stage('Build Frontend Docker Image') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "BUILD FRONTEND DOCKER IMAGE"
+                    echo "=============================================="
+
+                    docker build \
+                        --pull \
+                        --platform linux/amd64 \
+                        -t "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
+                        .
+
+                    echo ""
+                    echo "Frontend image created:"
+
+                    docker images \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Frontend image platform:"
+
+                    docker image inspect \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
+                        --format '{{.Os}}/{{.Architecture}}'
+
+                    echo ""
+                    echo "Frontend image build completed successfully."
+                '''
+            }
+        }
+
+        // ============================================================
+        // 8. TRIVY BACKEND IMAGE SCAN
+        // ============================================================
+        stage('Trivy Backend Image Scan') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "TRIVY BACKEND IMAGE SCAN"
+                    echo "=============================================="
+
+                    mkdir -p "${TRIVY_CACHE_DIR}"
+
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v "${TRIVY_CACHE_DIR}:/root/.cache/" \
+                        aquasec/trivy:latest \
+                        image \
+                        --scanners vuln \
+                        --severity HIGH,CRITICAL \
+                        --ignore-unfixed \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Backend image security scan completed."
+                '''
+            }
+        }
+
+        // ============================================================
+        // 9. TRIVY FRONTEND IMAGE SCAN
+        // ============================================================
+        stage('Trivy Frontend Image Scan') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "TRIVY FRONTEND IMAGE SCAN"
+                    echo "=============================================="
+
+                    mkdir -p "${TRIVY_CACHE_DIR}"
+
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v "${TRIVY_CACHE_DIR}:/root/.cache/" \
+                        aquasec/trivy:latest \
+                        image \
+                        --scanners vuln \
+                        --severity HIGH,CRITICAL \
+                        --ignore-unfixed \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Frontend image security scan completed."
+                '''
+            }
+        }
+
+        // ============================================================
+        // 10. START BACKEND TEST CONTAINER
+        // ============================================================
+        stage('Start Backend Test Container') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "START BACKEND TEST CONTAINER"
+                    echo "=============================================="
+
+                    docker run -d \
+                        --name "${BACKEND_CONTAINER}" \
+                        --network "${CI_NETWORK}" \
+                        -e ENVIRONMENT=production \
+                        -e DB_HOST=postgres \
+                        -e DB_PORT=5432 \
+                        -e DB_NAME="${POSTGRES_DB}" \
+                        -e DB_USER="${POSTGRES_USER}" \
+                        -e DB_PASSWORD="${POSTGRES_PASSWORD}" \
+                        -e DB_SCHEMA=cag_new \
+                        -e DATABASE_URL="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}" \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Backend container started:"
+
+                    docker ps \
+                        --filter "name=${BACKEND_CONTAINER}"
+
+                    echo ""
+                    echo "Backend image:"
+
+                    docker inspect \
+                        "${BACKEND_CONTAINER}" \
+                        --format '{{.Config.Image}}'
+
+                    echo ""
+                    echo "Backend container started successfully."
+
+                    # IMPORTANT:
+                    # Do NOT use:
+                    # docker inspect <container> --format '{{.Os}}/{{.Architecture}}'
+                    #
+                    # Container inspect does not expose these image
+                    # platform fields in this template.
+                    #
+                    # Architecture was already verified during
+                    # docker image inspect in the build stage.
+                '''
+            }
+        }
+
+        // ============================================================
+        // 11. BACKEND HEALTH CHECK
+        // ============================================================
+        stage('Backend Health Check') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "BACKEND HEALTH CHECK"
+                    echo "=============================================="
+
+                    echo ""
+                    echo "Waiting for backend to become healthy..."
+
+                    for i in $(seq 1 60); do
+
+                        if docker exec "${BACKEND_CONTAINER}" \
+                            python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read().decode())" \
+                            >/tmp/backend-health-${BUILD_NUMBER}.log 2>&1
+                        then
+
+                            echo ""
+                            echo "Backend health check PASSED."
+
+                            cat /tmp/backend-health-${BUILD_NUMBER}.log
+
+                            break
+                        fi
+
+                        echo "Backend health check attempt ${i}/60 failed."
+
+                        if [ "$i" -eq 60 ]; then
+
+                            echo ""
+                            echo "Backend health check FAILED."
+
+                            echo ""
+                            echo "Backend container status:"
+
+                            docker ps -a \
+                                --filter "name=${BACKEND_CONTAINER}"
+
+                            echo ""
+                            echo "Backend logs:"
+
+                            docker logs \
+                                "${BACKEND_CONTAINER}" \
+                                || true
+
+                            exit 1
+                        fi
+
+                        sleep 2
+                    done
+                '''
+            }
+        }
+
+        // ============================================================
+        // 12. START FRONTEND TEST CONTAINER
+        // ============================================================
+        stage('Start Frontend Test Container') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "START FRONTEND TEST CONTAINER"
+                    echo "=============================================="
+
+                    docker run -d \
+                        --name "${FRONTEND_CONTAINER}" \
+                        --network "${CI_NETWORK}" \
+                        -e NODE_ENV=production \
+                        -e NEXT_PUBLIC_API_URL="http://${BACKEND_CONTAINER}:8000" \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Frontend container started:"
+
+                    docker ps \
+                        --filter "name=${FRONTEND_CONTAINER}"
+
+                    echo ""
+                    echo "Frontend image:"
+
+                    docker inspect \
+                        "${FRONTEND_CONTAINER}" \
+                        --format '{{.Config.Image}}'
+
+                    echo ""
+                    echo "Frontend container started successfully."
+
+                    # IMPORTANT:
+                    # Architecture is already verified against the image
+                    # during the frontend image build stage.
+                '''
+            }
+        }
+
+        // ============================================================
+        // 13. FRONTEND HEALTH CHECK
+        // ============================================================
+        stage('Frontend Health Check') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "FRONTEND HEALTH CHECK"
+                    echo "=============================================="
+
+                    echo ""
+                    echo "Waiting for frontend..."
+
+                    for i in $(seq 1 60); do
+
+                        if docker exec "${FRONTEND_CONTAINER}" \
+                            node -e "fetch('http://127.0.0.1:3000').then(r => { if (!r.ok) process.exit(1); console.log('HTTP', r.status); }).catch(() => process.exit(1))" \
+                            >/tmp/frontend-health-${BUILD_NUMBER}.log 2>&1
+                        then
+
+                            echo ""
+                            echo "Frontend health check PASSED."
+
+                            cat /tmp/frontend-health-${BUILD_NUMBER}.log
+
+                            break
+                        fi
+
+                        echo "Frontend health check attempt ${i}/60 failed."
+
+                        if [ "$i" -eq 60 ]; then
+
+                            echo ""
+                            echo "Frontend health check FAILED."
+
+                            echo ""
+                            echo "Frontend container status:"
+
+                            docker ps -a \
+                                --filter "name=${FRONTEND_CONTAINER}"
+
+                            echo ""
+                            echo "Frontend logs:"
+
+                            docker logs \
+                                "${FRONTEND_CONTAINER}" \
+                                || true
+
+                            exit 1
+                        fi
+
+                        sleep 2
+                    done
+                '''
+            }
+        }
+
+        // ============================================================
+        // 14. TRIVY BACKEND FILESYSTEM SCAN
+        // ============================================================
+        stage('Trivy Backend Filesystem Scan') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "TRIVY BACKEND FILESYSTEM SCAN"
+                    echo "=============================================="
+
+                    mkdir -p "${TRIVY_CACHE_DIR}"
+
+                    docker run --rm \
+                        -v "${WORKSPACE}/back_end:/scan:ro" \
+                        -v "${TRIVY_CACHE_DIR}:/root/.cache/" \
+                        aquasec/trivy:latest \
+                        fs \
+                        --scanners vuln \
+                        --severity HIGH,CRITICAL \
+                        --ignore-unfixed \
+                        /scan
+
+                    echo ""
+                    echo "Backend filesystem security scan completed."
+                '''
+            }
+        }
+
+        // ============================================================
+        // 15. PUSH IMAGES TO DOCKER HUB
+        // ============================================================
+        stage('Push Images to Docker Hub') {
+            steps {
+
+                echo "=============================================="
+                echo "PUSH DOCKER IMAGES"
+                echo "=============================================="
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "${DOCKER_CREDENTIALS}",
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+
+                    sh '''
+                        set -e
+
+                        echo "Logging into Docker Hub..."
+
+                        echo "${DOCKER_PASSWORD}" | docker login \
+                            -u "${DOCKER_USERNAME}" \
+                            --password-stdin
+
+                        echo ""
+                        echo "Docker Hub login successful."
+
+                        echo ""
+                        echo "Backend image platform:"
+
+                        docker image inspect \
+                            "${BACKEND_IMAGE}:${GIT_COMMIT}" \
+                            --format '{{.Os}}/{{.Architecture}}'
+
+                        echo ""
+                        echo "Frontend image platform:"
+
+                        docker image inspect \
+                            "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
+                            --format '{{.Os}}/{{.Architecture}}'
+
+                        echo ""
+                        echo "Pushing backend image..."
+
+                        docker push \
+                            "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+                        echo ""
+                        echo "Backend image pushed successfully."
+
+                        echo ""
+                        echo "Pushing frontend image..."
+
+                        docker push \
+                            "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+
+                        echo ""
+                        echo "Frontend image pushed successfully."
+
+                        echo ""
+                        echo "=============================================="
+                        echo "TAGGING AND PUSHING AS tested"
+                        echo "=============================================="
+
+                        echo ""
+                        echo "Tagging backend image as tested..."
+
+                        docker tag \
+                            "${BACKEND_IMAGE}:${GIT_COMMIT}" \
+                            "${BACKEND_IMAGE}:tested"
+
+                        docker push \
+                            "${BACKEND_IMAGE}:tested"
+
+                        echo ""
+                        echo "Backend tested tag pushed successfully."
+
+                        echo ""
+                        echo "Tagging frontend image as tested..."
+
+                        docker tag \
+                            "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
+                            "${FRONTEND_IMAGE}:tested"
+
+                        docker push \
+                            "${FRONTEND_IMAGE}:tested"
+
+                        echo ""
+                        echo "Frontend tested tag pushed successfully."
+
+                        echo ""
+                        echo "=============================================="
+                        echo "DOCKER HUB PUSH SUCCESS"
+                        echo "=============================================="
+
+                        echo ""
+                        echo "Backend:"
+                        echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
+                        echo "${BACKEND_IMAGE}:tested"
+
+                        echo ""
+                        echo "Frontend:"
+                        echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+                        echo "${FRONTEND_IMAGE}:tested"
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
+        // ============================================================
+        // 16. PUBLISH BUILD INFORMATION
+        // ============================================================
+        stage('Publish Build Information') {
+            steps {
+
+                sh '''
+                    set -e
+
+                    echo "=============================================="
+                    echo "BUILD INFORMATION"
+                    echo "=============================================="
+
+                    echo ""
+                    echo "Project:"
+                    echo "CAG_Website_V2"
+
+                    echo ""
+                    echo "Branch:"
+                    echo "${BRANCH_NAME}"
+
+                    echo ""
+                    echo "Git Commit:"
+                    echo "${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Backend Image:"
+                    echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Frontend Image:"
+                    echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+
+                    echo ""
+                    echo "Backend Platform:"
+
+                    docker image inspect \
+                        "${BACKEND_IMAGE}:${GIT_COMMIT}" \
+                        --format '{{.Os}}/{{.Architecture}}'
+
+                    echo ""
+                    echo "Frontend Platform:"
+
+                    docker image inspect \
+                        "${FRONTEND_IMAGE}:${GIT_COMMIT}" \
+                        --format '{{.Os}}/{{.Architecture}}'
+
+                    echo ""
+                    echo "CI PostgreSQL:"
+                    echo "${POSTGRES_DB}"
+
+                    echo ""
+                    echo "Build Number:"
+                    echo "${BUILD_NUMBER}"
+
+                    echo ""
+                    echo "CI completed successfully."
+                '''
+            }
+        }
+    }
+
+    // ================================================================
+    // POST ACTIONS
+    // ================================================================
+    post {
+
+        success {
+
+            echo "=============================================="
+            echo "CI PIPELINE SUCCESS"
+            echo "=============================================="
+
+            echo ""
+            echo "Build Number:"
+            echo "${BUILD_NUMBER}"
+
+            echo ""
+            echo "Git Commit:"
+            echo "${GIT_COMMIT}"
+
+            echo ""
+            echo "Backend Image:"
+            echo "${BACKEND_IMAGE}:${GIT_COMMIT}"
+
+            echo ""
+            echo "Frontend Image:"
+            echo "${FRONTEND_IMAGE}:${GIT_COMMIT}"
+        }
+
+        failure {
+
+            echo "=============================================="
+            echo "CI PIPELINE FAILED"
+            echo "=============================================="
+
+            echo ""
+            echo "Build Number:"
+            echo "${BUILD_NUMBER}"
+
+            echo ""
+            echo "Git Commit:"
+            echo "${GIT_COMMIT}"
+
+            sh '''
+                set +e
+
+                echo ""
+                echo "Running CI containers:"
+
+                docker ps -a \
+                    --filter "name=${POSTGRES_CONTAINER}" \
+                    --filter "name=${BACKEND_CONTAINER}" \
+                    --filter "name=${FRONTEND_CONTAINER}" \
+                    || true
+
+                echo ""
+                echo "Backend logs:"
+
+                docker logs \
+                    "${BACKEND_CONTAINER}" \
+                    2>&1 \
+                    || true
+
+                echo ""
+                echo "Frontend logs:"
+
+                docker logs \
+                    "${FRONTEND_CONTAINER}" \
+                    2>&1 \
+                    || true
+            '''
+        }
+
+        always {
+
+            echo "=============================================="
+            echo "CLEANUP"
+            echo "=============================================="
+
+            sh '''
+                set +e
+
+                echo "Stopping CI containers..."
+
+                docker rm -f \
+                    "${FRONTEND_CONTAINER}" \
+                    "${BACKEND_CONTAINER}" \
+                    "${POSTGRES_CONTAINER}" \
+                    2>/dev/null \
+                    || true
+
+                echo ""
+                echo "Removing CI network..."
+
+                docker network rm \
+                    "${CI_NETWORK}" \
+                    2>/dev/null \
+                    || true
+
+                echo ""
+                echo "Removing temporary health files..."
+
+                rm -f \
+                    "/tmp/backend-health-${BUILD_NUMBER}.log" \
+                    "/tmp/frontend-health-${BUILD_NUMBER}.log" \
+                    2>/dev/null \
+                    || true
+
+                echo ""
+                echo "Docker cleanup completed."
+            '''
+
+            deleteDir()
+        }
+    }
+}
