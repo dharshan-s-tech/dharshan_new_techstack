@@ -16,6 +16,8 @@ export default function HomePage() {
         <div className="content" data-node-id="356:17073">
           <WhoWeAre />
           <Details />
+          {/* Horizontal Divider between Message from CAG and Latest Videos (Line 1575) */}
+          <div className="home-section-divider" data-node-id="356:17223"></div>
           <NewsEvents />
         </div>
       </div>

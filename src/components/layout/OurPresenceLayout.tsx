@@ -53,12 +53,12 @@ export default function OurPresenceLayout({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 op-page">
+    <div className="op-page">
       <h1 className="page-heading op-page__title">{title}</h1>
       <div className="op-page__divider" aria-hidden="true"></div>
       
       <div className="about-layout flex flex-col lg:flex-row gap-8 items-start">
-        <aside className="about-sidebar w-full lg:w-80 shrink-0">
+        <aside className="about-sidebar w-full lg:w-[310px] h-[734px] shrink-0">
           <div className="about-sidebar__divider" aria-hidden="true"></div>
           <div className="about-sidebar__menus" data-name="Menus">
             {groups.map((grp, idx) => (

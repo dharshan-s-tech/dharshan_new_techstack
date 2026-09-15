@@ -77,55 +77,58 @@ export default function ReportCard({
       data-node-id={report.id}
       onClick={() => router.push(`/Reports/${report.id}`)}
     >
-      {/* Order 0: Banner Image (160px height, 4px top radius) */}
+      {/* Banner (394px x 248px) */}
       <div className="report-card__banner">
-        <img
-          src={cardImage}
-          alt={report.title}
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = fallbackImg;
-          }}
-          className="report-card__photo"
-        />
+        <div className="report-card__mask">
+          <img
+            src={cardImage}
+            alt={report.title}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = fallbackImg;
+            }}
+            className="report-card__photo"
+          />
+        </div>
+        <div className="report-card__overlay"></div>
+        <div className="report-card__tag-container">
+          <div className="report-card__tag">
+            <span className="report-card__tag-text">{tagLabel}</span>
+          </div>
+        </div>
       </div>
 
-      {/* Order 1: Tag Row (22px height, 0 16px padding) */}
-      <div className="report-card__tag-row">
-        <span className="report-card__tag truncate max-w-[170px]">{tagLabel}</span>
-        <span className="report-card__date">{dateLabel}</span>
-      </div>
-
-      {/* Order 2: Body (16px gap, 0 16px padding) */}
+      {/* Body (394px x 244px) */}
       <div className="report-card__body">
+        {/* CTA / Header Row (346px x 35px) */}
+        <div className="report-card__meta">
+          <div className="report-card__meta-left">
+            <svg 
+              className="report-card__arrow-svg" 
+              width="32" 
+              height="32" 
+              viewBox="0 0 32 32" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M6.66669 16H25.3334" stroke="#2A2A2A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M17.3334 8L25.3334 16L17.3334 24" stroke="#2A2A2A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="report-card__label">{report.label || report.sector || 'Civic'}</span>
+          </div>
+          <div className="report-card__date">
+            <span>{dateLabel}</span>
+          </div>
+        </div>
+
+        {/* Title (346px x 120px) */}
         <h3 className="report-card__title" title={report.title}>
           {report.title}
         </h3>
 
-        {/* CTA Button: 24px height, gap 8px, 24x24 SVG, 12px #0D61AE */}
-        <div
-          className="report-card__cta"
-          onClick={handleCtaClick}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleCtaClick(e as any);
-            }
-          }}
-        >
-          <ReportDownloadIcon className="report-card__download-icon" />
-          <span className="report-card__label">
-            {isHindi ? 'पूरी रिपोर्ट डाउनलोड करें' : 'Download Full Report'}
-          </span>
-        </div>
-
-        {/* Sector Metadata Row */}
-        <div className="report-card__sector">
-          <span className="report-card__sector-val" title={sectorText}>
-            {sectorText}
-          </span>
-        </div>
+        {/* Subtitle / Description (346px x 57px) */}
+        <p className="report-card__desc">
+          {report.desc || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore ...'}
+        </p>
       </div>
     </article>
   );

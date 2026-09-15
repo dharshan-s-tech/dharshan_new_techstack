@@ -19,7 +19,7 @@ interface SectionItem {
   titleHi: string;
   subEn?: string;
   subHi?: string;
-  iconType: 'analytical' | 'thematic';
+  iconPath: string;
   volumes: VolumeItem[];
 }
 
@@ -28,7 +28,7 @@ const HISTORY_SECTIONS: SectionItem[] = [
     id: 'analytical',
     titleEn: 'CAG of India - Analytical History 1947-1989',
     titleHi: 'भारत के सीएजी - विश्लेषणात्मक इतिहास 1947-1989',
-    iconType: 'analytical',
+    iconPath: '/assets/Images/history of iaad/Analytical History 1.svg',
     volumes: [
       {
         id: 'a-1',
@@ -54,7 +54,7 @@ const HISTORY_SECTIONS: SectionItem[] = [
     titleHi: 'एक विषयगत इतिहास 1990-2007 (भाग - 1)',
     subEn: 'The Comptroller & Auditor General of India - "A Thematic History 1990-2007" VOL-I',
     subHi: 'भारत के नियंत्रक और महालेखापरीक्षक - "एक विषयगत इतिहास 1990-2007" भाग-I',
-    iconType: 'thematic',
+    iconPath: '/assets/Images/history of iaad/Analytical History2.svg',
     volumes: [
       { id: 't1-1', titleEn: 'Forward', titleHi: 'प्रस्तावना', size: '34.7 MB' },
       { id: 't1-2', titleEn: 'Preface', titleHi: 'भूमिका', size: '34.7 MB' },
@@ -78,7 +78,7 @@ const HISTORY_SECTIONS: SectionItem[] = [
     id: 'thematic-2',
     titleEn: 'A Thematic History 1990-2007 (Vol - 2)',
     titleHi: 'एक विषयगत इतिहास 1990-2007 (भाग - 2)',
-    iconType: 'thematic',
+    iconPath: '/assets/Images/history of iaad/Analytical History 3.svg',
     volumes: [
       { id: 't2-1', titleEn: 'Ch 10 - Railway Audit', titleHi: 'अध्याय 10 - रेलवे लेखापरीक्षा', size: '34.7 MB' },
       { id: 't2-2', titleEn: 'Ch 11 - Audit of Scientific Departments', titleHi: 'अध्याय 11 - वैज्ञानिक विभागों की लेखापरीक्षा', size: '34.7 MB' },
@@ -90,13 +90,13 @@ const HISTORY_SECTIONS: SectionItem[] = [
 ];
 
 const RedPdfIcon = () => (
-  <div className="w-[27px] h-[32px] relative flex-shrink-0 flex items-center justify-center">
-    <svg width="27" height="32" viewBox="0 0 27 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2.5 4C2.5 2.61929 3.61929 1.5 5 1.5H18.5L25 8V28C25 29.3807 23.8807 30.5 22.5 30.5H5C3.61929 30.5 2.5 29.3807 2.5 28V4Z" fill="#E53935" />
-      <path d="M18.5 1.5V8H25L18.5 1.5Z" fill="#C62828" />
-      <text x="13.5" y="21" fill="#FFFFFF" fontSize="8.5" fontWeight="bold" textAnchor="middle" fontFamily="Noto Sans, sans-serif" letterSpacing="0.5">PDF</text>
-    </svg>
-  </div>
+  <img 
+    src="/assets/pdf-red-icon.png" 
+    alt="PDF Icon" 
+    width={27} 
+    height={32} 
+    className="w-[27px] h-[32px] object-contain flex-shrink-0"
+  />
 );
 
 export default function HistoryPage() {
@@ -156,20 +156,14 @@ export default function HistoryPage() {
                   className="w-full flex items-center justify-between py-2 border-b border-[#D7D7D7] cursor-pointer select-none"
                 >
                   <div className="flex items-center gap-4">
-                    {/* Circle icon 32px with #751639 background */}
-                    <div className="w-[32px] h-[32px] rounded-full bg-[#751639] flex items-center justify-center text-white flex-shrink-0">
-                      {section.iconType === 'analytical' ? (
-                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="2" y="2" width="16" height="16" rx="2" stroke="white" strokeWidth="1.5" />
-                          <path d="M6 6H14M6 10H14M6 14H10" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
-                      ) : (
-                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="3" y="3" width="14" height="14" rx="2" stroke="white" strokeWidth="1.5" />
-                          <path d="M7 14V10M10 14V7M13 14V12" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
-                      )}
-                    </div>
+                    {/* Local SVG icon exported from Figma */}
+                    <img 
+                      src={section.iconPath} 
+                      alt="" 
+                      width={32} 
+                      height={32} 
+                      className="w-[32px] h-[32px] rounded-full flex-shrink-0 object-contain" 
+                    />
 
                     <h2 
                       className="text-base font-bold text-[#2E2E31] m-0"
@@ -235,7 +229,7 @@ export default function HistoryPage() {
                           return (
                             <div 
                               key={vol.id}
-                              className="w-full min-h-[56px] bg-[#FAFAFA] border-l-2 border-[#FAFAFA] hover:border-[#751639] rounded px-4 py-2 flex items-center justify-between gap-4 transition-colors duration-150"
+                              className="w-full min-h-[56px] bg-[#FAFAFA] border-l-2 border-[#FAFAFA] hover:border-[#500C25] rounded px-4 py-2 flex items-center justify-between gap-4 transition-colors duration-150"
                             >
                               {/* Left Text */}
                               <div className="flex flex-col justify-center text-left max-w-[75%]">

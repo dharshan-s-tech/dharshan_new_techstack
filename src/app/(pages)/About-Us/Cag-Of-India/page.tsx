@@ -124,8 +124,8 @@ export default function CagOfIndiaPage() {
             </svg>
           </div>
 
-          {/* Left Photo Frame */}
-          <div className="relative z-10 w-[210px] h-[150px] rounded-md overflow-hidden shrink-0 border border-[#EAEAEA] shadow-sm">
+          {/* Left Photo Frame matching Figma image 1623 (235px x 168px with 11px border) */}
+          <div className="relative z-10 w-[235px] h-[168px] overflow-hidden shrink-0 border-[11px] border-white shadow-md box-border">
             <img 
               src="/assets/cag-desk-photo.png" 
               alt={isHindi ? "श्री के संजय मूर्ति, भारत के नियंत्रक और महालेखापरीक्षक" : "Shri K. Sanjay Murthy, Comptroller and Auditor General of India"} 
@@ -136,14 +136,14 @@ export default function CagOfIndiaPage() {
           {/* Info Content */}
           <div className="relative z-10 flex flex-col justify-center gap-1 text-left">
             <h2 
-              className="text-[32px] font-bold leading-[40px] text-[#751639]"
-              style={{ fontFamily: 'Noto Sans, sans-serif', color: '#751639' }}
+              className="text-[32px] font-bold leading-[44px] text-[#751639]"
+              style={{ fontFamily: 'Noto Sans, sans-serif', fontWeight: 700, fontSize: '32px', lineHeight: '44px', color: '#751639' }}
             >
               {isHindi ? 'श्री के संजय मूर्ति' : 'Shri K Sanjay Murthy'}
             </h2>
             <p 
-              className="text-[16px] font-normal leading-[24px] text-[#333333]"
-              style={{ fontFamily: 'Noto Sans, sans-serif', color: '#333333' }}
+              className="text-[16px] font-normal leading-[22px] text-[#2A2A2A]"
+              style={{ fontFamily: 'Noto Sans, sans-serif', fontWeight: 400, fontSize: '16px', lineHeight: '22px', color: '#2A2A2A' }}
             >
               {isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'Comptroller and Audit General of India'}
             </p>

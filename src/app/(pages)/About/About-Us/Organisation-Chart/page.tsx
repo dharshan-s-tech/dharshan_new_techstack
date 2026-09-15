@@ -418,7 +418,16 @@ export default function OrganisationChartPage() {
       setLang(dataManager.getLanguage());
     };
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+
+    // Hide scrollbars specifically for this page
+    document.documentElement.classList.add('no-scrollbar');
+    document.body.classList.add('no-scrollbar');
+
+    return () => {
+      window.removeEventListener('languageChange', handleLangChange);
+      document.documentElement.classList.remove('no-scrollbar');
+      document.body.classList.remove('no-scrollbar');
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
@@ -522,7 +531,7 @@ export default function OrganisationChartPage() {
           <div className="w-full h-[1px] bg-[#D7D7D7] my-4" aria-hidden="true" />
 
           {/* Reporting Offices (Scrollable) */}
-          <div className="flex flex-col gap-1 text-left flex-grow overflow-y-auto pr-1">
+          <div className="flex flex-col gap-1 text-left flex-grow overflow-y-auto pr-1 no-scrollbar">
             <span 
               className="font-semibold block mb-1" 
               style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '12px', lineHeight: '16px' }}
@@ -567,7 +576,7 @@ export default function OrganisationChartPage() {
         </p>
 
         {/* Horizontal scroll wrap container to guarantee 100% straight line math alignment */}
-        <div className="w-full overflow-x-auto pb-6 custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="w-full overflow-x-auto pb-6 no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
           
           {/* Fixed 792px Tree Container: 356px left + 80px middle + 356px right = 792px. Center line is ALWAYS at 396px */}
           <div className="w-[792px] mx-auto flex flex-col items-center gap-0 relative px-0">

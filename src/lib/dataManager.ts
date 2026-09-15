@@ -1078,8 +1078,8 @@ export const DEFAULT_REPORTS: ReportItem[] = [
   },
   {
     id: 'home-rep-1',
-    title: 'Audit Report on Infrastructure Development and Municipal Solid Waste Management',
-    image: SECTOR_WISE_IMAGES['24'],
+    title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
+    image: '/assets/Images/reportcard/card1.png',
     tag: 'Text',
     date: 'Jun 4, 2026',
     year: '2026',
@@ -1088,12 +1088,12 @@ export const DEFAULT_REPORTS: ReportItem[] = [
     type: 'Performance',
     isFeatured: true,
     label: 'Civic',
-    desc: 'Comprehensive review of urban infrastructure planning, fund utilization, and waste treatment plants across municipal corporations.'
+    desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore ...'
   },
   {
     id: 'home-rep-2',
-    title: 'Thematic Audit on Environmental Management in Coastal Districts of Tamil Nadu',
-    image: SECTOR_WISE_IMAGES['26'],
+    title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
+    image: '/assets/Images/reportcard/card2.png',
     tag: 'Text',
     date: 'Jun 4, 2026',
     year: '2026',
@@ -1102,12 +1102,12 @@ export const DEFAULT_REPORTS: ReportItem[] = [
     type: 'Performance',
     isFeatured: true,
     label: 'Tamil Nadu',
-    desc: 'Assessment of measures taken to prevent marine pollution, coastal erosion, and implementation of CRZ notifications.'
+    desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore ...'
   },
   {
     id: 'home-rep-3',
-    title: 'Performance Audit on Irrigation Schemes and Canal Networks in Andhra Pradesh',
-    image: SECTOR_WISE_IMAGES['30'],
+    title: 'Title of the Report this could be in two lines it amet, consectetur adipiscing elit, sed do',
+    image: '/assets/Images/reportcard/card3.png',
     tag: 'Text',
     date: 'Jun 4, 2026',
     year: '2026',
@@ -1116,7 +1116,7 @@ export const DEFAULT_REPORTS: ReportItem[] = [
     type: 'Performance',
     isFeatured: true,
     label: 'Andhra Pradesh',
-    desc: 'Evaluation of major and medium irrigation projects, command area development, and drinking water supply provisions.'
+    desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore ...'
   }
 ];
 

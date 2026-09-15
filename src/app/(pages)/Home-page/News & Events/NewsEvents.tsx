@@ -120,7 +120,7 @@ export default function NewsEvents() {
               className="video-card"
               onClick={() => setActiveVideo({ title: video.title, embedUrl: video.embedUrl })}
             >
-              <div className="video-card__banner bg-[#e6e6e6] aspect-video relative flex items-center justify-center">
+              <div className="video-card__banner bg-[#e6e6e6] relative flex items-center justify-center">
                 <div 
                   className="video-card__play cursor-pointer hover:scale-110 transition-transform" 
                   aria-label="Play video"
@@ -181,11 +181,10 @@ export default function NewsEvents() {
                         : news.desc
                     })}
                   >
-                    <div className="trending-card__thumb" aria-hidden="true" style={{ overflow: 'hidden' }}>
+                    <div className="trending-card__thumb" aria-hidden="true">
                       <img 
                         src={getNewsImage(news.id)} 
                         alt="" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} 
                       />
                     </div>
                     <div className="trending-card__details">
@@ -207,13 +206,12 @@ export default function NewsEvents() {
                 <Link 
                   key={news.id}
                   href={href} 
-                  className="trending-card cursor-pointer hover:bg-zinc-50 transition-colors block"
+                  className="trending-card cursor-pointer hover:bg-zinc-50 transition-colors flex"
                 >
-                  <div className="trending-card__thumb" aria-hidden="true" style={{ overflow: 'hidden' }}>
+                  <div className="trending-card__thumb" aria-hidden="true">
                     <img 
                       src={getNewsImage(news.id)} 
                       alt="" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} 
                     />
                   </div>
                   <div className="trending-card__details">

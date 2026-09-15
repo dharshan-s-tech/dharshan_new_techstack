@@ -17,9 +17,11 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
 
   const isReports = pathname?.startsWith('/Reports');
   const isHome = pathname === '/' || pathname?.startsWith('/Home-page');
+  const isOurPresence = pathname?.toLowerCase().includes('our-presence');
   const showGlobalBreadcrumbWrapper =
     !isHome &&
     !isReports &&
+    !isOurPresence &&
     !pathname?.toLowerCase().includes('global-relations');
 
   return (
@@ -27,7 +29,7 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
       <div>
         <Header />
         {showGlobalBreadcrumbWrapper && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-[64px] pt-6 pb-0">
             <Breadcrumb />
           </div>
         )}

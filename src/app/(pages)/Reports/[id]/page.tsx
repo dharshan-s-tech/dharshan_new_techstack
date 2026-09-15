@@ -98,9 +98,17 @@ export default function ReportDetailPage({ params }: SubpageProps) {
         {/* Breadcrumb Trail: Home > Reports > Reports Details Page */}
         <nav className="report-detail-breadcrumbs" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
-          <span className="report-detail-breadcrumbs__chevron">&gt;</span>
+          <span className="report-detail-breadcrumbs__chevron" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
           <Link href="/Reports">Reports</Link>
-          <span className="report-detail-breadcrumbs__chevron">&gt;</span>
+          <span className="report-detail-breadcrumbs__chevron" aria-hidden="true">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3.5 1.5L7 5L3.5 8.5" stroke="#565656" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
           <span className="report-detail-breadcrumbs__current">Reports Details Page</span>
         </nav>
 

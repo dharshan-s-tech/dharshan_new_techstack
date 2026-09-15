@@ -168,6 +168,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
       {/* Dynamic Breadcrumbs (Figma: width 286px, height 16px, left 64px, top 144px, gap 8px) */}
       <nav
         aria-label="Breadcrumb"
+        className="global-relations-breadcrumbs"
         style={{
           display: 'flex',
           flexDirection: 'row',

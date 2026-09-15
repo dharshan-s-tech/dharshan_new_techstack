@@ -64,20 +64,10 @@ export default function Header() {
   const isHindi = language === 'हिन्दी';
 
   return (
-    <header className="site-header relative w-full" data-node-id="115:2138" data-name="Menu">
-      {/* 1440px container for absolute header logo */}
-      <div className="relative max-w-[1440px] mx-auto pointer-events-none">
-        <Link 
-          href="/" 
-          className="cag-logo pointer-events-auto"
-          aria-label="CAG Home"
-        >
-          <img 
-            src="/assets/Images/CAG Logo.svg" 
-            alt="Comptroller and Auditor General of India crest logo" 
-          />
-        </Link>
-      </div>
+    <header className="site-header" data-node-id="115:2138" data-name="Menu">
+      <Link className="cag-logo" href="/" aria-label="CAG Home">
+        <img src="/assets/Images/CAG Logo.svg" alt="Comptroller and Auditor General of India crest logo" />
+      </Link>
 
       {/* Utility Bar */}
       <div className="w-full bg-[#EEEEEE]">
@@ -140,40 +130,20 @@ export default function Header() {
             <span></span><span></span><span></span>
           </button>
           <div className="search-box">
-            <div className="search-box__inner flex items-center gap-2 px-2" style={{ position: 'relative', height: '100%' }}>
-              <img 
-                src="/assets/ef7eb7134dafeda4c8183619dad425b62c132784.svg" 
-                alt="Search" 
-                className="search-box__icon cursor-pointer" 
-                onClick={executeSearch}
-                style={{
-                  position: 'relative',
-                  zIndex: 10,
-                  cursor: 'pointer',
-                  width: '16px',
-                  height: '16px',
-                }}
-              />
-              <input 
-                type="search" 
-                aria-label="Search"
-                value={searchVal}
-                onChange={(e) => setSearchVal(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                placeholder={isHindi ? 'खोजें...' : 'Search...'}
-                style={{
-                  position: 'relative',
-                  opacity: 1,
-                  flex: 1,
-                  height: '100%',
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  color: '#2a2a2a',
-                  fontSize: '14px',
-                }}
-              />
-            </div>
+            <input 
+              type="text" 
+              aria-label="Search"
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder={isHindi ? 'खोजें...' : 'Search...'}
+            />
+            <img 
+              src="/assets/ef7eb7134dafeda4c8183619dad425b62c132784.svg" 
+              alt="Search" 
+              className="search-box__icon" 
+              onClick={executeSearch}
+            />
           </div>
         </div>
       </div>

@@ -111,12 +111,12 @@ export default function AboutLayout({
   const displayTitle = isHindi && DICTIONARY[title] ? DICTIONARY[title] : title;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-6" ref={containerRef}>
-      <div className="about-layout flex flex-col lg:flex-row gap-10 items-start">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-[64px] pt-6 pb-12" ref={containerRef}>
+      <div className="about-layout flex flex-col lg:flex-row gap-6 items-start">
         <aside className="w-full lg:w-[310px] shrink-0">
           <AboutusSidemenu />
         </aside>
-        <main className="about-content flex-grow w-full">
+        <main className="about-content flex-grow w-full max-w-[978px]">
           <div>
             {children}
           </div>

@@ -96,6 +96,9 @@ export default function WhoWeAre() {
         </div>
       </section>
 
+      {/* Horizontal Divider between Most Viewed and Who We Are (Line 1576) */}
+      <div className="home-section-divider" data-node-id="356:17137"></div>
+
       <section className="who-we-are" data-node-id="356:17138" aria-labelledby="who-we-are-heading">
         <div className="who-we-are__intro" data-node-id="356:17140">
           <h2 id="who-we-are-heading" className="section-heading" data-node-id="356:17141">
@@ -114,48 +117,56 @@ export default function WhoWeAre() {
                 <img src="/assets/6482d2822bc16f1e27c743aba1a1d5efe9974975.svg" alt="Constitutional Role icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">{isHindi ? 'संवैधानिक भूमिका' : 'Constitutional Role'}</h3>
-              <p className="cag-card__desc">
-                {isHindi 
-                  ? 'सार्वजनिक वित्त के संरक्षक के रूप में भारतीय संविधान के अनुच्छेद 148 के तहत नियुक्त किया गया।'
-                  : 'Appointed under Article 148 of the Indian Constitution as guardian of public finances.'}
-              </p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">{isHindi ? 'संवैधानिक भूमिका' : 'Constitutional Role'}</h3>
+                <p className="cag-card__desc">
+                  {isHindi 
+                    ? 'सार्वजनिक वित्त के संरक्षक के रूप में भारतीय संविधान के अनुच्छेद 148 के तहत नियुक्त किया गया।'
+                    : 'Appointed under Article 148 of the Indian Constitution as guardian of public finances.'}
+                </p>
+              </div>
             </Link>
             <Link href="/About/About-Us/Our-Vision,-Mission-&-Core-Values" className="cag-card cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 block" data-node-id="356:17152">
               <div className="cag-card__icon">
                 <img src="/assets/d296a6454ef5b1d6927204433862eee4294545d4.svg" alt="Our Mission icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">{isHindi ? 'हमारा मिशन' : 'Our Mission'}</h3>
-              <p className="cag-card__desc">
-                {isHindi 
-                  ? 'पारदर्शिता, जवाबदेही और दक्षता सुनिश्चित करने वाले व्यापक ऑडिट आयोजित करना।'
-                  : 'To conduct comprehensive audits ensuring transparency, accountability, and efficiency.'}
-              </p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">{isHindi ? 'हमारा मिशन' : 'Our Mission'}</h3>
+                <p className="cag-card__desc">
+                  {isHindi 
+                    ? 'पारदर्शिता, जवाबदेही और दक्षता सुनिश्चित करने वाले व्यापक ऑडिट आयोजित करना।'
+                    : 'To conduct comprehensive audits ensuring transparency, accountability, and efficiency.'}
+                </p>
+              </div>
             </Link>
             <Link href="/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI" className="cag-card cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 block" data-node-id="356:17156">
               <div className="cag-card__icon">
                 <img src="/assets/d8fd77ee881f90073f924df1844719ec722ec892.svg" alt="Global Standards icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">{isHindi ? 'वैश्विक मानक' : 'Global Standards'}</h3>
-              <p className="cag-card__desc">
-                {isHindi 
-                  ? 'सर्वोच्च लेखा परीक्षा संस्थानों के अंतर्राष्ट्रीय मानकों और सर्वोत्तम प्रथाओं का पालन करना।'
-                  : 'Following International Standards of Supreme Audit Institutions and best practices.'}
-              </p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">{isHindi ? 'वैश्विक मानक' : 'Global Standards'}</h3>
+                <p className="cag-card__desc">
+                  {isHindi 
+                    ? 'सर्वोच्च लेखा परीक्षा संस्थानों के अंतर्राष्ट्रीय मानकों और सर्वोत्तम प्रथाओं का पालन करना।'
+                    : 'Following International Standards of Supreme Audit Institutions and best practices.'}
+                </p>
+              </div>
             </Link>
             <Link href="/About/About-Us/Cag-Of-India" className="cag-card cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 block" data-node-id="356:17161">
               <div className="cag-card__icon">
                 <img src="/assets/c432a5b68483c46d01761b0880d7551cd6d812f2.svg" alt="Performance Audits icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">{isHindi ? 'निष्पादन लेखा परीक्षा' : 'Performance Audits'}</h3>
-              <p className="cag-card__desc">
-                {isHindi 
-                  ? 'वित्तीय अनुपालन से परे, हम अर्थव्यवस्था, दक्षता और प्रभावशीलता के लिए कार्यक्रमों का ऑडिट करते हैं।'
-                  : 'Beyond financial compliance, we audit programs for economy, efficiency, and effectiveness.'}
-              </p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">{isHindi ? 'निष्पादन लेखा परीक्षा' : 'Performance Audits'}</h3>
+                <p className="cag-card__desc">
+                  {isHindi 
+                    ? 'वित्तीय अनुपालन से परे, हम अर्थव्यवस्था, दक्षता और प्रभावशीलता के लिए कार्यक्रमों का ऑडिट करते हैं।'
+                    : 'Beyond financial compliance, we audit programs for economy, efficiency, and effectiveness.'}
+                </p>
+              </div>
             </Link>
           </div>
           <Link href="/About/About-Us/Our-Vision,-Mission-&-Core-Values" className="btn btn--outline-dark" data-node-id="356:17162">
@@ -177,21 +188,21 @@ export default function WhoWeAre() {
             <img src="/assets/4ac162869e8195d293791744857e765655519102.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17182">700+</p>
             <p className="stat__caption" data-node-id="356:17184">
-              {isHindi ? 'संसद में सालाना पेश की जाने वाली रिपोर्ट' : 'Reports tabled In Parliament annually'}
+              {isHindi ? 'संसद में सालाना पेश की जाने वाली रिपोर्ट' : <>Reports tabled In<br />Parliament annually</>}
             </p>
           </div>
           <div className="stat" data-node-id="356:17185">
             <img src="/assets/966e437fa2336aee29c529b12cc4d949d9cfae00.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17190">28+</p>
             <p className="stat__caption" data-node-id="356:17192">
-              {isHindi ? <>राज्य लेखा परीक्षा कार्यालय<br />अखिल भारतीय उपस्थिति</> : <>State audit offices<br />Pan-India presence</>}
+              {isHindi ? <>राज्य लेखा परीक्षा कार्यालय<br />अखिल भारतीय उपस्थिति</> : <>State audit offices<br />Pan-India average</>}
             </p>
           </div>
           <div className="stat" data-node-id="356:17193">
             <img src="/assets/1f82b2a28cc40a20776e4b740699bded23f2f91c.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17204">700+</p>
             <p className="stat__caption" data-node-id="356:17206">
-              {isHindi ? 'अधिकारी एवं कर्मचारी आईएएडी कार्यबल' : 'Officers & Staff IAAD workforce'}
+              {isHindi ? 'अधिकारी एवं कर्मचारी आईएएडी कार्यबल' : <>Officers &amp; Staff IAAD<br />workforce</>}
             </p>
           </div>
         </div>

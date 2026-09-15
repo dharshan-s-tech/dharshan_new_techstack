@@ -42,7 +42,7 @@ export default function WhoWeAre() {
             data-node-id="356:17083"
           >
             <div className="quick-link__icon-wrap">
-              <img src="/assets/59d09d67fc097dcb3fe6785027400d737b662e4c.svg" alt="Latest Reports icon" className="quick-link__icon" />
+              <img src="/assets/latest-reports-icon.svg" alt="Latest Reports icon" className="quick-link__icon" />
             </div>
             <p className="quick-link__label" data-node-id="356:17095">Latest Reports</p>
           </Link>
@@ -125,8 +125,8 @@ export default function WhoWeAre() {
         </div>
       </section>
 
-      {/* Horizontal Divider between Most Viewed and Who We Are */}
-      <div className="home-section-divider"></div>
+      {/* Horizontal Divider between Most Viewed and Who We Are (Line 1576) */}
+      <div className="home-section-divider" data-node-id="356:17137"></div>
 
       {/* Who We Are details */}
       <section className="who-we-are" data-node-id="356:17138" aria-labelledby="who-we-are-heading">
@@ -143,32 +143,40 @@ export default function WhoWeAre() {
                 <img src="/assets/6482d2822bc16f1e27c743aba1a1d5efe9974975.svg" alt="Constitutional Role icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">Constitutional Role</h3>
-              <p className="cag-card__desc">Appointed under Article 148 of the Indian Constitution as guardian of public finances.</p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">Constitutional Role</h3>
+                <p className="cag-card__desc">Appointed under Article 148 of the Indian Constitution as guardian of public finances.</p>
+              </div>
             </div>
             <div className="cag-card" data-node-id="356:17152">
               <div className="cag-card__icon">
                 <img src="/assets/d296a6454ef5b1d6927204433862eee4294545d4.svg" alt="Our Mission icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">Our Mission</h3>
-              <p className="cag-card__desc">To conduct comprehensive audits ensuring transparency, accountability, and efficiency.</p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">Our Mission</h3>
+                <p className="cag-card__desc">To conduct comprehensive audits ensuring transparency, accountability, and efficiency.</p>
+              </div>
             </div>
             <div className="cag-card" data-node-id="356:17156">
               <div className="cag-card__icon">
                 <img src="/assets/d8fd77ee881f90073f924df1844719ec722ec892.svg" alt="Global Standards icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">Global Standards</h3>
-              <p className="cag-card__desc">Following International Standards of Supreme Audit Institutions and best practices.</p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">Global Standards</h3>
+                <p className="cag-card__desc">Following International Standards of Supreme Audit Institutions and best practices.</p>
+              </div>
             </div>
             <div className="cag-card" data-node-id="356:17161">
               <div className="cag-card__icon">
                 <img src="/assets/c432a5b68483c46d01761b0880d7551cd6d812f2.svg" alt="Performance Audits icon" />
               </div>
               <div className="cag-card__divider"></div>
-              <h3 className="cag-card__title">Performance Audits</h3>
-              <p className="cag-card__desc">Beyond financial compliance, we audit programs for economy, efficiency, and effectiveness.</p>
+              <div className="cag-card__details">
+                <h3 className="cag-card__title">Performance Audits</h3>
+                <p className="cag-card__desc">Beyond financial compliance, we audit programs for economy, efficiency, and effectiveness.</p>
+              </div>
             </div>
           </div>
           <Link href="/About/About-Us/Our-Vision,-Mission-&-Core-Values" className="btn btn--outline-dark" data-node-id="356:17162">
@@ -183,22 +191,22 @@ export default function WhoWeAre() {
           <div className="stat" data-node-id="356:17166">
             <img src="/assets/eebeff0eb4acf32e821992e39ae1a96ca7d9bf95.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17173">150+</p>
-            <p className="stat__caption" data-node-id="356:17175">Years of excellence\nFounded in 1858</p>
+            <p className="stat__caption" data-node-id="356:17175">Years of excellence<br />Founded in 1858</p>
           </div>
           <div className="stat" data-node-id="356:17176">
             <img src="/assets/4ac162869e8195d293791744857e765655519102.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17182">700+</p>
-            <p className="stat__caption" data-node-id="356:17184">Reports tabled In Parliament annually</p>
+            <p className="stat__caption" data-node-id="356:17184">Reports tabled In<br />Parliament annually</p>
           </div>
           <div className="stat" data-node-id="356:17185">
             <img src="/assets/966e437fa2336aee29c529b12cc4d949d9cfae00.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17190">28+</p>
-            <p className="stat__caption" data-node-id="356:17192">State audit offices \nPan-India average</p>
+            <p className="stat__caption" data-node-id="356:17192">State audit offices<br />Pan-India average</p>
           </div>
           <div className="stat" data-node-id="356:17193">
             <img src="/assets/1f82b2a28cc40a20776e4b740699bded23f2f91c.svg" alt="" className="stat__icon" />
             <p className="stat__number" data-node-id="356:17204">700+</p>
-            <p className="stat__caption" data-node-id="356:17206">Officers &amp; Staff IAAD workforce</p>
+            <p className="stat__caption" data-node-id="356:17206">Officers &amp; Staff IAAD<br />workforce</p>
           </div>
         </div>
       </section>

@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import FiltersSidemenu from '@/Reusable components/Side Menu/Filters_sidemenu/FiltersSidemenu';
 import { dataManager, ReportItem, DEFAULT_REPORTS } from '@/lib/dataManager';
 import { getApiBaseUrl } from '@/lib/api';
-import ReportCard from '@/components/common/ReportCard';
+import ReportListingCard from './ReportListingCard';
 
 const HINDI_TRANSLATIONS: Record<string, { title: string; tag: string; sector: string }> = {
   'rep-1': {
@@ -568,7 +568,7 @@ function ReportsPageContent() {
                 };
 
                 return (
-                  <ReportCard
+                  <ReportListingCard
                     key={report.id || `rep-${index}`}
                     report={{
                       id: report.id,
@@ -580,7 +580,7 @@ function ReportsPageContent() {
                       pdfUrl: report.pdfUrl || (report as any).pdf_url
                     }}
                     isHindi={isHindi}
-                    fallbackImageIndex={index}
+                    index={index}
                   />
                 );
               })
