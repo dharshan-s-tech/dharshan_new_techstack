@@ -275,6 +275,31 @@ export default function FigmaAdminSidebar() {
       path: '/admin/news'
     },
     {
+      type: 'submenu',
+      id: 'user-management',
+      name: 'User Management',
+      children: [
+        {
+          type: 'leaf',
+          id: 'um-roles',
+          name: 'Roles',
+          path: '/admin/users?tab=roles'
+        },
+        {
+          type: 'leaf',
+          id: 'um-wings',
+          name: 'Wings',
+          path: '/admin/users?tab=wings'
+        },
+        {
+          type: 'leaf',
+          id: 'um-users',
+          name: 'Users',
+          path: '/admin/users?tab=users'
+        }
+      ]
+    },
+    {
       type: 'leaf',
       id: 'contact',
       name: 'Contact',
@@ -292,7 +317,8 @@ export default function FigmaAdminSidebar() {
     'global-relations': false,
     'gr-intl-bodies': true,
     'gr-bilateral': true,
-    'gr-audit-engagements': true
+    'gr-audit-engagements': true,
+    'user-management': true
   });
 
   // Auto-expand submenus based on active route
@@ -321,6 +347,8 @@ export default function FigmaAdminSidebar() {
       newExpanded['gr-intl-bodies'] = true;
       newExpanded['gr-bilateral'] = true;
       newExpanded['gr-audit-engagements'] = true;
+    } else if (pathname === '/admin/users') {
+      newExpanded['user-management'] = true;
     }
 
     setExpanded(newExpanded);
@@ -341,7 +369,12 @@ export default function FigmaAdminSidebar() {
       const targetParams = new URLSearchParams(queryString);
       let matches = true;
       targetParams.forEach((val, key) => {
-        if (searchParams.get(key) !== val) matches = false;
+        const currentVal = searchParams.get(key);
+        // Default tab is 'users' when on /admin/users and tab param is omitted
+        if (pathname === '/admin/users' && key === 'tab' && !currentVal && val === 'users') {
+          return;
+        }
+        if (currentVal !== val) matches = false;
       });
       return matches;
     }
