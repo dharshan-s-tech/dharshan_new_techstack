@@ -34,6 +34,181 @@ export interface AdminModule {
 // ALL ADMIN MODULE CONFIGS
 // =============================================
 export const ADMIN_MODULES: Record<string, AdminModule> = {
+  'users': {
+    table: 'users',
+    title: 'Users Management',
+    addTitle: 'Add User',
+    searchColumn: 'username',
+    columns: [
+      { key: 'username', label: 'Username' },
+      { key: 'name', label: 'Full Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'mobile', label: 'Mobile' },
+      { key: 'role_name', label: 'Role' },
+      { key: 'wing_title', label: 'CAG Wing' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+      { key: 'created_at', label: 'Registered', type: 'date' },
+    ],
+    formFields: [
+      { name: 'username', label: 'Username', type: 'text', required: true },
+      { name: 'email', label: 'Email Address', type: 'text', required: true },
+      { name: 'password', label: 'Password', type: 'password', hint: '8-20 chars: min 1 uppercase, 1 lowercase, 1 number, 1 special character' },
+      { name: 'first_name', label: 'First Name', type: 'text' },
+      { name: 'last_name', label: 'Last Name', type: 'text' },
+      { name: 'role_id', label: 'System Role', type: 'select', required: true },
+      { name: 'wings_id', label: 'CAG Wing', type: 'select' },
+      { name: 'mobile', label: 'Mobile Number', type: 'text' },
+      { name: 'designation', label: 'Designation', type: 'text' },
+      { name: 'posted_office', label: 'Posted Office', type: 'text' },
+      { name: 'gender', label: 'Gender', type: 'select', options: [
+        { value: 'Male', label: 'Male' },
+        { value: 'Female', label: 'Female' },
+        { value: 'Other', label: 'Other' }
+      ]},
+      { name: 'is_active', label: 'Active Status', type: 'boolean' },
+    ]
+  },
+  'admin-users': {
+    table: 'users',
+    title: 'Users Management',
+    addTitle: 'Add User',
+    searchColumn: 'username',
+    columns: [
+      { key: 'username', label: 'Username' },
+      { key: 'name', label: 'Full Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'mobile', label: 'Mobile' },
+      { key: 'role_name', label: 'Role' },
+      { key: 'wing_title', label: 'CAG Wing' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+      { key: 'created_at', label: 'Registered', type: 'date' },
+    ],
+    formFields: [
+      { name: 'username', label: 'Username', type: 'text', required: true },
+      { name: 'email', label: 'Email Address', type: 'text', required: true },
+      { name: 'password', label: 'Password', type: 'password', hint: '8-20 chars: min 1 uppercase, 1 lowercase, 1 number, 1 special character' },
+      { name: 'first_name', label: 'First Name', type: 'text' },
+      { name: 'last_name', label: 'Last Name', type: 'text' },
+      { name: 'role_id', label: 'System Role', type: 'select', required: true },
+      { name: 'wings_id', label: 'CAG Wing', type: 'select' },
+      { name: 'mobile', label: 'Mobile Number', type: 'text' },
+      { name: 'designation', label: 'Designation', type: 'text' },
+      { name: 'posted_office', label: 'Posted Office', type: 'text' },
+      { name: 'gender', label: 'Gender', type: 'select', options: [
+        { value: 'Male', label: 'Male' },
+        { value: 'Female', label: 'Female' },
+        { value: 'Other', label: 'Other' }
+      ]},
+      { name: 'is_active', label: 'Active Status', type: 'boolean' },
+    ]
+  },
+  'roles': {
+    table: 'roles',
+    title: 'Roles & Access Control',
+    addTitle: 'Add Role',
+    searchColumn: 'name',
+    columns: [
+      { key: 'name', label: 'Role Name' },
+      { key: 'parent_name', label: 'Parent Role Hierarchy' },
+      { key: 'is_system', label: 'System Role', type: 'boolean' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+      { key: 'created_at', label: 'Created', type: 'date' },
+    ],
+    formFields: [
+      { name: 'name', label: 'Role Name (English)', type: 'text', required: true },
+      { name: 'name_hi', label: 'Role Name (Hindi)', type: 'text', isHindi: true },
+      { name: 'parent_id', label: 'Parent Role Hierarchy', type: 'select' },
+      { name: 'is_active', label: 'Active Status', type: 'boolean' },
+    ]
+  },
+  'roles-permissions': {
+    table: 'roles_permissions',
+    title: 'Role Permissions & Subsite Scoping',
+    addTitle: 'Add Role Permission Scoping',
+    searchColumn: 'role_name',
+    columns: [
+      { key: 'role_name', label: 'Role' },
+      { key: 'website_title', label: 'Assigned Subsite / Website' },
+      { key: 'state_id', label: 'State ID' },
+      { key: 'department_id', label: 'Department ID' },
+    ],
+    formFields: [
+      { name: 'role_id', label: 'Role', type: 'select', required: true },
+      { name: 'website_id', label: 'Website / Subsite', type: 'select', required: true },
+    ]
+  },
+  'user-offices': {
+    table: 'user_offices',
+    title: 'User Offices Directory',
+    addTitle: 'Add User Office',
+    searchColumn: 'title',
+    columns: [
+      { key: 'title', label: 'Office Title' },
+      { key: 'location', label: 'Location' },
+      { key: 'language', label: 'Language' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+      { key: 'created_at', label: 'Created', type: 'date' },
+    ],
+    formFields: [
+      { name: 'title', label: 'Office Title', type: 'text', required: true },
+      { name: 'location', label: 'Location / Address', type: 'text' },
+      { name: 'language', label: 'Language', type: 'select', options: [
+        { value: 'en', label: 'English' },
+        { value: 'hi', label: 'Hindi' }
+      ]},
+      { name: 'is_active', label: 'Active Status', type: 'boolean' },
+    ]
+  },
+  'modules': {
+    table: 'modules',
+    title: 'System Modules & ACL',
+    addTitle: 'Add System Module',
+    searchColumn: 'module_name',
+    columns: [
+      { key: 'module_name', label: 'Module Name' },
+      { key: 'controller', label: 'Controller' },
+      { key: 'action', label: 'Default Action' },
+      { key: 'sub_actions', label: 'Sub-Actions' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+    ],
+    formFields: [
+      { name: 'module_name', label: 'Module Name', type: 'text', required: true },
+      { name: 'controller', label: 'Controller', type: 'text', required: true },
+      { name: 'action', label: 'Default Action', type: 'text' },
+      { name: 'sub_actions', label: 'Sub-Actions', type: 'text' },
+      { name: 'is_active', label: 'Active Status', type: 'boolean' },
+    ]
+  },
+  'wings': {
+    table: 'wings',
+    title: 'CAG Wings',
+    addTitle: 'Add CAG Wing',
+    searchColumn: 'title',
+    columns: [
+      { key: 'title', label: 'Wing Title' },
+      { key: 'is_active', label: 'Status', type: 'boolean' },
+      { key: 'created', label: 'Created At', type: 'date' },
+    ],
+    formFields: [
+      { name: 'title', label: 'Wing Title', type: 'text', required: true },
+      { name: 'is_active', label: 'Active Status', type: 'boolean' },
+    ]
+  },
+  'audit-trail': {
+    table: 'audit_trail_log',
+    title: 'Audit Trail Logs',
+    addTitle: 'Audit Trail',
+    searchColumn: 'username_email',
+    columns: [
+      { key: 'action', label: 'Action' },
+      { key: 'username_email', label: 'User / Account' },
+      { key: 'table_alias', label: 'Target Module' },
+      { key: 'ip_address', label: 'IP Address' },
+      { key: 'action_status', label: 'Status' },
+      { key: 'action_datetime', label: 'Timestamp', type: 'date' },
+    ],
+    formFields: []
+  },
   'audit-reports': {
     table: 'audit_reports',
     title: 'Audit Reports',
@@ -576,30 +751,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
       { name: 'is_active', label: 'Active', type: 'boolean' },
     ]
   },
-  'users': {
-    table: 'admin_users',
-    title: 'Admin Users',
-    addTitle: 'Add Admin User',
-    searchColumn: 'username',
-    columns: [
-      { key: 'username', label: 'Username' },
-      { key: 'full_name', label: 'Full Name' },
-      { key: 'email', label: 'Email' },
-      { key: 'role', label: 'Role' },
-      { key: 'is_active', label: 'Status', type: 'boolean' },
-    ],
-    formFields: [
-      { name: 'username', label: 'Username', type: 'text', required: true },
-      { name: 'full_name', label: 'Full Name', type: 'text', required: true },
-      { name: 'email', label: 'Email', type: 'text', required: true },
-      { name: 'password_hash', label: 'Password', type: 'password', required: true, hint: 'Password must be hashed on save. On edit, leave blank to keep unchanged.' },
-      { name: 'role', label: 'Role', type: 'select', required: true, options: [
-        { value: 'admin', label: 'Admin' },
-        { value: 'super_admin', label: 'Super Admin' }
-      ]},
-      { name: 'is_active', label: 'Active', type: 'boolean' },
-    ]
-  },
+
   'audit-report-files': {
     table: 'audit_report_files',
     title: 'Audit Report Files',

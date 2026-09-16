@@ -73,13 +73,12 @@ export default function GenForm({ moduleKey, id, initialData }: GenFormProps) {
     });
 
     try {
-      const res = await fetch('/api/admin/crud', {
-        method: 'POST',
+      const url = `/api/admin/crud?table=${config.table}${id ? `&id=${encodeURIComponent(id)}` : ''}`;
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          module: moduleKey,
-          action: id ? 'update' : 'create',
-          id,
           data: formValues
         })
       });

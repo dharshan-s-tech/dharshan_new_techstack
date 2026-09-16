@@ -8,18 +8,13 @@ from app.core.config import settings
 from app.core.database import Base, engine
 from app.api.router import api_router
 
-# Ensure models are registered before create_all
-from app.models import admin_user, audit_log, news, page, report, event, menu, organisation_chart, former_cag  # noqa: F401
+# Ensure models are registered
+from app.models import admin_user, audit_log, news, page, report, event, menu, organisation_chart, former_cag, user_management  # noqa: F401
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with engine.begin() as conn:
-        if engine.dialect.name == "postgresql":
-            schema = settings.DB_SCHEMA
-            if schema:
-                conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
-        Base.metadata.create_all(bind=conn)
+    # Only connect to existing database tables; do not create or alter any tables
     yield
 
 

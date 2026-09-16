@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '@/lib/api';
-import { dataManager, NewsItem as DataNewsItem } from '@/lib/dataManager';
 
 interface NewsDisplayItem {
   id: string;
@@ -15,9 +13,11 @@ interface NewsDisplayItem {
 }
 
 export default function AdminNews() {
-  const API_URL = getApiBaseUrl();
   const [news, setNews] = useState<NewsDisplayItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
@@ -35,77 +35,57 @@ export default function AdminNews() {
   const [descEn, setDescEn] = useState('');
   const [newsType, setNewsType] = useState<'trending' | 'featured'>('trending');
   const [tag, setTag] = useState('General');
+  const [isActive, setIsActive] = useState(true);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/news`);
-      if (!res.ok) throw new Error('API offline');
-      const data = await res.json();
-      
-      let rawList: any[] = Array.isArray(data) && data.length > 0 ? data : dataManager.getNews();
-      let formatted: NewsDisplayItem[] = rawList.map((item: any) => ({
-        id: item.id?.toString() || Math.random().toString(),
-        title_en: item.title_en || item.title || '',
-        desc_en: item.content_en || item.desc || '',
-        news_type: item.news_type || item.type || 'trending',
-        tag: item.tag || 'General',
-        publish_date: item.publish_date || item.date || 'June 2026',
-        is_active: item.is_active !== undefined ? item.is_active : true
-      }));
-
-      if (appliedSearch) {
-        formatted = formatted.filter((item) => 
-          item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
-        );
+      const params = new URLSearchParams({
+        table: 'notification',
+        page: page.toString(),
+        limit: '20'
+      });
+      if (appliedSearch.trim()) {
+        params.append('search', appliedSearch.trim());
       }
-      if (typeFilter !== 'All') {
-        formatted = formatted.filter((item) => item.news_type === typeFilter);
+      if (statusFilter !== 'All') {
+        params.append('status', statusFilter === 'Active' ? '1' : '0');
       }
 
-      if (sortFilter === 'title_asc') {
-        formatted.sort((a, b) => (a.title_en || '').localeCompare(b.title_en || ''));
-      } else if (sortFilter === 'title_desc') {
-        formatted.sort((a, b) => (b.title_en || '').localeCompare(a.title_en || ''));
-      } else if (sortFilter === 'oldest') {
-        formatted.sort((a, b) => (new Date(a.publish_date).getTime() || 0) - (new Date(b.publish_date).getTime() || 0));
-      } else {
-        formatted.sort((a, b) => (new Date(b.publish_date).getTime() || 0) - (new Date(a.publish_date).getTime() || 0));
-      }
+      const res = await fetch(`/api/admin/crud?${params.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        const rawList: any[] = json.data || json.items || [];
+        let formatted: NewsDisplayItem[] = rawList.map((item: any) => ({
+          id: item.id?.toString() || Math.random().toString(),
+          title_en: item.title_en || item.title || item.name || `Notification #${item.id}`,
+          desc_en: item.description || item.desc_en || item.content_en || item.desc || '',
+          news_type: item.news_type || item.type || (item.is_trending ? 'trending' : 'featured'),
+          tag: item.tag || item.category || 'General',
+          publish_date: item.publish_date || item.created_at || '—',
+          is_active: item.status === 1 || item.is_active === true || item.is_active === '1'
+        }));
 
-      setNews(formatted);
+        if (typeFilter !== 'All') {
+          formatted = formatted.filter((item) => item.news_type === typeFilter);
+        }
+
+        if (sortFilter === 'title_asc') {
+          formatted.sort((a, b) => (a.title_en || '').localeCompare(b.title_en || ''));
+        } else if (sortFilter === 'title_desc') {
+          formatted.sort((a, b) => (b.title_en || '').localeCompare(a.title_en || ''));
+        } else if (sortFilter === 'oldest') {
+          formatted.sort((a, b) => (new Date(a.publish_date).getTime() || 0) - (new Date(b.publish_date).getTime() || 0));
+        } else {
+          formatted.sort((a, b) => (new Date(b.publish_date).getTime() || 0) - (new Date(a.publish_date).getTime() || 0));
+        }
+
+        setNews(formatted);
+        setTotalCount(json.total || formatted.length);
+        setTotalPages(json.totalPages || Math.ceil((json.total || formatted.length) / 20) || 1);
+      }
     } catch (err) {
-      const localData = dataManager.getNews();
-      let formatted: NewsDisplayItem[] = localData.map((item) => ({
-        id: item.id,
-        title_en: item.title,
-        desc_en: item.desc,
-        news_type: item.type,
-        tag: item.tag || 'General',
-        publish_date: item.date,
-        is_active: true
-      }));
-
-      if (appliedSearch) {
-        formatted = formatted.filter((item) => 
-          item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
-        );
-      }
-      if (typeFilter !== 'All') {
-        formatted = formatted.filter((item) => item.news_type === typeFilter);
-      }
-
-      if (sortFilter === 'title_asc') {
-        formatted.sort((a, b) => (a.title_en || '').localeCompare(b.title_en || ''));
-      } else if (sortFilter === 'title_desc') {
-        formatted.sort((a, b) => (b.title_en || '').localeCompare(a.title_en || ''));
-      } else if (sortFilter === 'oldest') {
-        formatted.sort((a, b) => (new Date(a.publish_date).getTime() || 0) - (new Date(b.publish_date).getTime() || 0));
-      } else {
-        formatted.sort((a, b) => (new Date(b.publish_date).getTime() || 0) - (new Date(a.publish_date).getTime() || 0));
-      }
-
-      setNews(formatted);
+      console.error('Error fetching news:', err);
     } finally {
       setLoading(false);
     }
@@ -113,12 +93,10 @@ export default function AdminNews() {
 
   useEffect(() => {
     loadData();
-    const handleNewsChange = () => loadData();
-    window.addEventListener('newsChange', handleNewsChange);
-    return () => window.removeEventListener('newsChange', handleNewsChange);
-  }, [appliedSearch, statusFilter, typeFilter, sortFilter]);
+  }, [page, appliedSearch, statusFilter, typeFilter, sortFilter]);
 
   const handleSearchGo = () => {
+    setPage(1);
     setAppliedSearch(searchFor);
   };
 
@@ -128,6 +106,7 @@ export default function AdminNews() {
     setStatusFilter('All');
     setTypeFilter('All');
     setSortFilter('newest');
+    setPage(1);
   };
 
   const handleOpenCreate = () => {
@@ -136,6 +115,7 @@ export default function AdminNews() {
     setDescEn('');
     setNewsType('trending');
     setTag('General');
+    setIsActive(true);
     setIsFormOpen(true);
   };
 
@@ -144,62 +124,51 @@ export default function AdminNews() {
     if (!item) return;
 
     setEditingId(id);
-    setTitleEn(item.title_en || '');
-    setDescEn(item.desc_en || '');
-    setNewsType((item.news_type as any) || 'trending');
-    setTag(item.tag || 'General');
+    setTitleEn(item.title_en);
+    setDescEn(item.desc_en);
+    setNewsType(item.news_type as 'trending' | 'featured');
+    setTag(item.tag);
+    setIsActive(item.is_active);
     setIsFormOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this news item?')) return;
+    if (!confirm('Are you sure you want to delete this news update?')) return;
     try {
-      const token = localStorage.getItem('cag_admin_token');
-      await fetch(`${API_URL}/api/admin/news/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await fetch(`/api/admin/crud?table=notification&id=${id}`, { method: 'DELETE' });
+      loadData();
     } catch (err) {
-      // Ignore API offline
+      alert('Failed to delete news item');
     }
-
-    dataManager.deleteNews(id);
-    loadData();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const record: DataNewsItem = {
-      id: editingId || `news-${Date.now()}`,
+    const payload = {
       title: titleEn,
-      desc: descEn,
-      date: 'June 4, 2026',
-      type: newsType,
-      tag: tag
+      title_en: titleEn,
+      description: descEn,
+      news_type: newsType,
+      tag: tag,
+      status: isActive ? 1 : 0
     };
 
     try {
-      const token = localStorage.getItem('cag_admin_token');
-      const url = editingId
-        ? `${API_URL}/api/admin/news/${editingId}`
-        : `${API_URL}/api/admin/news`;
       const method = editingId ? 'PUT' : 'POST';
+      const url = editingId 
+        ? `/api/admin/crud?table=notification&id=${editingId}` 
+        : `/api/admin/crud?table=notification`;
 
       await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(record),
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: payload })
       });
+      setIsFormOpen(false);
+      loadData();
     } catch (err) {
-      // Ignore API offline
+      alert('Failed to save notification');
     }
-
-    dataManager.saveNews(record);
-    setIsFormOpen(false);
-    loadData();
   };
 
   return (
@@ -347,6 +316,31 @@ export default function AdminNews() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between text-xs text-zinc-600">
+          <span>
+            Page {page} of {totalPages} ({totalCount} total news & notices)
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

@@ -7,7 +7,16 @@ export default async function DynamicAdminModuleListPage({
   searchParams,
 }: {
   params: Promise<{ module: string }>;
-  searchParams: Promise<{ page?: string; search?: string; lang?: string; status?: string; sort?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    lang?: string;
+    status?: string;
+    sort?: string;
+    website_id?: string;
+    role_id?: string;
+    wings_id?: string;
+  }>;
 }) {
   const { module: moduleKey } = await params;
   const config = ADMIN_MODULES[moduleKey];
@@ -22,9 +31,13 @@ export default async function DynamicAdminModuleListPage({
   const lang = sp?.lang || 'all';
   const status = sp?.status || 'all';
   const sort = sp?.sort || 'newest';
+  const website_id = sp?.website_id || 'all';
+  const role_id = sp?.role_id || 'all';
+  const wings_id = sp?.wings_id || 'all';
 
   return (
     <GenListPage
+      moduleKey={moduleKey}
       title={config.title}
       table={config.table}
       addHref={`/admin/${moduleKey}/add`}
@@ -37,6 +50,9 @@ export default async function DynamicAdminModuleListPage({
       lang={lang}
       status={status}
       sort={sort}
+      website_id={website_id}
+      role_id={role_id}
+      wings_id={wings_id}
     />
   );
 }

@@ -112,6 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (pathname === '/admin/offices') return 'SUPER ADMIN > Main CAG Website > Our Presence > Offices & Institutes';
     if (pathname === '/admin/global') return 'SUPER ADMIN > Main CAG Website > Global Relations';
     if (pathname === '/admin/circulars') return 'SUPER ADMIN > Main CAG Website > Resources';
+    if (pathname === '/admin/tenders') return 'SUPER ADMIN > Main CAG Website > Tenders & Notices';
     if (pathname === '/admin/about') return 'SUPER ADMIN > Main CAG Website > About Us';
     if (pathname === '/admin/news') return 'SUPER ADMIN > Main CAG Website > News & Events';
     if (pathname === '/admin/site-settings') return 'SUPER ADMIN > Main CAG Website > Contact';

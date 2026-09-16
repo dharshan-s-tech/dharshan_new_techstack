@@ -49,6 +49,12 @@ export default function FigmaAdminSidebar() {
   const menuItems: MenuItem[] = [
     {
       type: 'leaf',
+      id: 'dashboard',
+      name: 'Dashboard',
+      path: '/admin'
+    },
+    {
+      type: 'leaf',
       id: 'home-page',
       name: 'Home Page',
       path: '/admin/banners'
@@ -217,6 +223,12 @@ export default function FigmaAdminSidebar() {
     },
     {
       type: 'leaf',
+      id: 'tenders',
+      name: 'Tenders & Notices',
+      path: '/admin/tenders'
+    },
+    {
+      type: 'leaf',
       id: 'careers-engagement',
       name: 'Careers & Engagement',
       path: '/admin/about?tab=recruitment'
@@ -235,20 +247,52 @@ export default function FigmaAdminSidebar() {
     },
     {
       type: 'leaf',
+      id: 'shared-masters',
+      name: 'Shared Masters',
+      path: '/admin/masters'
+    },
+    {
+      type: 'leaf',
       id: 'contact',
-      name: 'Contact',
+      name: 'Contact & Settings',
       path: '/admin/site-settings?tab=contact'
+    },
+    {
+      type: 'submenu',
+      id: 'user-management',
+      name: 'User Management',
+      children: [
+        {
+          type: 'leaf',
+          id: 'um-roles',
+          name: 'Roles',
+          path: '/admin/users?tab=roles'
+        },
+        {
+          type: 'leaf',
+          id: 'um-wings',
+          name: 'Wings',
+          path: '/admin/users?tab=wings'
+        },
+        {
+          type: 'leaf',
+          id: 'um-users',
+          name: 'Users',
+          path: '/admin/users?tab=users'
+        }
+      ]
     }
   ];
 
   // State to track expanded submenus
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    'reports': true,
+    'reports': false,
     'our-presence': false,
     'state-level-offices': false,
     'central-audit-offices': false,
     'training-institutes': false,
-    'global-relations': false
+    'global-relations': false,
+    'user-management': true
   });
 
   // Auto-expand submenus when active route changes
@@ -274,6 +318,8 @@ export default function FigmaAdminSidebar() {
       }
     } else if (pathname === '/admin/global') {
       newExpanded['global-relations'] = true;
+    } else if (pathname === '/admin/users') {
+      newExpanded['user-management'] = true;
     }
 
     setExpanded(newExpanded);
@@ -288,6 +334,12 @@ export default function FigmaAdminSidebar() {
 
   // Helper to check active state accurately
   const checkIsActive = (targetPath: string) => {
+    if (targetPath === '/admin/users?tab=users' || targetPath === '/admin/users') {
+      if (pathname !== '/admin/users') return false;
+      const tab = searchParams.get('tab');
+      return !tab || tab === 'users';
+    }
+
     if (targetPath.includes('?')) {
       const [pathBase, queryString] = targetPath.split('?');
       if (pathname !== pathBase) return false;
