@@ -1306,13 +1306,15 @@ class ReportsService:
 
     @staticmethod
     def delete_report(report_id: str) -> bool:
-        """Mark a report deleted in remote DB (status=0) and local store."""
+        """Delete an audit report from remote DB and local store."""
         conn = _get_write_conn()
         if conn:
             try:
                 cur = conn.cursor()
                 if str(report_id).isdigit():
-                    cur.execute("UPDATE cag_revamp.audit_reports SET status = 0, updated_at = NOW() WHERE id = %s;", (int(report_id),))
+                    cur.execute("DELETE FROM cag_revamp.audit_reports WHERE id = %s;", (int(report_id),))
+                else:
+                    cur.execute("DELETE FROM cag_revamp.audit_reports WHERE id::text = %s;", (str(report_id),))
                 cur.close()
                 conn.close()
             except Exception as e:
@@ -1321,16 +1323,8 @@ class ReportsService:
                     conn.close()
 
         local_reports = _load_json(LOCAL_REPORTS_FILE, [])
-        found = False
-        for idx, item in enumerate(local_reports):
-            if str(item.get("id")) == str(report_id):
-                local_reports[idx]["is_deleted"] = True
-                found = True
-                break
-
-        if not found:
-            local_reports.append({"id": str(report_id), "is_deleted": True})
-
+        local_reports = [item for item in local_reports if str(item.get("id")) != str(report_id) and str(item.get("rawId")) != str(report_id)]
+        local_reports.append({"id": str(report_id), "is_deleted": True})
         _save_json(LOCAL_REPORTS_FILE, local_reports)
         return True
 
@@ -1398,7 +1392,7 @@ class ReportsService:
     def save_state_account(data: Dict[str, Any]) -> Dict[str, Any]:
         """Save state account to PostgreSQL remote DB and local store."""
         raw_id = data.get("id") or data.get("rawId")
-        title = data.get("title") or data.get("title_en") or "State Account Statement"
+        title = str(data.get("title") or data.get("title_en") or "State Account Statement").strip()[:255]
         state_id = data.get("state_id") or data.get("account_state") or 1
         try:
             state_int = int(state_id)
@@ -1414,21 +1408,33 @@ class ReportsService:
         elif "monthly" in str(cat_name).lower():
             cat_id = 927
 
-        year_str = str(data.get("year") or data.get("account_year") or "2024-25").strip()
+        year_str = str(data.get("year") or data.get("account_year") or "2024-25").strip()[:10]
         try:
             m = re.search(r'\d{4}', year_str)
             ac_year = int(m.group(0)) if m else 2024
         except Exception:
             ac_year = 2024
 
-        month = str(data.get("month") or "Annual").strip()
-        volume = str(data.get("volume") or "Vol I").strip()
+        month = str(data.get("month") or "Annual").strip()[:10]
+        
+        # Format volume to fit varchar(5) in cag_revamp.state_accounts_report
+        raw_vol = str(data.get("volume") or "").strip()
+        if raw_vol.lower() in ("vol ii", "vol-ii", "vol 2", "volume 2", "volume ii", "ii"):
+            volume = "Vol-2"
+        elif raw_vol.lower() in ("vol iii", "vol-iii", "vol 3", "volume 3", "volume iii", "iii"):
+            volume = "Vol-3"
+        elif raw_vol.lower() in ("vol i", "vol-i", "vol 1", "volume 1", "volume i", "i"):
+            volume = "Vol-1"
+        else:
+            volume = raw_vol[:5]
+
         uploads = data.get("file_name") or data.get("uploads") or ""
         if not uploads and (data.get("file_url") or data.get("pdf_url")):
             fu = data.get("file_url") or data.get("pdf_url")
             uploads = fu.split("/")[-1] if "/" in fu else fu
         if not uploads:
             uploads = "CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf"
+        uploads = str(uploads)[:255]
 
         is_active = 1 if data.get("is_active", True) else 0
 
@@ -1520,13 +1526,15 @@ class ReportsService:
 
     @staticmethod
     def delete_state_account(account_id: str) -> bool:
-        """Mark a state account deleted in remote DB (status=0) and local store."""
+        """Delete a state account from remote DB and local store."""
         conn = _get_write_conn()
         if conn:
             try:
                 cur = conn.cursor()
                 if str(account_id).isdigit():
-                    cur.execute("UPDATE cag_revamp.state_accounts_report SET status = 0, modified = NOW() WHERE id = %s;", (int(account_id),))
+                    cur.execute("DELETE FROM cag_revamp.state_accounts_report WHERE id = %s;", (int(account_id),))
+                else:
+                    cur.execute("DELETE FROM cag_revamp.state_accounts_report WHERE id::text = %s;", (str(account_id),))
                 cur.close()
                 conn.close()
             except Exception as e:
@@ -1535,16 +1543,8 @@ class ReportsService:
                     conn.close()
 
         local = _load_json(LOCAL_STATE_ACCOUNTS_FILE, [])
-        found = False
-        for idx, item in enumerate(local):
-            if str(item.get("id")) == str(account_id):
-                local[idx]["is_deleted"] = True
-                found = True
-                break
-
-        if not found:
-            local.append({"id": str(account_id), "is_deleted": True})
-
+        local = [item for item in local if str(item.get("id")) != str(account_id) and str(item.get("rawId")) != str(account_id)]
+        local.append({"id": str(account_id), "is_deleted": True})
         _save_json(LOCAL_STATE_ACCOUNTS_FILE, local)
         return True
 
@@ -1842,7 +1842,7 @@ class ReportsService:
         """Retrieve a single combined account record."""
         local = _load_json(LOCAL_COMBINED_ACCOUNTS_FILE, [])
         for a in local:
-            if str(a.get("id")) == str(account_id):
+            if str(a.get("id")) == str(account_id) or str(a.get("rawId")) == str(account_id):
                 if a.get("is_deleted"):
                     return None
                 return a
@@ -1854,7 +1854,7 @@ class ReportsService:
                 cur.execute("""
                     SELECT id, title, account_year, upload_file, status, created_at
                     FROM cag_revamp.combined_accounts
-                    WHERE id::text = %s AND status = 1
+                    WHERE id::text = %s
                     LIMIT 1;
                 """, [str(account_id)])
                 r = cur.fetchone()
@@ -1862,8 +1862,10 @@ class ReportsService:
                 conn.close()
                 if r:
                     fname = r.get("upload_file") or ""
+                    is_active = (r.get("status") == 1 or str(r.get("status")) == "1")
                     return {
                         "id": r["id"],
+                        "rawId": str(r["id"]),
                         "title": r.get("title") or "Combined Finance Account",
                         "title_en": r.get("title") or "Combined Finance Account",
                         "account_year": r.get("account_year") or "",
@@ -1873,7 +1875,8 @@ class ReportsService:
                         "category": "conference" if "conference" in (r.get("title") or "").lower() else "combined",
                         "size": "18.5 MB",
                         "created_at": str(r.get("created_at") or ""),
-                        "is_active": True,
+                        "is_active": is_active,
+                        "status": "Active" if is_active else "Inactive",
                         "source": "remote_db"
                     }
             except Exception as e:
@@ -1895,7 +1898,10 @@ class ReportsService:
         if not upload_file:
             upload_file = "CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf"
 
-        is_active = 1 if data.get("is_active", True) else 0
+        is_active_val = data.get("is_active")
+        if is_active_val is None:
+            is_active_val = data.get("status") in (1, "1", "Active", "active", True)
+        is_active = 1 if (is_active_val is True or is_active_val == 1 or str(is_active_val).lower() in ("true", "1", "active")) else 0
 
         created_or_updated_id = None
         conn = _get_write_conn()
@@ -1953,17 +1959,13 @@ class ReportsService:
         final_id = created_or_updated_id or raw_id or f"ca-local-{len(_load_json(LOCAL_COMBINED_ACCOUNTS_FILE, [])) + 1}"
         data["id"] = str(final_id)
         data["rawId"] = str(final_id)
+        data["is_active"] = (is_active == 1)
+        data["status"] = "Active" if is_active == 1 else "Inactive"
         data["source"] = "remote_db" if created_or_updated_id else "local_cms"
 
         local = _load_json(LOCAL_COMBINED_ACCOUNTS_FILE, [])
-        updated = False
-        for idx, item in enumerate(local):
-            if str(item.get("id")) == str(final_id):
-                local[idx] = data
-                updated = True
-                break
-        if not updated:
-            local.insert(0, data)
+        local = [item for item in local if str(item.get("id")) != str(final_id) and str(item.get("rawId")) != str(final_id)]
+        local.insert(0, data)
         _save_json(LOCAL_COMBINED_ACCOUNTS_FILE, local)
 
         return data
@@ -1975,13 +1977,15 @@ class ReportsService:
 
     @staticmethod
     def delete_combined_account(account_id: str) -> bool:
-        """Mark a combined account deleted in remote DB (status=0) and local store."""
+        """Delete a combined account from remote DB and local store."""
         conn = _get_write_conn()
         if conn:
             try:
                 cur = conn.cursor()
                 if str(account_id).isdigit():
-                    cur.execute("UPDATE cag_revamp.combined_accounts SET status = 0, updated_at = NOW() WHERE id = %s;", (int(account_id),))
+                    cur.execute("DELETE FROM cag_revamp.combined_accounts WHERE id = %s;", (int(account_id),))
+                else:
+                    cur.execute("DELETE FROM cag_revamp.combined_accounts WHERE id::text = %s;", (str(account_id),))
                 cur.close()
                 conn.close()
             except Exception as e:
@@ -1990,16 +1994,8 @@ class ReportsService:
                     conn.close()
 
         local = _load_json(LOCAL_COMBINED_ACCOUNTS_FILE, [])
-        found = False
-        for idx, item in enumerate(local):
-            if str(item.get("id")) == str(account_id):
-                local[idx]["is_deleted"] = True
-                found = True
-                break
-
-        if not found:
-            local.append({"id": str(account_id), "is_deleted": True})
-
+        local = [item for item in local if str(item.get("id")) != str(account_id) and str(item.get("rawId")) != str(account_id)]
+        local.append({"id": str(account_id), "is_deleted": True})
         _save_json(LOCAL_COMBINED_ACCOUNTS_FILE, local)
         return True
 
@@ -2102,7 +2098,7 @@ class ReportsService:
                     order_by_sql = "ORDER BY id DESC"
 
                 cur.execute(f"""
-                    SELECT id, title, account_year, upload_file, created_at
+                    SELECT id, title, account_year, upload_file, created_at, status
                     FROM cag_revamp.combined_accounts
                     WHERE {where_sql}
                     {order_by_sql}
@@ -2112,6 +2108,7 @@ class ReportsService:
                     fname = r.get("upload_file") or ""
                     pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/combined_accounts/{fname}" if fname else "https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf"
                     cat_val = "conference" if "conference" in (r.get("title") or "").lower() else "combined"
+                    is_active = (r.get("status") == 1 or str(r.get("status")) == "1")
                     remote_items.append({
                         "id": r["id"],
                         "rawId": str(r["id"]),
@@ -2124,8 +2121,8 @@ class ReportsService:
                         "category": cat_val,
                         "size": "18.5 MB",
                         "created_at": str(r.get("created_at") or ""),
-                        "is_active": (r.get("status") == 1),
-                        "status": "Active" if r.get("status") == 1 else "Inactive",
+                        "is_active": is_active,
+                        "status": "Active" if is_active else "Inactive",
                         "source": "remote_db",
                     })
                 cur.close()

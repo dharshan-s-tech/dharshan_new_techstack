@@ -371,11 +371,13 @@ function AdminStateAccountsContent() {
     if (!confirm('Are you sure you want to delete this state account statement record?')) return;
     try {
       await fetch(`${API_URL}/api/state-accounts/${rawId}`, { method: 'DELETE' });
-    } catch {}
+    } catch (err) {
+      console.error('Failed to delete state account:', err);
+    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('stateAccountsChange'));
     }
-    loadData();
+    await loadData();
     if (viewingAccount?.rawId === rawId) {
       setViewingAccount(null);
     }
@@ -505,8 +507,24 @@ function AdminStateAccountsContent() {
           </div>
         </div>
 
-        {/* Row 2: Month, Sort By, Actions */}
+        {/* Row 2: Publish Status, Month, Sort By, Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Statement Month:</label>
             <select
@@ -544,7 +562,7 @@ function AdminStateAccountsContent() {
             </select>
           </div>
 
-          <div className="flex items-end gap-2 sm:col-span-2">
+          <div className="flex items-end gap-2">
             <button
               onClick={handleSearchGo}
               className="border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-5 py-1.5 rounded-none transition-colors font-bold bg-white cursor-pointer shadow-xs"
@@ -557,9 +575,6 @@ function AdminStateAccountsContent() {
             >
               Reset
             </button>
-            <div className="ml-auto text-[11px] text-zinc-500 font-medium">
-              Source: <span className="text-emerald-700 font-bold">PostgreSQL state_accounts_report + Local CMS</span>
-            </div>
           </div>
         </div>
       </div>

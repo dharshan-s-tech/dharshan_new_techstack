@@ -280,7 +280,9 @@ function AdminCombinedAccountsContent() {
     
     try {
       await fetch(`${API_URL}/api/combined-accounts/${rawId}`, { method: 'DELETE' });
-    } catch {}
+    } catch (err) {
+      console.warn('DELETE failed:', err);
+    }
 
     const numId = parseInt(rawId);
     if (!isNaN(numId)) {
@@ -289,7 +291,7 @@ function AdminCombinedAccountsContent() {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('combinedAccountsChange'));
     }
-    loadData();
+    await loadData();
     if (viewingItem?.rawId === rawId) {
       setViewingItem(null);
     }
@@ -303,10 +305,13 @@ function AdminCombinedAccountsContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...item,
-          is_active: updatedStatus
+          is_active: updatedStatus,
+          status: updatedStatus ? 'Active' : 'Inactive'
         })
       });
-    } catch {}
+    } catch (err) {
+      console.warn('Toggle status failed:', err);
+    }
 
     const numId = parseInt(item.rawId);
     if (!isNaN(numId)) {
@@ -325,7 +330,7 @@ function AdminCombinedAccountsContent() {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('combinedAccountsChange'));
     }
-    loadData();
+    await loadData();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -417,7 +422,7 @@ function AdminCombinedAccountsContent() {
         </div>
 
         {/* Filter Toolbar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-1">
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
             <input
@@ -428,6 +433,22 @@ function AdminCombinedAccountsContent() {
               placeholder="Search by title or year..."
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>

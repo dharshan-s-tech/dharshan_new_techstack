@@ -449,12 +449,14 @@ function AdminAccountsManagementHubContent() {
     try {
       const endpoint = item.subtopic_type === 'state' ? 'state-accounts' : 'combined-accounts';
       await fetch(`${API_URL}/api/${endpoint}/${item.rawId}`, { method: 'DELETE' });
-    } catch {}
+    } catch (err) {
+      console.error('Failed to delete account:', err);
+    }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(item.subtopic_type === 'state' ? 'stateAccountsChange' : 'combinedAccountsChange'));
     }
-    loadData();
+    await loadData();
     if (viewingItem?.rawId === item.rawId) {
       setViewingItem(null);
     }
@@ -520,8 +522,8 @@ function AdminAccountsManagementHubContent() {
       {/* 1. TOP FILTERS PANEL (Exact Figma Style matching image) */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
         
-        {/* Row 1: Search Keyword, Subtopic/Category, Administrative Level, Report Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Row 1: Search Keyword, Publish Status, Subtopic/Category, Administrative Level, Report Type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
             <input
@@ -532,6 +534,22 @@ function AdminAccountsManagementHubContent() {
               placeholder="Search accounts registry..."
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>

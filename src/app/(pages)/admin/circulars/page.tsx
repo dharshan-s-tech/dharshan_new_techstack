@@ -181,6 +181,19 @@ export default function AdminCirculars() {
             />
           </div>
 
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
           <div className="flex items-end gap-2">
             <button
               onClick={handleSearchGo}
