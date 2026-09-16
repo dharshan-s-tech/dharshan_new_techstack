@@ -7,17 +7,22 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import List, Dict, Any, Optional
 
+from app.core.config import settings
+
 logger = logging.getLogger("uvicorn")
 
-REMOTE_CONFIG = {
-    "host": "10.10.183.69",
-    "port": 5434,
-    "dbname": "cag_db_final",
-    "user": "test",
-    "password": "Test@123",
-    "connect_timeout": 3,
-    "options": "-c search_path=cag_revamp",
-}
+
+def _get_pg_config():
+    return {
+        "host": settings.DB_HOST,
+        "port": settings.DB_PORT,
+        "dbname": settings.DB_NAME,
+        "user": settings.DB_USER,
+        "password": settings.DB_PASSWORD,
+        "connect_timeout": 5,
+        "options": f"-c search_path={settings.DB_SCHEMA},public",
+    }
+
 
 LOCAL_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 LOCAL_REPORTS_FILE = os.path.join(LOCAL_DATA_DIR, "local_reports.json")
@@ -219,35 +224,27 @@ def _get_remote_conn():
     if now - _LAST_DB_FAIL_TIME < _FAIL_CACHE_TTL:
         return None
 
-    for port in [5434, 5432]:
-        try:
-            cfg = dict(REMOTE_CONFIG)
-            cfg["port"] = port
-            cfg["connect_timeout"] = 1
-            conn = psycopg2.connect(**cfg)
-            conn.set_session(readonly=True, autocommit=True)
-            _LAST_DB_FAIL_TIME = 0
-            return conn
-        except Exception:
-            continue
-    _LAST_DB_FAIL_TIME = time.time()
-    logger.warning("[RemoteDB] Could not connect to remote DB on port 5434 or 5432. Falling back to local data.")
-    return None
+    try:
+        cfg = _get_pg_config()
+        conn = psycopg2.connect(**cfg)
+        conn.set_session(readonly=True, autocommit=True)
+        _LAST_DB_FAIL_TIME = 0
+        return conn
+    except Exception as e:
+        _LAST_DB_FAIL_TIME = time.time()
+        logger.warning(f"[RemoteDB] Could not connect to PostgreSQL DB ({e}). Falling back to local data.")
+        return None
 
 
 def _get_write_conn():
-    for port in [5434, 5432]:
-        try:
-            cfg = dict(REMOTE_CONFIG)
-            cfg["port"] = port
-            cfg["connect_timeout"] = 1
-            conn = psycopg2.connect(**cfg)
-            conn.set_session(readonly=False, autocommit=True)
-            return conn
-        except Exception:
-            continue
-    logger.warning("[RemoteDB Write] Could not connect to remote DB for write on port 5434 or 5432. Falling back to local data.")
-    return None
+    try:
+        cfg = _get_pg_config()
+        conn = psycopg2.connect(**cfg)
+        conn.set_session(readonly=False, autocommit=True)
+        return conn
+    except Exception as e:
+        logger.warning(f"[RemoteDB Write] Could not connect to PostgreSQL DB for write ({e}). Falling back to local data.")
+        return None
 
 
 def _load_json(file_path: str, default_val: Any) -> Any:

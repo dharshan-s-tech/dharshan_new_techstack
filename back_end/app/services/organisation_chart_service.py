@@ -101,7 +101,6 @@ class OrganisationChartService:
                     FROM cag_revamp.organisation_chart oc
                     LEFT JOIN cag_revamp.designation_hierarchy dh ON dh.id = oc.designation_hierarchy_id
                     WHERE oc.status = 1
-                      AND oc.id <= 165
                     ORDER BY 
                         CASE WHEN oc.id = 1 THEN 0
                              WHEN oc.id = 2 THEN 1

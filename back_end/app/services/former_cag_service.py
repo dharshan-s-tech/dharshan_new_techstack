@@ -141,8 +141,7 @@ class FormerCagService:
                         language
                     FROM cag_revamp.former_cag
                     WHERE status = 1
-                    AND (language = :lang OR language = 'en')
-                    ORDER BY CAST(REGEXP_REPLACE(tenure_from, '[^0-9]', '', 'g') AS INTEGER) DESC;
+                    ORDER BY NULLIF(REGEXP_REPLACE(COALESCE(tenure_from, '0'), '[^0-9]', '', 'g'), '')::INTEGER DESC NULLS LAST, id DESC;
                 """)
                 rows = db.execute(query, {"lang": "hi" if is_hi else "en"}).mappings().fetchall()
 

@@ -100,14 +100,22 @@ export default function UserManagementPage() {
   const [department, setDepartment] = useState('');
   const [isActive, setIsActive] = useState(true);
 
-  const loadUsers = () => {
+  const loadUsers = async () => {
     setLoading(true);
     try {
+      const res = await fetch(`/api/v1/admin/crud?table=users&limit=50&search=${encodeURIComponent(searchTerm)}`, { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && Array.isArray(json.data) && json.data.length > 0) {
+          setUsers(json.data);
+          setLoading(false);
+          return;
+        }
+      }
       const stored = localStorage.getItem('cag_admin_users');
       if (stored) {
         setUsers(JSON.parse(stored));
       } else {
-        localStorage.setItem('cag_admin_users', JSON.stringify(DEFAULT_ADMIN_USERS));
         setUsers(DEFAULT_ADMIN_USERS);
       }
     } catch (e) {
@@ -118,7 +126,7 @@ export default function UserManagementPage() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [searchTerm]);
 
   const saveUsersToStorage = (updatedUsers: AdminUserItem[]) => {
     setUsers(updatedUsers);

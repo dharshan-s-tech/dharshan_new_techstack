@@ -465,10 +465,16 @@ export default function OrganisationChartPage() {
       loadData(newLang);
     };
 
+    const handleOrgChange = () => {
+      loadData(dataManager.getLanguage());
+    };
+
     window.addEventListener('languageChange', handleLangChange);
+    window.addEventListener('organisationOfficersChange', handleOrgChange);
     return () => {
       isMounted = false;
       window.removeEventListener('languageChange', handleLangChange);
+      window.removeEventListener('organisationOfficersChange', handleOrgChange);
     };
   }, []);
 

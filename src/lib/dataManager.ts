@@ -1363,6 +1363,121 @@ const DEFAULT_NEWS: NewsItem[] = [
 ];
 
 export const dataManager = {
+  // --- Live Backend API Synchronization ---
+  async syncAllFromBackend() {
+    if (typeof window === 'undefined') return;
+    try {
+      const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000');
+
+      // 1. Sync Banners
+      fetch(`${baseUrl}/api/banners`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(banners => {
+          if (Array.isArray(banners) && banners.length > 0) {
+            localStorage.setItem('cag_banners', JSON.stringify(banners));
+            window.dispatchEvent(new Event('bannersChange'));
+          }
+        }).catch(() => {});
+
+      // 2. Sync News
+      fetch(`${baseUrl}/api/news`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(news => {
+          if (Array.isArray(news) && news.length > 0) {
+            const formatted = news.map((n: any, idx: number) => ({
+              id: String(n.id || `news-${idx + 1}`),
+              title: n.title_en || n.title || 'News Update',
+              desc: n.description_en || n.desc || '',
+              date: n.published_date || n.date || '',
+              type: (n.is_trending ? 'trending' : 'featured') as 'trending' | 'featured',
+              tag: n.tag || 'News'
+            }));
+            localStorage.setItem('cag_news', JSON.stringify(formatted));
+            window.dispatchEvent(new Event('newsChange'));
+          }
+        }).catch(() => {});
+
+      // 3. Sync Audit Reports
+      fetch(`${baseUrl}/api/reports?limit=50`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          const items = Array.isArray(data) ? data : data?.items;
+          if (Array.isArray(items) && items.length > 0) {
+            localStorage.setItem('cag_reports', JSON.stringify(items));
+            window.dispatchEvent(new Event('reportsChange'));
+          }
+        }).catch(() => {});
+
+      // 4. Sync State Accounts
+      fetch(`${baseUrl}/api/state-accounts?limit=50`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          const items = Array.isArray(data) ? data : data?.items;
+          if (Array.isArray(items) && items.length > 0) {
+            localStorage.setItem('cag_state_accounts', JSON.stringify(items));
+            window.dispatchEvent(new Event('stateAccountsChange'));
+          }
+        }).catch(() => {});
+
+      // 5. Sync Combined Accounts
+      fetch(`${baseUrl}/api/combined-accounts?limit=50`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          const items = Array.isArray(data) ? data : data?.items;
+          if (Array.isArray(items) && items.length > 0) {
+            localStorage.setItem('cag_combined_accounts', JSON.stringify(items));
+            window.dispatchEvent(new Event('combinedAccountsChange'));
+          }
+        }).catch(() => {});
+
+      // 6. Sync Tenders
+      fetch(`${baseUrl}/api/tenders?limit=50`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          const items = Array.isArray(data) ? data : data?.items;
+          if (Array.isArray(items) && items.length > 0) {
+            localStorage.setItem('cag_tenders', JSON.stringify(items));
+            window.dispatchEvent(new Event('tendersChange'));
+          }
+        }).catch(() => {});
+
+      // 7. Sync Circulars
+      fetch(`${baseUrl}/api/circulars?limit=50`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          const items = Array.isArray(data) ? data : data?.items;
+          if (Array.isArray(items) && items.length > 0) {
+            localStorage.setItem('cag_circulars', JSON.stringify(items));
+            window.dispatchEvent(new Event('circularsChange'));
+          }
+        }).catch(() => {});
+
+      // 8. Sync Presence / State Offices
+      fetch(`${baseUrl}/api/presence`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && Array.isArray(data.states) && data.states.length > 0) {
+            const current = this.getStateOffices();
+            const merged = data.states.map((st: any) => {
+              const existing = current.find(c => String(c.id) === String(st.id) || c.name.toLowerCase() === st.name.toLowerCase());
+              const def = DEFAULT_STATE_OFFICES.find(d => String(d.id) === String(st.id) || d.name.toLowerCase() === st.name.toLowerCase());
+              return {
+                id: String(st.id),
+                name: st.name,
+                nameHindi: existing?.nameHindi || def?.nameHindi || '',
+                auditDetails: existing?.auditDetails || def?.auditDetails || [{ label: `Office of the Principal Accountant General (Audit), ${st.name}`, url: '' }],
+                aeDetails: existing?.aeDetails || def?.aeDetails || [{ label: `Office of the Principal Accountant General (A&E), ${st.name}`, url: '' }]
+              };
+            });
+            localStorage.setItem('cag_state_offices', JSON.stringify(merged));
+            window.dispatchEvent(new Event('stateOfficesChange'));
+          }
+        }).catch(() => {});
+    } catch (e) {
+      // Ignore background sync errors
+    }
+  },
+
   // --- Live Backend API Connectors for About Us & Governance ---
   async fetchPageData(slugOrId: string, culture = 'en') {
     try {
@@ -1453,16 +1568,30 @@ export const dataManager = {
     if (typeof window === 'undefined') return DEFAULT_STATE_OFFICES;
     try {
       const stored = localStorage.getItem('cag_state_offices');
-      if (!stored || stored === 'undefined' || stored === 'null') {
-        localStorage.setItem('cag_state_offices', JSON.stringify(DEFAULT_STATE_OFFICES));
-        return DEFAULT_STATE_OFFICES;
+      let list: any[] = DEFAULT_STATE_OFFICES;
+      if (stored && stored !== 'undefined' && stored !== 'null') {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          list = parsed;
+        }
       }
-      const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        localStorage.setItem('cag_state_offices', JSON.stringify(DEFAULT_STATE_OFFICES));
-        return DEFAULT_STATE_OFFICES;
-      }
-      return parsed;
+      return list.map((item: any, idx: number) => {
+        const defMatch = DEFAULT_STATE_OFFICES.find(d => 
+          String(d.id).toLowerCase() === String(item.id).toLowerCase() ||
+          d.name.toLowerCase() === (item.name || '').toLowerCase()
+        );
+        return {
+          id: String(item.id || defMatch?.id || `state-${idx + 1}`),
+          name: item.name || defMatch?.name || 'State Office',
+          nameHindi: item.nameHindi || defMatch?.nameHindi || '',
+          auditDetails: Array.isArray(item.auditDetails) && item.auditDetails.length > 0 
+            ? item.auditDetails 
+            : (defMatch?.auditDetails || [{ label: `Office of the Principal Accountant General (Audit), ${item.name || 'State'}`, url: '' }]),
+          aeDetails: Array.isArray(item.aeDetails) && item.aeDetails.length > 0 
+            ? item.aeDetails 
+            : (defMatch?.aeDetails || [{ label: `Office of the Principal Accountant General (A&E), ${item.name || 'State'}`, url: '' }])
+        };
+      });
     } catch (e) {
       console.error('Error reading state offices from localStorage:', e);
       return DEFAULT_STATE_OFFICES;
@@ -2258,3 +2387,11 @@ export const DEFAULT_GLOBAL_RELATIONS: GlobalRelationItem[] = [
     link_url: '#'
   }
 ];
+
+// Auto-sync from live FastAPI backend when loaded in browser
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    dataManager.syncAllFromBackend();
+  }, 100);
+}
+

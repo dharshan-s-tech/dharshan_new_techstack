@@ -233,6 +233,62 @@ async def list_or_get_crud(
             "totalPages": 1
         }
 
+    if table in ("users", "admin_users"):
+        from sqlalchemy import text
+        where_clauses = []
+        params = {"limit": limit, "offset": (page - 1) * limit}
+        if id:
+            where_clauses.append("id = :id")
+            params["id"] = int(id) if str(id).isdigit() else 0
+        elif search:
+            where_clauses.append("(username ILIKE :q OR email ILIKE :q OR full_name ILIKE :q OR name ILIKE :q OR designation ILIKE :q)")
+            params["q"] = f"%{search}%"
+        
+        where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+        
+        count_query = text(f"SELECT COUNT(*) FROM cag_revamp.users {where_sql}")
+        total = db.execute(count_query, params).scalar() or 0
+        
+        select_query = text(f"""
+            SELECT id, username, email, COALESCE(full_name, name, username) as full_name, 
+                   designation, posted_office, status, created_at, modified_at
+            FROM cag_revamp.users
+            {where_sql}
+            ORDER BY id DESC
+            LIMIT :limit OFFSET :offset
+        """)
+        rows = db.execute(select_query, params).fetchall()
+        user_list = []
+        for r in rows:
+            user_list.append({
+                "id": str(r.id),
+                "username": r.username or "",
+                "email": r.email or "",
+                "full_name": r.full_name or r.username or "",
+                "designation": r.designation or "Officer",
+                "department": r.posted_office or "Audit Wing",
+                "role": "super_admin" if r.id == 1 else "admin",
+                "is_active": (r.status == 1 or r.status is None),
+                "created_at": str(r.created_at).split(" ")[0] if r.created_at else "",
+                "modified_at": str(r.modified_at) if r.modified_at else ""
+            })
+        return {
+            "data": user_list,
+            "total": total,
+            "page": page,
+            "totalPages": (total + limit - 1) // limit if limit > 0 else 1
+        }
+
+    if table in ("subscribers", "newsletter_subscribers"):
+        from app.services.subscribers_service import SubscribersService
+        result = SubscribersService.get_subscribers(page=page, page_size=limit, query=search, status=status)
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("totalPages", 1)
+        }
+
     items = MOCK_MODULE_STORE.get(table, [])
     
     if id:
@@ -385,6 +441,10 @@ async def delete_crud(
     elif table in ("about", "about_us", "about_records"):
         from app.services.about_service import AboutAdminService
         AboutAdminService.delete_about_record(str(id), db=db)
+    elif table in ("subscribers", "newsletter_subscribers"):
+        from app.services.subscribers_service import SubscribersService
+        if str(id).isdigit():
+            SubscribersService.delete_subscriber(int(id))
     else:
         items = MOCK_MODULE_STORE.get(table, [])
         MOCK_MODULE_STORE[table] = [item for item in items if str(item.get("id")) != str(id)]

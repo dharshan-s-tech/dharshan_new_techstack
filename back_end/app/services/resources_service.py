@@ -103,6 +103,12 @@ class ResourcesService:
             
             if slug_lower in ["recruitment-policy", "recruitment-rules", "recruitment"]:
                 return ResourcesService._fetch_recruitment_rules(db, query, culture, sort_by, page, page_size)
+            elif slug_lower in ["recruitment-notices", "recruitment-notice", "notices-recruitment", "career-notices"]:
+                return ResourcesService._fetch_recruitment_notices(db, query, culture, sort_by, page, page_size)
+            elif slug_lower in ["deputation", "deputation-circulars", "deputation-notices"]:
+                return ResourcesService._fetch_deputation(db, query, culture, sort_by, page, page_size)
+            elif slug_lower in ["young-professional-programme", "internships", "student-internship-programme", "young-professionals", "internship"]:
+                return ResourcesService._fetch_internships(db, query, culture, sort_by, page, page_size)
             elif slug_lower in ["administrative-information-policy", "administrative-information"]:
                 return ResourcesService._fetch_administrative_info(db, query, culture, sort_by, page, page_size)
             elif slug_lower in ["guidelines", "policy-guidelines"]:
@@ -180,6 +186,121 @@ class ResourcesService:
                 "date": safe_format_date(r["created_at"]),
                 "fileSize": "1.2 MB",
                 "fileUrl": normalize_file_url("recruitment_rules", fname) or "/assets/dummy.pdf"
+            })
+        return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+    @staticmethod
+    def _fetch_recruitment_notices(db, query, culture, sort_by, page, page_size):
+        base_where = " WHERE (status IS NULL OR status = 1)"
+        params = {}
+        if query:
+            base_where += " AND (title ILIKE :q OR document_title ILIKE :q)"
+            params["q"] = f"%{query}%"
+
+        count_sql = f"SELECT COUNT(*) FROM cag_revamp.recruitment_notices {base_where};"
+        total = db.execute(text(count_sql), params).scalar() or 0
+
+        sql = f"SELECT id, title, document_title, document_uploaded, upload_file, recruitment_notice_date, close_date, created_at, status FROM cag_revamp.recruitment_notices {base_where}"
+        if sort_by == "oldest":
+            sql += " ORDER BY recruitment_notice_date ASC NULLS LAST, created_at ASC"
+        elif sort_by == "title_asc":
+            sql += " ORDER BY title ASC"
+        else:
+            sql += " ORDER BY recruitment_notice_date DESC NULLS LAST, id DESC"
+        
+        sql += " LIMIT :limit OFFSET :offset;"
+        params["limit"] = page_size
+        params["offset"] = (page - 1) * page_size
+        
+        rows = db.execute(text(sql), params).mappings().all()
+        items = []
+        for r in rows:
+            fname = r["upload_file"] or r["document_uploaded"] or r["document_title"]
+            ndate = r["recruitment_notice_date"] or r["created_at"]
+            t_en, t_hi = safe_extract_title(r["title"])
+            items.append({
+                "id": f"rn-{r['id']}",
+                "title": t_en or "Recruitment Notification",
+                "titleHi": t_hi or "भर्ती सूचना",
+                "category": "Recruitment Notice",
+                "year": safe_extract_year(ndate),
+                "date": safe_format_date(ndate),
+                "closeDate": safe_format_date(r["close_date"]),
+                "fileSize": "1.5 MB",
+                "fileUrl": normalize_file_url("recruitment_notices", fname) or "/assets/dummy.pdf"
+            })
+        return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+    @staticmethod
+    def _fetch_deputation(db, query, culture, sort_by, page, page_size):
+        base_where = " WHERE (status IS NULL OR status = 1)"
+        params = {}
+        if query:
+            base_where += " AND title ILIKE :q"
+            params["q"] = f"%{query}%"
+
+        count_sql = f"SELECT COUNT(*) FROM cag_revamp.deputation {base_where};"
+        total = db.execute(text(count_sql), params).scalar() or 0
+
+        sql = f"SELECT id, title, pdf_file, created, modified, status FROM cag_revamp.deputation {base_where}"
+        if sort_by == "oldest":
+            sql += " ORDER BY created ASC NULLS LAST"
+        elif sort_by == "title_asc":
+            sql += " ORDER BY title ASC"
+        else:
+            sql += " ORDER BY created DESC NULLS LAST, id DESC"
+        
+        sql += " LIMIT :limit OFFSET :offset;"
+        params["limit"] = page_size
+        params["offset"] = (page - 1) * page_size
+        
+        rows = db.execute(text(sql), params).mappings().all()
+        items = []
+        for r in rows:
+            fname = r["pdf_file"]
+            t_en, t_hi = safe_extract_title(r["title"])
+            items.append({
+                "id": f"dep-{r['id']}",
+                "title": t_en or "Deputation Notification Circular",
+                "titleHi": t_hi or "प्रतिनियुक्ति अधिसूचना परिपत्र",
+                "category": "Deputation Circular",
+                "year": safe_extract_year(r["created"]),
+                "date": safe_format_date(r["created"]),
+                "fileSize": "1.1 MB",
+                "fileUrl": normalize_file_url("deputation", fname) or "/assets/dummy.pdf"
+            })
+        return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+    @staticmethod
+    def _fetch_internships(db, query, culture, sort_by, page, page_size):
+        base_where = " WHERE (status IS NULL OR status = 1)"
+        params = {}
+        if query:
+            base_where += " AND (title ILIKE :q OR file_title ILIKE :q)"
+            params["q"] = f"%{query}%"
+
+        count_sql = f"SELECT COUNT(*) FROM cag_revamp.young_professional_programme {base_where};"
+        total = db.execute(text(count_sql), params).scalar() or 0
+
+        sql = f"SELECT id, title, file_title, document, date_of_issue, created_at, status FROM cag_revamp.young_professional_programme {base_where} ORDER BY date_of_issue DESC NULLS LAST, id DESC LIMIT :limit OFFSET :offset;"
+        params["limit"] = page_size
+        params["offset"] = (page - 1) * page_size
+        
+        rows = db.execute(text(sql), params).mappings().all()
+        items = []
+        for r in rows:
+            fname = r["document"] or r["file_title"]
+            idate = r["date_of_issue"] or r["created_at"]
+            t_en, t_hi = safe_extract_title(r["title"])
+            items.append({
+                "id": f"ypp-{r['id']}",
+                "title": t_en or "Young Professionals & Student Internship Scheme",
+                "titleHi": t_hi or "युवा पेशेवर और छात्र इंटर्नशिप योजना",
+                "category": "Internship Programme",
+                "year": safe_extract_year(idate),
+                "date": safe_format_date(idate),
+                "fileSize": "900 KB",
+                "fileUrl": normalize_file_url("young_professional_programme", fname) or "/assets/dummy.pdf"
             })
         return {"items": items, "total": total, "page": page, "page_size": page_size}
 

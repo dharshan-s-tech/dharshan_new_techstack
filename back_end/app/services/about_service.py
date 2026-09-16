@@ -21,6 +21,31 @@ SLUG_TO_META = {
     'page-regulations-audit-accounts-2007': ('Governance & Mandate', 'Audit-Regulation', '/About/About-Us/Audit-Regulation'),
     'page-cag-s-auditing-standards-2017': ('Governance & Mandate', 'Audit-Regulation', '/About/About-Us/Audit-Regulation'),
 }
+HISTORY_IAAD_CHAPTERS = [
+    {"id_suffix": "an-01", "title_en": "Analytical History 1947-1989 - Volume I", "title_hi": "विश्लेषणात्मक इतिहास 1947-1989 - भाग I", "desc": "CAG of India - Analytical History 1947-1989 Volume I archival documentation.", "file_url": "https://cag.gov.in/uploads/cag_pdf/analytical_history/vol_1.pdf", "file_name": "vol_1.pdf"},
+    {"id_suffix": "an-02", "title_en": "Analytical History 1947-1989 - Volume II", "title_hi": "विश्लेषणात्मक इतिहास 1947-1989 - भाग II", "desc": "CAG of India - Analytical History 1947-1989 Volume II archival documentation.", "file_url": "https://cag.gov.in/uploads/cag_pdf/analytical_history/vol_2.pdf", "file_name": "vol_2.pdf"},
+    {"id_suffix": "th1-01", "title_en": "Thematic History 1990-2007 (Vol-1) - Forward", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - प्रस्तावना", "desc": "Thematic History 1990-2007 VOL-I Forward by CAG of India.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/forward.pdf", "file_name": "forward.pdf"},
+    {"id_suffix": "th1-02", "title_en": "Thematic History 1990-2007 (Vol-1) - Preface", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - भूमिका", "desc": "Thematic History 1990-2007 VOL-I Preface by C&AG.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/preface.pdf", "file_name": "preface.pdf"},
+    {"id_suffix": "th1-03", "title_en": "Thematic History 1990-2007 (Vol-1) - Brief Profile of Former C&AsG", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - पूर्व सीएजी का संक्षिप्त परिचय", "desc": "Brief profiles of Former Comptrollers & Auditors General.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/brief_profile.pdf", "file_name": "brief_profile.pdf"},
+    {"id_suffix": "th1-04", "title_en": "Thematic History 1990-2007 (Vol-1) - DAIs during 1990-2007", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - 1990-2007 की अवधि के दौरान डीएआई", "desc": "Deputy Auditors General during the period 1990-2007.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/dais.pdf", "file_name": "dais.pdf"},
+    {"id_suffix": "th1-05", "title_en": "Thematic History 1990-2007 (Vol-1) - General Abbreviations", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - सामान्य संक्षिप्ताक्षर", "desc": "General Abbreviations glossary for Thematic History VOL-I.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/abbreviations.pdf", "file_name": "abbreviations.pdf"},
+    {"id_suffix": "th1-06", "title_en": "Thematic History 1990-2007 (Vol-1) - Contents", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - विषय-सूची", "desc": "Table of Contents for Thematic History VOL-I.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/contents.pdf", "file_name": "contents.pdf"},
+    {"id_suffix": "th1-07", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 1 - Overview", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 1 - अवलोकन", "desc": "Chapter 1 - Overview of Institutional Developments 1990-2007.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_1.pdf", "file_name": "chap_1.pdf"},
+    {"id_suffix": "th1-08", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 2 - Govt Policies & Public Admin", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 2 - सरकारी नीतियां", "desc": "Chapter 2 - Developments in Government Policies and Public Administration.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_2.pdf", "file_name": "chap_2.pdf"},
+    {"id_suffix": "th1-09", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 3 - Organization of C&AG", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 3 - सीएजी का संगठन", "desc": "Chapter 3 - Organization of C&AG.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_3.pdf", "file_name": "chap_3.pdf"},
+    {"id_suffix": "th1-10", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 4 - Developments in Auditing", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 4 - लेखापरीक्षा में विकास", "desc": "Chapter 4 - Developments in Auditing.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_4.pdf", "file_name": "chap_4.pdf"},
+    {"id_suffix": "th1-11", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 5 - Audit Reports (Civil)", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 5 - लेखापरीक्षा रिपोर्ट (नागरिक)", "desc": "Chapter 5 - Audit Reports (Civil).", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_5.pdf", "file_name": "chap_5.pdf"},
+    {"id_suffix": "th1-12", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 6 - Audit of Receipts", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 6 - प्राप्तियों की लेखापरीक्षा", "desc": "Chapter 6 - Audit of Receipts.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_6.pdf", "file_name": "chap_6.pdf"},
+    {"id_suffix": "th1-13", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 7 - Commercial Audit", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 7 - वाणिज्यिक लेखापरीक्षा", "desc": "Chapter 7 - Commercial Audit.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_7.pdf", "file_name": "chap_7.pdf"},
+    {"id_suffix": "th1-14", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 8 - Defence Audit", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 8 - रक्षा लेखापरीक्षा", "desc": "Chapter 8 - Defence Audit.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_8.pdf", "file_name": "chap_8.pdf"},
+    {"id_suffix": "th1-15", "title_en": "Thematic History 1990-2007 (Vol-1) - Ch 9 - Post & Telecommunications", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - अध्याय 9 - डाक और दूरसंचार", "desc": "Chapter 9 - Post and Telecommunications.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_9.pdf", "file_name": "chap_9.pdf"},
+    {"id_suffix": "th1-16", "title_en": "Thematic History 1990-2007 (Vol-1) - Photographs", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-1) - तस्वीरें", "desc": "Photographs archive for Thematic History VOL-I.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/phots.pdf", "file_name": "phots.pdf"},
+    {"id_suffix": "th2-01", "title_en": "Thematic History 1990-2007 (Vol-2) - Ch 10 - Railway Audit", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-2) - अध्याय 10 - रेलवे लेखापरीक्षा", "desc": "Chapter 10 - Railway Audit.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_10.pdf", "file_name": "chap_10.pdf"},
+    {"id_suffix": "th2-02", "title_en": "Thematic History 1990-2007 (Vol-2) - Ch 11 - Scientific Departments", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-2) - अध्याय 11 - वैज्ञानिक विभाग", "desc": "Chapter 11 - Audit of Scientific Departments.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_11.pdf", "file_name": "chap_11.pdf"},
+    {"id_suffix": "th2-03", "title_en": "Thematic History 1990-2007 (Vol-2) - Ch 12 - Performance Audit", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-2) - अध्याय 12 - निष्पादन लेखापरीक्षा", "desc": "Chapter 12 - Performance Audit.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_12.pdf", "file_name": "chap_12.pdf"},
+    {"id_suffix": "th2-04", "title_en": "Thematic History 1990-2007 (Vol-2) - Ch 13 - Autonomous Bodies", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-2) - अध्याय 13 - स्वायत्त निकाय", "desc": "Chapter 13 - Audit of Autonomous Bodies.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_13.pdf", "file_name": "chap_13.pdf"},
+    {"id_suffix": "th2-05", "title_en": "Thematic History 1990-2007 (Vol-2) - Ch 14 - Local Bodies", "title_hi": "विषयगत इतिहास 1990-2007 (भाग-2) - अध्याय 14 - स्थानीय निकाय", "desc": "Chapter 14 - Audit of Local Bodies - A Collaborative Approach.", "file_url": "https://cag.gov.in/uploads/cag_pdf/thematic_history/chap_14.pdf", "file_name": "chap_14.pdf"},
+]
 
 
 class AboutAdminService:
@@ -92,6 +117,34 @@ class AboutAdminService:
                         SLUG_TO_META.get(base_slug, ('Governance & Mandate', p['title_en'], '/About/About-Us/Cag-Of-India'))
                     )
                     f_url = f"https://cag.gov.in/uploads/cms_pages_files/{p['upload_file']}" if p.get('upload_file') else ""
+                    if str(p['id']) == '41' or 'history-of-indian-audit' in slug_str:
+                        # Expand into all 23 structured publication volumes/chapters
+                        for ch_idx, ch in enumerate(HISTORY_IAAD_CHAPTERS, 1):
+                            all_records.append({
+                                "id": rec_id,
+                                "rawId": f"hist-{ch['id_suffix']}",
+                                "formattedId": f"#AB-HIST-{str(ch_idx).zfill(3)}",
+                                "category": "Leadership & Legacy",
+                                "subTopic": "History of IAAD",
+                                "subTopicSlug": "history-of-indian-audit-and-accounts-department",
+                                "title_en": ch["title_en"],
+                                "title_hi": ch["title_hi"],
+                                "desc": ch["desc"],
+                                "table_name": "cag_revamp.pages",
+                                "primary_key_or_slug": f"page-history-of-indian-audit-and-accounts-department ({ch['id_suffix']})",
+                                "public_url": pub_url,
+                                "thumb_image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg",
+                                "file_url": ch["file_url"],
+                                "file_name": ch["file_name"],
+                                "language": "Bilingual",
+                                "is_active": True,
+                                "item_count": 1,
+                                "created_at": str(p.get('created_at') or '01-Jan-2026 10:00 AM'),
+                                "modified_at": str(p.get('modified_at') or '09-Sep-2026 04:30 PM'),
+                            })
+                            rec_id += 1
+                        continue
+
                     all_records.append({
                         "id": rec_id,
                         "rawId": f"page-{p['id']}",
@@ -232,6 +285,33 @@ class AboutAdminService:
 
             for pid, p in SEED_PAGES.items():
                 cat, st, pub_url = SLUG_TO_META.get(p['slug'], ('Governance & Mandate', p['title_en'], '/About/About-Us/Cag-Of-India'))
+                if str(p['id']) == '41' or 'history-of-indian-audit' in p['slug']:
+                    for ch_idx, ch in enumerate(HISTORY_IAAD_CHAPTERS, 1):
+                        all_records.append({
+                            "id": rec_id,
+                            "rawId": f"hist-{ch['id_suffix']}",
+                            "formattedId": f"#AB-HIST-{str(ch_idx).zfill(3)}",
+                            "category": "Leadership & Legacy",
+                            "subTopic": "History of IAAD",
+                            "subTopicSlug": "history-of-indian-audit-and-accounts-department",
+                            "title_en": ch["title_en"],
+                            "title_hi": ch["title_hi"],
+                            "desc": ch["desc"],
+                            "table_name": "cag_revamp.pages",
+                            "primary_key_or_slug": f"page-history-of-indian-audit-and-accounts-department ({ch['id_suffix']})",
+                            "public_url": pub_url,
+                            "thumb_image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg",
+                            "file_url": ch["file_url"],
+                            "file_name": ch["file_name"],
+                            "language": "Bilingual",
+                            "is_active": True,
+                            "item_count": 1,
+                            "created_at": "01-Sep-2026 10:00 AM",
+                            "modified_at": "09-Sep-2026 04:30 PM",
+                        })
+                        rec_id += 1
+                    continue
+
                 all_records.append({
                     "id": rec_id,
                     "rawId": f"page-{p['id']}",

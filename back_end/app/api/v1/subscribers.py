@@ -23,3 +23,23 @@ def verify_token(token: str):
     if result.get("status") == "error":
         raise HTTPException(status_code=400, detail=result.get("message"))
     return result
+
+@router.get("/list")
+@router.get("")
+def list_subscribers(
+    page: int = 1,
+    limit: int = 20,
+    search: Optional[str] = None,
+    status: Optional[str] = None
+):
+    return SubscribersService.get_subscribers(page=page, page_size=limit, query=search, status=status)
+
+@router.post("/toggle/{sub_id}")
+def toggle_status(sub_id: int, verified: bool = True):
+    success = SubscribersService.toggle_subscriber_status(sub_id=sub_id, verified=verified)
+    return {"success": success}
+
+@router.delete("/{sub_id}")
+def delete_subscriber(sub_id: int):
+    success = SubscribersService.delete_subscriber(sub_id=sub_id)
+    return {"success": success}

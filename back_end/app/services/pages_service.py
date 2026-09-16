@@ -94,10 +94,24 @@ SEED_PAGES: Dict[str, Dict[str, Any]] = {
         "file_title": "Audit Advisory Board Notification",
         "upload_file": "audit-advisory-board.pdf",
         "status": 1
+    },
+    # Page 10: Overview - ID 1
+    "1": {
+        "id": 1,
+        "slug": "page-overview",
+        "title_en": "Overview of Supreme Audit Institution of India",
+        "title_hi": "भारत के सर्वोच्च लेखापरीक्षा संस्थान का अवलोकन",
+        "excerpt_en": "The Comptroller and Auditor General of India is the Supreme Audit Institution of India, mandated by the Constitution of India.",
+        "excerpt_hi": "भारत के नियंत्रक और महालेखापरीक्षक भारत का सर्वोच्च लेखापरीक्षा संस्थान है।",
+        "file_title": "Overview",
+        "upload_file": "",
+        "status": 1
     }
 }
 
 SLUG_TO_ID_MAP: Dict[str, str] = {
+    "overview": "1",
+    "page-overview": "1",
     "page-duties-power-and-conditions-of-services-act": "3",
     "duties-power-and-conditions-of-services-act": "3",
     "duties-&-powers-act": "3",
@@ -108,11 +122,15 @@ SLUG_TO_ID_MAP: Dict[str, str] = {
     "audit-regulations": "6685",
     "page-constitutional-provisions": "2",
     "constitutional-provisions": "2",
+    "governance-&-mandate": "2",
+    "governance-and-mandate": "2",
     "page-our-vision-mission-values": "10",
     "our-vision-mission-values": "10",
     "our-vision,-mission-&-core-values": "10",
     "page-cag-of-india": "17",
     "cag-of-india": "17",
+    "leadership-&-legacy": "17",
+    "leadership-and-legacy": "17",
     "page-history-of-indian-audit-and-accounts-department": "41",
     "history-of-indian-audit-and-accounts-department": "41",
     "history-of-indian-audit-ans-accounts-department": "41",
@@ -121,6 +139,7 @@ SLUG_TO_ID_MAP: Dict[str, str] = {
     "audit-advisory-board": "40",
     "page-international-relations": "4",
     "international-relations": "4",
+    "global-relations": "4",
     "page-cag-s-auditing-standards-2017": "11",
     "auditing-standards": "11",
     "page-citizen-s-charter": "16",

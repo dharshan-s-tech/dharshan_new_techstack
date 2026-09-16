@@ -36,10 +36,23 @@ class Settings(BaseSettings):
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
+    def validate_security_compliance(self):
+        """
+        CERT-In security compliance enforcement:
+        In production, ENCRYPTION_KEY and SECURITY_SALT must not be empty or default.
+        """
+        if self.ENVIRONMENT.lower() == "production":
+            if not self.ENCRYPTION_KEY or self.ENCRYPTION_KEY == "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA":
+                raise RuntimeError("CERT-In Violation: ENCRYPTION_KEY environment variable must be set in production")
+            if not self.SECURITY_SALT:
+                raise RuntimeError("CERT-In Violation: SECURITY_SALT environment variable must be set in production")
+
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    s.validate_security_compliance()
+    return s
 
 
 settings = get_settings()

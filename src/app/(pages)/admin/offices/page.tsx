@@ -212,7 +212,7 @@ export default function AdminStateOffices() {
                     {/* Audit Details Column */}
                     <td className="px-4 py-3 border-r border-[#e2e5e7]">
                       <div className="space-y-1">
-                        {office.auditDetails.map((sub, i) => (
+                        {(office.auditDetails || []).map((sub, i) => (
                           <div key={i} className="flex items-center gap-1.5 text-[11px]">
                             <span className="font-semibold text-zinc-800">• {sub.label}</span>
                             {sub.url && (
@@ -228,7 +228,7 @@ export default function AdminStateOffices() {
                     {/* A&E Details Column */}
                     <td className="px-4 py-3 border-r border-[#e2e5e7]">
                       <div className="space-y-1">
-                        {office.aeDetails.map((sub, i) => (
+                        {(office.aeDetails || []).map((sub, i) => (
                           <div key={i} className="flex items-center gap-1.5 text-[11px]">
                             <span className="font-semibold text-zinc-800">• {sub.label}</span>
                             {sub.url && (

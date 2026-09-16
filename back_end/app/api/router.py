@@ -21,6 +21,7 @@ api_router.include_router(accounts.state_router, prefix="/state-accounts", tags=
 api_router.include_router(accounts.combined_router, prefix="/combined-accounts", tags=["combined-accounts"])
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(pages.router, prefix="/pages", tags=["pages"])
+api_router.include_router(pages.router, prefix="/page-content", tags=["page-content"])
 api_router.include_router(states.router, prefix="/states", tags=["states"])
 api_router.include_router(organisation_chart.router, prefix="/organisation-chart", tags=["organisation-chart"])
 api_router.include_router(former_cag.router, prefix="/former-cag", tags=["former-cag"])

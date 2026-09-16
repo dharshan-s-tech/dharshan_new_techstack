@@ -341,6 +341,8 @@ function AdminAboutRegistryContent() {
     setAllAboutRecords(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('cag_admin_about_records', JSON.stringify(updated));
+      window.dispatchEvent(new Event('organisationOfficersChange'));
+      window.dispatchEvent(new Event('aboutDataChange'));
     }
     if (viewingRecord?.rawId === rawId) setViewingRecord(null);
     loadData();
@@ -404,6 +406,8 @@ function AdminAboutRegistryContent() {
     setAllAboutRecords(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('cag_admin_about_records', JSON.stringify(updated));
+      window.dispatchEvent(new Event('organisationOfficersChange'));
+      window.dispatchEvent(new Event('aboutDataChange'));
     }
 
     setIsFormOpen(false);

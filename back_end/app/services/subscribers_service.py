@@ -112,3 +112,103 @@ class SubscribersService:
         except Exception as e:
             logger.error(f"[SubscribersService] verify error: {e}")
             return {"status": "error", "message": str(e)}
+
+    @staticmethod
+    def get_subscribers(page: int = 1, page_size: int = 20, query: Optional[str] = None, status: Optional[str] = None) -> Dict[str, Any]:
+        """
+        CMS / Admin listing of newsletter subscribers from cag_revamp.subscribers
+        """
+        db = SessionLocal()
+        try:
+            where_clauses = []
+            params: Dict[str, Any] = {"limit": page_size, "offset": (page - 1) * page_size}
+
+            if query:
+                where_clauses.append("lower(email) LIKE :q")
+                params["q"] = f"%{query.strip().lower()}%"
+
+            if status is not None and status != "" and status != "all":
+                if status in ("1", "verified", "true"):
+                    where_clauses.append("verified = 1")
+                elif status in ("0", "unverified", "pending", "false"):
+                    where_clauses.append("verified = 0")
+
+            where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+
+            count_query = text(f"SELECT COUNT(*) FROM cag_revamp.subscribers {where_sql}")
+            total = db.execute(count_query, params).scalar() or 0
+
+            select_query = text(f"""
+                SELECT id, email, ip_address, verified, created, modified
+                FROM cag_revamp.subscribers
+                {where_sql}
+                ORDER BY id DESC
+                LIMIT :limit OFFSET :offset
+            """)
+            rows = db.execute(select_query, params).fetchall()
+
+            items = []
+            for r in rows:
+                token = encrypt_payload(str(r.id))
+                items.append({
+                    "id": r.id,
+                    "email": r.email,
+                    "ip_address": r.ip_address,
+                    "verified": bool(r.verified == 1),
+                    "status_label": "Verified" if r.verified == 1 else "Pending",
+                    "verification_token": token,
+                    "verification_link": f"/subscribers/verify/{token}",
+                    "created_at": str(r.created) if r.created else "",
+                    "modified_at": str(r.modified) if r.modified else ""
+                })
+
+            return {
+                "items": items,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "totalPages": (total + page_size - 1) // page_size if page_size > 0 else 1
+            }
+        except Exception as e:
+            logger.error(f"[SubscribersService] get_subscribers error: {e}")
+            return {"items": [], "total": 0, "page": page, "page_size": page_size, "totalPages": 1}
+        finally:
+            db.close()
+
+    @staticmethod
+    def toggle_subscriber_status(sub_id: int, verified: bool) -> bool:
+        """
+        CMS toggle subscriber status
+        """
+        db = SessionLocal()
+        try:
+            val = 1 if verified else 0
+            query = text("UPDATE cag_revamp.subscribers SET verified = :val, modified = CURRENT_TIMESTAMP WHERE id = :id")
+            db.execute(query, {"val": val, "id": sub_id})
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            logger.error(f"[SubscribersService] toggle error: {e}")
+            return False
+        finally:
+            db.close()
+
+    @staticmethod
+    def delete_subscriber(sub_id: int) -> bool:
+        """
+        CMS delete subscriber record
+        """
+        db = SessionLocal()
+        try:
+            query = text("DELETE FROM cag_revamp.subscribers WHERE id = :id")
+            db.execute(query, {"id": sub_id})
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            logger.error(f"[SubscribersService] delete error: {e}")
+            return False
+        finally:
+            db.close()
+
