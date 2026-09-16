@@ -33,8 +33,17 @@ const NAV: NavGroup[] = [
   {
     group: 'Dashboard', icon: LayoutDashboard, items: [
       { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
-      { label: 'Admin Users', href: '/admin/users', icon: Users },
-      { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
+    ]
+  },
+  {
+    group: 'User Management', icon: Shield, items: [
+      { label: 'Users Management', href: '/admin/users', icon: Users },
+      { label: 'Roles & RBAC', href: '/admin/roles', icon: Shield },
+      { label: 'Role Permissions', href: '/admin/roles-permissions', icon: UserCheck },
+      { label: 'User Offices', href: '/admin/user-offices', icon: Building2 },
+      { label: 'System Modules & ACL', href: '/admin/modules', icon: LayoutGrid },
+      { label: 'CAG Wings', href: '/admin/wings', icon: GitBranch },
+      { label: 'Audit Trail Logs', href: '/admin/audit-trail', icon: ScrollText },
     ]
   },
   {
@@ -74,8 +83,9 @@ const NAV: NavGroup[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'About Us': true,
+    'User Management': true,
     'Dashboard': true,
+    'About Us': false,
     'Audit Reports & Accounts': false
   });
   const [collapsed, setCollapsed] = useState(false);

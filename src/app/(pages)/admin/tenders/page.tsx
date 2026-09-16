@@ -1,13 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '@/lib/api';
-import { dataManager, TenderItem as DataTenderItem } from '@/lib/dataManager';
+
+export interface TenderItem {
+  id: number;
+  title_en: string;
+  title_hi?: string;
+  reference_no: string;
+  tender_file_url: string;
+  closing_date: string;
+  is_active: boolean;
+}
 
 export default function AdminTenders() {
-  const API_URL = getApiBaseUrl();
-  const [tenders, setTenders] = useState<DataTenderItem[]>([]);
+  const [tenders, setTenders] = useState<TenderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
@@ -29,49 +39,37 @@ export default function AdminTenders() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/tenders`);
-      if (!res.ok) throw new Error('API offline');
-      const data = await res.json();
-      
-      let filtered = Array.isArray(data) && data.length > 0 ? data : dataManager.getTenders();
-      if (appliedSearch) {
-        filtered = filtered.filter((item: any) => 
-          item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase()) ||
-          item.reference_no?.toLowerCase().includes(appliedSearch.toLowerCase())
-        );
+      const params = new URLSearchParams({
+        table: 'tenders',
+        page: page.toString(),
+        limit: '20'
+      });
+      if (appliedSearch.trim()) {
+        params.append('search', appliedSearch.trim());
+      }
+      if (statusFilter !== 'All') {
+        params.append('status', statusFilter === 'Active' ? '1' : '0');
       }
 
-      if (sortFilter === 'title_asc') {
-        filtered.sort((a: any, b: any) => (a.title_en || '').localeCompare(b.title_en || ''));
-      } else if (sortFilter === 'title_desc') {
-        filtered.sort((a: any, b: any) => (b.title_en || '').localeCompare(a.title_en || ''));
-      } else if (sortFilter === 'oldest') {
-        filtered.sort((a: any, b: any) => (new Date(a.closing_date).getTime() || 0) - (new Date(b.closing_date).getTime() || 0));
-      } else {
-        filtered.sort((a: any, b: any) => (new Date(b.closing_date).getTime() || 0) - (new Date(a.closing_date).getTime() || 0));
+      const res = await fetch(`/api/admin/crud?${params.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        const rawItems = json.data || json.items || [];
+        const items: TenderItem[] = rawItems.map((item: any) => ({
+          id: typeof item.id === 'string' ? parseInt(item.id, 10) || item.id : item.id,
+          title_en: item.title_en || item.title || item.name || `Tender #${item.id}`,
+          title_hi: item.title_hi || '',
+          reference_no: item.reference_no || item.tender_no || item.nit_number || `NIT-${item.id}`,
+          tender_file_url: item.tender_file_url || item.file_url || item.document || '#',
+          closing_date: item.closing_date || item.end_date || item.created_at || '—',
+          is_active: item.status === 1 || item.is_active === true || item.is_active === '1'
+        }));
+        setTenders(items);
+        setTotalCount(json.total || items.length);
+        setTotalPages(json.totalPages || Math.ceil((json.total || items.length) / 20) || 1);
       }
-
-      setTenders(filtered);
     } catch (err) {
-      let filtered = dataManager.getTenders();
-      if (appliedSearch) {
-        filtered = filtered.filter((item: any) => 
-          item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase()) ||
-          item.reference_no?.toLowerCase().includes(appliedSearch.toLowerCase())
-        );
-      }
-
-      if (sortFilter === 'title_asc') {
-        filtered.sort((a: any, b: any) => (a.title_en || '').localeCompare(b.title_en || ''));
-      } else if (sortFilter === 'title_desc') {
-        filtered.sort((a: any, b: any) => (b.title_en || '').localeCompare(a.title_en || ''));
-      } else if (sortFilter === 'oldest') {
-        filtered.sort((a: any, b: any) => (new Date(a.closing_date).getTime() || 0) - (new Date(b.closing_date).getTime() || 0));
-      } else {
-        filtered.sort((a: any, b: any) => (new Date(b.closing_date).getTime() || 0) - (new Date(a.closing_date).getTime() || 0));
-      }
-
-      setTenders(filtered);
+      console.error('Error fetching tenders:', err);
     } finally {
       setLoading(false);
     }
@@ -79,12 +77,10 @@ export default function AdminTenders() {
 
   useEffect(() => {
     loadData();
-    const handleTendersChange = () => loadData();
-    window.addEventListener('tendersChange', handleTendersChange);
-    return () => window.removeEventListener('tendersChange', handleTendersChange);
-  }, [appliedSearch, statusFilter, sortFilter]);
+  }, [page, appliedSearch, statusFilter, sortFilter]);
 
   const handleSearchGo = () => {
+    setPage(1);
     setAppliedSearch(searchFor);
   };
 
@@ -93,13 +89,14 @@ export default function AdminTenders() {
     setAppliedSearch('');
     setStatusFilter('All');
     setSortFilter('newest');
+    setPage(1);
   };
 
   const handleOpenCreate = () => {
     setEditingId(null);
     setTitleEn('');
     setTitleHi('');
-    setReferenceNo(`CAG/TD/${new Date().getFullYear()}/${tenders.length + 1}`);
+    setReferenceNo(`CAG/TD/${new Date().getFullYear()}/${totalCount + 1}`);
     setFileUrl('#');
     setClosingDate('2026-10-01');
     setIsActive(true);
@@ -121,55 +118,44 @@ export default function AdminTenders() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this tender Notice?')) return;
+    if (!confirm('Are you sure you want to delete this tender notice?')) return;
     try {
-      const token = localStorage.getItem('cag_admin_token');
-      await fetch(`${API_URL}/api/admin/tenders/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await fetch(`/api/admin/crud?table=tenders&id=${id}`, { method: 'DELETE' });
+      loadData();
     } catch (err) {
-      // Ignore API offline
+      alert('Failed to delete tender');
     }
-
-    dataManager.deleteTender(id);
-    loadData();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newRecord: DataTenderItem = {
-      id: editingId || Date.now(),
+    const payload = {
+      title: titleEn,
       title_en: titleEn,
-      title_hi: titleHi || undefined,
+      title_hi: titleHi,
       reference_no: referenceNo,
+      nit_number: referenceNo,
+      file_url: fileUrl,
       closing_date: closingDate,
-      tender_file_url: fileUrl,
-      is_active: isActive
+      status: isActive ? 1 : 0
     };
 
     try {
-      const token = localStorage.getItem('cag_admin_token');
-      const url = editingId
-        ? `${API_URL}/api/admin/tenders/${editingId}`
-        : `${API_URL}/api/admin/tenders`;
       const method = editingId ? 'PUT' : 'POST';
+      const url = editingId 
+        ? `/api/admin/crud?table=tenders&id=${editingId}` 
+        : `/api/admin/crud?table=tenders`;
 
       await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(newRecord),
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: payload })
       });
+      setIsFormOpen(false);
+      loadData();
     } catch (err) {
-      // Ignore API offline
+      alert('Failed to save tender');
     }
-
-    dataManager.saveTender(newRecord);
-    setIsFormOpen(false);
-    loadData();
   };
 
   return (
@@ -309,6 +295,31 @@ export default function AdminTenders() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between text-xs text-zinc-600">
+          <span>
+            Page {page} of {totalPages} ({totalCount} total tenders)
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

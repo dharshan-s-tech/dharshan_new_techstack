@@ -1,13 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '@/lib/api';
-import { dataManager, CircularItem as DataCircularItem } from '@/lib/dataManager';
+
+export interface CircularItem {
+  id: number;
+  title_en: string;
+  title_hi?: string;
+  circular_no: string;
+  file_url: string;
+  issue_date: string;
+  is_active: boolean;
+}
 
 export default function AdminCirculars() {
-  const API_URL = getApiBaseUrl();
-  const [circulars, setCirculars] = useState<DataCircularItem[]>([]);
+  const [circulars, setCirculars] = useState<CircularItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
@@ -27,27 +37,33 @@ export default function AdminCirculars() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/circulars`);
-      if (!res.ok) throw new Error('API offline');
-      const data = await res.json();
-      
-      let filtered = Array.isArray(data) && data.length > 0 ? data : dataManager.getCirculars();
-      if (appliedSearch) {
-        filtered = filtered.filter((item: any) => 
-          item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase()) ||
-          item.circular_no?.toLowerCase().includes(appliedSearch.toLowerCase())
-        );
+      const params = new URLSearchParams({
+        table: 'circulars',
+        page: page.toString(),
+        limit: '20'
+      });
+      if (appliedSearch.trim()) {
+        params.append('search', appliedSearch.trim());
       }
-      setCirculars(filtered);
+      const res = await fetch(`/api/admin/crud?${params.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        const rawItems = json.data || json.items || [];
+        const items: CircularItem[] = rawItems.map((item: any) => ({
+          id: typeof item.id === 'string' ? parseInt(item.id, 10) || item.id : item.id,
+          title_en: item.title_en || item.title || item.name || `Circular #${item.id}`,
+          title_hi: item.title_hi || '',
+          circular_no: item.circular_no || item.order_no || `CIR-${item.id}`,
+          file_url: item.file_url || item.document || '#',
+          issue_date: item.issue_date || item.created_at || '—',
+          is_active: item.status === 1 || item.is_active === true || item.is_active === '1'
+        }));
+        setCirculars(items);
+        setTotalCount(json.total || items.length);
+        setTotalPages(json.totalPages || Math.ceil((json.total || items.length) / 20) || 1);
+      }
     } catch (err) {
-      let filtered = dataManager.getCirculars();
-      if (appliedSearch) {
-        filtered = filtered.filter((item: any) => 
-          item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase()) ||
-          item.circular_no?.toLowerCase().includes(appliedSearch.toLowerCase())
-        );
-      }
-      setCirculars(filtered);
+      console.error('Error loading circulars:', err);
     } finally {
       setLoading(false);
     }
@@ -55,25 +71,24 @@ export default function AdminCirculars() {
 
   useEffect(() => {
     loadData();
-    const handleCircularsChange = () => loadData();
-    window.addEventListener('circularsChange', handleCircularsChange);
-    return () => window.removeEventListener('circularsChange', handleCircularsChange);
-  }, [appliedSearch]);
+  }, [page, appliedSearch]);
 
   const handleSearchGo = () => {
+    setPage(1);
     setAppliedSearch(searchFor);
   };
 
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setPage(1);
   };
 
   const handleOpenCreate = () => {
     setEditingId(null);
     setTitleEn('');
     setTitleHi('');
-    setCircularNo(`Cir-${circulars.length + 10}/IAAD/2026`);
+    setCircularNo(`Cir-${totalCount + 10}/IAAD/2026`);
     setFileUrl('#');
     setIssueDate('2026-08-15');
     setIsActive(true);
@@ -97,53 +112,41 @@ export default function AdminCirculars() {
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this circular notice?')) return;
     try {
-      const token = localStorage.getItem('cag_admin_token');
-      await fetch(`${API_URL}/api/admin/circulars/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await fetch(`/api/admin/crud?table=circulars&id=${id}`, { method: 'DELETE' });
+      loadData();
     } catch (err) {
-      // Ignore API offline
+      alert('Failed to delete circular');
     }
-
-    dataManager.deleteCircular(id);
-    loadData();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newRecord: DataCircularItem = {
-      id: editingId || Date.now(),
+    const payload = {
+      title: titleEn,
       title_en: titleEn,
-      title_hi: titleHi || undefined,
+      title_hi: titleHi,
       circular_no: circularNo,
       issue_date: issueDate,
       file_url: fileUrl,
-      is_active: isActive
+      status: isActive ? 1 : 0
     };
 
     try {
-      const token = localStorage.getItem('cag_admin_token');
-      const url = editingId
-        ? `${API_URL}/api/admin/circulars/${editingId}`
-        : `${API_URL}/api/admin/circulars`;
       const method = editingId ? 'PUT' : 'POST';
+      const url = editingId 
+        ? `/api/admin/crud?table=circulars&id=${editingId}` 
+        : `/api/admin/crud?table=circulars`;
 
       await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(newRecord),
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: payload })
       });
+      setIsFormOpen(false);
+      loadData();
     } catch (err) {
-      // Ignore API offline
+      alert('Failed to save circular');
     }
-
-    dataManager.saveCircular(newRecord);
-    setIsFormOpen(false);
-    loadData();
   };
 
   return (
@@ -269,6 +272,31 @@ export default function AdminCirculars() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between text-xs text-zinc-600">
+          <span>
+            Page {page} of {totalPages} ({totalCount} total circulars)
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

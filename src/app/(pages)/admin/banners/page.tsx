@@ -1,11 +1,25 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { dataManager, BannerItem } from '@/lib/dataManager';
+
+export interface BannerItem {
+  id: number;
+  title_en: string;
+  title_hi?: string;
+  subtitle_en?: string;
+  subtitle_hi?: string;
+  image_url: string;
+  link_url?: string;
+  display_order: number;
+  is_active: boolean;
+}
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
@@ -24,32 +38,56 @@ export default function AdminBanners() {
   const [displayOrder, setDisplayOrder] = useState(1);
   const [isActive, setIsActive] = useState(true);
 
-  const loadData = () => {
+  const loadData = async () => {
     setLoading(true);
-    let list = dataManager.getBanners();
-    if (appliedSearch) {
-      list = list.filter((item) => 
-        item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
-      );
+    try {
+      const params = new URLSearchParams({
+        table: 'banners',
+        page: page.toString(),
+        limit: '20'
+      });
+      if (appliedSearch.trim()) {
+        params.append('search', appliedSearch.trim());
+      }
+      const res = await fetch(`/api/admin/crud?${params.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        const rawItems = json.data || json.items || [];
+        const items: BannerItem[] = rawItems.map((item: any) => ({
+          id: typeof item.id === 'string' ? parseInt(item.id, 10) || item.id : item.id,
+          title_en: item.title_en || item.title || item.name || `Banner #${item.id}`,
+          title_hi: item.title_hi || '',
+          subtitle_en: item.subtitle_en || item.subtitle || item.description || '',
+          subtitle_hi: item.subtitle_hi || '',
+          image_url: item.image_url || item.image || item.file_url || '/assets/0a49806ee3dbb7eb472a11bdfed5e0037a544c20.png',
+          link_url: item.link_url || item.url || '#',
+          display_order: item.display_order || item.order_no || item.order || 1,
+          is_active: item.status === 1 || item.is_active === true || item.is_active === '1'
+        }));
+        setBanners(items);
+        setTotalCount(json.total || items.length);
+        setTotalPages(json.totalPages || Math.ceil((json.total || items.length) / 20) || 1);
+      }
+    } catch (err) {
+      console.error('Error fetching banners:', err);
+    } finally {
+      setLoading(false);
     }
-    setBanners(list);
-    setLoading(false);
   };
 
   useEffect(() => {
     loadData();
-    const handleBannersChange = () => loadData();
-    window.addEventListener('bannersChange', handleBannersChange);
-    return () => window.removeEventListener('bannersChange', handleBannersChange);
-  }, [appliedSearch]);
+  }, [page, appliedSearch]);
 
   const handleSearchGo = () => {
+    setPage(1);
     setAppliedSearch(searchFor);
   };
 
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setPage(1);
   };
 
   const handleOpenCreate = () => {
@@ -94,29 +132,47 @@ export default function AdminBanners() {
     reader.readAsDataURL(file);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
-    dataManager.deleteBanner(id);
-    loadData();
+    try {
+      await fetch(`/api/admin/crud?table=banners&id=${id}`, { method: 'DELETE' });
+      loadData();
+    } catch (err) {
+      alert('Failed to delete banner');
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newRecord: BannerItem = {
-      id: editingId || Date.now(),
+    const payload = {
+      title: titleEn,
       title_en: titleEn,
-      title_hi: titleHi || undefined,
-      subtitle_en: subtitleEn || undefined,
-      subtitle_hi: subtitleHi || undefined,
+      title_hi: titleHi,
+      subtitle: subtitleEn,
+      subtitle_en: subtitleEn,
+      subtitle_hi: subtitleHi,
       image_url: imageUrl,
       link_url: linkUrl,
       display_order: displayOrder,
-      is_active: isActive
+      status: isActive ? 1 : 0
     };
 
-    dataManager.saveBanner(newRecord);
-    setIsFormOpen(false);
-    loadData();
+    try {
+      const method = editingId ? 'PUT' : 'POST';
+      const url = editingId 
+        ? `/api/admin/crud?table=banners&id=${editingId}` 
+        : `/api/admin/crud?table=banners`;
+
+      await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: payload })
+      });
+      setIsFormOpen(false);
+      loadData();
+    } catch (err) {
+      alert('Failed to save banner');
+    }
   };
 
   return (
@@ -172,7 +228,7 @@ export default function AdminBanners() {
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
         <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
           <h3 className="font-semibold text-zinc-800">
-            Banners & Slideshows [ Displaying {banners.length} of {banners.length} ]
+            Banners & Slideshows [ Displaying {banners.length} of {totalCount} total records ]
           </h3>
         </div>
 
@@ -208,7 +264,7 @@ export default function AdminBanners() {
               ) : (
                 banners.map((banner, idx) => (
                   <tr key={banner.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
+                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{(page - 1) * 20 + idx + 1}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7]">
                       <img 
                         src={banner.image_url || '/assets/0a49806ee3dbb7eb472a11bdfed5e0037a544c20.png'} 
@@ -250,6 +306,31 @@ export default function AdminBanners() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Footer */}
+        <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between text-xs text-zinc-600">
+          <span>
+            Page {page} of {totalPages} ({totalCount} total banners)
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1 border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 
