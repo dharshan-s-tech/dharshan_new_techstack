@@ -59,6 +59,7 @@ export interface StateOfficeCard {
   nameHindi: string;
   auditDetails: StateOfficeSubDetail[];
   aeDetails: StateOfficeSubDetail[];
+  is_active?: boolean;
 }
 
 export interface BannerItem {

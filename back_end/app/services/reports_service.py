@@ -474,6 +474,7 @@ class ReportsService:
         state_id: Optional[int] = None,
         language: str = "en",
         sort: str = "newest",
+        status: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Fetch standalone audit reports (parent_id = 0) with multi-criteria filtering and CloudFront CDN assets."""
         page = max(1, page)
@@ -523,8 +524,16 @@ class ReportsService:
             try:
                 cur = conn.cursor(cursor_factory=RealDictCursor)
 
-                # Filter only active standalone main reports (not individual chapters/annexures)
-                where_clauses = ["ar.status = 1", "(ar.parent_id = 0 OR ar.parent_id IS NULL)"]
+                # Filter standalone main reports (not individual chapters/annexures)
+                where_clauses = ["(ar.parent_id = 0 OR ar.parent_id IS NULL)"]
+                if status == "active":
+                    where_clauses.append("ar.status = 1")
+                elif status == "inactive":
+                    where_clauses.append("ar.status = 0")
+                elif status == "all":
+                    pass
+                else:
+                    where_clauses.append("ar.status = 1")
                 params: List[Any] = []
 
                 if language:
@@ -630,6 +639,7 @@ class ReportsService:
                         ar.title,
                         ar.language,
                         ar.overview,
+                        ar.status,
                         ar.year_of_report as year,
                         ar.date_on_which_report_tabled as tabled_date,
                         ar.main_report_file,
@@ -725,6 +735,8 @@ class ReportsService:
                         "file_name": main_file,
                         "video_url": video_url,
                         "label": label,
+                        "is_active": (r.get("status") == 1),
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
                         "source": "remote_db",
                     })
 
@@ -1551,6 +1563,7 @@ class ReportsService:
         year: str = "",
         query: str = "",
         sort: str = "year_desc",
+        status: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Fetch state accounts reports from cag_revamp.state_accounts_report and local CMS."""
         page = max(1, page)
@@ -1622,7 +1635,15 @@ class ReportsService:
         if conn:
             try:
                 cur = conn.cursor(cursor_factory=RealDictCursor)
-                where_clauses = ["sar.status = 1"]
+                where_clauses = []
+                if status == "active":
+                    where_clauses.append("sar.status = 1")
+                elif status == "inactive":
+                    where_clauses.append("sar.status = 0")
+                elif status == "all":
+                    where_clauses.append("1=1")
+                else:
+                    where_clauses.append("sar.status = 1")
                 params: List[Any] = []
 
                 if state_id:
@@ -1712,6 +1733,7 @@ class ReportsService:
                         sar.month,
                         sar.volume,
                         sar.uploads,
+                        sar.status,
                         sar.created,
                         s.id as state_id,
                         s.name as state_name,
@@ -1744,7 +1766,8 @@ class ReportsService:
                         "category_id": r.get("category_id"),
                         "category_name": r.get("category_name") or "Accounts at a Glance",
                         "created_at": str(r.get("created") or ""),
-                        "is_active": True,
+                        "is_active": (r.get("status") == 1),
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
                         "source": "remote_db",
                     })
                 cur.close()
@@ -1829,7 +1852,7 @@ class ReportsService:
             try:
                 cur = conn.cursor(cursor_factory=RealDictCursor)
                 cur.execute("""
-                    SELECT id, title, account_year, upload_file, created_at
+                    SELECT id, title, account_year, upload_file, status, created_at
                     FROM cag_revamp.combined_accounts
                     WHERE id::text = %s AND status = 1
                     LIMIT 1;
@@ -1993,6 +2016,7 @@ class ReportsService:
         query: str = "",
         category: str = "",
         sort: str = "year_desc",
+        status: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Fetch combined accounts (CFRA) and conference documents."""
         page = max(1, page)
@@ -2030,7 +2054,15 @@ class ReportsService:
         if conn:
             try:
                 cur = conn.cursor(cursor_factory=RealDictCursor)
-                where_clauses = ["status = 1"]
+                where_clauses = []
+                if status == "active":
+                    where_clauses.append("status = 1")
+                elif status == "inactive":
+                    where_clauses.append("status = 0")
+                elif status == "all":
+                    where_clauses.append("1=1")
+                else:
+                    where_clauses.append("status = 1")
                 params: List[Any] = []
 
                 if year and year != "All":
@@ -2092,7 +2124,8 @@ class ReportsService:
                         "category": cat_val,
                         "size": "18.5 MB",
                         "created_at": str(r.get("created_at") or ""),
-                        "is_active": True,
+                        "is_active": (r.get("status") == 1),
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
                         "source": "remote_db",
                     })
                 cur.close()

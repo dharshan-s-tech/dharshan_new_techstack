@@ -110,7 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (pathname === '/admin/state-accounts') return 'SUPER ADMIN > Main CAG Website > Reports > State & UT Accounts';
     if (pathname === '/admin/combined-accounts') return 'SUPER ADMIN > Main CAG Website > Reports > Combined Accounts & Conferences';
     if (pathname === '/admin/offices') return 'SUPER ADMIN > Main CAG Website > Our Presence > Offices & Institutes';
-    if (pathname === '/admin/global') return 'SUPER ADMIN > Main CAG Website > Global Relations';
+    if (pathname === '/admin/global' || pathname === '/admin/global-relations') return 'SUPER ADMIN > Main CAG Website > Global Relations';
     if (pathname === '/admin/circulars') return 'SUPER ADMIN > Main CAG Website > Resources';
     if (pathname === '/admin/about') return 'SUPER ADMIN > Main CAG Website > About Us';
     if (pathname === '/admin/news') return 'SUPER ADMIN > Main CAG Website > News & Events';

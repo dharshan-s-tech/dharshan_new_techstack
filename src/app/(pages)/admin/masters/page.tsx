@@ -69,14 +69,12 @@ export default function AdminMasters() {
   const [stateCode, setStateCode] = useState('');
   const [stateNameEn, setStateNameEn] = useState('');
   const [stateNameHi, setStateNameHi] = useState('');
-  const [stateIsActive, setStateIsActive] = useState(true);
 
   // Gov Levels Form State
   const [isGovFormOpen, setIsGovFormOpen] = useState(false);
   const [editingGovId, setEditingGovId] = useState<number | null>(null);
   const [govNameEn, setGovNameEn] = useState('');
   const [govNameHi, setGovNameHi] = useState('');
-  const [govIsActive, setGovIsActive] = useState(true);
 
   const loadStates = async () => {
     setLoadingStates(true);
@@ -116,7 +114,6 @@ export default function AdminMasters() {
     setStateCode('');
     setStateNameEn('');
     setStateNameHi('');
-    setStateIsActive(true);
     setIsStateFormOpen(true);
   };
 
@@ -125,7 +122,6 @@ export default function AdminMasters() {
     setStateCode(item.code || '');
     setStateNameEn(item.name_en);
     setStateNameHi(item.name_hi || '');
-    setStateIsActive(item.is_active);
     setIsStateFormOpen(true);
   };
 
@@ -136,7 +132,7 @@ export default function AdminMasters() {
       code: stateCode,
       name_en: stateNameEn,
       name_hi: stateNameHi,
-      is_active: stateIsActive
+      is_active: true
     };
 
     if (editingStateId) {
@@ -156,7 +152,6 @@ export default function AdminMasters() {
     setEditingGovId(null);
     setGovNameEn('');
     setGovNameHi('');
-    setGovIsActive(true);
     setIsGovFormOpen(true);
   };
 
@@ -164,7 +159,6 @@ export default function AdminMasters() {
     setEditingGovId(item.id);
     setGovNameEn(item.name_en);
     setGovNameHi(item.name_hi || '');
-    setGovIsActive(item.is_active);
     setIsGovFormOpen(true);
   };
 
@@ -174,7 +168,7 @@ export default function AdminMasters() {
       id: editingGovId || Date.now(),
       name_en: govNameEn,
       name_hi: govNameHi,
-      is_active: govIsActive
+      is_active: true
     };
 
     if (editingGovId) {
@@ -220,7 +214,6 @@ export default function AdminMasters() {
                 <th className="px-4 py-3 border-r border-white/20 w-24">State Code</th>
                 <th className="px-4 py-3 border-r border-white/20">Name (English)</th>
                 <th className="px-4 py-3 border-r border-white/20">Name (Hindi)</th>
-                <th className="px-4 py-3 border-r border-white/20 w-20 text-center">Status</th>
                 <th className="px-4 py-3 text-center w-24">Actions</th>
               </tr>
             </thead>
@@ -235,9 +228,6 @@ export default function AdminMasters() {
                   <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-mono font-bold text-zinc-700">{item.code || '-'}</td>
                   <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-bold text-[#751639]">{item.name_en}</td>
                   <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-medium text-zinc-700">{item.name_hi || '-'}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] text-center">
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold">Active</span>
-                  </td>
                   <td className="px-4 py-2.5 text-center space-x-1">
                     <button onClick={() => handleOpenStateEdit(item)} className="p-1 border border-zinc-300 text-[#751639] hover:bg-zinc-100">📝</button>
                     <button onClick={() => handleStateDelete(item.id)} className="p-1 border border-red-200 text-red-600 hover:bg-red-50">🗑️</button>
@@ -275,7 +265,6 @@ export default function AdminMasters() {
                 <th className="px-4 py-3 border-r border-white/20 w-12 text-center">Id</th>
                 <th className="px-4 py-3 border-r border-white/20">Category Name (English)</th>
                 <th className="px-4 py-3 border-r border-white/20">Category Name (Hindi)</th>
-                <th className="px-4 py-3 border-r border-white/20 w-20 text-center">Status</th>
                 <th className="px-4 py-3 text-center w-24">Actions</th>
               </tr>
             </thead>
@@ -289,9 +278,6 @@ export default function AdminMasters() {
                   <td className="px-4 py-2.5 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{item.id}</td>
                   <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-bold text-[#751639]">{item.name_en}</td>
                   <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-medium text-zinc-700">{item.name_hi || '-'}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] text-center">
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold">Active</span>
-                  </td>
                   <td className="px-4 py-2.5 text-center space-x-1">
                     <button onClick={() => handleOpenGovEdit(item)} className="p-1 border border-zinc-300 text-[#751639] hover:bg-zinc-100">📝</button>
                     <button onClick={() => handleGovDelete(item.id)} className="p-1 border border-red-200 text-red-600 hover:bg-red-50">🗑️</button>

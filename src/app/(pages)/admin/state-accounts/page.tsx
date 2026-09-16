@@ -45,6 +45,7 @@ function AdminStateAccountsContent() {
 
   // Search & Filter Fields
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [stateFilter, setStateFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [yearFilter, setYearFilter] = useState('All');
@@ -158,6 +159,8 @@ function AdminStateAccountsContent() {
       params.set('page', page.toString());
       params.set('pageSize', pageSize.toString());
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (stateFilter !== 'All') params.set('state_id', stateFilter);
       if (categoryFilter !== 'All') params.set('category', categoryFilter);
       if (yearFilter !== 'All') params.set('year', yearFilter);
@@ -249,6 +252,11 @@ function AdminStateAccountsContent() {
     if (monthFilter !== 'All') {
       fallback = fallback.filter(item => (item.month || '').toLowerCase() === monthFilter.toLowerCase());
     }
+    if (statusFilter === 'Active') {
+      fallback = fallback.filter(item => item.is_active);
+    } else if (statusFilter === 'Inactive') {
+      fallback = fallback.filter(item => !item.is_active);
+    }
 
     const parseId = (val: any) => {
       const match = String(val || '').match(/\d+/g);
@@ -304,7 +312,7 @@ function AdminStateAccountsContent() {
 
   useEffect(() => {
     loadData();
-  }, [page, pageSize, appliedSearch, stateFilter, categoryFilter, yearFilter, monthFilter, sortFilter]);
+  }, [page, pageSize, appliedSearch, statusFilter, stateFilter, categoryFilter, yearFilter, monthFilter, sortFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -314,6 +322,7 @@ function AdminStateAccountsContent() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
     setStateFilter('All');
     setCategoryFilter('All');
     setYearFilter('All');
@@ -659,8 +668,10 @@ function AdminStateAccountsContent() {
                       </a>
                     </td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                        item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                        item.is_active
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
                       }`}>
                         {item.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>

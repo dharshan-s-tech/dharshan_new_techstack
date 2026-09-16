@@ -173,7 +173,7 @@ class AboutAdminService:
                 q_fc = text("SELECT * FROM cag_revamp.former_cag ORDER BY id;")
                 fc_rows = db.execute(q_fc).mappings().fetchall()
                 for fc in fc_rows:
-                    name = fc.get('tenure') or fc.get('title') or 'Former CAG'
+                    name = fc.get('title') if (fc.get('title') and not fc.get('title').startswith('20')) else (fc.get('tenure') or fc.get('title') or 'Former CAG')
                     img = fc.get('image') or ''
                     img_url = f"https://cag.gov.in/uploads/former_cag/{img}" if img else ""
                     lang = "HI" if fc.get('language') == 'hi' else "EN"
@@ -187,7 +187,7 @@ class AboutAdminService:
                         "subTopicSlug": "former-cags",
                         "title_en": name if lang == 'EN' else f"Former CAG ({fc.get('tenure_from')}-{fc.get('tenure_to')})",
                         "title_hi": name if lang == 'HI' else '',
-                        "desc": f"Former Comptroller and Auditor General of India serving from {fc.get('tenure_from', '')} to {fc.get('tenure_to', '')}.",
+                        "desc": f"Former Comptroller and Auditor General of India serving from {fc.get('tenure_from', '')} to {fc.get('tenure_to', '')}. {fc.get('title') or ''}".strip(),
                         "table_name": "cag_revamp.former_cag",
                         "primary_key_or_slug": f"ID: {fc['id']} ({fc.get('tenure_from')}-{fc.get('tenure_to')})",
                         "public_url": "/About/About-Us/Former-Comptroller-and-Auditors-General",
@@ -409,9 +409,11 @@ class AboutAdminService:
         if language and language.lower() != 'all':
             filtered = [r for r in filtered if r['language'].lower() == language.lower()]
 
-        if status and status.lower() != 'all':
-            act = status.lower() == 'active'
-            filtered = [r for r in filtered if r['is_active'] == act]
+        if status and status.lower() == 'active':
+            filtered = [r for r in filtered if r['is_active']]
+        elif status and status.lower() == 'inactive':
+            filtered = [r for r in filtered if not r['is_active']]
+        # When status is 'all', None, or empty, include all records (Active and Inactive)
 
         if search and search.strip():
             q = search.lower().strip()
@@ -477,9 +479,18 @@ class AboutAdminService:
         subtopic = data.get("subTopic") or ""
         table_name = data.get("table_name") or ""
 
+        # If raw_id is numeric, attempt to resolve the actual item from registry
+        if raw_id.isdigit():
+            rec_id_num = int(raw_id)
+            all_recs = AboutAdminService.get_all_about_records(db=db, page=1, page_size=1000).get("items", [])
+            matched = next((r for r in all_recs if r.get("id") == rec_id_num or r.get("rawId") == raw_id), None)
+            if matched:
+                raw_id = str(matched.get("rawId") or raw_id)
+                table_name = matched.get("table_name") or table_name
+
         try:
             # 1. Update Existing Page
-            if raw_id.startswith("page-"):
+            if raw_id.startswith("page-") or (table_name == "cag_revamp.pages" and raw_id.isdigit()):
                 pid_str = raw_id.replace("page-", "")
                 if pid_str.isdigit():
                     pid = int(pid_str)
@@ -677,21 +688,47 @@ class AboutAdminService:
         if not db or engine.dialect.name != "postgresql":
             return True
 
+        raw_id_str = str(raw_id).strip()
         try:
-            if raw_id.startswith("page-"):
-                pid_str = raw_id.replace("page-", "")
+            if raw_id_str.startswith("page-"):
+                pid_str = raw_id_str.replace("page-", "")
                 if pid_str.isdigit():
                     db.execute(text("UPDATE cag_revamp.pages SET status = 0, modified_at = NOW() WHERE id = :id;"), {"id": int(pid_str)})
                     db.commit()
-            elif raw_id.startswith("former-cag-"):
-                fcid_str = raw_id.replace("former-cag-", "")
+            elif raw_id_str.startswith("former-cag-"):
+                fcid_str = raw_id_str.replace("former-cag-", "")
                 if fcid_str.isdigit():
                     db.execute(text("UPDATE cag_revamp.former_cag SET status = 0, modified = NOW() WHERE id = :id;"), {"id": int(fcid_str)})
                     db.commit()
-            elif raw_id.startswith("org-chart-"):
-                ocid_str = raw_id.replace("org-chart-", "")
+            elif raw_id_str.startswith("org-chart-"):
+                ocid_str = raw_id_str.replace("org-chart-", "")
                 if ocid_str.isdigit():
                     db.execute(text("UPDATE cag_revamp.organisation_chart SET status = 0, modified = NOW() WHERE id = :id;"), {"id": int(ocid_str)})
+                    db.commit()
+            elif raw_id_str.isdigit():
+                rec_id_num = int(raw_id_str)
+                all_recs = AboutAdminService.get_all_about_records(db=db, status='all', page=1, page_size=2000).get("items", [])
+                matched = next((r for r in all_recs if r.get("id") == rec_id_num or str(r.get("rawId")) == raw_id_str), None)
+                if matched:
+                    tbl = matched.get("table_name", "")
+                    real_raw = str(matched.get("rawId", ""))
+                    if real_raw.startswith("page-") or tbl == "cag_revamp.pages":
+                        p_id = int(real_raw.replace("page-", "")) if real_raw.startswith("page-") else rec_id_num
+                        db.execute(text("UPDATE cag_revamp.pages SET status = 0, modified_at = NOW() WHERE id = :id;"), {"id": p_id})
+                        db.commit()
+                    elif real_raw.startswith("former-cag-") or tbl == "cag_revamp.former_cag":
+                        fc_id = int(real_raw.replace("former-cag-", "")) if real_raw.startswith("former-cag-") else rec_id_num
+                        db.execute(text("UPDATE cag_revamp.former_cag SET status = 0, modified = NOW() WHERE id = :id;"), {"id": fc_id})
+                        db.commit()
+                    elif real_raw.startswith("org-chart-") or tbl == "cag_revamp.organisation_chart":
+                        oc_id = int(real_raw.replace("org-chart-", "")) if real_raw.startswith("org-chart-") else rec_id_num
+                        db.execute(text("UPDATE cag_revamp.organisation_chart SET status = 0, modified = NOW() WHERE id = :id;"), {"id": oc_id})
+                        db.commit()
+                else:
+                    # Fallback update directly across all 3 tables with this ID
+                    db.execute(text("UPDATE cag_revamp.pages SET status = 0, modified_at = NOW() WHERE id = :id;"), {"id": rec_id_num})
+                    db.execute(text("UPDATE cag_revamp.former_cag SET status = 0, modified = NOW() WHERE id = :id;"), {"id": rec_id_num})
+                    db.execute(text("UPDATE cag_revamp.organisation_chart SET status = 0, modified = NOW() WHERE id = :id;"), {"id": rec_id_num})
                     db.commit()
             return True
         except Exception as e:

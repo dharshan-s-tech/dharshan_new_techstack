@@ -186,28 +186,67 @@ export default function FigmaAdminSidebar() {
       name: 'Global Relations',
       children: [
         {
-          type: 'leaf',
+          type: 'submenu',
           id: 'gr-intl-bodies',
           name: 'International Bodies',
-          path: '/admin/global?tab=international'
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-intosai',
+              name: 'Association with INTOSAI',
+              path: '/admin/global-relations?slug=page-involvement-with-intosai'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-asosai',
+              name: 'Association with ASOSAI',
+              path: '/admin/global-relations?slug=page-involvement-with-asosai'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-multilateral',
+              name: 'Multilateral Engagement',
+              path: '/admin/global-relations?slug=page-global-audit-leadership-forum-and-other-multilateral-bodies'
+            }
+          ]
         },
         {
-          type: 'leaf',
+          type: 'submenu',
           id: 'gr-bilateral',
           name: 'Bilateral Relations',
-          path: '/admin/global?tab=bilateral'
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-bilateral-sai',
+              name: 'Bilateral Relations of SAI India',
+              path: '/admin/global-relations?slug=page-bilateral-relations-of-sai-india'
+            }
+          ]
         },
         {
-          type: 'leaf',
+          type: 'submenu',
           id: 'gr-audit-engagements',
           name: 'Audit Engagements',
-          path: '/admin/global?tab=engagements'
-        },
-        {
-          type: 'leaf',
-          id: 'gr-relations-wing',
-          name: 'Relations Wing',
-          path: '/admin/global?tab=wing'
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-un-panel',
+              name: 'UN Panel of External Auditors',
+              path: '/admin/global-relations?slug=page-un-panel-of-external-auditors'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-present-audits',
+              name: 'Present International Audits',
+              path: '/admin/global-relations?slug=page-present-international-audits'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-past-audits',
+              name: 'Past International Audits',
+              path: '/admin/global-relations?slug=page-past-international-audits'
+            }
+          ]
         }
       ]
     },
@@ -250,7 +289,10 @@ export default function FigmaAdminSidebar() {
     'state-level-offices': false,
     'central-audit-offices': false,
     'training-institutes': false,
-    'global-relations': false
+    'global-relations': false,
+    'gr-intl-bodies': true,
+    'gr-bilateral': true,
+    'gr-audit-engagements': true
   });
 
   // Auto-expand submenus based on active route
@@ -274,8 +316,11 @@ export default function FigmaAdminSidebar() {
       } else if (['rti', 'iced', 'icisa', 'naaa', 'ical'].includes(type || '')) {
         newExpanded['training-institutes'] = true;
       }
-    } else if (pathname === '/admin/global') {
+    } else if (pathname === '/admin/global' || pathname === '/admin/global-relations') {
       newExpanded['global-relations'] = true;
+      newExpanded['gr-intl-bodies'] = true;
+      newExpanded['gr-bilateral'] = true;
+      newExpanded['gr-audit-engagements'] = true;
     }
 
     setExpanded(newExpanded);
@@ -315,7 +360,7 @@ export default function FigmaAdminSidebar() {
     const isActive = checkIsActive(leaf.path);
 
     // Precise font colors based on depth
-    const inactiveColor = depth >= 2 ? '#D9BFC9' : '#E2CCD5'; // Soft rose-tinted white for nested leaf items
+    const inactiveColor = depth >= 2 ? '#E2CCD5' : '#E2CCD5'; // Soft rose-tinted white for nested leaf items
     const fontSize = depth >= 2 ? '13px' : '13.5px';
 
     return (
@@ -325,8 +370,8 @@ export default function FigmaAdminSidebar() {
           target={leaf.isExternal ? '_blank' : '_self'}
           className={`flex items-center justify-between w-full transition-all duration-150 text-left ${
             isActive
-              ? 'bg-white/20 text-white font-semibold shadow-xs rounded-[8px] px-3.5 py-2'
-              : 'px-3.5 py-1.5 hover:text-white hover:bg-white/10 rounded-[6px]'
+              ? 'bg-white/20 border border-white text-white font-semibold shadow-xs rounded-[10px] px-3.5 py-1.5'
+              : 'px-3.5 py-1.5 hover:text-white hover:bg-white/10 rounded-[8px] border border-transparent'
           }`}
           style={{
             fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",

@@ -126,6 +126,7 @@ async def list_or_get_crud(
             query=search if (not searchCol or searchCol in ("title", "title_en", "overview", "desc")) else "",
             sector=search if searchCol == "sector" else "",
             sort=eff_sort,
+            status=status,
         )
         formatted = []
         for item in result.get("items", []):
@@ -141,7 +142,8 @@ async def list_or_get_crud(
                 "image": item.get("image"),
                 "desc": item.get("overview") or item.get("desc"),
                 "pdf_url": item.get("pdf_url"),
-                "is_active": True,
+                "is_active": item.get("is_active", True),
+                "status": item.get("status", "Active"),
             })
         return {
             "data": formatted,
@@ -159,6 +161,7 @@ async def list_or_get_crud(
             page_size=limit,
             query=search or "",
             sort=eff_sort,
+            status=status,
         )
         return {
             "data": result.get("items", []),
@@ -176,6 +179,7 @@ async def list_or_get_crud(
             page_size=limit,
             query=search or "",
             sort=eff_sort,
+            status=status,
         )
         return {
             "data": result.get("items", []),
@@ -244,6 +248,11 @@ async def list_or_get_crud(
             where_clauses.append("(username ILIKE :q OR email ILIKE :q OR full_name ILIKE :q OR name ILIKE :q OR designation ILIKE :q)")
             params["q"] = f"%{search}%"
         
+        if status == "active":
+            where_clauses.append("(status = 1 OR status IS NULL)")
+        elif status == "inactive":
+            where_clauses.append("status = 0")
+        
         where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
         
         count_query = text(f"SELECT COUNT(*) FROM cag_revamp.users {where_sql}")
@@ -269,6 +278,7 @@ async def list_or_get_crud(
                 "department": r.posted_office or "Audit Wing",
                 "role": "super_admin" if r.id == 1 else "admin",
                 "is_active": (r.status == 1 or r.status is None),
+                "status": "Active" if (r.status == 1 or r.status is None) else "Inactive",
                 "created_at": str(r.created_at).split(" ")[0] if r.created_at else "",
                 "modified_at": str(r.modified_at) if r.modified_at else ""
             })
@@ -338,6 +348,18 @@ async def create_crud(
         from app.services.about_service import AboutAdminService
         saved = AboutAdminService.save_about_record(data, db=db)
         record_id = str(saved.get("rawId") or saved.get("id") or uuid.uuid4())
+    elif table in ("news", "cag_news"):
+        from app.api.v1.news import create_news
+        res = await create_news(data, db=db)
+        record_id = str(res.get("rawId") or res.get("id"))
+    elif table in ("tenders", "tender"):
+        from app.api.v1.tenders_circulars import create_tender
+        res = await create_tender(data, db=db)
+        record_id = str(res.get("rawId") or res.get("id"))
+    elif table in ("circulars", "circular", "notifications"):
+        from app.api.v1.tenders_circulars import create_circular
+        res = await create_circular(data, db=db)
+        record_id = str(res.get("rawId") or res.get("id"))
     else:
         record_id = str(uuid.uuid4())
         data["id"] = record_id
@@ -389,6 +411,15 @@ async def update_crud(
     elif table in ("about", "about_us", "about_records"):
         from app.services.about_service import AboutAdminService
         AboutAdminService.save_about_record({**data, "rawId": id}, db=db)
+    elif table in ("news", "cag_news"):
+        from app.api.v1.news import update_news
+        await update_news(news_id=id, payload=data, db=db)
+    elif table in ("tenders", "tender"):
+        from app.api.v1.tenders_circulars import update_tender
+        await update_tender(tender_id=id, payload=data, db=db)
+    elif table in ("circulars", "circular", "notifications"):
+        from app.api.v1.tenders_circulars import update_circular
+        await update_circular(circular_id=id, payload=data, db=db)
     else:
         items = MOCK_MODULE_STORE.get(table, [])
         found_idx = -1
@@ -441,6 +472,15 @@ async def delete_crud(
     elif table in ("about", "about_us", "about_records"):
         from app.services.about_service import AboutAdminService
         AboutAdminService.delete_about_record(str(id), db=db)
+    elif table in ("news", "cag_news"):
+        from app.api.v1.news import delete_news
+        await delete_news(news_id=id, db=db)
+    elif table in ("tenders", "tender"):
+        from app.api.v1.tenders_circulars import delete_tender
+        await delete_tender(tender_id=id, db=db)
+    elif table in ("circulars", "circular", "notifications"):
+        from app.api.v1.tenders_circulars import delete_circular
+        await delete_circular(circular_id=id, db=db)
     elif table in ("subscribers", "newsletter_subscribers"):
         from app.services.subscribers_service import SubscribersService
         if str(id).isdigit():
@@ -472,9 +512,25 @@ async def list_by_path(
     page: int = Query(1),
     limit: int = Query(50),
     search: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    subtopic: Optional[str] = Query(None),
+    language: Optional[str] = Query(None),
+    sort: Optional[str] = Query("newest"),
     db: Session = Depends(get_db)
 ):
-    return await list_or_get_crud(table=table_name, page=page, limit=limit, search=search, db=db)
+    return await list_or_get_crud(
+        table=table_name,
+        page=page,
+        limit=limit,
+        search=search,
+        status=status,
+        category=category,
+        subtopic=subtopic,
+        language=language,
+        sort=sort,
+        db=db
+    )
 
 
 @router.get("/{table_name}/{record_id}")

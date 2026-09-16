@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     SECURITY_SALT: str = "c3fd7183d431b3f8967db69db1d089200427fa226185a9af60e16a1d19312368"
     ENCRYPTION_KEY: str = "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA"
     DATABASE_URL: str | None = None
+    CLOUDFRONT_BASE_URL: str = "https://d7i5wg8xwe4hf.cloudfront.net"
 
     @property
     def sqlalchemy_database_url(self) -> str:

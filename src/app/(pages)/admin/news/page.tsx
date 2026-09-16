@@ -42,7 +42,8 @@ export default function AdminNews() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/news`);
+      const statusParam = statusFilter !== 'All' ? `status=${statusFilter.toLowerCase()}` : 'status=all';
+      const res = await fetch(`${API_URL}/api/news?${statusParam}`);
       if (!res.ok) throw new Error('API offline');
       const data = await res.json();
 
@@ -225,7 +226,7 @@ export default function AdminNews() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-2">
           <div>
             <label className="block text-zinc-555 font-bold mb-1">Search Headline:</label>
             <input
@@ -235,6 +236,19 @@ export default function AdminNews() {
               placeholder="Enter Keywords"
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>
@@ -326,6 +340,7 @@ export default function AdminNews() {
                 <th className="px-4 py-3.5 border-r border-white/20 w-32">Type</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-28">Tag</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-32">Publish Date</th>
+                <th className="px-4 py-3.5 border-r border-white/20 w-24 text-center">Status</th>
                 <th className="px-4 py-3.5 text-center min-w-[180px] w-48">Actions</th>
               </tr>
             </thead>
@@ -353,6 +368,15 @@ export default function AdminNews() {
                     <td className="px-4 py-3 border-r border-[#e2e5e7] capitalize font-medium">{item.news_type}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] text-zinc-600">{item.tag}</td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-mono text-zinc-500">{item.publish_date}</td>
+                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                        item.is_active
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
+                      }`}>
+                        {item.is_active ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
 
                     <td className="px-4 py-3 text-center whitespace-nowrap space-x-1.5">
                       {/* Edit */}

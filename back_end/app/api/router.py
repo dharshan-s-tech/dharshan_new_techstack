@@ -4,6 +4,7 @@ from app.api.v1.admin import auth as admin_auth
 from app.api.v1.admin import crud as admin_crud
 from app.api.v1.admin import options as admin_options
 from app.api.v1.admin import upload as admin_upload
+from app.api.v1.admin import global_relations as admin_global_relations
 
 api_router = APIRouter()
 
@@ -38,3 +39,5 @@ api_router.include_router(tenders_circulars.admin_tenders_router, prefix="/admin
 api_router.include_router(tenders_circulars.admin_circulars_router, prefix="/admin/circulars", tags=["admin-circulars"])
 api_router.include_router(admin_options.router, prefix="/admin/options", tags=["admin-options"])
 api_router.include_router(admin_upload.router, prefix="/admin/upload", tags=["admin-upload"])
+api_router.include_router(admin_global_relations.router, prefix="/admin/global-relations", tags=["admin-global-relations"])
+

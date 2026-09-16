@@ -56,6 +56,7 @@ function AdminAccountsManagementHubContent() {
 
   // Active subtopic tab & filters
   const [activeSubtopic, setActiveSubtopic] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
   const [levelFilter, setLevelFilter] = useState<string>('All');
   const [reportTypeFilter, setReportTypeFilter] = useState<string>('All');
   const [yearFilter, setYearFilter] = useState<string>('All');
@@ -141,6 +142,8 @@ function AdminAccountsManagementHubContent() {
       params.set('pageSize', pageSize.toString());
       
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (yearFilter !== 'All') params.set('year', yearFilter);
       if (sortFilter) params.set('sort', sortFilter);
 
@@ -785,8 +788,10 @@ function AdminAccountsManagementHubContent() {
                       </a>
                     </td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                        item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                        item.is_active
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
                       }`}>
                         {item.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>

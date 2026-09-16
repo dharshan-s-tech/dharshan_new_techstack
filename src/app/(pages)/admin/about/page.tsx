@@ -345,7 +345,7 @@ function AdminAboutRegistryContent() {
       window.dispatchEvent(new Event('aboutDataChange'));
     }
     if (viewingRecord?.rawId === rawId) setViewingRecord(null);
-    loadData();
+    await loadData();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -538,8 +538,8 @@ function AdminAboutRegistryContent() {
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
             >
               <option value="All">All Status</option>
-              <option value="Active">Active (Published)</option>
-              <option value="Inactive">Inactive (Draft)</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
             </select>
           </div>
 
@@ -736,9 +736,9 @@ function AdminAboutRegistryContent() {
 
                     {/* Status */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800 border border-rose-200'
                         }`}>
-                        {item.is_active ? 'ACTIVE' : 'DRAFT'}
+                        {item.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </td>
 
@@ -868,9 +868,9 @@ function AdminAboutRegistryContent() {
                 <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-bold text-[11px] rounded-xs">
                   Lang: {viewingRecord.language}
                 </span>
-                <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-zinc-200 text-zinc-700'
+                <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'
                   }`}>
-                  {viewingRecord.is_active ? '● ACTIVE' : '○ DRAFT'}
+                  {viewingRecord.is_active ? '● ACTIVE' : '○ INACTIVE'}
                 </span>
               </div>
 
@@ -1189,8 +1189,8 @@ function AdminAboutRegistryContent() {
                     onChange={(e) => setFormIsActive(e.target.value === 'Active')}
                     className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   >
-                    <option value="Active">Active (Published on Live Portal)</option>
-                    <option value="Inactive">Inactive (Draft / Archived)</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
                   </select>
                 </div>
               </div>

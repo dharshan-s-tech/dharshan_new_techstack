@@ -21,6 +21,7 @@ async def get_reports(
     state_id: Optional[int] = Query(None, description="State ID"),
     language: str = Query("en", description="Language code"),
     sort: str = Query("newest", description="Sort order (newest, oldest, title_asc, title_desc)"),
+    status: Optional[str] = Query(None, description="Publish Status (all, active, inactive)"),
 ):
     """Retrieve paginated audit reports matching filters."""
     eff_page_size = pageSize or page_size or 9
@@ -37,6 +38,7 @@ async def get_reports(
         state_id=state_id,
         language=language,
         sort=sort,
+        status=status,
     )
 
 

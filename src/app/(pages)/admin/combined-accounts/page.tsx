@@ -33,6 +33,7 @@ function AdminCombinedAccountsContent() {
 
   // Filters & Sorting
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [yearFilter, setYearFilter] = useState('All');
   const [sortFilter, setSortFilter] = useState('year_desc');
@@ -123,6 +124,8 @@ function AdminCombinedAccountsContent() {
       params.set('page', page.toString());
       params.set('pageSize', pageSize.toString());
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (categoryFilter !== 'All') params.set('category', categoryFilter);
       if (yearFilter !== 'All') params.set('year', yearFilter);
       if (sortFilter) params.set('sort', sortFilter);
@@ -225,7 +228,7 @@ function AdminCombinedAccountsContent() {
     const handleUpdate = () => loadData();
     window.addEventListener('combinedAccountsChange', handleUpdate);
     return () => window.removeEventListener('combinedAccountsChange', handleUpdate);
-  }, [page, pageSize, appliedSearch, categoryFilter, yearFilter, sortFilter]);
+  }, [page, pageSize, appliedSearch, statusFilter, categoryFilter, yearFilter, sortFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -235,6 +238,7 @@ function AdminCombinedAccountsContent() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
     setCategoryFilter('All');
     setYearFilter('All');
     setSortFilter('year_desc');
@@ -364,21 +368,19 @@ function AdminCombinedAccountsContent() {
       }
     } catch (err) {
       console.warn('Backend error saving combined account, saving in dataManager:', err);
+      const localRecord: LocalCombinedItem = {
+        id: parseInt(finalId) || Date.now(),
+        title_en: titleEn,
+        title_hi: titleHi,
+        category: category,
+        account_year: accountYear,
+        volume: volume,
+        size: size,
+        file_url: fileUrl,
+        is_active: isActive
+      };
+      dataManager.saveCombinedAccount(localRecord);
     }
-
-    // Also persist in local dataManager
-    const localRecord: LocalCombinedItem = {
-      id: parseInt(finalId) || Date.now(),
-      title_en: titleEn,
-      title_hi: titleHi,
-      category: category,
-      account_year: accountYear,
-      volume: volume,
-      size: size,
-      file_url: fileUrl,
-      is_active: isActive
-    };
-    dataManager.saveCombinedAccount(localRecord);
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('combinedAccountsChange'));

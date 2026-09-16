@@ -103,7 +103,7 @@ export default function UserManagementPage() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/admin/crud?table=users&limit=50&search=${encodeURIComponent(searchTerm)}`, { cache: 'no-store' });
+      const res = await fetch(`/api/v1/admin/crud?table=users&limit=50&search=${encodeURIComponent(searchTerm)}&status=${statusFilter.toLowerCase()}`, { cache: 'no-store' });
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.data) && json.data.length > 0) {
@@ -126,7 +126,7 @@ export default function UserManagementPage() {
 
   useEffect(() => {
     loadUsers();
-  }, [searchTerm]);
+  }, [searchTerm, statusFilter]);
 
   const saveUsersToStorage = (updatedUsers: AdminUserItem[]) => {
     setUsers(updatedUsers);

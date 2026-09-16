@@ -41,14 +41,24 @@ def _map_news_row(r: Any) -> Dict[str, Any]:
 async def get_news(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
+    status: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
     """Retrieve all news items from PostgreSQL database."""
     if engine.dialect.name == "postgresql":
         try:
-            q = text("""
+            if status == "active":
+                where_sql = "WHERE status = 1"
+            elif status == "inactive":
+                where_sql = "WHERE status = 0"
+            elif status == "all":
+                where_sql = ""
+            else:
+                where_sql = "WHERE status = 1"
+            q = text(f"""
                 SELECT id, title, content, status, publish_date, created_at, modified_at
                 FROM cag_revamp.news
+                {where_sql}
                 ORDER BY COALESCE(publish_date, created_at) DESC
                 LIMIT :limit OFFSET :offset;
             """)

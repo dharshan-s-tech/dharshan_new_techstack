@@ -51,7 +51,14 @@ async def get_tenders(
     db: Session = Depends(get_db)
 ):
     try:
-        where_clauses = ["status = 1" if (status != "all") else "1=1"]
+        if status == "active":
+            where_clauses = ["status = 1"]
+        elif status == "inactive":
+            where_clauses = ["status = 0"]
+        elif status == "all":
+            where_clauses = ["1=1"]
+        else:
+            where_clauses = ["status = 1"]
         params = {}
         if search and isinstance(search, str) and search.strip():
             where_clauses.append("(tender_title ILIKE :search OR tender_refrence_no ILIKE :search)")
@@ -92,7 +99,7 @@ async def get_tenders(
                     "tender_file_url": file_url,
                     "docUrl": file_url,
                     "file_name": up,
-                    "status": "Active" if r["status"] == 1 else "Archived",
+                    "status": "Active" if r["status"] == 1 else "Inactive",
                     "is_active": r["status"] == 1,
                     "created_at": str(r["created"] or ""),
                     "modified_at": str(r["modified"] or "")
@@ -214,7 +221,14 @@ async def get_circulars(
     db: Session = Depends(get_db)
 ):
     try:
-        where_clauses = ["status = 1" if (status != "all") else "1=1"]
+        if status == "active":
+            where_clauses = ["status = 1"]
+        elif status == "inactive":
+            where_clauses = ["status = 0"]
+        elif status == "all":
+            where_clauses = ["1=1"]
+        else:
+            where_clauses = ["status = 1"]
         params = {}
         if search and isinstance(search, str) and search.strip():
             where_clauses.append("(title ILIKE :search OR circular_reference_no ILIKE :search)")
@@ -255,6 +269,7 @@ async def get_circulars(
                     "file_url": file_url,
                     "docUrl": file_url,
                     "file_name": up,
+                    "status": "Active" if r["status"] == 1 else "Inactive",
                     "is_active": r["status"] == 1,
                     "created_at": str(r["created_at"] or ""),
                     "modified_at": str(r["updated_at"] or "")

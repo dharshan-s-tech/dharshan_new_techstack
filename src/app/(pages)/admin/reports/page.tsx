@@ -54,6 +54,7 @@ function AdminReportsContent() {
   
   // Filter Fields
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [sectorFilter, setSectorFilter] = useState('All');
   const [levelFilter, setLevelFilter] = useState('All');
   const [reportTypeFilter, setReportTypeFilter] = useState('All');
@@ -112,6 +113,7 @@ function AdminReportsContent() {
   const [uploadedPdfSize, setUploadedPdfSize] = useState('');
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const [isActive, setIsActive] = useState(true);
 
   // Load Filters & Lookup dictionaries
   useEffect(() => {
@@ -148,6 +150,8 @@ function AdminReportsContent() {
       params.set('page', page.toString());
       params.set('pageSize', pageSize.toString());
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (sectorFilter !== 'All') params.set('sector', sectorFilter);
       if (levelFilter !== 'All') params.set('level', levelFilter);
       if (reportTypeFilter !== 'All') params.set('type', reportTypeFilter);
@@ -168,7 +172,7 @@ function AdminReportsContent() {
           level: r.level || 'Union',
           year_of_report: r.year || '2026',
           tabled_date: r.tabled_date,
-          is_active: true,
+          is_active: r.is_active !== undefined ? Boolean(r.is_active) : (r.status === 1 || r.status === 'Active' || r.status === true),
           image: r.image,
           desc: r.overview || r.desc,
           pdf_url: r.pdf_url,
@@ -257,7 +261,7 @@ function AdminReportsContent() {
 
   useEffect(() => {
     loadData();
-  }, [page, pageSize, appliedSearch, sectorFilter, levelFilter, reportTypeFilter, yearFilter, stateFilter, sortFilter]);
+  }, [page, pageSize, appliedSearch, statusFilter, sectorFilter, levelFilter, reportTypeFilter, yearFilter, stateFilter, sortFilter]);
 
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -326,6 +330,7 @@ function AdminReportsContent() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
     setSectorFilter('All');
     setLevelFilter('All');
     setReportTypeFilter('All');
@@ -379,6 +384,7 @@ function AdminReportsContent() {
     setUploadedPdfName('');
     setUploadedPdfSize('');
     setVideoUrl('');
+    setIsActive(true);
     setIsFormOpen(true);
   };
 
@@ -397,6 +403,7 @@ function AdminReportsContent() {
     setUploadedPdfName(item.pdf_url ? item.pdf_url.split('/').pop() || '' : '');
     setUploadedPdfSize('');
     setVideoUrl(item.video_url || '');
+    setIsActive(item.is_active ?? true);
     setIsFormOpen(true);
   };
 
@@ -447,6 +454,8 @@ function AdminReportsContent() {
         body: JSON.stringify({
           ...record,
           overview: overviewEn,
+          status: isActive ? 1 : 0,
+          is_active: isActive,
           state_id: selectedStateId ? parseInt(selectedStateId) : undefined
         })
       });
@@ -458,13 +467,12 @@ function AdminReportsContent() {
       }
     } catch (err) {
       console.warn('Could not post to backend, saving in local dataManager:', err);
+      dataManager.saveReport({
+        ...record,
+        id: finalId
+      });
     }
 
-    // 2. Save in dataManager for instant UI update
-    dataManager.saveReport({
-      ...record,
-      id: finalId
-    });
     setIsFormOpen(false);
     loadData();
   };
@@ -476,8 +484,8 @@ function AdminReportsContent() {
       {/* 1. TOP FILTERS PANEL */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
         
-        {/* Row 1: Search, Sector, Level, Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Row 1: Search, Status, Sector, Level, Type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
             <input
@@ -488,6 +496,22 @@ function AdminReportsContent() {
               placeholder="Search reports registry..."
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>
@@ -667,6 +691,7 @@ function AdminReportsContent() {
                 <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Type</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Year</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Level</th>
+                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
                 <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
               </tr>
             </thead>
@@ -716,6 +741,15 @@ function AdminReportsContent() {
                     </td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-600 font-semibold">{report.year_of_report}</td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-500 font-medium">{report.level || 'Union'}</td>
+                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                        report.is_active
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
+                      }`}>
+                        {report.is_active ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
                     
                     <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
                       {/* View */}
@@ -1074,7 +1108,18 @@ function AdminReportsContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Publish Status</label>
+                  <select
+                    value={isActive ? 'Active' : 'Inactive'}
+                    onChange={(e) => setIsActive(e.target.value === 'Active')}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
                 <div>
                   <label className="block font-bold text-zinc-700 mb-1">Report Year *</label>
                   <input

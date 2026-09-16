@@ -29,7 +29,8 @@ export default function AdminTenders() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/tenders`);
+      const statusParam = statusFilter !== 'All' ? `status=${statusFilter.toLowerCase()}` : 'status=all';
+      const res = await fetch(`${API_URL}/api/tenders?${statusParam}`);
       if (!res.ok) throw new Error('API offline');
       const data = await res.json();
       
