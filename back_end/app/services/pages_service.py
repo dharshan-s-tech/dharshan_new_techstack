@@ -179,7 +179,13 @@ class PagesService:
                         OR p.slug LIKE 'page-' || :raw_key || '-%'
                         OR CAST(p.id AS VARCHAR) = :target_id
                     )
-                    ORDER BY p.id DESC
+                    ORDER BY 
+                        (CASE 
+                            WHEN CAST(p.id AS VARCHAR) = :target_id THEN 1
+                            WHEN p.slug = :raw_key OR p.slug = 'page-' || :raw_key THEN 2
+                            ELSE 3 
+                         END), 
+                        p.id ASC
                     LIMIT 1;
                 """)
                 row = db.execute(query, {

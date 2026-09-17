@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager } from '@/lib/dataManager';
 
@@ -41,87 +42,131 @@ const LOCAL_DICTS = {
   }
 };
 
-function parseVisionMissionData(pageData: any, lang: 'English' | 'हिन्दी') {
-  const fallback = LOCAL_DICTS[lang] || LOCAL_DICTS.English;
-  if (!pageData) return fallback;
+function VisionMissionContent() {
+  const searchParams = useSearchParams();
+  const isAdminEdit = searchParams.get('admin_edit') === 'true';
 
-  let text = { ...fallback };
-  const content = pageData.content || '';
-  const excerpt = pageData.excerpt || '';
-
-  if (content && typeof content === 'string') {
-    if (content.trim().startsWith('{')) {
-      try {
-        const parsed = JSON.parse(content);
-        return { ...fallback, ...parsed };
-      } catch (e) { }
-    }
-
-    // Parse HTML format stored in cag_revamp.pages
-    const visionMatch = content.match(/<h4>\s*VISION\s*<\/h4>[\s\S]*?<p><em>(.*?)<\/em><\/p>[\s\S]*?<p[^>]*>(.*?)<\/p>/i);
-    const missionMatch = content.match(/<h4>\s*MISSION\s*<\/h4>[\s\S]*?<p><em>(.*?)<\/em><\/p>[\s\S]*?<p[^>]*>(.*?)<\/p>/i);
-    const instMatch = content.match(/Institutional Values\s*<\/strong>\s*:\s*(.*?)(?:<\/p>|<br)/i);
-    const peopleMatch = content.match(/People Values\s*<\/strong>\s*:\s*(.*?)(?:<\/p>|<br)/i);
-
-    if (visionMatch) {
-      if (visionMatch[1]) text.visionSub = visionMatch[1].trim();
-      if (visionMatch[2]) text.visionDesc = visionMatch[2].replace(/<[^>]+>/g, '').trim();
-    }
-    if (missionMatch) {
-      if (missionMatch[1]) text.missionSub = missionMatch[1].trim();
-      if (missionMatch[2]) text.missionDesc = missionMatch[2].replace(/<[^>]+>/g, '').trim();
-    }
-    if (instMatch && instMatch[1]) {
-      text.valuesDescInstText = instMatch[1].replace(/<[^>]+>/g, '').trim();
-    }
-    if (peopleMatch && peopleMatch[1]) {
-      text.valuesDescPeopleText = peopleMatch[1].replace(/<[^>]+>/g, '').trim();
-    }
-  }
-
-  // If excerpt is provided from admin edit, apply it as overview/vision description
-  if (excerpt && typeof excerpt === 'string' && excerpt.trim()) {
-    text.visionDesc = excerpt.trim();
-  }
-
-  return text;
-}
-
-export default function VisionMissionPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
-  const [pageData, setPageData] = useState<any>(null);
+  const [dataEn, setDataEn] = useState(LOCAL_DICTS.English);
+  const [dataHi, setDataHi] = useState(LOCAL_DICTS['हिन्दी']);
+  const [pageTitleEn, setPageTitleEn] = useState(LOCAL_DICTS.English.pageTitle);
+  const [pageTitleHi, setPageTitleHi] = useState(LOCAL_DICTS['हिन्दी'].pageTitle);
+
+  // Synchronized Ref for live message handling
+  const stateRef = React.useRef({ pageTitleEn, pageTitleHi, dataEn, dataHi });
+  useEffect(() => {
+    stateRef.current = { pageTitleEn, pageTitleHi, dataEn, dataHi };
+  }, [pageTitleEn, pageTitleHi, dataEn, dataHi]);
 
   useEffect(() => {
     let isMounted = true;
     const currentLang = dataManager.getLanguage();
     setLang(currentLang);
 
-    dataManager.fetchPageData('page-our-vision-mission-values', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
-      if (isMounted && res) setPageData(res);
-    });
+    const fetchAll = () => {
+      // Fetch English Data
+      dataManager.fetchPageData('page-our-vision-mission-values', 'en').then((res) => {
+        if (isMounted && res) {
+          if (res.title) setPageTitleEn(res.title);
+          if (res.content && typeof res.content === 'string') {
+            if (res.content.trim().startsWith('{')) {
+              try {
+                const parsed = JSON.parse(res.content);
+                setDataEn(prev => ({ ...prev, ...parsed }));
+              } catch (e) { }
+            }
+          }
+        }
+      });
+
+      // Fetch Hindi Data
+      dataManager.fetchPageData('page-our-vision-mission-values', 'hi').then((res) => {
+        if (isMounted && res) {
+          if (res.title) setPageTitleHi(res.title);
+          if (res.content && typeof res.content === 'string') {
+            if (res.content.trim().startsWith('{')) {
+              try {
+                const parsed = JSON.parse(res.content);
+                setDataHi(prev => ({ ...prev, ...parsed }));
+              } catch (e) { }
+            }
+          }
+        }
+      });
+    };
+
+    fetchAll();
 
     const handleLangChange = () => {
       const newLang = dataManager.getLanguage();
       setLang(newLang);
-      dataManager.fetchPageData('page-our-vision-mission-values', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
-        if (isMounted && res) setPageData(res);
-      });
     };
 
     window.addEventListener('languageChange', handleLangChange);
+    window.addEventListener('aboutDataChange', fetchAll);
+    window.addEventListener('pageDataChange', fetchAll);
+
+    // Cross-frame messaging for Admin Live Editor
+    const handleMessage = (e: MessageEvent) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === 'SET_LANG') {
+        const targetLang = e.data.lang === 'HI' ? 'हिन्दी' : 'English';
+        dataManager.setLanguage(targetLang);
+        setLang(targetLang);
+      } else if (e.data.type === 'REQUEST_DATA') {
+        const cur = stateRef.current;
+        const fullPayload = {
+          title_en: cur.pageTitleEn,
+          title_hi: cur.pageTitleHi,
+          desc: cur.dataEn.visionDesc,
+          content_val: JSON.stringify(cur.dataEn),
+          content_hi_val: JSON.stringify(cur.dataHi)
+        };
+        window.parent.postMessage({
+          type: 'DATA_REPLY',
+          payload: fullPayload
+        }, '*');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
     return () => {
       isMounted = false;
       window.removeEventListener('languageChange', handleLangChange);
+      window.removeEventListener('aboutDataChange', fetchAll);
+      window.removeEventListener('pageDataChange', fetchAll);
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
-  const text = parseVisionMissionData(pageData, lang);
-  const pageTitle = pageData?.title || text.pageTitle;
+  const current = isHindi ? dataHi : dataEn;
+  const pageTitle = isHindi ? pageTitleHi : pageTitleEn;
+
+  const updateCurrent = (fields: Partial<typeof LOCAL_DICTS.English>) => {
+    if (isHindi) {
+      setDataHi(prev => ({ ...prev, ...fields }));
+    } else {
+      setDataEn(prev => ({ ...prev, ...fields }));
+    }
+  };
+
+  const editFieldClass = isAdminEdit
+    ? 'hover:ring-2 hover:ring-[#751639] hover:ring-dashed focus:ring-2 focus:ring-[#751639] focus:outline-none transition-all rounded p-1 cursor-text'
+    : '';
 
   return (
     <AboutLayout title={pageTitle}>
-      <h1 className="cag-heading-title">
+      <h1 
+        className={`cag-heading-title ${editFieldClass}`}
+        contentEditable={isAdminEdit}
+        suppressContentEditableWarning
+        onBlur={(e) => {
+          const val = e.currentTarget.textContent || '';
+          if (isHindi) setPageTitleHi(val);
+          else setPageTitleEn(val);
+        }}
+      >
         {pageTitle}
       </h1>
 
@@ -135,16 +180,31 @@ export default function VisionMissionPage() {
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="flex flex-col justify-center items-start gap-3 max-w-[557px] text-left">
-            <h2 className="text-[28px] leading-[48px] font-normal text-[#751639] font-['Noto_Sans',sans-serif] m-0">
-              {text.visionTitle}
+          <div className="flex flex-col justify-center items-start gap-3 max-w-[557px] text-left flex-1">
+            <h2 
+              className={`text-[28px] leading-[48px] font-normal text-[#751639] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+              contentEditable={isAdminEdit}
+              suppressContentEditableWarning
+              onBlur={(e) => updateCurrent({ visionTitle: e.currentTarget.textContent || '' })}
+            >
+              {current.visionTitle}
             </h2>
-            <div className="flex flex-col gap-[8px]">
-              <p className="text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0">
-                {text.visionSub}
+            <div className="flex flex-col gap-[8px] w-full">
+              <p 
+                className={`text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+                contentEditable={isAdminEdit}
+                suppressContentEditableWarning
+                onBlur={(e) => updateCurrent({ visionSub: e.currentTarget.textContent || '' })}
+              >
+                {current.visionSub}
               </p>
-              <p className="text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0">
-                {text.visionDesc}
+              <p 
+                className={`text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+                contentEditable={isAdminEdit}
+                suppressContentEditableWarning
+                onBlur={(e) => updateCurrent({ visionDesc: e.currentTarget.textContent || '' })}
+              >
+                {current.visionDesc}
               </p>
             </div>
           </div>
@@ -159,16 +219,31 @@ export default function VisionMissionPage() {
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="flex flex-col justify-center items-start gap-3 max-w-[557px] text-left">
-            <h2 className="text-[28px] leading-[48px] font-normal text-[#751639] font-['Noto_Sans',sans-serif] m-0">
-              {text.missionTitle}
+          <div className="flex flex-col justify-center items-start gap-3 max-w-[557px] text-left flex-1">
+            <h2 
+              className={`text-[28px] leading-[48px] font-normal text-[#751639] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+              contentEditable={isAdminEdit}
+              suppressContentEditableWarning
+              onBlur={(e) => updateCurrent({ missionTitle: e.currentTarget.textContent || '' })}
+            >
+              {current.missionTitle}
             </h2>
-            <div className="flex flex-col gap-[8px]">
-              <p className="text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0">
-                {text.missionSub}
+            <div className="flex flex-col gap-[8px] w-full">
+              <p 
+                className={`text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+                contentEditable={isAdminEdit}
+                suppressContentEditableWarning
+                onBlur={(e) => updateCurrent({ missionSub: e.currentTarget.textContent || '' })}
+              >
+                {current.missionSub}
               </p>
-              <p className="text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0">
-                {text.missionDesc}
+              <p 
+                className={`text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+                contentEditable={isAdminEdit}
+                suppressContentEditableWarning
+                onBlur={(e) => updateCurrent({ missionDesc: e.currentTarget.textContent || '' })}
+              >
+                {current.missionDesc}
               </p>
             </div>
           </div>
@@ -183,22 +258,46 @@ export default function VisionMissionPage() {
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="flex flex-col justify-center items-start gap-3 max-w-[557px] text-left">
-            <h2 className="text-[28px] leading-[48px] font-normal text-[#751639] font-['Noto_Sans',sans-serif] m-0">
-              {text.valuesTitle}
+          <div className="flex flex-col justify-center items-start gap-3 max-w-[557px] text-left flex-1">
+            <h2 
+              className={`text-[28px] leading-[48px] font-normal text-[#751639] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+              contentEditable={isAdminEdit}
+              suppressContentEditableWarning
+              onBlur={(e) => updateCurrent({ valuesTitle: e.currentTarget.textContent || '' })}
+            >
+              {current.valuesTitle}
             </h2>
-            <div className="flex flex-col gap-[8px]">
-              <p className="text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0">
-                {text.valuesSub}
+            <div className="flex flex-col gap-[8px] w-full">
+              <p 
+                className={`text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0 ${editFieldClass}`}
+                contentEditable={isAdminEdit}
+                suppressContentEditableWarning
+                onBlur={(e) => updateCurrent({ valuesSub: e.currentTarget.textContent || '' })}
+              >
+                {current.valuesSub}
               </p>
               <div className="text-[16px] leading-[30px] text-[#2E2E31] font-['Noto_Sans',sans-serif] m-0 space-y-1">
                 <p className="m-0">
-                  <strong>{text.valuesDescInst}</strong>
-                  {text.valuesDescInstText}
+                  <strong>{current.valuesDescInst}</strong>
+                  <span
+                    className={editFieldClass}
+                    contentEditable={isAdminEdit}
+                    suppressContentEditableWarning
+                    onBlur={(e) => updateCurrent({ valuesDescInstText: e.currentTarget.textContent || '' })}
+                  >
+                    {current.valuesDescInstText}
+                  </span>
                 </p>
                 <p className="m-0">
-                  <strong>{text.valuesDescPeople}</strong>
-                  {text.valuesDescPeopleText}
+                  <strong>{current.valuesDescPeople}</strong>
+                  <span
+                    className={editFieldClass}
+                    contentEditable={isAdminEdit}
+                    suppressContentEditableWarning
+                    onBlur={(e) => updateCurrent({ valuesDescPeopleText: e.currentTarget.textContent || '' })}
+                  >
+                    {current.valuesDescPeopleText}
+                  </span>
                 </p>
               </div>
             </div>
@@ -208,3 +307,12 @@ export default function VisionMissionPage() {
     </AboutLayout>
   );
 }
+
+export default function VisionMissionPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#751639]">Loading Vision & Mission...</div>}>
+      <VisionMissionContent />
+    </Suspense>
+  );
+}
+

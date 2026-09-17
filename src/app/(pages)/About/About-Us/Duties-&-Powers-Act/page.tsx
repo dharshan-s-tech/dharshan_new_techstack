@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager } from '@/lib/dataManager';
 
@@ -95,43 +96,109 @@ const TABLE_DATA = [
   }
 ];
 
-export default function DutiesPowersActPage() {
+function DutiesPowersActContent() {
+  const searchParams = useSearchParams();
+  const isAdminEdit = searchParams.get('admin_edit') === 'true';
+
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
-  const [pageData, setPageData] = useState<any>(null);
+  const isHindi = lang === 'हिन्दी';
+  const [pageTitleEn, setPageTitleEn] = useState("DPC Act - CAG's Duties Powers and Conditions of Service");
+  const [pageTitleHi, setPageTitleHi] = useState('डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें');
+  const [subTitleEn, setSubTitleEn] = useState("DPC ACT, 1971 The comptroller and auditor general's (Duties, Powers and Conditions of Service) Amendment ACT, 1971 Comptroller and Auditor General of India Contents");
+  const [subTitleHi, setSubTitleHi] = useState('डीपीसी अधिनियम, 1971 भारत के नियंत्रक और महालेखापरीक्षक (कर्तव्य, शक्तियां और सेवा की शर्तें) संशोधन अधिनियम, 1971 भारत के नियंत्रक और महालेखापरीक्षक विषय-सूची');
+  const [tableData, setTableData] = useState(TABLE_DATA);
+
+  // Synchronized Ref for live message handling
+  const stateRef = React.useRef({ pageTitleEn, pageTitleHi, subTitleEn, subTitleHi, tableData, lang });
+  useEffect(() => {
+    stateRef.current = { pageTitleEn, pageTitleHi, subTitleEn, subTitleHi, tableData, lang };
+  }, [pageTitleEn, pageTitleHi, subTitleEn, subTitleHi, tableData, lang]);
 
   useEffect(() => {
     let isMounted = true;
     const currentLang = dataManager.getLanguage();
     setLang(currentLang);
 
-    dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
-      if (isMounted && res) setPageData(res);
-    });
+    const fetchAll = () => {
+      dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', 'en').then((res) => {
+        if (isMounted && res) {
+          if (res.title) setPageTitleEn(res.title);
+          if (res.content && typeof res.content === 'string') {
+            const trimmed = res.content.trim();
+            if (trimmed.startsWith('[') || (trimmed.startsWith('{') && trimmed.includes('chapter'))) {
+              try {
+                const parsed = JSON.parse(trimmed);
+                const arr = Array.isArray(parsed) ? parsed : parsed.chapters;
+                if (Array.isArray(arr) && arr.length > 0) setTableData(arr);
+              } catch (e) { }
+            }
+          }
+        }
+      });
+
+      dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', 'hi').then((res) => {
+        if (isMounted && res) {
+          if (res.title) setPageTitleHi(res.title);
+        }
+      });
+    };
+
+    fetchAll();
 
     const handleLangChange = () => {
       const newLang = dataManager.getLanguage();
       setLang(newLang);
-      dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
-        if (isMounted && res) setPageData(res);
-      });
     };
 
     window.addEventListener('languageChange', handleLangChange);
+    window.addEventListener('aboutDataChange', fetchAll);
+    window.addEventListener('pageDataChange', fetchAll);
+
+    // Cross-frame messaging for Admin Live Editor
+    const handleMessage = (e: MessageEvent) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === 'SET_LANG') {
+        const targetLang = e.data.lang === 'HI' ? 'हिन्दी' : 'English';
+        dataManager.setLanguage(targetLang);
+        setLang(targetLang);
+      } else if (e.data.type === 'REQUEST_DATA') {
+        const cur = stateRef.current;
+        window.parent.postMessage({
+          type: 'DATA_REPLY',
+          payload: {
+            title_en: cur.pageTitleEn,
+            title_hi: cur.pageTitleHi,
+            desc: cur.lang === 'हिन्दी' ? cur.subTitleHi : cur.subTitleEn,
+            content_val: JSON.stringify(cur.tableData),
+            content_hi_val: JSON.stringify(cur.tableData)
+          }
+        }, '*');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
     return () => {
       isMounted = false;
       window.removeEventListener('languageChange', handleLangChange);
+      window.removeEventListener('aboutDataChange', fetchAll);
+      window.removeEventListener('pageDataChange', fetchAll);
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 
-  const isHindi = lang === 'हिन्दी';
-  const pageTitle = pageData?.title || (isHindi ? 'डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें' : "DPC Act - CAG's Duties Powers and Conditions of Service");
+  const pageTitle = isHindi ? pageTitleHi : pageTitleEn;
+  const subTitle = isHindi ? subTitleHi : subTitleEn;
+
+  const editFieldClass = isAdminEdit
+    ? 'hover:ring-2 hover:ring-[#751639] hover:ring-dashed focus:ring-2 focus:ring-[#751639] focus:outline-none transition-all rounded p-1 cursor-text'
+    : '';
 
   return (
     <AboutLayout title={isHindi ? 'कर्तव्य और शक्तियां अधिनियम' : 'Duties & Powers Act'}>
       <div className="flex flex-col items-start w-full max-w-[958px] gap-6 text-left">
         {/* Main Heading */}
         <h1
-          className="text-left"
+          className={`text-left ${editFieldClass}`}
           style={{
             fontFamily: 'Noto Sans, sans-serif',
             fontWeight: 700,
@@ -140,13 +207,20 @@ export default function DutiesPowersActPage() {
             color: '#751639',
             margin: 0
           }}
+          contentEditable={isAdminEdit}
+          suppressContentEditableWarning
+          onBlur={(e) => {
+            const val = e.currentTarget.textContent || '';
+            if (isHindi) setPageTitleHi(val);
+            else setPageTitleEn(val);
+          }}
         >
           {pageTitle}
         </h1>
 
         {/* Subheading */}
         <h2
-          className="text-left"
+          className={`text-left ${editFieldClass}`}
           style={{
             fontFamily: 'Noto Sans, sans-serif',
             fontWeight: 600,
@@ -155,10 +229,15 @@ export default function DutiesPowersActPage() {
             color: '#751639',
             margin: 0
           }}
+          contentEditable={isAdminEdit}
+          suppressContentEditableWarning
+          onBlur={(e) => {
+            const val = e.currentTarget.textContent || '';
+            if (isHindi) setSubTitleHi(val);
+            else setSubTitleEn(val);
+          }}
         >
-          {isHindi
-            ? 'डीपीसी अधिनियम, 1971 भारत के नियंत्रक और महालेखापरीक्षक (कर्तव्य, शक्तियां और सेवा की शर्तें) संशोधन अधिनियम, 1971 भारत के नियंत्रक और महालेखापरीक्षक विषय-सूची'
-            : "DPC ACT, 1971 The comptroller and auditor general's (Duties, Powers and Conditions of Service) Amendment ACT, 1971 Comptroller and Auditor General of India Contents"}
+          {subTitle}
         </h2>
 
         {/* Contents Table (Group 1000005515) */}
@@ -168,14 +247,14 @@ export default function DutiesPowersActPage() {
             borderColor: 'rgba(0, 0, 0, 0.2)'
           }}
         >
-          {TABLE_DATA.map((row, index) => (
+          {tableData.map((row, index) => (
             <div
               key={index}
               className={`flex flex-col md:flex-row ${
-                index !== TABLE_DATA.length - 1 ? 'border-b' : ''
+                index !== tableData.length - 1 ? 'border-b' : ''
               }`}
               style={{
-                borderBottomColor: index !== TABLE_DATA.length - 1 ? 'rgba(0, 0, 0, 0.2)' : undefined
+                borderBottomColor: index !== tableData.length - 1 ? 'rgba(0, 0, 0, 0.2)' : undefined
               }}
             >
               {/* Left Column (Chapter Title - width 316px) */}
@@ -187,6 +266,7 @@ export default function DutiesPowersActPage() {
                 }}
               >
                 <span
+                  className={editFieldClass}
                   style={{
                     fontFamily: 'Noto Sans, sans-serif',
                     fontWeight: 400,
@@ -194,15 +274,24 @@ export default function DutiesPowersActPage() {
                     lineHeight: '28px',
                     color: '#751639'
                   }}
+                  contentEditable={isAdminEdit}
+                  suppressContentEditableWarning
+                  onBlur={(e) => {
+                    const val = e.currentTarget.textContent || '';
+                    const updated = [...tableData];
+                    if (isHindi) updated[index].chapterHi = val;
+                    else updated[index].chapterEn = val;
+                    setTableData(updated);
+                  }}
                 >
-                  {isHindi ? row.chapterHi : row.chapterEn}
+                  {isHindi ? (row.chapterHi || row.chapterEn) : (row.chapterEn || row.chapterHi)}
                 </span>
               </div>
 
               {/* Right Column (List of Topics) */}
               <div className="flex-1 p-6">
                 <ul className="space-y-1 text-left list-none p-0 m-0">
-                  {(isHindi ? row.itemsHi : row.itemsEn).map((item, i) => (
+                  {(isHindi ? (row.itemsHi || row.itemsEn || []) : (row.itemsEn || row.itemsHi || [])).map((item, i) => (
                     <li
                       key={i}
                       className="flex items-start gap-2.5"
@@ -215,7 +304,27 @@ export default function DutiesPowersActPage() {
                       }}
                     >
                       <span className="text-[#2A2A2A] select-none text-[16px] leading-[28px] shrink-0">•</span>
-                      <span>{item}</span>
+                      <span
+                        className={editFieldClass}
+                        contentEditable={isAdminEdit}
+                        suppressContentEditableWarning
+                        onBlur={(e) => {
+                          const val = e.currentTarget.textContent || '';
+                          const updated = [...tableData];
+                          if (isHindi) {
+                            const items = [...(updated[index].itemsHi || [])];
+                            items[i] = val;
+                            updated[index].itemsHi = items;
+                          } else {
+                            const items = [...(updated[index].itemsEn || [])];
+                            items[i] = val;
+                            updated[index].itemsEn = items;
+                          }
+                          setTableData(updated);
+                        }}
+                      >
+                        {item}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -223,6 +332,7 @@ export default function DutiesPowersActPage() {
             </div>
           ))}
         </div>
+
 
         {/* Detailed Act Sections (Frame 2147227449) */}
         <div
@@ -931,3 +1041,12 @@ export default function DutiesPowersActPage() {
     </AboutLayout>
   );
 }
+
+export default function DutiesPowersActPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#751639]">Loading Duties &amp; Powers Act...</div>}>
+      <DutiesPowersActContent />
+    </Suspense>
+  );
+}
+

@@ -9,14 +9,23 @@ import {
   Landmark, UserCheck, Compass, GitBranch, Award, Library, Users,
   Scale, ScrollText, BookOpen, Search, Filter, RotateCcw, ExternalLink,
   Pencil, Eye, Plus, CheckCircle2, FileText, ChevronRight, Layers,
-  ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database
+  ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database, Shield
 } from 'lucide-react';
+import VisualDocumentEditor from './VisualDocumentEditor';
+
+export const SINGLETON_SUBTOPICS = [
+  'cag-of-india',
+  'our-vision-mission-values',
+  'constitutional-provisions',
+  'duties-power-and-conditions-of-services-act'
+];
 
 function AdminAboutRegistryContent() {
   const API_URL = getApiBaseUrl();
   const searchParams = useSearchParams();
 
   const [records, setRecords] = useState<AboutRecord[]>([]);
+  const [visualEditingRecord, setVisualEditingRecord] = useState<AboutRecord | null>(null);
   const [allAboutRecords, setAllAboutRecords] = useState<AboutRecord[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -329,8 +338,31 @@ function AdminAboutRegistryContent() {
     setIsFormOpen(true);
   };
 
+  const isSingletonRecord = (item: AboutRecord) => {
+    const slug = (item.subTopicSlug || item.primary_key_or_slug || '').toLowerCase();
+    const raw = (item.rawId || '').toLowerCase();
+    const topic = (item.subTopic || '').toLowerCase();
+    return (
+      slug.includes('cag-of-india') ||
+      slug.includes('our-vision-mission') ||
+      slug.includes('constitutional-provisions') ||
+      slug.includes('duties-power') ||
+      raw === 'page-17' || raw === 'page-10' || raw === 'page-2' || raw === 'page-3' ||
+      SINGLETON_SUBTOPICS.some(s => slug.includes(s) || raw.includes(s) || topic.includes(s))
+    );
+  };
+
+  const handleVisualSaved = (updatedRecord: AboutRecord) => {
+    const updated = allAboutRecords.map(r => r.rawId === updatedRecord.rawId ? updatedRecord : r);
+    setAllAboutRecords(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cag_admin_about_records', JSON.stringify(updated));
+    }
+    loadData();
+  };
+
   const handleDelete = async (rawId: string) => {
-    if (!confirm('Are you sure you want to delete / archive this About Us record?')) return;
+    if (!confirm('Are you sure you want to delete this About Us record?')) return;
     try {
       await fetch(`${API_URL}/api/admin/crud?table=about&id=${encodeURIComponent(rawId)}`, {
         method: 'DELETE',
@@ -339,6 +371,8 @@ function AdminAboutRegistryContent() {
 
     const updated = allAboutRecords.filter(r => r.rawId !== rawId);
     setAllAboutRecords(updated);
+    setRecords(prev => prev.filter(r => r.rawId !== rawId));
+    setTotalCount(prev => Math.max(0, prev - 1));
     if (typeof window !== 'undefined') {
       localStorage.setItem('cag_admin_about_records', JSON.stringify(updated));
       window.dispatchEvent(new Event('organisationOfficersChange'));
@@ -433,13 +467,20 @@ function AdminAboutRegistryContent() {
             >
               <span>Live Public Portal ↗</span>
             </Link>
-            <button
-              onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
-              <span>+ Add New Section Record</span>
-            </button>
+            {SINGLETON_SUBTOPICS.includes(subTopicFilter) ? (
+              <div className="border border-amber-400 bg-amber-50 text-amber-900 px-3.5 py-1.5 text-xs font-bold shadow-xs rounded-none flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-amber-700" />
+                <span>Statutory Master Page (Edit Only)</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleOpenCreate}
+                className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
+                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              >
+                <span>+ Add New Section Record</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -509,24 +550,8 @@ function AdminAboutRegistryContent() {
           </div>
         </div>
 
-        {/* Row 2: Database Table, Publish Status, Sort By, Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Database Table Source:</label>
-            <select
-              value={tableFilter}
-              onChange={(e) => {
-                setTableFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              {tables.map((tbl) => (
-                <option key={tbl.value} value={tbl.value}>{tbl.label}</option>
-              ))}
-            </select>
-          </div>
-
+        {/* Row 2: Publish Status, Sort By, Action Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 gap-4 pt-1 border-t border-zinc-150">
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
             <select
@@ -582,7 +607,7 @@ function AdminAboutRegistryContent() {
         {/* Active Filter Summary Bar */}
         <div className="flex flex-wrap items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-100 gap-2">
           <span>
-            Active Filter: <strong>{categoryFilter}</strong> | Sub-Topic: <strong>{subTopicFilter}</strong> | Table: <strong>{tableFilter}</strong> | Status: <strong>{statusFilter}</strong>
+            Active Filter: <strong>{categoryFilter}</strong> | Sub-Topic: <strong>{subTopicFilter}</strong> | Status: <strong>{statusFilter}</strong>
           </span>
           <span>
             Source: <strong className="text-emerald-700">PostgreSQL cag_db_final (155 DB Records) + Local CMS</strong>
@@ -616,13 +641,15 @@ function AdminAboutRegistryContent() {
               </select>
             </div>
 
-            <button
-              onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
-              <span>+ Add New Section Record</span>
-            </button>
+            {!SINGLETON_SUBTOPICS.includes(subTopicFilter) && (
+              <button
+                onClick={handleOpenCreate}
+                className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
+                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              >
+                <span>+ Add New Section Record</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -634,11 +661,9 @@ function AdminAboutRegistryContent() {
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
                 <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Thumb</th>
                 <th className="px-4 py-3 border-r border-white/20 min-w-[280px]">About Us Title &amp; Summary</th>
                 <th className="px-3 py-3 border-r border-white/20 w-36">Category</th>
                 <th className="px-3 py-3 border-r border-white/20 w-44">Sub-Topic / Section</th>
-                <th className="px-3 py-3 border-r border-white/20 w-32 font-mono">DB Table</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Lang</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Status</th>
                 <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
@@ -647,7 +672,7 @@ function AdminAboutRegistryContent() {
             <tbody className="divide-y divide-[#e2e5e7]">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={7} className="px-4 py-16 text-center text-zinc-400">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
                       <span>Retrieving About Us records from database...</span>
@@ -656,7 +681,7 @@ function AdminAboutRegistryContent() {
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={7} className="px-4 py-16 text-center text-zinc-400">
                     No matching About Us records found. Try adjusting your search or filters.
                   </td>
                 </tr>
@@ -666,18 +691,6 @@ function AdminAboutRegistryContent() {
                     {/* ID */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-500 font-bold text-[11px]">
                       {item.formattedId}
-                    </td>
-
-                    {/* Thumbnail */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <img
-                        src={item.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
-                        alt=""
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
-                        }}
-                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100 mx-auto shadow-2xs"
-                      />
                     </td>
 
                     {/* Title & Summary */}
@@ -717,16 +730,6 @@ function AdminAboutRegistryContent() {
                       <div className="text-[10px] text-zinc-400 font-mono truncate">{item.primary_key_or_slug}</div>
                     </td>
 
-                    {/* DB Table */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-mono text-[11px] text-zinc-600">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${item.table_name.includes('pages') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                        item.table_name.includes('former_cag') ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                          'bg-teal-50 text-teal-700 border border-teal-200'
-                        }`}>
-                        {item.table_name.replace('cag_revamp.', '')}
-                      </span>
-                    </td>
-
                     {/* Language */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-600 font-semibold text-[11px]">
                       <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px]">
@@ -744,35 +747,71 @@ function AdminAboutRegistryContent() {
 
                     {/* Actions */}
                     <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
-                      {/* View */}
-                      <button
-                        onClick={() => handleOpenView(item)}
-                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="View Full Record Details"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>View</span>
-                      </button>
+                      {isSingletonRecord(item) ? (
+                        <>
+                          {/* Visual Live UI Editor */}
+                          <button
+                            onClick={() => setVisualEditingRecord(item)}
+                            className="px-2.5 py-1 bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 text-amber-900 border border-amber-400 font-bold text-[11px] inline-flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                            title="Open Visual Document / PDF Canvas Editor"
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                            <span>Visual Live Edit</span>
+                          </button>
 
-                      {/* Edit */}
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Edit Record"
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
-                        <span>Edit</span>
-                      </button>
+                          {/* Quick Metadata View */}
+                          <button
+                            onClick={() => handleOpenView(item)}
+                            className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                            title="View Full Record Details"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Details</span>
+                          </button>
 
-                      {/* Delete */}
-                      <button
-                        onClick={() => handleDelete(item.rawId)}
-                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Delete / Archive Record"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Delete</span>
-                      </button>
+                          {/* Delete Option */}
+                          <button
+                            onClick={() => handleDelete(item.rawId)}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                            title="Delete / Archive Record"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Delete</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {/* View */}
+                          <button
+                            onClick={() => handleOpenView(item)}
+                            className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                            title="View Full Record Details"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>View</span>
+                          </button>
+
+                          {/* Edit Form */}
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                            title="Edit Record"
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                            <span>Edit</span>
+                          </button>
+
+                          {/* Delete */}
+                          <button
+                            onClick={() => handleDelete(item.rawId)}
+                            className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                            title="Delete / Archive Record"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Delete</span>
+                          </button>
+                        </>
+                      )}
 
                       {/* Live Link */}
                       {item.public_url && (
@@ -1215,6 +1254,16 @@ function AdminAboutRegistryContent() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ─── 5. VISUAL LIVE DOCUMENT / PDF CANVAS EDITOR ─── */}
+      {visualEditingRecord && (
+        <VisualDocumentEditor
+          record={visualEditingRecord}
+          onClose={() => setVisualEditingRecord(null)}
+          onSaved={handleVisualSaved}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   );

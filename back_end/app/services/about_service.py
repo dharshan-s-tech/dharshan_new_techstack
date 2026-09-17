@@ -83,7 +83,7 @@ class AboutAdminService:
                         COALESCE(pt.excerpt, '') as excerpt_hi
                     FROM cag_revamp.pages p
                     LEFT JOIN cag_revamp.page_translations pt ON pt.page_id = p.id AND pt.culture = 'hi'
-                    WHERE (
+                    WHERE (p.status = 1 OR p.status IS NULL) AND (
                         p.id IN (1, 2, 3, 10, 11, 16, 17, 40, 41, 6315, 6685, 6688)
                         OR p.slug IN (
                             'page-cag-of-india', 'page-our-vision-mission-values', 'page-history-of-indian-audit-and-accounts-department',
@@ -475,7 +475,18 @@ class AboutAdminService:
         title_en = data.get("title_en") or data.get("title") or "New Section Record"
         title_hi = data.get("title_hi") or ""
         desc = data.get("desc") or data.get("excerpt") or ""
-        file_name = data.get("file_name") or data.get("upload_file") or data.get("image") or data.get("profile_image") or ""
+        file_name = (
+            data.get("file_name") 
+            or data.get("upload_file") 
+            or data.get("thumb_image") 
+            or data.get("file_url") 
+            or data.get("image") 
+            or data.get("profile_image") 
+            or ""
+        )
+        content_val = data.get("content_val") or data.get("content") or data.get("content_en") or desc
+        content_hi_val = data.get("content_hi_val") or data.get("content_hi") or data.get("content") or desc
+        excerpt_hi_val = data.get("excerpt_hi") or data.get("desc_hi") or desc
         subtopic = data.get("subTopic") or ""
         table_name = data.get("table_name") or ""
 
@@ -490,29 +501,41 @@ class AboutAdminService:
 
         try:
             # 1. Update Existing Page
-            if raw_id.startswith("page-") or (table_name == "cag_revamp.pages" and raw_id.isdigit()):
-                pid_str = raw_id.replace("page-", "")
+            if raw_id.startswith("page-") or (table_name == "cag_revamp.pages" and (raw_id.isdigit() or "page" in raw_id)):
+                pid_str = raw_id.replace("page-", "").strip()
+                pid = None
                 if pid_str.isdigit():
                     pid = int(pid_str)
+                else:
+                    from app.services.pages_service import SLUG_TO_ID_MAP
+                    mapped_id = SLUG_TO_ID_MAP.get(pid_str) or SLUG_TO_ID_MAP.get(f"page-{pid_str}")
+                    if mapped_id and str(mapped_id).isdigit():
+                        pid = int(mapped_id)
+                    else:
+                        row = db.execute(text("SELECT id FROM cag_revamp.pages WHERE slug = :slug OR slug = 'page-' || :slug LIMIT 1;"), {"slug": pid_str}).fetchone()
+                        if row:
+                            pid = row[0]
+
+                if pid:
                     db.execute(text("""
                         UPDATE cag_revamp.pages
                         SET title = :title,
                             excerpt = :excerpt,
-                            content = COALESCE(NULLIF(:content, ''), content, :excerpt),
-                            upload_file = COALESCE(NULLIF(:upload_file, ''), upload_file),
+                            content = :content,
+                            upload_file = :upload_file,
                             status = :status,
                             modified_at = NOW()
                         WHERE id = :id;
                     """), {
                         "title": title_en,
                         "excerpt": desc,
-                        "content": desc,
+                        "content": content_val,
                         "upload_file": file_name,
                         "status": is_active,
                         "id": pid
                     })
 
-                    if title_hi:
+                    if title_hi or content_hi_val or excerpt_hi_val:
                         exists = db.execute(text("""
                             SELECT id FROM cag_revamp.page_translations
                             WHERE page_id = :pid AND culture = 'hi';
@@ -522,14 +545,24 @@ class AboutAdminService:
                                 UPDATE cag_revamp.page_translations
                                 SET title = :title,
                                     excerpt = :excerpt,
-                                    content = COALESCE(NULLIF(:content, ''), content, :excerpt)
+                                    content = :content
                                 WHERE page_id = :pid AND culture = 'hi';
-                            """), {"title": title_hi, "excerpt": desc, "content": desc, "pid": pid})
+                            """), {
+                                "title": title_hi or title_en,
+                                "excerpt": excerpt_hi_val,
+                                "content": content_hi_val,
+                                "pid": pid
+                            })
                         else:
                             db.execute(text("""
                                 INSERT INTO cag_revamp.page_translations (page_id, culture, title, excerpt, content)
                                 VALUES (:pid, 'hi', :title, :excerpt, :content);
-                            """), {"pid": pid, "title": title_hi, "excerpt": desc, "content": desc})
+                            """), {
+                                "pid": pid,
+                                "title": title_hi or title_en,
+                                "excerpt": excerpt_hi_val,
+                                "content": content_hi_val
+                            })
                     db.commit()
                     return data
 
@@ -687,7 +720,7 @@ class AboutAdminService:
 
     @staticmethod
     def delete_about_record(raw_id: str, db: Optional[Session] = None) -> bool:
-        """Soft delete (status = 0) an About Us record in PostgreSQL."""
+        """Permanently delete an About Us record in PostgreSQL and cascades."""
         if not db or engine.dialect.name != "postgresql":
             return True
 
@@ -696,17 +729,21 @@ class AboutAdminService:
             if raw_id_str.startswith("page-"):
                 pid_str = raw_id_str.replace("page-", "")
                 if pid_str.isdigit():
-                    db.execute(text("UPDATE cag_revamp.pages SET status = 0, modified_at = NOW() WHERE id = :id;"), {"id": int(pid_str)})
+                    pid = int(pid_str)
+                    db.execute(text("DELETE FROM cag_revamp.page_translations WHERE page_id = :id;"), {"id": pid})
+                    db.execute(text("DELETE FROM cag_revamp.pages WHERE id = :id;"), {"id": pid})
                     db.commit()
             elif raw_id_str.startswith("former-cag-"):
                 fcid_str = raw_id_str.replace("former-cag-", "")
                 if fcid_str.isdigit():
-                    db.execute(text("UPDATE cag_revamp.former_cag SET status = 0, modified = NOW() WHERE id = :id;"), {"id": int(fcid_str)})
+                    fcid = int(fcid_str)
+                    db.execute(text("DELETE FROM cag_revamp.former_cag WHERE id = :id;"), {"id": fcid})
                     db.commit()
             elif raw_id_str.startswith("org-chart-"):
                 ocid_str = raw_id_str.replace("org-chart-", "")
                 if ocid_str.isdigit():
-                    db.execute(text("UPDATE cag_revamp.organisation_chart SET status = 0, modified = NOW() WHERE id = :id;"), {"id": int(ocid_str)})
+                    ocid = int(ocid_str)
+                    db.execute(text("DELETE FROM cag_revamp.organisation_chart WHERE id = :id;"), {"id": ocid})
                     db.commit()
             elif raw_id_str.isdigit():
                 rec_id_num = int(raw_id_str)
@@ -717,21 +754,22 @@ class AboutAdminService:
                     real_raw = str(matched.get("rawId", ""))
                     if real_raw.startswith("page-") or tbl == "cag_revamp.pages":
                         p_id = int(real_raw.replace("page-", "")) if real_raw.startswith("page-") else rec_id_num
-                        db.execute(text("UPDATE cag_revamp.pages SET status = 0, modified_at = NOW() WHERE id = :id;"), {"id": p_id})
+                        db.execute(text("DELETE FROM cag_revamp.page_translations WHERE page_id = :id;"), {"id": p_id})
+                        db.execute(text("DELETE FROM cag_revamp.pages WHERE id = :id;"), {"id": p_id})
                         db.commit()
                     elif real_raw.startswith("former-cag-") or tbl == "cag_revamp.former_cag":
                         fc_id = int(real_raw.replace("former-cag-", "")) if real_raw.startswith("former-cag-") else rec_id_num
-                        db.execute(text("UPDATE cag_revamp.former_cag SET status = 0, modified = NOW() WHERE id = :id;"), {"id": fc_id})
+                        db.execute(text("DELETE FROM cag_revamp.former_cag WHERE id = :id;"), {"id": fc_id})
                         db.commit()
                     elif real_raw.startswith("org-chart-") or tbl == "cag_revamp.organisation_chart":
                         oc_id = int(real_raw.replace("org-chart-", "")) if real_raw.startswith("org-chart-") else rec_id_num
-                        db.execute(text("UPDATE cag_revamp.organisation_chart SET status = 0, modified = NOW() WHERE id = :id;"), {"id": oc_id})
+                        db.execute(text("DELETE FROM cag_revamp.organisation_chart WHERE id = :id;"), {"id": oc_id})
                         db.commit()
                 else:
-                    # Fallback update directly across all 3 tables with this ID
-                    db.execute(text("UPDATE cag_revamp.pages SET status = 0, modified_at = NOW() WHERE id = :id;"), {"id": rec_id_num})
-                    db.execute(text("UPDATE cag_revamp.former_cag SET status = 0, modified = NOW() WHERE id = :id;"), {"id": rec_id_num})
-                    db.execute(text("UPDATE cag_revamp.organisation_chart SET status = 0, modified = NOW() WHERE id = :id;"), {"id": rec_id_num})
+                    db.execute(text("DELETE FROM cag_revamp.page_translations WHERE page_id = :id;"), {"id": rec_id_num})
+                    db.execute(text("DELETE FROM cag_revamp.pages WHERE id = :id;"), {"id": rec_id_num})
+                    db.execute(text("DELETE FROM cag_revamp.former_cag WHERE id = :id;"), {"id": rec_id_num})
+                    db.execute(text("DELETE FROM cag_revamp.organisation_chart WHERE id = :id;"), {"id": rec_id_num})
                     db.commit()
             return True
         except Exception as e:
