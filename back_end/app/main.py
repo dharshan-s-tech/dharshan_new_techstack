@@ -15,11 +15,14 @@ from app.models import admin_user, audit_log, news, page, report, event, menu, o
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     with engine.begin() as conn:
-        if engine.dialect.name == "postgresql":
-            schema = settings.DB_SCHEMA
-            if schema:
-                conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
-        Base.metadata.create_all(bind=conn)
+        if engine.dialect.name == "sqlite":
+            Base.metadata.create_all(bind=conn)
+        else:
+            try:
+                # Do not modify or force DDL on remote PostgreSQL database
+                pass
+            except Exception:
+                pass
     yield
 
 

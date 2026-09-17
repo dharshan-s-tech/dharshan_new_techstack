@@ -11,6 +11,7 @@ export default function AdminCirculars() {
 
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [appliedSearch, setAppliedSearch] = useState('');
 
   // Form State
@@ -27,7 +28,8 @@ export default function AdminCirculars() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/circulars`);
+      const statusParam = statusFilter !== 'All' ? `status=${statusFilter.toLowerCase()}` : 'status=all';
+      const res = await fetch(`${API_URL}/api/circulars?${statusParam}`);
       if (!res.ok) throw new Error('API offline');
       const data = await res.json();
       
@@ -58,7 +60,7 @@ export default function AdminCirculars() {
     const handleCircularsChange = () => loadData();
     window.addEventListener('circularsChange', handleCircularsChange);
     return () => window.removeEventListener('circularsChange', handleCircularsChange);
-  }, [appliedSearch]);
+  }, [appliedSearch, statusFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -67,6 +69,7 @@ export default function AdminCirculars() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
   };
 
   const handleOpenCreate = () => {
@@ -176,6 +179,19 @@ export default function AdminCirculars() {
               placeholder="Circular No / Title"
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div className="flex items-end gap-2">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, CombinedAccountItem as LocalCombinedItem } from '@/lib/dataManager';
+import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
 
 export interface CombinedAccountDisplayItem {
   id: number | string;
@@ -32,6 +33,7 @@ function AdminCombinedAccountsContent() {
 
   // Filters & Sorting
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [yearFilter, setYearFilter] = useState('All');
   const [sortFilter, setSortFilter] = useState('year_desc');
@@ -122,6 +124,8 @@ function AdminCombinedAccountsContent() {
       params.set('page', page.toString());
       params.set('pageSize', pageSize.toString());
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (categoryFilter !== 'All') params.set('category', categoryFilter);
       if (yearFilter !== 'All') params.set('year', yearFilter);
       if (sortFilter) params.set('sort', sortFilter);
@@ -224,7 +228,7 @@ function AdminCombinedAccountsContent() {
     const handleUpdate = () => loadData();
     window.addEventListener('combinedAccountsChange', handleUpdate);
     return () => window.removeEventListener('combinedAccountsChange', handleUpdate);
-  }, [page, pageSize, appliedSearch, categoryFilter, yearFilter, sortFilter]);
+  }, [page, pageSize, appliedSearch, statusFilter, categoryFilter, yearFilter, sortFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -234,6 +238,7 @@ function AdminCombinedAccountsContent() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
     setCategoryFilter('All');
     setYearFilter('All');
     setSortFilter('year_desc');
@@ -275,7 +280,9 @@ function AdminCombinedAccountsContent() {
     
     try {
       await fetch(`${API_URL}/api/combined-accounts/${rawId}`, { method: 'DELETE' });
-    } catch {}
+    } catch (err) {
+      console.warn('DELETE failed:', err);
+    }
 
     const numId = parseInt(rawId);
     if (!isNaN(numId)) {
@@ -284,7 +291,7 @@ function AdminCombinedAccountsContent() {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('combinedAccountsChange'));
     }
-    loadData();
+    await loadData();
     if (viewingItem?.rawId === rawId) {
       setViewingItem(null);
     }
@@ -298,10 +305,13 @@ function AdminCombinedAccountsContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...item,
-          is_active: updatedStatus
+          is_active: updatedStatus,
+          status: updatedStatus ? 'Active' : 'Inactive'
         })
       });
-    } catch {}
+    } catch (err) {
+      console.warn('Toggle status failed:', err);
+    }
 
     const numId = parseInt(item.rawId);
     if (!isNaN(numId)) {
@@ -320,7 +330,7 @@ function AdminCombinedAccountsContent() {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('combinedAccountsChange'));
     }
-    loadData();
+    await loadData();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -363,21 +373,19 @@ function AdminCombinedAccountsContent() {
       }
     } catch (err) {
       console.warn('Backend error saving combined account, saving in dataManager:', err);
+      const localRecord: LocalCombinedItem = {
+        id: parseInt(finalId) || Date.now(),
+        title_en: titleEn,
+        title_hi: titleHi,
+        category: category,
+        account_year: accountYear,
+        volume: volume,
+        size: size,
+        file_url: fileUrl,
+        is_active: isActive
+      };
+      dataManager.saveCombinedAccount(localRecord);
     }
-
-    // Also persist in local dataManager
-    const localRecord: LocalCombinedItem = {
-      id: parseInt(finalId) || Date.now(),
-      title_en: titleEn,
-      title_hi: titleHi,
-      category: category,
-      account_year: accountYear,
-      volume: volume,
-      size: size,
-      file_url: fileUrl,
-      is_active: isActive
-    };
-    dataManager.saveCombinedAccount(localRecord);
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('combinedAccountsChange'));
@@ -414,7 +422,7 @@ function AdminCombinedAccountsContent() {
         </div>
 
         {/* Filter Toolbar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-1">
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
             <input
@@ -425,6 +433,22 @@ function AdminCombinedAccountsContent() {
               placeholder="Search by title or year..."
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>
@@ -506,13 +530,46 @@ function AdminCombinedAccountsContent() {
 
       {/* 2. DATA TABLE */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
+        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
           <div className="font-bold text-zinc-800 text-sm">
             Records Registry [ Displaying {accounts.length} of {totalCount.toLocaleString()} ]
           </div>
-          <span className="text-[11px] text-zinc-500">
-            Category: <strong>{categoryFilter}</strong> | Year: <strong>{yearFilter}</strong>
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+              >
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+            <button
+              onClick={() => {
+                setEditingId(null);
+                setTitleEn('');
+                setTitleHi('');
+                setCategory('combined');
+                setAccountYear('2024 - 25');
+                setVolume('Full Comprehensive Volume');
+                setSize('18.5 MB');
+                setFileUrl('#');
+                setIsActive(true);
+                setIsDrawerOpen(true);
+              }}
+              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
+              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+            >
+              <span>+ Add Combined Record</span>
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -529,7 +586,7 @@ function AdminCombinedAccountsContent() {
                 <th className="px-3 py-3 border-r border-white/20 w-36">Volume</th>
                 <th className="px-3 py-3 border-r border-white/20 w-24 text-center">File Size</th>
                 <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
-                <th className="px-3 py-3 text-center w-36">Actions</th>
+                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -581,37 +638,50 @@ function AdminCombinedAccountsContent() {
                         {item.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </button>
                     </td>
-                    <td className="px-3 py-3 text-center space-x-1.5 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
+                      {/* View */}
                       <button
                         onClick={() => setViewingItem(item)}
-                        className="p-1 border border-emerald-300 hover:bg-emerald-50 text-emerald-700 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
+                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="View Full Details"
                       >
-                        👁️
+                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>View</span>
                       </button>
-                      <a
-                        href={item.file_url || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1 border border-blue-200 hover:bg-blue-50 text-blue-600 inline-flex items-center justify-center w-7 h-7 text-xs"
-                        title="Download CloudFront PDF ↗"
-                      >
-                        📥
-                      </a>
+
+                      {/* Edit */}
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
+                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Edit Record"
                       >
-                        📝
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
                       </button>
+
+                      {/* Delete */}
                       <button
                         onClick={() => handleDelete(item.rawId)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
+                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Delete Record"
                       >
-                        🗑️
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
                       </button>
+
+                      {/* PDF Download Link */}
+                      {item.file_url && item.file_url !== '#' && (
+                        <a
+                          href={item.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
+                          title="Download CloudFront PDF ↗"
+                        >
+                          <ExternalLink className="w-3 h-3 text-blue-600" />
+                          <span>PDF</span>
+                        </a>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -722,25 +792,46 @@ function AdminCombinedAccountsContent() {
               </div>
 
               {/* Footer */}
-              <div className="pt-4 border-t border-zinc-200 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
+                <Link
+                  href="/Reports/accounts"
+                  target="_blank"
+                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Public Page ↗</span>
+                </Link>
+
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => {
                       const item = viewingItem;
                       setViewingItem(null);
                       handleOpenEdit(item);
                     }}
-                    className="px-4 py-2 border border-[#751639] text-[#751639] hover:bg-pink-50 font-bold text-xs cursor-pointer"
+                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    📝 Edit Document
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit Record</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const idToDelete = viewingItem.rawId;
+                      setViewingItem(null);
+                      handleDelete(idToDelete);
+                    }}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Record</span>
+                  </button>
+                  <button
+                    onClick={() => setViewingItem(null)}
+                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
+                  >
+                    Close
                   </button>
                 </div>
-                <button
-                  onClick={() => setViewingItem(null)}
-                  className="px-6 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-xs cursor-pointer"
-                >
-                  Close
-                </button>
               </div>
             </div>
 

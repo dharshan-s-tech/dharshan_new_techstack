@@ -61,7 +61,7 @@ export default function AdminLogin() {
       localStorage.setItem('cag_admin_token', `token_${inputUser}_${Date.now()}`);
       localStorage.setItem('cag_admin_last_activity', Date.now().toString());
       setLoading(false);
-      router.push('/admin/offices');
+      router.push('/admin');
       return;
     }
 
@@ -86,7 +86,7 @@ export default function AdminLogin() {
         data.access_token || data.id || `token_${inputUser}_${Date.now()}`
       );
       localStorage.setItem('cag_admin_last_activity', Date.now().toString());
-      router.push('/admin/offices');
+      router.push('/admin');
     } catch {
       setError('Unable to reach the login service. Please try again.');
       generateCaptcha();

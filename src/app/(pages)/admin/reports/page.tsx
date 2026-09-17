@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, ReportItem as DataReportItem } from '@/lib/dataManager';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
+import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
 
 interface StateLookup {
   id: number;
@@ -53,6 +54,7 @@ function AdminReportsContent() {
   
   // Filter Fields
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [sectorFilter, setSectorFilter] = useState('All');
   const [levelFilter, setLevelFilter] = useState('All');
   const [reportTypeFilter, setReportTypeFilter] = useState('All');
@@ -111,6 +113,7 @@ function AdminReportsContent() {
   const [uploadedPdfSize, setUploadedPdfSize] = useState('');
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const [isActive, setIsActive] = useState(true);
 
   // Load Filters & Lookup dictionaries
   useEffect(() => {
@@ -147,6 +150,8 @@ function AdminReportsContent() {
       params.set('page', page.toString());
       params.set('pageSize', pageSize.toString());
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (sectorFilter !== 'All') params.set('sector', sectorFilter);
       if (levelFilter !== 'All') params.set('level', levelFilter);
       if (reportTypeFilter !== 'All') params.set('type', reportTypeFilter);
@@ -167,7 +172,7 @@ function AdminReportsContent() {
           level: r.level || 'Union',
           year_of_report: r.year || '2026',
           tabled_date: r.tabled_date,
-          is_active: true,
+          is_active: r.is_active !== undefined ? Boolean(r.is_active) : (r.status === 1 || r.status === 'Active' || r.status === true),
           image: r.image,
           desc: r.overview || r.desc,
           pdf_url: r.pdf_url,
@@ -256,7 +261,7 @@ function AdminReportsContent() {
 
   useEffect(() => {
     loadData();
-  }, [page, pageSize, appliedSearch, sectorFilter, levelFilter, reportTypeFilter, yearFilter, stateFilter, sortFilter]);
+  }, [page, pageSize, appliedSearch, statusFilter, sectorFilter, levelFilter, reportTypeFilter, yearFilter, stateFilter, sortFilter]);
 
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -325,6 +330,7 @@ function AdminReportsContent() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
     setSectorFilter('All');
     setLevelFilter('All');
     setReportTypeFilter('All');
@@ -378,6 +384,7 @@ function AdminReportsContent() {
     setUploadedPdfName('');
     setUploadedPdfSize('');
     setVideoUrl('');
+    setIsActive(true);
     setIsFormOpen(true);
   };
 
@@ -396,6 +403,7 @@ function AdminReportsContent() {
     setUploadedPdfName(item.pdf_url ? item.pdf_url.split('/').pop() || '' : '');
     setUploadedPdfSize('');
     setVideoUrl(item.video_url || '');
+    setIsActive(item.is_active ?? true);
     setIsFormOpen(true);
   };
 
@@ -446,6 +454,8 @@ function AdminReportsContent() {
         body: JSON.stringify({
           ...record,
           overview: overviewEn,
+          status: isActive ? 1 : 0,
+          is_active: isActive,
           state_id: selectedStateId ? parseInt(selectedStateId) : undefined
         })
       });
@@ -457,13 +467,12 @@ function AdminReportsContent() {
       }
     } catch (err) {
       console.warn('Could not post to backend, saving in local dataManager:', err);
+      dataManager.saveReport({
+        ...record,
+        id: finalId
+      });
     }
 
-    // 2. Save in dataManager for instant UI update
-    dataManager.saveReport({
-      ...record,
-      id: finalId
-    });
     setIsFormOpen(false);
     loadData();
   };
@@ -475,8 +484,8 @@ function AdminReportsContent() {
       {/* 1. TOP FILTERS PANEL */}
       <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
         
-        {/* Row 1: Search, Sector, Level, Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Row 1: Search, Status, Sector, Level, Type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
             <input
@@ -487,6 +496,22 @@ function AdminReportsContent() {
               placeholder="Search reports registry..."
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>
@@ -625,6 +650,23 @@ function AdminReportsContent() {
           </h3>
           
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>Per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+              >
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
             <button
               onClick={handleOpenCreate}
               className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
@@ -649,7 +691,8 @@ function AdminReportsContent() {
                 <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Type</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Year</th>
                 <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Level</th>
-                <th className="px-3 py-3 text-center w-36">Actions</th>
+                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
+                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -698,37 +741,57 @@ function AdminReportsContent() {
                     </td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-600 font-semibold">{report.year_of_report}</td>
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-500 font-medium">{report.level || 'Union'}</td>
+                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                        report.is_active
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
+                      }`}>
+                        {report.is_active ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
                     
-                    <td className="px-3 py-3 text-center space-x-1.5 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
+                      {/* View */}
                       <button
                         onClick={() => handleOpenView(report)}
-                        className="p-1 border border-emerald-300 hover:bg-emerald-50 text-emerald-700 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
+                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="View Full Report Details"
                       >
-                        👁️
+                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>View</span>
                       </button>
+
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleOpenEdit(report)}
+                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        title="Edit Record"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
+                      </button>
+
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDelete(report.rawId)}
+                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        title="Delete Record"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
+                      </button>
+
+                      {/* Live Link */}
                       <Link
                         href={`/Reports/${report.rawId}`}
                         target="_blank"
-                        className="p-1 border border-blue-200 hover:bg-blue-50 text-blue-600 inline-flex items-center justify-center w-7 h-7 text-xs"
+                        className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
                         title="Preview Public Page ↗"
                       >
-                        ↗
+                        <ExternalLink className="w-3 h-3 text-blue-600" />
+                        <span>Live</span>
                       </Link>
-                      <button
-                        onClick={() => handleOpenEdit(report)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
-                        title="Edit Record"
-                      >
-                        📝
-                      </button>
-                      <button
-                        onClick={() => handleDelete(report.rawId)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
-                        title="Delete Record"
-                      >
-                        🗑️
-                      </button>
                     </td>
                   </tr>
                 ))
@@ -903,32 +966,45 @@ function AdminReportsContent() {
 
               {/* Footer Actions */}
               <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/Reports/${viewingReport.rawId}`}
-                    target="_blank"
-                    className="px-4 py-2 border border-blue-300 text-blue-700 hover:bg-blue-50 font-bold text-xs flex items-center gap-1.5"
-                  >
-                    <span>Preview Public Page ↗</span>
-                  </Link>
+                <Link
+                  href={`/Reports/${viewingReport.rawId}`}
+                  target="_blank"
+                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Public Page ↗</span>
+                </Link>
+
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => {
                       const r = viewingReport;
                       setViewingReport(null);
                       handleOpenEdit(r);
                     }}
-                    className="px-4 py-2 border border-[#751639] text-[#751639] hover:bg-pink-50 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <span>📝 Edit Record</span>
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit Record</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const idToDelete = viewingReport.rawId;
+                      setViewingReport(null);
+                      handleDelete(idToDelete);
+                    }}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Record</span>
+                  </button>
+                  <button
+                    onClick={() => setViewingReport(null)}
+                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
+                  >
+                    Close
                   </button>
                 </div>
-
-                <button
-                  onClick={() => setViewingReport(null)}
-                  className="px-6 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-xs transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
               </div>
 
             </div>
@@ -1032,7 +1108,18 @@ function AdminReportsContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Publish Status</label>
+                  <select
+                    value={isActive ? 'Active' : 'Inactive'}
+                    onChange={(e) => setIsActive(e.target.value === 'Active')}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
                 <div>
                   <label className="block font-bold text-zinc-700 mb-1">Report Year *</label>
                   <input

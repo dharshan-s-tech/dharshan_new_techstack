@@ -7,8 +7,9 @@ export default function AdminBanners() {
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Search Filters
+  // Search & Status Filters
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [appliedSearch, setAppliedSearch] = useState('');
 
   // Form State
@@ -29,8 +30,14 @@ export default function AdminBanners() {
     let list = dataManager.getBanners();
     if (appliedSearch) {
       list = list.filter((item) => 
-        item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
+        item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase()) ||
+        item.subtitle_en?.toLowerCase().includes(appliedSearch.toLowerCase())
       );
+    }
+    if (statusFilter === 'Active') {
+      list = list.filter((item) => item.is_active);
+    } else if (statusFilter === 'Inactive') {
+      list = list.filter((item) => !item.is_active);
     }
     setBanners(list);
     setLoading(false);
@@ -41,7 +48,7 @@ export default function AdminBanners() {
     const handleBannersChange = () => loadData();
     window.addEventListener('bannersChange', handleBannersChange);
     return () => window.removeEventListener('bannersChange', handleBannersChange);
-  }, [appliedSearch]);
+  }, [appliedSearch, statusFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -49,6 +56,7 @@ export default function AdminBanners() {
 
   const handleSearchReset = () => {
     setSearchFor('');
+    setStatusFilter('All');
     setAppliedSearch('');
   };
 
@@ -141,7 +149,7 @@ export default function AdminBanners() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
           <div>
-            <label className="block text-zinc-555 font-bold mb-1">Search For:</label>
+            <label className="block text-zinc-555 font-bold mb-1">Search Headline:</label>
             <input
               type="text"
               value={searchFor}
@@ -149,6 +157,19 @@ export default function AdminBanners() {
               placeholder="Enter Keywords"
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div className="flex items-end gap-2">

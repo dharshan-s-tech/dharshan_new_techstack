@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { dataManager } from '@/lib/dataManager';
 import DualFlagStand from '@/components/DualFlagStand';
+import { getCloudFrontUrl, transformHtmlAssetUrls } from '@/lib/cdnUtils';
 
 interface SidebarLink {
   name: string;
@@ -25,6 +26,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   
   // Dynamic Language Synchronization (English ↔ हिन्दी)
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [dbContent, setDbContent] = useState<string | null>(null);
 
   useEffect(() => {
     setLang(dataManager.getLanguage());
@@ -34,6 +36,30 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
     window.addEventListener('languageChange', handleLangChange);
     return () => window.removeEventListener('languageChange', handleLangChange);
   }, []);
+
+  useEffect(() => {
+    const getBackendSlug = (s: string) => {
+      const lower = s.toLowerCase();
+      if (lower.includes('intosai')) return 'page-involvement-with-intosai';
+      if (lower.includes('asosai')) return 'page-involvement-with-asosai';
+      if (lower.includes('multilateral')) return 'page-global-audit-leadership-forum-and-other-multilateral-bodies';
+      if (lower.includes('bilateral')) return 'page-bilateral-relations-of-sai-india';
+      if (lower.includes('un panel')) return 'page-un-panel-of-external-auditors';
+      if (lower.includes('present')) return 'page-present-international-audits';
+      if (lower.includes('past')) return 'page-past-international-audits';
+      return s;
+    };
+
+    const backendSlug = getBackendSlug(slugDecoded);
+    fetch(`http://127.0.0.1:8000/api/v1/admin/global-relations/pages/${backendSlug}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json && json.data && json.data.content) {
+          setDbContent(json.data.content);
+        }
+      })
+      .catch((err) => console.warn('Could not fetch DB content for page:', err));
+  }, [slugDecoded]);
 
   const isHindi = lang === 'हिन्दी';
 
@@ -134,22 +160,88 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   // Helper to map country names to exact SVG flag assets exported from Figma
   const getFlagSvgPath = (countryName: string) => {
     const c = countryName.toLowerCase();
-    if (c === 'bhutan') return '/assets/Images/flags/bhutan.svg';
-    if (c === 'brazil') return '/assets/Images/flags/brazil.svg';
-    if (c === 'cambodia') return '/assets/Images/flags/cambodia.svg';
-    if (c === 'chile') return '/assets/Images/flags/Chile.svg';
-    if (c === 'china') return '/assets/Images/flags/China.svg';
-    if (c === 'indonesia') return '/assets/Images/flags/Indonesia.svg';
-    if (c === 'israel') return '/assets/Images/flags/Israel.svg';
-    if (c === 'kazakhstan') return '/assets/Images/flags/Kazakhstan.svg';
-    if (c === 'korea') return '/assets/Images/flags/Korea.svg';
-    if (c === 'kuwait') return '/assets/Images/flags/Kuwait.svg';
-    if (c === 'maldives') return '/assets/Images/flags/Maldives.svg';
-    if (c === 'iran') return '/assets/Images/flags/Iran.svg';
-    if (c === 'russia') return '/assets/Images/flags/Russia.svg';
-    if (c === 'bahrain') return '/assets/Images/flags/Bahrain.svg';
-    return `/assets/Images/flags/${countryName}.svg`;
+    if (c.includes('bhutan')) return '/assets/Images/flags/bhutan.svg';
+    if (c.includes('brazil')) return '/assets/Images/flags/brazil.svg';
+    if (c.includes('cambodia')) return '/assets/Images/flags/cambodia.svg';
+    if (c.includes('chile')) return '/assets/Images/flags/Chile.svg';
+    if (c.includes('china')) return '/assets/Images/flags/China.svg';
+    if (c.includes('indonesia')) return '/assets/Images/flags/Indonesia.svg';
+    if (c.includes('israel')) return '/assets/Images/flags/Israel.svg';
+    if (c.includes('kazakhstan')) return '/assets/Images/flags/Kazakhstan.svg';
+    if (c.includes('korea')) return '/assets/Images/flags/Korea.svg';
+    if (c.includes('kuwait')) return '/assets/Images/flags/Kuwait.svg';
+    if (c.includes('maldives')) return '/assets/Images/flags/Maldives.svg';
+    if (c.includes('iran')) return '/assets/Images/flags/Iran.svg';
+    if (c.includes('russia')) return '/assets/Images/flags/Russia.svg';
+    if (c.includes('bahrain')) return '/assets/Images/flags/Bahrain.svg';
+    return null;
   };
+
+  // Dynamically parse DB content for Bilateral Relations grid items and text (Read-Only)
+  const parsedBilateralData = React.useMemo(() => {
+    if (!dbContent || typeof window === 'undefined') return null;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(dbContent, 'text/html');
+
+      const paragraphs = Array.from(doc.querySelectorAll('p'));
+      const topHeadingEl = paragraphs.find(p => p.textContent?.toLowerCase().includes('presently sai india') || p.textContent?.toLowerCase().includes('mou'));
+      const topHeading = topHeadingEl ? topHeadingEl.textContent?.trim() : null;
+
+      const bottomParaEl = paragraphs.find(p => p.textContent?.toLowerCase().includes('regular bilateral exchanges') || p.textContent?.toLowerCase().includes('bilateral exchanges'));
+      const bottomPara = bottomParaEl ? bottomParaEl.textContent?.trim() : null;
+
+      const listItems = Array.from(doc.querySelectorAll('li'));
+      const parsedCountries: { name: string; link?: string; imgSrc?: string; isIdi: boolean }[] = [];
+
+      listItems.forEach((li) => {
+        const text = li.textContent?.trim() || '';
+        if (!text) return;
+        if (
+          text.includes('Involvement with') ||
+          text.includes('Global Audit Leadership') ||
+          text.includes('International Audit Assignments') ||
+          text.includes('Bilateral Relations Of SAI India')
+        ) {
+          return;
+        }
+
+        const aTag = li.querySelector('a[href]') || li.querySelector('a');
+        let rawLink = aTag?.getAttribute('href') || aTag?.getAttribute('media') || undefined;
+        let link = rawLink ? getCloudFrontUrl(rawLink) : undefined;
+
+        const imgTag = li.querySelector('img');
+        const rawImgSrc = imgTag?.getAttribute('src') || undefined;
+        let imgSrc = rawImgSrc ? getCloudFrontUrl(rawImgSrc) : undefined;
+
+        let name = text;
+        const pTag = li.querySelector('p');
+        if (pTag && pTag.textContent?.trim()) {
+          name = pTag.textContent.trim();
+        } else if (aTag && aTag.textContent?.trim()) {
+          name = aTag.textContent.trim();
+        }
+
+        if (name) {
+          const isIdi = name.toLowerCase().includes('intosai development') || name.toLowerCase().includes('idi');
+          parsedCountries.push({ name, link, imgSrc, isIdi });
+        }
+      });
+
+      return {
+        topHeading: topHeading || (isHindi 
+          ? 'वर्तमान में SAI भारत के 29 सर्वोच्च लेखा परीक्षा संस्थानों के साथ समझौता ज्ञापन/जुड़वां व्यवस्थाएं हैं:' 
+          : 'Presently SAI India has MoUs/twinning arrangements with 29 Supreme Audit Institutions viz.'),
+        bottomPara: bottomPara || (isHindi 
+          ? 'इन व्यवस्थाओं के तहत द्विपक्षीय सेमिनार, प्रशिक्षण कार्यक्रम, प्रतिनियुक्ति, क्षमता निर्माण कार्यशालाएं, विशिष्ट लेखापरीक्षाओं के लिए मार्गदर्शन आदि जैसे नियमित द्विपक्षीय आदान-प्रदान आयोजित किए जाते हैं।' 
+          : 'Regular bilateral exchanges like bilateralseminars, training programmes, secondments, capacity building workshops, hand holding for specific audits etc. are held under these arrangements.'),
+        countries: parsedCountries
+      };
+    } catch (e) {
+      console.warn('Failed to parse bilateral DB content:', e);
+      return null;
+    }
+  }, [dbContent, isHindi]);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[64px] pt-2 pb-[220px] font-['Noto_Sans'] tracking-normal">
@@ -183,43 +275,93 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
       </nav>
 
       {isBilateral ? (
-        /* BILATERAL RELATIONS PAGE FULL WIDTH LAYOUT (1312px) */
+        /* BILATERAL RELATIONS PAGE FULL WIDTH LAYOUT (1312px) - POPULATED DYNAMICALLY FROM DB */
         <main className="w-full">
-          {/* Top Heading */}
+          {/* Top Heading from DB */}
           <h1 className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#000000] mb-6">
-            {isHindi 
+            {parsedBilateralData?.topHeading || (isHindi 
               ? 'वर्तमान में SAI भारत के 29 सर्वोच्च लेखा परीक्षा संस्थानों के साथ समझौता ज्ञापन/जुड़वां व्यवस्थाएं हैं:' 
-              : 'Presently SAI India has MoUs/twinning arrangements with 29 Supreme Audit Institutions viz.'}
+              : 'Presently SAI India has MoUs/twinning arrangements with 29 Supreme Audit Institutions viz.')}
           </h1>
 
-          {/* 6-Column Flag Cards Grid */}
+          {/* 6-Column Flag Cards Grid populated dynamically from DB content */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full mb-8">
-            {countries.map((countryName, idx) => (
-              <div 
-                key={idx}
-                className="w-full flex items-center justify-center transition-transform hover:-translate-y-1 hover:drop-shadow-md cursor-pointer"
-              >
-                <img 
-                  src={getFlagSvgPath(countryName)} 
-                  alt={`${countryName} Bilateral Relations`} 
-                  className="w-full h-auto object-contain"
-                />
-              </div>
-            ))}
+            {(parsedBilateralData?.countries && parsedBilateralData.countries.length > 0 
+              ? parsedBilateralData.countries 
+              : countries.map(c => ({ name: c, isIdi: false, link: undefined, imgSrc: undefined }))
+            ).map((countryItem, idx) => {
+              if (countryItem.isIdi) {
+                return (
+                  <div key={idx} className="bg-white border border-[#E6E6E6] rounded-[8px] p-4 flex flex-col items-center justify-center shadow-[4px_4px_4px_rgba(0,0,0,0.02)] min-h-[186px] h-full transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer">
+                    <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#2A2A2A] text-center">
+                      {countryItem.name}
+                    </p>
+                  </div>
+                );
+              }
 
-            {/* Special Card: INTOSAI Development Initiative (IDI) */}
-            <div className="bg-white border border-[#E6E6E6] rounded-[8px] p-4 flex flex-col items-center justify-center shadow-[4px_4px_4px_rgba(0,0,0,0.02)] min-h-[186px] h-full transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer">
-              <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[22px] text-[#2A2A2A] text-center">
-                INTOSAI<br />Development<br />Initiative (IDI)
-              </p>
-            </div>
+              const svgPath = getFlagSvgPath(countryItem.name);
+              const cdnImgSrc = svgPath || countryItem.imgSrc;
+
+              const cardContent = svgPath ? (
+                <div 
+                  className="w-full h-full flex items-center justify-center transition-transform hover:-translate-y-1 hover:drop-shadow-md cursor-pointer"
+                >
+                  <img 
+                    src={svgPath} 
+                    alt={`${countryItem.name} Bilateral Relations`} 
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
+              ) : (
+                <div 
+                  className="bg-white border border-[#E6E6E6] rounded-[8px] p-4 flex flex-col items-center justify-center shadow-[4px_4px_4px_rgba(0,0,0,0.02)] min-h-[186px] h-full transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer w-full"
+                >
+                  <div className="flex-1 flex items-center justify-center mb-2 w-full">
+                    {cdnImgSrc ? (
+                      <img 
+                        src={cdnImgSrc} 
+                        alt={`${countryItem.name} Bilateral Relations`} 
+                        className="w-full h-auto max-h-[120px] object-contain"
+                        onError={(e) => {
+                          const target = e.target as HTMLElement;
+                          target.style.display = 'none';
+                          const fallbackEl = target.nextElementSibling as HTMLElement;
+                          if (fallbackEl) fallbackEl.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className="w-full h-full items-center justify-center" 
+                      style={{ display: cdnImgSrc ? 'none' : 'flex' }}
+                    >
+                      <DualFlagStand country={countryItem.name} />
+                    </div>
+                  </div>
+                  <div className="w-full pt-2 border-t border-[#E6E6E6]">
+                    <p className="font-['Noto_Sans'] font-semibold text-[14px] leading-[18px] text-[#2A2A2A] text-center">
+                      {countryItem.name}
+                    </p>
+                  </div>
+                </div>
+              );
+
+              if (countryItem.link) {
+                return (
+                  <a key={idx} href={countryItem.link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                    {cardContent}
+                  </a>
+                );
+              }
+              return <React.Fragment key={idx}>{cardContent}</React.Fragment>;
+            })}
           </div>
 
-          {/* Bottom Closing Paragraph */}
+          {/* Bottom Closing Paragraph from DB */}
           <p className="font-['Noto_Sans'] font-semibold text-[16px] leading-[24px] text-[#000000]">
-            {isHindi 
+            {parsedBilateralData?.bottomPara || (isHindi 
               ? 'इन व्यवस्थाओं के तहत द्विपक्षीय सेमिनार, प्रशिक्षण कार्यक्रम, प्रतिनियुक्ति, क्षमता निर्माण कार्यशालाएं, विशिष्ट लेखापरीक्षाओं के लिए मार्गदर्शन आदि जैसे नियमित द्विपक्षीय आदान-प्रदान आयोजित किए जाते हैं।' 
-              : 'Regular bilateral exchanges like bilateralseminars, training programmes, secondments, capacity building workshops, hand holding for specific audits etc. are held under these arrangements.'}
+              : 'Regular bilateral exchanges like bilateralseminars, training programmes, secondments, capacity building workshops, hand holding for specific audits etc. are held under these arrangements.')}
           </p>
         </main>
       ) : (
@@ -326,7 +468,12 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
 
             {/* Main Article Body Text */}
             <div className="text-[14px] leading-[24px] tracking-normal space-y-4 text-justify font-['Noto_Sans']">
-              {isPastAudits ? (
+              {dbContent ? (
+                <div
+                  className="w-full text-[#2A2A2A] font-['Noto_Sans'] space-y-4 leading-[24px]"
+                  dangerouslySetInnerHTML={{ __html: transformHtmlAssetUrls(dbContent) }}
+                />
+              ) : isPastAudits ? (
                 /* PAST INTERNATIONAL AUDITS PAGE CONTENT */
                 isHindi ? (
                   <>

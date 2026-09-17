@@ -21,20 +21,22 @@ export interface SubMenuItem {
 
 export type MenuItem = LeafItem | SubMenuItem;
 
-// Crisp Chevron component matching Figma vector (16x16, stroke 2)
-const ChevronIcon = ({ isOpen, strokeColor = '#FFFFFF' }: { isOpen: boolean; strokeColor?: string }) => (
+// Minimalist thin-stroke Chevron matching the Figma UI (12x12) with depth-aware opacity
+const ChevronIcon = ({ isOpen, depth = 0 }: { isOpen: boolean; depth?: number }) => (
   <svg 
-    width="16" 
-    height="16" 
-    viewBox="0 0 18 18" 
+    width="12" 
+    height="12" 
+    viewBox="0 0 14 14" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
-    className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+    className={`shrink-0 transition-transform duration-200 ${
+      depth === 0 ? 'text-white' : depth === 1 ? 'text-white/80 group-hover:text-white' : 'text-white/70 group-hover:text-white'
+    } ${isOpen ? 'rotate-180' : 'rotate-0'}`}
   >
     <path 
-      d="M4.5 6.75L9 11.25L13.5 6.75" 
-      stroke={strokeColor} 
-      strokeWidth="2" 
+      d="M3 5L7 9L11 5" 
+      stroke="currentColor" 
+      strokeWidth={depth === 0 ? "2" : "1.75"} 
       strokeLinecap="round" 
       strokeLinejoin="round" 
     />
@@ -45,7 +47,7 @@ export default function FigmaAdminSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Clean navigation tree without excess sub-dropdowns, keeping rich filters on pages
+  // Preserved original module tree structure
   const menuItems: MenuItem[] = [
     {
       type: 'leaf',
@@ -184,28 +186,67 @@ export default function FigmaAdminSidebar() {
       name: 'Global Relations',
       children: [
         {
-          type: 'leaf',
+          type: 'submenu',
           id: 'gr-intl-bodies',
           name: 'International Bodies',
-          path: '/admin/global?tab=international'
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-intosai',
+              name: 'Association with INTOSAI',
+              path: '/admin/global-relations?slug=page-involvement-with-intosai'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-asosai',
+              name: 'Association with ASOSAI',
+              path: '/admin/global-relations?slug=page-involvement-with-asosai'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-multilateral',
+              name: 'Multilateral Engagement',
+              path: '/admin/global-relations?slug=page-global-audit-leadership-forum-and-other-multilateral-bodies'
+            }
+          ]
         },
         {
-          type: 'leaf',
+          type: 'submenu',
           id: 'gr-bilateral',
           name: 'Bilateral Relations',
-          path: '/admin/global?tab=bilateral'
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-bilateral-sai',
+              name: 'Bilateral Relations of SAI India',
+              path: '/admin/global-relations?slug=page-bilateral-relations-of-sai-india'
+            }
+          ]
         },
         {
-          type: 'leaf',
+          type: 'submenu',
           id: 'gr-audit-engagements',
           name: 'Audit Engagements',
-          path: '/admin/global?tab=engagements'
-        },
-        {
-          type: 'leaf',
-          id: 'gr-relations-wing',
-          name: 'Relations Wing',
-          path: '/admin/global?tab=wing'
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-un-panel',
+              name: 'UN Panel of External Auditors',
+              path: '/admin/global-relations?slug=page-un-panel-of-external-auditors'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-present-audits',
+              name: 'Present International Audits',
+              path: '/admin/global-relations?slug=page-present-international-audits'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-past-audits',
+              name: 'Past International Audits',
+              path: '/admin/global-relations?slug=page-past-international-audits'
+            }
+          ]
         }
       ]
     },
@@ -234,6 +275,31 @@ export default function FigmaAdminSidebar() {
       path: '/admin/news'
     },
     {
+      type: 'submenu',
+      id: 'user-management',
+      name: 'User Management',
+      children: [
+        {
+          type: 'leaf',
+          id: 'um-roles',
+          name: 'Roles',
+          path: '/admin/users?tab=roles'
+        },
+        {
+          type: 'leaf',
+          id: 'um-wings',
+          name: 'Wings',
+          path: '/admin/users?tab=wings'
+        },
+        {
+          type: 'leaf',
+          id: 'um-users',
+          name: 'Users',
+          path: '/admin/users?tab=users'
+        }
+      ]
+    },
+    {
       type: 'leaf',
       id: 'contact',
       name: 'Contact',
@@ -248,10 +314,14 @@ export default function FigmaAdminSidebar() {
     'state-level-offices': false,
     'central-audit-offices': false,
     'training-institutes': false,
-    'global-relations': false
+    'global-relations': false,
+    'gr-intl-bodies': true,
+    'gr-bilateral': true,
+    'gr-audit-engagements': true,
+    'user-management': true
   });
 
-  // Auto-expand submenus when active route changes
+  // Auto-expand submenus based on active route
   useEffect(() => {
     const newExpanded = { ...expanded };
 
@@ -272,8 +342,13 @@ export default function FigmaAdminSidebar() {
       } else if (['rti', 'iced', 'icisa', 'naaa', 'ical'].includes(type || '')) {
         newExpanded['training-institutes'] = true;
       }
-    } else if (pathname === '/admin/global') {
+    } else if (pathname === '/admin/global' || pathname === '/admin/global-relations') {
       newExpanded['global-relations'] = true;
+      newExpanded['gr-intl-bodies'] = true;
+      newExpanded['gr-bilateral'] = true;
+      newExpanded['gr-audit-engagements'] = true;
+    } else if (pathname === '/admin/users') {
+      newExpanded['user-management'] = true;
     }
 
     setExpanded(newExpanded);
@@ -286,7 +361,7 @@ export default function FigmaAdminSidebar() {
     }));
   };
 
-  // Helper to check active state accurately
+  // Check active state
   const checkIsActive = (targetPath: string) => {
     if (targetPath.includes('?')) {
       const [pathBase, queryString] = targetPath.split('?');
@@ -294,7 +369,12 @@ export default function FigmaAdminSidebar() {
       const targetParams = new URLSearchParams(queryString);
       let matches = true;
       targetParams.forEach((val, key) => {
-        if (searchParams.get(key) !== val) matches = false;
+        const currentVal = searchParams.get(key);
+        // Default tab is 'users' when on /admin/users and tab param is omitted
+        if (pathname === '/admin/users' && key === 'tab' && !currentVal && val === 'users') {
+          return;
+        }
+        if (currentVal !== val) matches = false;
       });
       return matches;
     }
@@ -308,69 +388,90 @@ export default function FigmaAdminSidebar() {
     return pathname === targetPath;
   };
 
-  // Helper to render leaf navigation items
-  const renderLeaf = (leaf: LeafItem) => {
+  // Render Leaf Navigation Item
+  const renderLeaf = (leaf: LeafItem, depth: number = 0) => {
     const isActive = checkIsActive(leaf.path);
+
+    // Precise font colors based on depth
+    const inactiveColor = depth >= 2 ? '#E2CCD5' : '#E2CCD5'; // Soft rose-tinted white for nested leaf items
+    const fontSize = depth >= 2 ? '13px' : '13.5px';
 
     return (
       <div key={leaf.id} className="w-full">
         <Link
           href={leaf.path}
           target={leaf.isExternal ? '_blank' : '_self'}
-          className={`flex items-center justify-between w-full transition-all duration-150 ${
+          className={`flex items-center justify-between w-full transition-all duration-150 text-left ${
             isActive
-              ? 'bg-white/20 shadow-[0px_1px_3px_rgba(0,0,0,0.2)] rounded-[8px] px-3.5 py-2.5 font-medium'
-              : 'px-3.5 py-2 hover:bg-white/10 rounded-[8px]'
+              ? 'bg-white/20 border border-white text-white font-semibold shadow-xs rounded-[10px] px-3.5 py-1.5'
+              : 'px-3.5 py-1.5 hover:text-white hover:bg-white/10 rounded-[8px] border border-transparent'
           }`}
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 500,
-            fontSize: '16px',
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            color: '#FFFFFF'
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontSize: fontSize,
+            lineHeight: '1.4',
+            letterSpacing: '0.01em',
+            color: isActive ? '#FFFFFF' : inactiveColor,
+            fontWeight: isActive ? 600 : 400,
           }}
         >
-          <span className="truncate" style={{ color: '#FFFFFF' }}>{leaf.name}</span>
+          <span className="truncate">{leaf.name}</span>
         </Link>
       </div>
     );
   };
 
-  // Helper to render nested submenus (Level 0, Level 1, Level 2)
-  const renderSubMenu = (sub: SubMenuItem) => {
+  // Render Submenu Header and its nested children with the exact Figma vertical line & dropdown styling
+  const renderSubMenu = (sub: SubMenuItem, depth: number = 0) => {
     const isOpen = !!expanded[sub.id];
 
+    // Typography & colors based on hierarchy level (Main Title vs Dropdown vs Sub-Dropdown)
+    const isMainTitle = depth === 0;
+    const isDropdown = depth === 1;
+    
+    const textColor = isMainTitle 
+      ? '#FFFFFF' 
+      : isDropdown 
+      ? '#F1E3E8' 
+      : '#E5D2DC'; // Sub-dropdown
+
+    const fontSize = isMainTitle 
+      ? '14.5px' 
+      : isDropdown 
+      ? '14px' 
+      : '13.5px';
+
+    const fontWeight = isMainTitle ? 600 : 500;
+
     return (
-      <div key={sub.id} className="w-full flex flex-col gap-1">
-        {/* Submenu Trigger Header */}
+      <div key={sub.id} className="w-full flex flex-col">
+        {/* Accordion Dropdown Trigger */}
         <button
           type="button"
           onClick={() => toggleExpand(sub.id)}
-          className="flex items-center justify-between w-full py-2.5 px-3.5 rounded-[8px] text-left transition-colors cursor-pointer group hover:bg-white/10"
+          className={`flex items-center justify-between w-full rounded-[6px] text-left transition-colors cursor-pointer group select-none hover:bg-white/10 ${
+            isMainTitle ? 'py-2 px-3' : 'py-1.5 px-3'
+          }`}
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 500,
-            fontSize: '16px',
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            color: '#FFFFFF'
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            letterSpacing: '0.01em',
+            color: textColor
           }}
         >
-          <span className="truncate font-medium" style={{ color: '#FFFFFF' }}>
-            {sub.name}
-          </span>
-          <ChevronIcon isOpen={isOpen} strokeColor="#FFFFFF" />
+          <span className="truncate">{sub.name}</span>
+          <ChevronIcon isOpen={isOpen} depth={depth} />
         </button>
 
-        {/* Nested Submenu Children with Left Vertical Border Line */}
+        {/* Nested Dropdown Container with Vertical Guide Line */}
         {isOpen && (
-          <div className="border-l border-white/40 ml-3.5 pl-2 py-1 flex flex-col gap-1.5 w-full">
+          <div className="border-l border-white/20 ml-3 pl-2.5 flex flex-col gap-1 w-full my-1">
             {sub.children.map(child => {
               if (child.type === 'leaf') {
-                return renderLeaf(child);
+                return renderLeaf(child, depth + 1);
               }
-              return renderSubMenu(child);
+              return renderSubMenu(child, depth + 1);
             })}
           </div>
         )}
@@ -383,67 +484,57 @@ export default function FigmaAdminSidebar() {
       className="h-full max-h-full flex flex-col flex-shrink-0 select-none overflow-hidden"
       style={{
         boxSizing: 'border-box',
-        width: '320px',
-        minWidth: '320px',
-        maxWidth: '320px',
-        padding: '20px 16px',
-        background: '#751639',
-        fontFamily: "'Inter', sans-serif",
-        fontWeight: 500,
-        fontSize: '16px',
-        lineHeight: '100%',
-        letterSpacing: '0%',
+        width: '280px',
+        minWidth: '280px',
+        maxWidth: '280px',
+        padding: '16px 12px',
+        background: 'rgba(117, 22, 57, 1)',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         color: '#FFFFFF'
       }}
     >
       {/* Brand Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-white/20 w-full shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[6px] bg-white flex items-center justify-center text-sm text-[#751639] font-black shadow-xs">
+      <div className="flex items-center justify-between pb-3.5 mb-2 border-b border-white/15 w-full shrink-0 px-1">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-[6px] bg-white flex items-center justify-center text-xs text-[#751639] font-black shadow-xs tracking-tight">
             CAG
           </div>
           <div>
             <span 
-              className="text-[14px] uppercase tracking-wider font-bold block"
-              style={{ fontFamily: "'Inter', sans-serif", color: '#FFFFFF' }}
+              className="text-[13px] uppercase tracking-wider font-bold block leading-none text-white"
             >
               SUPER ADMIN
             </span>
             <span 
-              className="text-[11px] block font-normal text-white/80"
-              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="text-[10px] block font-normal text-white/70 mt-0.5 leading-none"
             >
               Management Portal
             </span>
           </div>
         </div>
         <span 
-          className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full"
-          style={{ fontFamily: "'Inter', sans-serif" }}
+          className="px-2 py-0.5 text-[9.5px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full"
         >
           Live
         </span>
       </div>
 
-      {/* Main Navigation Tree - Scrollable to End */}
-      <nav className="flex-1 overflow-y-auto overscroll-contain py-3 space-y-1 w-full scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+      {/* Main Navigation Tree - Scrollable with Styled Themed Scrollbar */}
+      <nav className="flex-1 overflow-y-auto overscroll-contain py-1 space-y-0.5 w-full pr-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
         {menuItems.map(item => {
           if (item.type === 'leaf') {
-            return renderLeaf(item);
+            return renderLeaf(item, 0);
           }
-          return renderSubMenu(item);
+          return renderSubMenu(item, 0);
         })}
       </nav>
 
       {/* Bottom Info Footer */}
       <div 
-        className="pt-3 border-t border-white/20 text-xs flex flex-col gap-1.5 w-full shrink-0 mt-auto"
-        style={{ fontFamily: "'Inter', sans-serif", color: '#FFFFFF' }}
+        className="pt-2.5 border-t border-white/15 text-[10.5px] flex justify-between items-center w-full shrink-0 mt-auto px-1 text-white/70"
       >
-        <div className="flex justify-between items-center text-[11px]" style={{ color: '#FFFFFF' }}>
-          <span style={{ color: '#FFFFFF' }}>Admin Suite v2.0</span>
-          <span style={{ color: '#FFFFFF' }}>Article 148–151</span>
-        </div>
+        <span>Admin Suite v2.0</span>
+        <span>Article 148–151</span>
       </div>
     </aside>
   );

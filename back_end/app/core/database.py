@@ -50,3 +50,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_psycopg2_connection():
+    import psycopg2
+    if settings.DATABASE_URL:
+        url = settings.DATABASE_URL.replace("postgresql+psycopg2://", "postgresql://")
+        return psycopg2.connect(url)
+    return psycopg2.connect(
+        host=settings.DB_HOST,
+        port=settings.DB_PORT,
+        dbname=settings.DB_NAME,
+        user=settings.DB_USER,
+        password=settings.DB_PASSWORD,
+    )
+

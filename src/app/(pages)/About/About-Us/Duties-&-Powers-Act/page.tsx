@@ -97,15 +97,34 @@ const TABLE_DATA = [
 
 export default function DutiesPowersActPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें' : "DPC Act - CAG's Duties Powers and Conditions of Service");
 
   return (
     <AboutLayout title={isHindi ? 'कर्तव्य और शक्तियां अधिनियम' : 'Duties & Powers Act'}>
@@ -122,7 +141,7 @@ export default function DutiesPowersActPage() {
             margin: 0
           }}
         >
-          {isHindi ? 'डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें' : "DPC Act - CAG's Duties Powers and Conditions of Service"}
+          {pageTitle}
         </h1>
 
         {/* Subheading */}
