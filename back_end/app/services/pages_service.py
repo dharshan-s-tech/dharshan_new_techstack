@@ -163,7 +163,7 @@ class PagesService:
                         p.slug,
                         COALESCE(NULLIF(pt.title, ''), p.title) AS title,
                         COALESCE(NULLIF(pt.excerpt, ''), p.excerpt) AS excerpt,
-                        COALESCE(NULLIF(pt.content, ''), p.content) AS content,
+                        COALESCE(NULLIF(pt.content, ''), NULLIF(p.content, ''), NULLIF(pt.excerpt, ''), p.excerpt) AS content,
                         COALESCE(NULLIF(pt.file_title, ''), p.file_title) AS file_title,
                         COALESCE(NULLIF(pt.upload_file, ''), p.upload_file) AS upload_file,
                         p.created_at,
@@ -175,8 +175,11 @@ class PagesService:
                     AND (
                         p.slug = :raw_key 
                         OR p.slug = 'page-' || :raw_key 
+                        OR p.slug LIKE :raw_key || '-%'
+                        OR p.slug LIKE 'page-' || :raw_key || '-%'
                         OR CAST(p.id AS VARCHAR) = :target_id
                     )
+                    ORDER BY p.id DESC
                     LIMIT 1;
                 """)
                 row = db.execute(query, {

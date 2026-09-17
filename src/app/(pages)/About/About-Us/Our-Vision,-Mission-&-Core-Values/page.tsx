@@ -41,6 +41,52 @@ const LOCAL_DICTS = {
   }
 };
 
+function parseVisionMissionData(pageData: any, lang: 'English' | 'हिन्दी') {
+  const fallback = LOCAL_DICTS[lang] || LOCAL_DICTS.English;
+  if (!pageData) return fallback;
+
+  let text = { ...fallback };
+  const content = pageData.content || '';
+  const excerpt = pageData.excerpt || '';
+
+  if (content && typeof content === 'string') {
+    if (content.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(content);
+        return { ...fallback, ...parsed };
+      } catch (e) { }
+    }
+
+    // Parse HTML format stored in cag_revamp.pages
+    const visionMatch = content.match(/<h4>\s*VISION\s*<\/h4>[\s\S]*?<p><em>(.*?)<\/em><\/p>[\s\S]*?<p[^>]*>(.*?)<\/p>/i);
+    const missionMatch = content.match(/<h4>\s*MISSION\s*<\/h4>[\s\S]*?<p><em>(.*?)<\/em><\/p>[\s\S]*?<p[^>]*>(.*?)<\/p>/i);
+    const instMatch = content.match(/Institutional Values\s*<\/strong>\s*:\s*(.*?)(?:<\/p>|<br)/i);
+    const peopleMatch = content.match(/People Values\s*<\/strong>\s*:\s*(.*?)(?:<\/p>|<br)/i);
+
+    if (visionMatch) {
+      if (visionMatch[1]) text.visionSub = visionMatch[1].trim();
+      if (visionMatch[2]) text.visionDesc = visionMatch[2].replace(/<[^>]+>/g, '').trim();
+    }
+    if (missionMatch) {
+      if (missionMatch[1]) text.missionSub = missionMatch[1].trim();
+      if (missionMatch[2]) text.missionDesc = missionMatch[2].replace(/<[^>]+>/g, '').trim();
+    }
+    if (instMatch && instMatch[1]) {
+      text.valuesDescInstText = instMatch[1].replace(/<[^>]+>/g, '').trim();
+    }
+    if (peopleMatch && peopleMatch[1]) {
+      text.valuesDescPeopleText = peopleMatch[1].replace(/<[^>]+>/g, '').trim();
+    }
+  }
+
+  // If excerpt is provided from admin edit, apply it as overview/vision description
+  if (excerpt && typeof excerpt === 'string' && excerpt.trim()) {
+    text.visionDesc = excerpt.trim();
+  }
+
+  return text;
+}
+
 export default function VisionMissionPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
   const [pageData, setPageData] = useState<any>(null);
@@ -70,7 +116,7 @@ export default function VisionMissionPage() {
   }, []);
 
   const isHindi = lang === 'हिन्दी';
-  const text = LOCAL_DICTS[lang] || LOCAL_DICTS.English;
+  const text = parseVisionMissionData(pageData, lang);
   const pageTitle = pageData?.title || text.pageTitle;
 
   return (

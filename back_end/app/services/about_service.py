@@ -498,6 +498,7 @@ class AboutAdminService:
                         UPDATE cag_revamp.pages
                         SET title = :title,
                             excerpt = :excerpt,
+                            content = COALESCE(NULLIF(:content, ''), content, :excerpt),
                             upload_file = COALESCE(NULLIF(:upload_file, ''), upload_file),
                             status = :status,
                             modified_at = NOW()
@@ -505,6 +506,7 @@ class AboutAdminService:
                     """), {
                         "title": title_en,
                         "excerpt": desc,
+                        "content": desc,
                         "upload_file": file_name,
                         "status": is_active,
                         "id": pid
@@ -519,14 +521,15 @@ class AboutAdminService:
                             db.execute(text("""
                                 UPDATE cag_revamp.page_translations
                                 SET title = :title,
-                                    excerpt = :excerpt
+                                    excerpt = :excerpt,
+                                    content = COALESCE(NULLIF(:content, ''), content, :excerpt)
                                 WHERE page_id = :pid AND culture = 'hi';
-                            """), {"title": title_hi, "excerpt": desc, "pid": pid})
+                            """), {"title": title_hi, "excerpt": desc, "content": desc, "pid": pid})
                         else:
                             db.execute(text("""
-                                INSERT INTO cag_revamp.page_translations (page_id, culture, title, excerpt)
-                                VALUES (:pid, 'hi', :title, :excerpt);
-                            """), {"pid": pid, "title": title_hi, "excerpt": desc})
+                                INSERT INTO cag_revamp.page_translations (page_id, culture, title, excerpt, content)
+                                VALUES (:pid, 'hi', :title, :excerpt, :content);
+                            """), {"pid": pid, "title": title_hi, "excerpt": desc, "content": desc})
                     db.commit()
                     return data
 

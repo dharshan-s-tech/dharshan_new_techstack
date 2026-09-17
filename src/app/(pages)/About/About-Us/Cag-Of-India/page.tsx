@@ -166,8 +166,8 @@ export default function CagOfIndiaPage() {
           {/* Left Photo Frame */}
           <div className="relative z-10 w-[210px] h-[150px] rounded-md overflow-hidden shrink-0 border border-[#EAEAEA] shadow-sm">
             <img 
-              src="/assets/cag-desk-photo.png" 
-              alt={isHindi ? "श्री के संजय मूर्ति, भारत के नियंत्रक और महालेखापरीक्षक" : "Shri K. Sanjay Murthy, Comptroller and Auditor General of India"} 
+              src={pageData?.upload_file_url || (pageData?.upload_file ? (pageData.upload_file.startsWith('http') ? pageData.upload_file : `/uploads/cms_pages_files/${pageData.upload_file}`) : "/assets/cag-desk-photo.png")} 
+              alt={pageData?.title || (isHindi ? "श्री के संजय मूर्ति, भारत के नियंत्रक और महालेखापरीक्षक" : "Shri K. Sanjay Murthy, Comptroller and Auditor General of India")} 
               className="w-full h-full object-cover"
             />
           </div>
@@ -178,13 +178,13 @@ export default function CagOfIndiaPage() {
               className="text-[32px] font-bold leading-[40px] text-[#751639]"
               style={{ fontFamily: 'Noto Sans, sans-serif', color: '#751639' }}
             >
-              {isHindi ? 'श्री के संजय मूर्ति' : 'Shri K Sanjay Murthy'}
+              {pageData?.title || (isHindi ? 'श्री के संजय मूर्ति' : 'Shri K Sanjay Murthy')}
             </h2>
             <p 
               className="text-[16px] font-normal leading-[24px] text-[#333333]"
               style={{ fontFamily: 'Noto Sans, sans-serif', color: '#333333' }}
             >
-              {isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'Comptroller and Audit General of India'}
+              {pageData?.excerpt || (isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'Comptroller and Auditor General of India')}
             </p>
           </div>
         </div>
