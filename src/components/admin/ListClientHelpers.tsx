@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { deleteRecord } from './actions';
 
 export function DeleteErrorAlert() {
@@ -38,8 +38,24 @@ export function DeleteErrorAlert() {
   );
 }
 
-export function PaginationLinks({ page, totalPages }: { page: number; totalPages: number }) {
+export function PaginationLinks({
+  page,
+  totalPages,
+  totalCount,
+  pageSize = 10,
+  noun = 'entries',
+}: {
+  page: number;
+  totalPages: number;
+  totalCount?: number;
+  pageSize?: number;
+  noun?: string;
+}) {
   const searchParams = useSearchParams();
+  const pages = Math.max(1, totalPages || 1);
+  const count = typeof totalCount === 'number' ? totalCount : 0;
+  const start = count === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, count);
 
   const getPageUrl = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -47,18 +63,51 @@ export function PaginationLinks({ page, totalPages }: { page: number; totalPages
     return `?${params.toString()}`;
   };
 
+  const nums: number[] = [];
+  const windowSize = 3;
+  let from = Math.max(1, page - 1);
+  let to = Math.min(pages, from + windowSize - 1);
+  from = Math.max(1, to - windowSize + 1);
+  for (let i = from; i <= to; i++) nums.push(i);
+
   return (
-    <div className="flex gap-1">
-      {page > 1 && (
-        <Link href={getPageUrl(page - 1)} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center justify-center">
-          <ChevronLeft className="w-4 h-4" />
+    <div className="admin-pagination w-full px-5 py-3.5 border-t border-[#e8e8e8] bg-white flex items-center justify-between gap-3 flex-wrap">
+      <p className="text-[13px] text-[#888] m-0">
+        Showing {start} to {end} of {count.toLocaleString()} {noun}
+      </p>
+      <div className="flex items-center gap-1.5">
+        <Link
+          href={getPageUrl(Math.max(1, page - 1))}
+          className={`w-8 h-8 flex items-center justify-center rounded border border-[#e5e5e5] bg-white text-sm ${
+            page <= 1 ? 'pointer-events-none opacity-40 text-[#b0b0b0]' : 'text-[#888] hover:bg-zinc-50'
+          }`}
+          aria-label="Previous page"
+        >
+          ‹
         </Link>
-      )}
-      {page < totalPages && (
-        <Link href={getPageUrl(page + 1)} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center justify-center">
-          <ChevronRight className="w-4 h-4" />
+        {nums.map((n) => (
+          <Link
+            key={n}
+            href={getPageUrl(n)}
+            className={`min-w-8 h-8 px-2 flex items-center justify-center rounded text-[13px] font-semibold ${
+              n === page
+                ? 'bg-[#751639] text-white border border-[#751639]'
+                : 'bg-white text-[#666] border border-[#e5e5e5] hover:bg-zinc-50'
+            }`}
+          >
+            {n}
+          </Link>
+        ))}
+        <Link
+          href={getPageUrl(Math.min(pages, page + 1))}
+          className={`w-8 h-8 flex items-center justify-center rounded border border-[#e5e5e5] bg-white text-sm ${
+            page >= pages ? 'pointer-events-none opacity-40 text-[#b0b0b0]' : 'text-[#888] hover:bg-zinc-50'
+          }`}
+          aria-label="Next page"
+        >
+          ›
         </Link>
-      )}
+      </div>
     </div>
   );
 }

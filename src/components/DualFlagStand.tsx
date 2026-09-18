@@ -225,7 +225,7 @@ export default function DualFlagStand({ country }: DualFlagStandProps) {
           <g>
             <rect width="54" height="36" fill="#006C35" />
             <path d="M12 25 H42" stroke="#FFFFFF" strokeWidth="1.8" />
-            <text x="27" y="17" font-family="sans-serif" font-size="7" fill="#FFFFFF" textAnchor="middle" font-weight="bold">الـلـه</text>
+            <text x="27" y="17" fontFamily="sans-serif" fontSize="7" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">الـلـه</text>
           </g>
         );
       case 'south africa':

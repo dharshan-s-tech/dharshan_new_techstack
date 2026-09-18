@@ -33,7 +33,7 @@ const NAV: NavGroup[] = [
   {
     group: 'Dashboard', icon: LayoutDashboard, items: [
       { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
-      { label: 'Admin Users', href: '/admin/users', icon: Users },
+      { label: 'User Management', href: '/admin/users?tab=users', icon: Users },
       { label: 'Audit Log', href: '/admin/audit-log', icon: ScrollText },
     ]
   },

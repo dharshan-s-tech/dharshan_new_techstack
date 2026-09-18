@@ -199,16 +199,18 @@ export default function SearchableStateSelect({
         />
       )}
 
-      {/* Trigger Button - Matches exact same UI as native <select> */}
+      {/* Trigger Button - Matches admin select fields (rounded-lg) */}
       <button
         type="button"
         onClick={toggleDropdown}
         disabled={disabled}
-        className={`w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 text-xs flex items-center justify-between focus:outline-none focus:border-[#751639] transition-colors cursor-pointer disabled:bg-zinc-100 disabled:cursor-not-allowed ${
-          isOpen ? 'border-[#751639]' : 'hover:border-zinc-400'
+        className={`w-full bg-white border border-zinc-200 rounded-lg px-3 text-zinc-800 flex items-center justify-between focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15 transition-colors cursor-pointer disabled:bg-zinc-100 disabled:cursor-not-allowed ${
+          size === 'lg' ? 'py-3 text-sm' : size === 'md' ? 'py-2.5 text-sm' : 'py-2.5 text-sm'
+        } ${
+          isOpen ? 'border-[#751639]' : 'hover:border-zinc-300'
         } ${buttonClassName}`}
       >
-        <span className="truncate pr-2 text-zinc-850 font-normal">
+        <span className="truncate pr-2 font-normal">
           {displayLabel}
         </span>
 
@@ -227,11 +229,11 @@ export default function SearchableStateSelect({
       {/* Popover Menu with Search Bar and All States */}
       {isOpen && (
         <div 
-          className={`absolute left-0 top-full mt-0.5 w-full min-w-[260px] bg-white border border-zinc-300 shadow-xl z-50 rounded-none animate-fadeIn ${dropdownClassName}`}
+          className={`absolute left-0 top-full mt-1 w-full min-w-[260px] bg-white border border-zinc-200 shadow-xl z-50 rounded-lg overflow-hidden animate-fadeIn ${dropdownClassName}`}
           style={{ maxHeight: '380px' }}
         >
           {/* Search Bar Input inside Dropdown */}
-          <div className="p-2 border-b border-zinc-200 bg-[#fafbfc] sticky top-0 z-10">
+          <div className="p-2 border-b border-zinc-100 bg-[#fafbfc] sticky top-0 z-10">
             <div className="relative flex items-center">
               <span className="absolute left-2.5 text-zinc-400 text-xs">🔍</span>
               <input
@@ -240,7 +242,7 @@ export default function SearchableStateSelect({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search state..."
-                className="w-full bg-white border border-zinc-300 rounded-none pl-7 pr-6 py-1 text-xs text-zinc-850 placeholder-zinc-400 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-white border border-zinc-200 rounded-lg pl-7 pr-6 py-1.5 text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-[#751639]"
                 onClick={e => e.stopPropagation()}
               />
               {searchQuery && (

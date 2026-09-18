@@ -16,28 +16,49 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
 
-    DB_HOST: str = "10.10.183.69"
-    DB_PORT: int = 5434
-    DB_NAME: str = "cag_db_final"
-    DB_USER: str = "test"
-    DB_PASSWORD: str = "Test@123"
+    DB_HOST: str = "15.252.41.241"
+    DB_PORT: int = 5432
+    DB_NAME: str = "cag_new"
+    DB_USER: str = "kreethi"
+    DB_PASSWORD: str = "kreethi@123"
     DB_SCHEMA: str = "cag_revamp"
+    SECURITY_SALT: str = "c3fd7183d431b3f8967db69db1d089200427fa226185a9af60e16a1d19312368"
+    ENCRYPTION_KEY: str = "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA"
     DATABASE_URL: str | None = None
+    CLOUDFRONT_BASE_URL: str = "https://d7i5wg8xwe4hf.cloudfront.net"
 
     @property
     def sqlalchemy_database_url(self) -> str:
-        if self.DATABASE_URL:
-            return self.DATABASE_URL
+        # Prefer explicit DB_* from this project's .env.
+        # Ignore unrelated machine-level DATABASE_URL values (other local apps).
         password = quote_plus(self.DB_PASSWORD)
-        return (
+        built = (
             f"postgresql+psycopg2://{self.DB_USER}:{password}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
+        if self.DATABASE_URL and self.DATABASE_URL.strip():
+            url = self.DATABASE_URL.strip()
+            if self.DB_NAME in url and self.DB_HOST in url:
+                return url
+        return built
+
+    def validate_security_compliance(self):
+        """
+        CERT-In security compliance enforcement:
+        In production, ENCRYPTION_KEY and SECURITY_SALT must not be empty or default.
+        """
+        if self.ENVIRONMENT.lower() == "production":
+            if not self.ENCRYPTION_KEY or self.ENCRYPTION_KEY == "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA":
+                raise RuntimeError("CERT-In Violation: ENCRYPTION_KEY environment variable must be set in production")
+            if not self.SECURITY_SALT:
+                raise RuntimeError("CERT-In Violation: SECURITY_SALT environment variable must be set in production")
 
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    s.validate_security_compliance()
+    return s
 
 
 settings = get_settings()
