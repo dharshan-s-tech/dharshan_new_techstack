@@ -199,6 +199,9 @@ class AboutAdminService:
                         "item_count": 1,
                         "created_at": str(fc.get('created') or '02-Dec-2019 11:20 AM'),
                         "modified_at": str(fc.get('modified') or '09-Sep-2026 06:10 PM'),
+                        "tenure_from": str(fc.get('tenure_from') or ''),
+                        "tenure_to": str(fc.get('tenure_to') or ''),
+                        "legacy_title": str(fc.get('title') or 'Former Comptroller and Auditor General of India'),
                     })
                     rec_id += 1
 
@@ -211,6 +214,7 @@ class AboutAdminService:
                         oc.designation_display_name,
                         oc.email,
                         oc.mobile_no,
+                        oc.office_details,
                         oc.profile_image,
                         oc.department,
                         oc.additional_charge,
@@ -269,8 +273,14 @@ class AboutAdminService:
                         "language": "Bilingual" if name_hi else "EN",
                         "is_active": is_active,
                         "item_count": 1,
-                        "created_at": str(oc.get('created') or '01-Jan-2020 10:00 AM'),
-                        "modified_at": str(oc.get('modified') or '09-Sep-2026 06:10 PM'),
+                        "created_at": str(oc.get('created') or '01-Jan-2026 10:00 AM'),
+                        "modified_at": str(oc.get('modified') or '09-Sep-2026 06:15 PM'),
+                        "prefix_name": str(oc.get('prefix_name') or 'Shri'),
+                        "designation_display_name": desig,
+                        "department": str(oc.get('department') or ''),
+                        "email": str(oc.get('email') or ''),
+                        "mobile_no": str(oc.get('mobile_no') or ''),
+                        "reporting_offices": str(oc.get('office_details') or ''),
                     })
                     rec_id += 1
 
@@ -571,15 +581,24 @@ class AboutAdminService:
                 fcid_str = raw_id.replace("former-cag-", "")
                 if fcid_str.isdigit():
                     fcid = int(fcid_str)
+                    t_from = str(data.get("tenure_from") or "").strip()
+                    t_to = str(data.get("tenure_to") or "").strip()
+                    leg_title = str(data.get("legacy_title") or data.get("title") or "Former Comptroller and Auditor General of India").strip()
                     db.execute(text("""
                         UPDATE cag_revamp.former_cag
                         SET tenure = :tenure,
+                            title = :title,
+                            tenure_from = COALESCE(NULLIF(:t_from, ''), tenure_from),
+                            tenure_to = COALESCE(NULLIF(:t_to, ''), tenure_to),
                             image = COALESCE(NULLIF(:image, ''), image),
                             status = :status,
                             modified = NOW()
                         WHERE id = :id;
                     """), {
                         "tenure": title_en,
+                        "title": leg_title,
+                        "t_from": t_from,
+                        "t_to": t_to,
                         "image": file_name,
                         "status": is_active,
                         "id": fcid
@@ -587,38 +606,65 @@ class AboutAdminService:
                     db.commit()
                     return data
 
-            # 3. Update Existing Organisation Chart
+            # 3. Update Existing Organisation Chart Officer
             elif raw_id.startswith("org-chart-"):
                 ocid_str = raw_id.replace("org-chart-", "")
                 if ocid_str.isdigit():
                     ocid = int(ocid_str)
+                    prefix = str(data.get("prefix_name") or "").strip()
+                    desig = str(data.get("designation_display_name") or data.get("designation") or "").strip()
+                    dept = str(data.get("department") or "").strip()
+                    email = str(data.get("email") or "").strip()
+                    mobile = str(data.get("mobile_no") or "").strip()
+                    rep_offices = str(data.get("reporting_offices") or data.get("desc") or "").strip()
+                    disp_order = int(data.get("display_order") or 0)
+
                     db.execute(text("""
                         UPDATE cag_revamp.organisation_chart
                         SET full_name = :name,
+                            prefix_name = COALESCE(NULLIF(:prefix, ''), prefix_name),
+                            designation_display_name = COALESCE(NULLIF(:desig, ''), designation_display_name),
+                            department = COALESCE(NULLIF(:dept, ''), department),
+                            email = COALESCE(NULLIF(:email, ''), email),
+                            mobile_no = COALESCE(NULLIF(:mobile, ''), mobile_no),
+                            office_details = COALESCE(NULLIF(:rep_offices, ''), office_details),
                             profile_image = COALESCE(NULLIF(:profile_image, ''), profile_image),
+                            display_order = CASE WHEN :disp_order > 0 THEN :disp_order ELSE display_order END,
                             status = :status,
                             modified = NOW()
                         WHERE id = :id;
                     """), {
                         "name": title_en,
+                        "prefix": prefix,
+                        "desig": desig,
+                        "dept": dept,
+                        "email": email,
+                        "mobile": mobile,
+                        "rep_offices": rep_offices,
                         "profile_image": file_name,
+                        "disp_order": disp_order,
                         "status": is_active,
                         "id": ocid
                     })
                     db.commit()
                     return data
 
-            # 4. INSERT NEW RECORD
-            if subtopic == "Former CAGs Gallery" or table_name == "cag_revamp.former_cag":
+            # 4. INSERT NEW RECORD (Type Specific)
+            if subtopic == "Former CAGs Gallery" or table_name == "cag_revamp.former_cag" or subtopic_slug == "former-cags":
+                t_from = str(data.get("tenure_from") or "2024").strip()
+                t_to = str(data.get("tenure_to") or "2029").strip()
+                leg_title = str(data.get("legacy_title") or data.get("title") or "Former Comptroller and Auditor General of India").strip()
                 res = db.execute(text("""
                     INSERT INTO cag_revamp.former_cag (
                         title, language, tenure, tenure_from, tenure_to, image, status, created_by, created, modified
                     ) VALUES (
-                        :title, 'en', :tenure, '2026', '2030', :image, :status, 1, NOW(), NOW()
+                        :title, 'en', :tenure, :tenure_from, :tenure_to, :image, :status, 1, NOW(), NOW()
                     ) RETURNING id;
                 """), {
-                    "title": title_en,
+                    "title": leg_title,
                     "tenure": title_en,
+                    "tenure_from": t_from,
+                    "tenure_to": t_to,
                     "image": file_name,
                     "status": is_active
                 })
@@ -629,17 +675,27 @@ class AboutAdminService:
                 data["formattedId"] = f"#AB-FC{str(new_id).zfill(3)}"
                 return data
 
-            elif subtopic == "Organisation-Chart" or table_name == "cag_revamp.organisation_chart":
+            elif subtopic == "Organisation-Chart" or table_name == "cag_revamp.organisation_chart" or subtopic_slug == "organisation-chart":
+                prefix = str(data.get("prefix_name") or "Shri").strip()
+                desig = str(data.get("designation_display_name") or data.get("designation") or "Deputy Comptroller & Auditor General").strip()
+                dept = str(data.get("department") or "Executive Portfolio").strip()
+                email = str(data.get("email") or "").strip()
+                mobile = str(data.get("mobile_no") or "").strip()
+                rep_offices = str(data.get("reporting_offices") or data.get("desc") or "").strip()
+                disp_order = int(data.get("display_order") or 1)
+
                 res = db.execute(text("""
                     INSERT INTO cag_revamp.organisation_chart (
                         full_name, designation, designation_display_name, language, prefix_name, email, mobile_no, department,
+                        office_details, profile_image, display_order,
                         designation_hierarchy_id, org_charge_master_id,
                         additional_reporting_to, additional_charge, dept_description, created_by, modified_by,
                         charge_assumption_date, charge_assumption_to_date, no_charge_remark, std_code,
                         display_name, seniority_confirmed, reporting_history_from, reporting_history_to,
                         reporting_to_history_ids, reporting_history_offices, status, created, modified
                     ) VALUES (
-                        :full_name, 1, :desig, 'en', '', '', '', :dept,
+                        :full_name, 1, :desig, 'en', :prefix, :email, :mobile, :dept,
+                        :office_details, :profile_image, :display_order,
                         2, 1,
                         '', '', '', 1, 1,
                         '', '', '', '',
@@ -648,8 +704,14 @@ class AboutAdminService:
                     ) RETURNING id;
                 """), {
                     "full_name": title_en,
-                    "desig": data.get("desc") or "Executive Officer",
-                    "dept": "IA&AD Executive Portfolio",
+                    "desig": desig,
+                    "prefix": prefix,
+                    "email": email,
+                    "mobile": mobile,
+                    "dept": dept,
+                    "office_details": rep_offices,
+                    "profile_image": file_name,
+                    "display_order": disp_order,
                     "status": is_active
                 })
                 new_id = res.scalar()

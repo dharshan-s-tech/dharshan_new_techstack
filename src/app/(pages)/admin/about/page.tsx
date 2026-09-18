@@ -9,7 +9,8 @@ import {
   Landmark, UserCheck, Compass, GitBranch, Award, Library, Users,
   Scale, ScrollText, BookOpen, Search, Filter, RotateCcw, ExternalLink,
   Pencil, Eye, Plus, CheckCircle2, FileText, ChevronRight, Layers,
-  ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database, Shield
+  ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database, Shield,
+  Upload, Image as ImageIcon, Paperclip, FileUp, Lock, Sparkles
 } from 'lucide-react';
 import VisualDocumentEditor from './VisualDocumentEditor';
 
@@ -171,6 +172,101 @@ function AdminAboutRegistryContent() {
   const [formLanguage, setFormLanguage] = useState<'EN' | 'HI' | 'Bilingual'>('Bilingual');
   const [formIsActive, setFormIsActive] = useState(true);
 
+  // File Upload State
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Subtopic-Specific Dynamic Form States
+  // 1. Organisation Chart States
+  const [formPrefix, setFormPrefix] = useState('Shri');
+  const [formDesignationEn, setFormDesignationEn] = useState('Deputy Comptroller & Auditor General');
+  const [formDesignationHi, setFormDesignationHi] = useState('उप नियंत्रक एवं महालेखापरीक्षक');
+  const [formDepartmentEn, setFormDepartmentEn] = useState('');
+  const [formDepartmentHi, setFormDepartmentHi] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formReportingOfficesEn, setFormReportingOfficesEn] = useState('');
+  const [formReportingOfficesHi, setFormReportingOfficesHi] = useState('');
+  const [formDisplayOrder, setFormDisplayOrder] = useState<number>(1);
+
+  // 2. Former CAG States
+  const [formTenureFrom, setFormTenureFrom] = useState('');
+  const [formTenureTo, setFormTenureTo] = useState('');
+  const [formLegacyTitle, setFormLegacyTitle] = useState('Former Comptroller and Auditor General of India');
+
+  // 3. History of IAAD States
+  const [formHistoryVolume, setFormHistoryVolume] = useState('Analytical History 1947-1989');
+  const [formChapterNumber, setFormChapterNumber] = useState('Ch 1');
+
+  // 4. Audit Advisory Board States
+  const [formBoardType, setFormBoardType] = useState<'Member Profile' | 'Board Term Session'>('Member Profile');
+  const [formMemberExpertiseEn, setFormMemberExpertiseEn] = useState('');
+  const [formMemberExpertiseHi, setFormMemberExpertiseHi] = useState('');
+
+  // 5. Audit Regulations States
+  const [formRegulationClass, setFormRegulationClass] = useState('Regulations on Audit & Accounts');
+  const [formGazetteRef, setFormGazetteRef] = useState('');
+  const [formGazetteYear, setFormGazetteYear] = useState('2020');
+
+  const docInputRef = React.useRef<HTMLInputElement>(null);
+  const imgInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDoc(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'file');
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFormFileUrl(data.url);
+        setFormFileName(data.name || file.name);
+      } else {
+        const err = await res.json();
+        setUploadError(err.error || 'Failed to upload document');
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Document upload failed');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImg(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'image');
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFormThumbImage(data.url);
+      } else {
+        const err = await res.json();
+        setUploadError(err.error || 'Failed to upload image');
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImg(false);
+    }
+  };
+
   // Load Data with Backend API & Fast In-Memory Fallback
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -304,19 +400,73 @@ function AdminAboutRegistryContent() {
 
   const handleOpenCreate = () => {
     setEditingRawId(null);
-    setFormCategory('Who We Are');
-    setFormSubTopic('CAG of India Profile');
+    const activeSub = subTopicFilter !== 'All' ? subTopicFilter : 'cag-of-india';
+    
+    // Determine category and subtopic based on active subtopic filter
+    let cat: 'Who We Are' | 'Leadership & Legacy' | 'Governance & Mandate' = 'Who We Are';
+    let sub = 'Organisation-Chart';
+    let defUrl = '/About/About-Us/Organisation-Chart';
+    let tbl = 'cag_revamp.organisation_chart';
+
+    if (activeSub === 'former-cags' || categoryFilter === 'Leadership & Legacy') {
+      cat = 'Leadership & Legacy';
+      sub = 'Former CAGs Gallery';
+      defUrl = '/About/About-Us/Former-Comptroller-and-Auditors-General';
+      tbl = 'cag_revamp.former_cag';
+    } else if (activeSub === 'history-of-indian-audit-and-accounts-department') {
+      cat = 'Leadership & Legacy';
+      sub = 'History of IAAD';
+      defUrl = '/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department';
+      tbl = 'cag_revamp.pages';
+    } else if (activeSub === 'audit-advisory-board') {
+      cat = 'Leadership & Legacy';
+      sub = 'Audit-Advisory-Board';
+      defUrl = '/About/About-Us/Audit-Advisory-Board';
+      tbl = 'cag_revamp.pages';
+    } else if (activeSub === 'cag-audit-regulations' || categoryFilter === 'Governance & Mandate') {
+      cat = 'Governance & Mandate';
+      sub = 'Audit-Regulation';
+      defUrl = '/About/About-Us/Audit-Regulation';
+      tbl = 'cag_revamp.pages';
+    }
+
+    setFormCategory(cat);
+    setFormSubTopic(sub);
     setFormTitleEn('');
     setFormTitleHi('');
     setFormDesc('');
-    setFormTable('cag_revamp.pages');
-    setFormSlug('page-new-section');
-    setFormPublicUrl('/About/About-Us/Cag-Of-India');
+    setFormTable(tbl);
+    setFormSlug(`record-${Date.now()}`);
+    setFormPublicUrl(defUrl);
     setFormFileUrl('');
     setFormFileName('');
     setFormThumbImage('https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg');
     setFormLanguage('Bilingual');
     setFormIsActive(true);
+
+    // Subtopic defaults
+    setFormPrefix('Shri');
+    setFormDesignationEn('Deputy Comptroller & Auditor General');
+    setFormDesignationHi('उप नियंत्रक एवं महालेखापरीक्षक');
+    setFormDepartmentEn('');
+    setFormDepartmentHi('');
+    setFormEmail('');
+    setFormPhone('');
+    setFormReportingOfficesEn('');
+    setFormReportingOfficesHi('');
+    setFormDisplayOrder(1);
+    setFormTenureFrom('2024');
+    setFormTenureTo('2029');
+    setFormLegacyTitle('Former Comptroller and Auditor General of India');
+    setFormHistoryVolume('Analytical History 1947-1989');
+    setFormChapterNumber('Ch 1');
+    setFormBoardType('Member Profile');
+    setFormMemberExpertiseEn('');
+    setFormMemberExpertiseHi('');
+    setFormRegulationClass('Regulations on Audit & Accounts');
+    setFormGazetteRef('');
+    setFormGazetteYear('2020');
+
     setIsFormOpen(true);
   };
 
@@ -335,6 +485,30 @@ function AdminAboutRegistryContent() {
     setFormThumbImage(item.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg');
     setFormLanguage(item.language);
     setFormIsActive(item.is_active);
+
+    // Populate subtopic specific attributes
+    setFormPrefix(item.prefix_name || 'Shri');
+    setFormDesignationEn(item.designation_display_name || '');
+    setFormDesignationHi(item.designation_hi || '');
+    setFormDepartmentEn(item.department || '');
+    setFormDepartmentHi(item.department_hi || '');
+    setFormEmail(item.email || '');
+    setFormPhone(item.mobile_no || '');
+    setFormReportingOfficesEn(item.reporting_offices || '');
+    setFormReportingOfficesHi(item.reporting_offices_hi || '');
+    setFormDisplayOrder(item.display_order || 1);
+    setFormTenureFrom(item.tenure_from || '');
+    setFormTenureTo(item.tenure_to || '');
+    setFormLegacyTitle(item.legacy_title || 'Former Comptroller and Auditor General of India');
+    setFormHistoryVolume(item.history_volume || 'Analytical History 1947-1989');
+    setFormChapterNumber(item.chapter_number || 'Ch 1');
+    setFormBoardType(item.member_expertise ? 'Member Profile' : 'Board Term Session');
+    setFormMemberExpertiseEn(item.member_expertise || '');
+    setFormMemberExpertiseHi(item.member_expertise_hi || '');
+    setFormRegulationClass('Regulations on Audit & Accounts');
+    setFormGazetteRef(item.gazette_ref || '');
+    setFormGazetteYear(item.gazette_year || '2020');
+
     setIsFormOpen(true);
   };
 
@@ -386,6 +560,12 @@ function AdminAboutRegistryContent() {
     e.preventDefault();
     const targetRawId = editingRawId || `ab-${Date.now()}`;
 
+    // Derive display title for Organisation Chart or Former CAG
+    let finalTitleEn = formTitleEn;
+    if (formSubTopic === 'Organisation-Chart' || formTable === 'cag_revamp.organisation_chart') {
+      finalTitleEn = formTitleEn;
+    }
+
     const newRecord: AboutRecord = {
       id: editingRawId ? (allAboutRecords.find(r => r.rawId === editingRawId)?.id || allAboutRecords.length + 1) : allAboutRecords.length + 1,
       rawId: targetRawId,
@@ -393,9 +573,9 @@ function AdminAboutRegistryContent() {
       category: formCategory,
       subTopic: formSubTopic,
       subTopicSlug: formSubTopic.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      title_en: formTitleEn,
+      title_en: finalTitleEn,
       title_hi: formTitleHi,
-      desc: formDesc,
+      desc: formDesc || (formSubTopic === 'Organisation-Chart' ? `Executive Portfolio: ${formDepartmentEn || formDesignationEn}` : formDesc),
       table_name: formTable,
       primary_key_or_slug: formSlug,
       public_url: formPublicUrl,
@@ -407,6 +587,27 @@ function AdminAboutRegistryContent() {
       item_count: 1,
       created_at: '01-Sep-2026 10:00 AM',
       modified_at: 'Just now (Updated)',
+
+      // Subtopic specific payload
+      prefix_name: formPrefix,
+      designation_display_name: formDesignationEn,
+      designation_hi: formDesignationHi,
+      department: formDepartmentEn,
+      department_hi: formDepartmentHi,
+      email: formEmail,
+      mobile_no: formPhone,
+      reporting_offices: formReportingOfficesEn,
+      reporting_offices_hi: formReportingOfficesHi,
+      display_order: formDisplayOrder,
+      tenure_from: formTenureFrom,
+      tenure_to: formTenureTo,
+      legacy_title: formLegacyTitle,
+      history_volume: formHistoryVolume,
+      chapter_number: formChapterNumber,
+      gazette_ref: formGazetteRef,
+      gazette_year: formGazetteYear,
+      member_expertise: formMemberExpertiseEn,
+      member_expertise_hi: formMemberExpertiseHi,
     };
 
     let updated: AboutRecord[];
@@ -428,9 +629,10 @@ function AdminAboutRegistryContent() {
         });
         if (res.ok) {
           const resData = await res.json();
-          if (resData.id) {
-            newRecord.rawId = resData.id;
-            newRecord.id = resData.id;
+          if (resData.id || resData.rawId) {
+            newRecord.rawId = resData.rawId || `ab-${resData.id}`;
+            newRecord.id = resData.id || newRecord.id;
+            newRecord.formattedId = resData.formattedId || newRecord.formattedId;
           }
         }
       } catch (e) { }
@@ -901,11 +1103,8 @@ function AdminAboutRegistryContent() {
                 <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-[11px] rounded-xs">
                   Sub-Topic: {viewingRecord.subTopic}
                 </span>
-                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-[11px] rounded-xs font-mono">
-                  Table: {viewingRecord.table_name.replace('cag_revamp.', '')}
-                </span>
                 <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-bold text-[11px] rounded-xs">
-                  Lang: {viewingRecord.language}
+                  Language: {viewingRecord.language}
                 </span>
                 <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'
                   }`}>
@@ -917,14 +1116,14 @@ function AdminAboutRegistryContent() {
               <div className="flex flex-col sm:flex-row gap-4 items-start bg-zinc-50 p-4 border border-zinc-200">
                 <img
                   src={viewingRecord.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
-                  alt="Banner"
+                  alt="Card Preview"
                   className="h-24 w-36 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
                   }}
                 />
                 <div className="space-y-1.5 flex-1">
-                  <div className="font-bold text-zinc-900 text-xs">Banner Asset & CloudFront Link</div>
+                  <div className="font-bold text-zinc-900 text-xs">Section Card Image / Photo</div>
                   <p className="text-[11px] text-zinc-500 break-all font-mono">
                     {viewingRecord.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
                   </p>
@@ -936,7 +1135,8 @@ function AdminAboutRegistryContent() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
                       >
-                        <span>📥 Download Attached Reference Document (PDF)</span>
+                        <Paperclip className="w-3.5 h-3.5" />
+                        <span>Download Attached Reference Document ({viewingRecord.file_name || 'PDF'})</span>
                       </a>
                     </div>
                   )}
@@ -946,7 +1146,7 @@ function AdminAboutRegistryContent() {
               {/* Executive Summary & Scope Overview */}
               <div>
                 <h4 className="font-bold text-zinc-900 text-xs mb-1.5 uppercase tracking-wide text-[#751639]">
-                  Executive Summary &amp; Scope Overview
+                  Executive Summary &amp; Content Narrative
                 </h4>
                 <div className="bg-zinc-50 border border-zinc-200 p-3.5 text-zinc-700 leading-relaxed text-xs">
                   {viewingRecord.desc ? (
@@ -957,23 +1157,15 @@ function AdminAboutRegistryContent() {
                 </div>
               </div>
 
-              {/* Technical Database & Routing Details */}
+              {/* Routing & Record Overview */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50 p-3.5 border border-zinc-200">
                 <div>
-                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Database Table:</span>
-                  <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.table_name}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Record Slug / Key:</span>
-                  <span className="font-mono text-zinc-800 font-semibold text-xs truncate block">{viewingRecord.primary_key_or_slug}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Live Public Route:</span>
+                  <span className="text-zinc-500 block font-bold text-[10px] uppercase">Live Public Route:</span>
                   <span className="font-mono text-zinc-800 font-semibold text-xs truncate block">{viewingRecord.public_url}</span>
                 </div>
                 <div>
-                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Raw Record ID:</span>
-                  <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.rawId}</span>
+                  <span className="text-zinc-500 block font-bold text-[10px] uppercase">Record Code / ID:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.formattedId || viewingRecord.rawId}</span>
                 </div>
               </div>
 
@@ -1030,212 +1222,834 @@ function AdminAboutRegistryContent() {
         </div>
       )}
 
-      {/* ─── 4. CREATE / EDIT MODAL FORM (Matching Reports Modal Architecture) ─── */}
+      {/* ─── 4. CREATE / EDIT MODAL FORM (Accessible, Document & Image Upload Enabled) ─── */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsFormOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full p-0 shadow-2xl relative max-h-[90vh] flex flex-col">
+            
+            {/* Modal Header */}
+            <div
+              className="p-4 text-white flex justify-between items-center shrink-0"
+              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
             >
-              ✕
-            </button>
-            <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-200 pb-3 mb-4">
-              {editingRawId ? `Edit About Us Section Record [ID: ${editingRawId}]` : 'Register New About Us Section Record (Local CMS & PostgreSQL)'}
-            </h3>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* English Title */}
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">
-                  Record Title / Officer Name (English) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formTitleEn}
-                  onChange={(e) => setFormTitleEn(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter full English title or officer name"
-                />
-              </div>
-
-              {/* Hindi Title */}
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">
-                  Record Title / Officer Name (हिन्दी)
-                </label>
-                <input
-                  type="text"
-                  value={formTitleHi}
-                  onChange={(e) => setFormTitleHi(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-hindi"
-                  placeholder="दस्तावेज़ या अधिकारी का नाम (हिंदी)"
-                />
-              </div>
-
-              {/* Executive Summary Narrative */}
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">
-                  Executive Summary / Overview / Designation
-                </label>
-                <textarea
-                  rows={3}
-                  value={formDesc}
-                  onChange={(e) => setFormDesc(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter summary description and key section narrative"
-                />
-              </div>
-
-              {/* Category & Sub-Topic */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-2.5">
+                <FileUp className="w-5 h-5 text-pink-200" />
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Hierarchy Category *</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => {
-                      const newCat = e.target.value as any;
-                      setFormCategory(newCat);
-                      const defTopic = SUBTOPICS_BY_CATEGORY[newCat]?.[0];
-                      if (defTopic) {
-                        setFormSubTopic(defTopic.label);
-                        setFormSlug(defTopic.defaultSlug);
-                        setFormPublicUrl(defTopic.defaultUrl);
-                      }
-                    }}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    <option value="Who We Are">Who We Are</option>
-                    <option value="Leadership & Legacy">Leadership & Legacy</option>
-                    <option value="Governance & Mandate">Governance & Mandate</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Sub-Topic / Section *</label>
-                  <select
-                    value={formSubTopic}
-                    onChange={(e) => {
-                      const topicLabel = e.target.value;
-                      setFormSubTopic(topicLabel);
-                      const found = (SUBTOPICS_BY_CATEGORY[formCategory] || []).find(st => st.label === topicLabel);
-                      if (found) {
-                        setFormSlug(found.defaultSlug);
-                        setFormPublicUrl(found.defaultUrl);
-                      }
-                    }}
-                    required
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    {(SUBTOPICS_BY_CATEGORY[formCategory] || []).map(st => (
-                      <option key={st.value} value={st.label}>{st.label}</option>
-                    ))}
-                  </select>
+                  <h3 className="text-sm font-bold leading-snug">
+                    {editingRawId ? `Edit About Us Record [ID: ${editingRawId}]` : 'Register New About Us Section Record'}
+                  </h3>
+                  <p className="text-[11px] text-pink-100 font-normal">
+                    Update CMS content, upload documents (PDF/DOCX), manage card images, and configure public links.
+                  </p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white text-lg font-bold p-1 cursor-pointer"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
 
-              {/* DB Table & Slug */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Database Table Source</label>
+            {/* Error Notification Banner */}
+            {uploadError && (
+              <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{uploadError}</span>
+              </div>
+            )}
+
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
+              
+              {/* Section 1: Classification & Dynamic Sub-Topic Specific Form Engine */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-1.5 border-b border-zinc-200">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#751639]" />
+                    <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-wide">
+                      1. Content Classification &amp; Section Profile
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#751639]/10 text-[#751639] rounded">
+                    {formSubTopic}
+                  </span>
+                </div>
+
+                {/* Statutory Master Page Banner */}
+                {isSingletonRecord({ rawId: editingRawId || '', subTopic: formSubTopic, subTopicSlug: formSubTopic, category: formCategory } as any) && (
+                  <div className="p-3 bg-amber-50 border border-amber-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 text-xs">
+                    <div className="flex items-start gap-2">
+                      <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold">Statutory Singleton Page (Edit-Only Master):</span>
+                        <p className="text-[11px] text-amber-800">
+                          This core constitutional page renders live with high-fidelity styling. You can edit text &amp; photos directly on the live frontend canvas.
+                        </p>
+                      </div>
+                    </div>
+                    {editingRawId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const rec = allAboutRecords.find(r => r.rawId === editingRawId);
+                          if (rec) {
+                            setIsFormOpen(false);
+                            setVisualEditingRecord(rec);
+                          }
+                        }}
+                        className="shrink-0 px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-pink-300" />
+                        <span>Open Visual Live Canvas</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Category & Sub-Topic Selectors */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="formCategory" className="block font-bold text-zinc-700 mb-1 text-xs">
+                      Hierarchy Category *
+                    </label>
+                    <select
+                      id="formCategory"
+                      value={formCategory}
+                      onChange={(e) => {
+                        const newCat = e.target.value as any;
+                        setFormCategory(newCat);
+                        const defTopic = SUBTOPICS_BY_CATEGORY[newCat]?.[0];
+                        if (defTopic) {
+                          setFormSubTopic(defTopic.label);
+                          setFormSlug(defTopic.defaultSlug);
+                          setFormPublicUrl(defTopic.defaultUrl);
+                          if (defTopic.value === 'organisation-chart') setFormTable('cag_revamp.organisation_chart');
+                          else if (defTopic.value === 'former-cags') setFormTable('cag_revamp.former_cag');
+                          else setFormTable('cag_revamp.pages');
+                        }
+                      }}
+                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-medium"
+                    >
+                      <option value="Who We Are">Who We Are</option>
+                      <option value="Leadership & Legacy">Leadership & Legacy</option>
+                      <option value="Governance & Mandate">Governance & Mandate</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="formSubTopic" className="block font-bold text-zinc-700 mb-1 text-xs">
+                      Sub-Topic / Section *
+                    </label>
+                    <select
+                      id="formSubTopic"
+                      value={formSubTopic}
+                      onChange={(e) => {
+                        const topicLabel = e.target.value;
+                        setFormSubTopic(topicLabel);
+                        const found = (SUBTOPICS_BY_CATEGORY[formCategory] || []).find(st => st.label === topicLabel);
+                        if (found) {
+                          setFormSlug(found.defaultSlug);
+                          setFormPublicUrl(found.defaultUrl);
+                          if (found.value === 'organisation-chart') setFormTable('cag_revamp.organisation_chart');
+                          else if (found.value === 'former-cags') setFormTable('cag_revamp.former_cag');
+                          else setFormTable('cag_revamp.pages');
+                        }
+                      }}
+                      required
+                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-medium"
+                    >
+                      {(SUBTOPICS_BY_CATEGORY[formCategory] || []).map(st => (
+                        <option key={st.value} value={st.label}>{st.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* ─── DYNAMIC SUBTOPIC 1: ORGANISATION CHART ─── */}
+                {(formSubTopic === 'Organisation-Chart' || formTable === 'cag_revamp.organisation_chart') && (
+                  <div className="space-y-3 p-3.5 bg-blue-50/50 border border-blue-200 rounded-none">
+                    <div className="flex items-center gap-1.5 text-[#751639] font-bold text-xs">
+                      <span>🏢 Organisation Chart Officer Hierarchy Details</span>
+                    </div>
+
+                    {/* Honorific Prefix + Full Name (EN & HI) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Prefix</label>
+                        <select
+                          value={formPrefix}
+                          onChange={(e) => setFormPrefix(e.target.value)}
+                          className="w-full bg-white border border-zinc-300 px-2 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        >
+                          <option value="Shri">Shri</option>
+                          <option value="Smt.">Smt.</option>
+                          <option value="Dr.">Dr.</option>
+                          <option value="Ms.">Ms.</option>
+                          <option value="Prof.">Prof.</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-5">
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Officer Full Name (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTitleEn}
+                          onChange={(e) => setFormTitleEn(e.target.value)}
+                          placeholder="e.g. K. Sanjay Murthy / V. S. Venkataraman"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div className="sm:col-span-5">
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Officer Full Name (हिन्दी)</label>
+                        <input
+                          type="text"
+                          value={formTitleHi}
+                          onChange={(e) => setFormTitleHi(e.target.value)}
+                          placeholder="अधिकारी का पूरा नाम (हिंदी)"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 font-hindi focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Designation (EN & HI) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Official Designation (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formDesignationEn}
+                          onChange={(e) => setFormDesignationEn(e.target.value)}
+                          placeholder="e.g. Deputy Comptroller & Auditor General (DAI) - Defence"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Official Designation (हिन्दी)</label>
+                        <input
+                          type="text"
+                          value={formDesignationHi}
+                          onChange={(e) => setFormDesignationHi(e.target.value)}
+                          placeholder="पदनाम (हिंदी)"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 font-hindi focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Department / Portfolio (EN & HI) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Department / Sector Portfolio (English)</label>
+                        <input
+                          type="text"
+                          value={formDepartmentEn}
+                          onChange={(e) => setFormDepartmentEn(e.target.value)}
+                          placeholder="e.g. Defence & Autonomous Bodies / Commercial Audit"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Department / Sector Portfolio (हिन्दी)</label>
+                        <input
+                          type="text"
+                          value={formDepartmentHi}
+                          onChange={(e) => setFormDepartmentHi(e.target.value)}
+                          placeholder="विभाग / प्रभाग (हिंदी)"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 font-hindi focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email, Phone & Seniority Display Order */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Official Email Address</label>
+                        <input
+                          type="email"
+                          value={formEmail}
+                          onChange={(e) => setFormEmail(e.target.value)}
+                          placeholder="officer@cag.gov.in"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 font-mono focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Telephone / Intercom / Room</label>
+                        <input
+                          type="text"
+                          value={formPhone}
+                          onChange={(e) => setFormPhone(e.target.value)}
+                          placeholder="011-23235790 / Room 402"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Display Order (Hierarchy Rank)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="100"
+                          value={formDisplayOrder}
+                          onChange={(e) => setFormDisplayOrder(parseInt(e.target.value) || 1)}
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Subordinate Reporting Portfolios / Offices */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-700 mb-1">Subordinate Reporting Portfolios &amp; Nodal Field Offices</label>
+                      <textarea
+                        rows={2}
+                        value={formReportingOfficesEn}
+                        onChange={(e) => setFormReportingOfficesEn(e.target.value)}
+                        placeholder="e.g. DG Audit (Defence Services), PD Audit (Navy), PD Audit (Air Force)"
+                        className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── DYNAMIC SUBTOPIC 2: FORMER CAGs GALLERY ─── */}
+                {(formSubTopic === 'Former CAGs Gallery' || formTable === 'cag_revamp.former_cag') && (
+                  <div className="space-y-3 p-3.5 bg-amber-50/50 border border-amber-200 rounded-none">
+                    <div className="flex items-center gap-1.5 text-[#751639] font-bold text-xs">
+                      <span>🏛️ Former Comptroller and Auditor General Record</span>
+                    </div>
+
+                    {/* Former CAG Name (EN & HI) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Former CAG Name (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTitleEn}
+                          onChange={(e) => setFormTitleEn(e.target.value)}
+                          placeholder="e.g. Shri V. Narahari Rao / Shri Vinod Rai"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Former CAG Name (हिन्दी)</label>
+                        <input
+                          type="text"
+                          value={formTitleHi}
+                          onChange={(e) => setFormTitleHi(e.target.value)}
+                          placeholder="पूर्व कैग का नाम (हिंदी)"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 font-hindi focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tenure Dates & Legacy Title */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Tenure From Year / Date *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTenureFrom}
+                          onChange={(e) => setFormTenureFrom(e.target.value)}
+                          placeholder="e.g. 1948 or 15-Aug-1948"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Tenure To Year / Date *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTenureTo}
+                          onChange={(e) => setFormTenureTo(e.target.value)}
+                          placeholder="e.g. 1954 or 15-Aug-1954"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Legacy Designation Title</label>
+                        <input
+                          type="text"
+                          value={formLegacyTitle}
+                          onChange={(e) => setFormLegacyTitle(e.target.value)}
+                          placeholder="Former Comptroller and Auditor General of India"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Career Biography / Audit Highlights */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-700 mb-1">Career Biography &amp; Major Audit Contributions</label>
+                      <textarea
+                        rows={3}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        placeholder="Served as 1st Comptroller and Auditor General of Independent India. Established key accounting and auditing canons for the new republic."
+                        className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── DYNAMIC SUBTOPIC 3: HISTORY OF IAAD ─── */}
+                {formSubTopic === 'History of IAAD' && (
+                  <div className="space-y-3 p-3.5 bg-emerald-50/50 border border-emerald-200 rounded-none">
+                    <div className="flex items-center gap-1.5 text-[#751639] font-bold text-xs">
+                      <span>📜 History of IAAD Archival Chapter</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">History Volume Collection</label>
+                        <select
+                          value={formHistoryVolume}
+                          onChange={(e) => setFormHistoryVolume(e.target.value)}
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        >
+                          <option value="Analytical History 1947-1989">Analytical History (1947-1989)</option>
+                          <option value="Thematic History Vol 1 (1990-2007)">Thematic History Vol 1 (1990-2007)</option>
+                          <option value="Thematic History Vol 2 (1990-2007)">Thematic History Vol 2 (1990-2007)</option>
+                          <option value="Chronological Milestones (1858-1947)">Chronological Milestones (1858-1947)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Chapter Identifier</label>
+                        <input
+                          type="text"
+                          value={formChapterNumber}
+                          onChange={(e) => setFormChapterNumber(e.target.value)}
+                          placeholder="e.g. Chapter 1 / Volume I"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Chapter Title (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTitleEn}
+                          onChange={(e) => setFormTitleEn(e.target.value)}
+                          placeholder="e.g. Constitutional Foundations of IAAD"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-700 mb-1">Archival Summary &amp; Historical Themes</label>
+                      <textarea
+                        rows={3}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        placeholder="Summary narrative of department expansion, statutory evolutions, and parliamentary oversight history."
+                        className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── DYNAMIC SUBTOPIC 4: AUDIT ADVISORY BOARD ─── */}
+                {formSubTopic === 'Audit-Advisory-Board' && (
+                  <div className="space-y-3 p-3.5 bg-purple-50/50 border border-purple-200 rounded-none">
+                    <div className="flex items-center gap-1.5 text-[#751639] font-bold text-xs">
+                      <span>👥 Audit Advisory Board Record</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Record Type</label>
+                        <select
+                          value={formBoardType}
+                          onChange={(e) => setFormBoardType(e.target.value as any)}
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        >
+                          <option value="Member Profile">External Board Member Profile</option>
+                          <option value="Board Term Session">Advisory Board Term Session</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Member Name / Term Title (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTitleEn}
+                          onChange={(e) => setFormTitleEn(e.target.value)}
+                          placeholder="e.g. Dr. Ashok Lahiri / 9th Audit Advisory Board"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Domain / Field of Expertise</label>
+                        <input
+                          type="text"
+                          value={formMemberExpertiseEn}
+                          onChange={(e) => setFormMemberExpertiseEn(e.target.value)}
+                          placeholder="e.g. Eminent Economist / Public Policy Specialist"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-700 mb-1">Mandate Scope / Member Bio / Meeting Minutes Summary</label>
+                      <textarea
+                        rows={3}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        placeholder="Overview of counsel provided on emerging audit methodologies, environmental accounting, and technology adoption."
+                        className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── DYNAMIC SUBTOPIC 5: AUDIT REGULATION ─── */}
+                {formSubTopic === 'Audit-Regulation' && (
+                  <div className="space-y-3 p-3.5 bg-rose-50/50 border border-rose-200 rounded-none">
+                    <div className="flex items-center gap-1.5 text-[#751639] font-bold text-xs">
+                      <span>⚖️ Audit Regulations &amp; Standards</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Regulation Classification</label>
+                        <select
+                          value={formRegulationClass}
+                          onChange={(e) => setFormRegulationClass(e.target.value)}
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        >
+                          <option value="Regulations on Audit & Accounts">Regulations on Audit &amp; Accounts</option>
+                          <option value="Auditing Standards">Auditing Standards</option>
+                          <option value="Gazette Notification">Gazette Notification</option>
+                          <option value="Amendment Order">Amendment Order</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Statutory Title (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formTitleEn}
+                          onChange={(e) => setFormTitleEn(e.target.value)}
+                          placeholder="e.g. Regulations on Audit and Accounts (Amendments) 2020"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-zinc-700 mb-1">Gazette Notification Ref &amp; Year</label>
+                        <input
+                          type="text"
+                          value={formGazetteRef}
+                          onChange={(e) => setFormGazetteRef(e.target.value)}
+                          placeholder="e.g. No. 128-Audit / 2020"
+                          className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-zinc-700 mb-1">Executive Summary &amp; Legal Scope</label>
+                      <textarea
+                        rows={3}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        placeholder="Official notification detailing statutory regulations made under Section 23 of the CAG's (DPC) Act, 1971."
+                        className="w-full bg-white border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-[#751639]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── STANDARD SUBTOPIC FALLBACK (Generic Section Record) ─── */}
+                {formSubTopic !== 'Organisation-Chart' && formSubTopic !== 'Former CAGs Gallery' && formSubTopic !== 'History of IAAD' && formSubTopic !== 'Audit-Advisory-Board' && formSubTopic !== 'Audit-Regulation' && formTable !== 'cag_revamp.organisation_chart' && formTable !== 'cag_revamp.former_cag' && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="formTitleEn" className="block font-bold text-zinc-700 mb-1 text-xs">
+                          Record Title / Section Heading (English) *
+                        </label>
+                        <input
+                          id="formTitleEn"
+                          type="text"
+                          required
+                          value={formTitleEn}
+                          onChange={(e) => setFormTitleEn(e.target.value)}
+                          className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                          placeholder="e.g. Comptroller and Auditor General Profile"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="formTitleHi" className="block font-bold text-zinc-700 mb-1 text-xs">
+                          Record Title / Section Heading (हिन्दी)
+                        </label>
+                        <input
+                          id="formTitleHi"
+                          type="text"
+                          value={formTitleHi}
+                          onChange={(e) => setFormTitleHi(e.target.value)}
+                          className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-hindi text-xs"
+                          placeholder="शीर्षक या मुख्य भाग (हिंदी)"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="formDesc" className="block font-bold text-zinc-700 mb-1 text-xs">
+                        Executive Summary / Paragraph Content / Mandate Scope
+                      </label>
+                      <textarea
+                        id="formDesc"
+                        rows={3}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs leading-relaxed"
+                        placeholder="Enter summary narrative or statutory content"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 2: Document & PDF Attachments */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-zinc-200">
+                  <Paperclip className="w-4 h-4 text-[#751639]" />
+                  <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-wide">
+                    2. Document &amp; Reference Attachments (PDF / DOCX)
+                  </h4>
+                </div>
+
+                <div className="bg-zinc-50 border border-zinc-200 p-4 space-y-3">
                   <input
-                    type="text"
-                    value={formTable}
-                    onChange={(e) => setFormTable(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
+                    ref={docInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.zip"
+                    onChange={handleDocUpload}
+                    className="hidden"
                   />
-                </div>
 
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Slug / Identifier Key</label>
-                  <input
-                    type="text"
-                    value={formSlug}
-                    onChange={(e) => setFormSlug(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
-                  />
+                  {/* Document Upload Button & State */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={uploadingDoc}
+                      onClick={() => docInputRef.current?.click()}
+                      className="px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                    >
+                      {uploadingDoc ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Uploading Document...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload Document (PDF / DOCX)</span>
+                        </>
+                      )}
+                    </button>
+
+                    {formFileUrl && (
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="truncate max-w-xs">{formFileName || 'Document Attached'}</span>
+                        <a
+                          href={formFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline text-[11px] ml-1"
+                        >
+                          Preview ↗
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormFileUrl('');
+                            setFormFileName('');
+                          }}
+                          className="text-rose-600 hover:text-rose-800 ml-1 cursor-pointer font-bold"
+                          title="Remove attached document"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div>
+                      <label htmlFor="formFileName" className="block text-[11px] font-bold text-zinc-600 mb-1">
+                        Document Display Name
+                      </label>
+                      <input
+                        id="formFileName"
+                        type="text"
+                        value={formFileName}
+                        onChange={(e) => setFormFileName(e.target.value)}
+                        placeholder="e.g. Audit_Regulations_2020.pdf"
+                        className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="formFileUrl" className="block text-[11px] font-bold text-zinc-600 mb-1">
+                        Direct Document URL / CloudFront Link
+                      </label>
+                      <input
+                        id="formFileUrl"
+                        type="text"
+                        value={formFileUrl}
+                        onChange={(e) => setFormFileUrl(e.target.value)}
+                        placeholder="https://.../document.pdf or /admin-uploads/..."
+                        className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Public URL & Thumbnail Image */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Public URL Route Path</label>
-                  <input
-                    type="text"
-                    value={formPublicUrl}
-                    onChange={(e) => setFormPublicUrl(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
-                  />
+              {/* Section 3: Photo & Thumbnail Image */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-zinc-200">
+                  <ImageIcon className="w-4 h-4 text-[#751639]" />
+                  <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-wide">
+                    3. Card Image &amp; Officer Photo
+                  </h4>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Thumbnail / Card Image Link</label>
+                <div className="bg-zinc-50 border border-zinc-200 p-4 flex flex-col sm:flex-row gap-4 items-start">
                   <input
-                    type="text"
-                    value={formThumbImage}
-                    onChange={(e) => setFormThumbImage(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
+                    ref={imgInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
+
+                  {/* Thumbnail Preview Container */}
+                  <div className="relative group shrink-0">
+                    <img
+                      src={formThumbImage || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
+                      alt="Thumbnail Preview"
+                      className="w-36 h-24 object-cover border border-zinc-300 shadow-xs bg-white"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
+                      }}
+                    />
+                    <div className="text-[10px] text-zinc-400 text-center mt-1">Live Image Preview</div>
+                  </div>
+
+                  {/* Image Controls & URL Input */}
+                  <div className="space-y-3 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={uploadingImg}
+                        onClick={() => imgInputRef.current?.click()}
+                        className="px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                      >
+                        {uploadingImg ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Uploading Image...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Upload Image (PNG / JPG / WEBP)</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormThumbImage('/assets/cag-desk-photo.png')}
+                        className="px-2.5 py-1.5 border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-medium cursor-pointer"
+                      >
+                        Use Default Banner
+                      </button>
+                    </div>
+
+                    <div>
+                      <label htmlFor="formThumbImage" className="block text-[11px] font-bold text-zinc-600 mb-1">
+                        Direct Image URL / Asset Link
+                      </label>
+                      <input
+                        id="formThumbImage"
+                        type="text"
+                        value={formThumbImage}
+                        onChange={(e) => setFormThumbImage(e.target.value)}
+                        placeholder="https://.../photo.jpg or /assets/..."
+                        className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* PDF Document Attachment URL & Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">PDF Attachment URL</label>
-                  <input
-                    type="text"
-                    value={formFileUrl}
-                    onChange={(e) => setFormFileUrl(e.target.value)}
-                    placeholder="https://.../document.pdf"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
-                  />
+              {/* Section 4: Public Route & Publication Status */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-zinc-200">
+                  <Globe className="w-4 h-4 text-[#751639]" />
+                  <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-wide">
+                    4. Public Website Link &amp; Publishing Status
+                  </h4>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">PDF Document Name</label>
-                  <input
-                    type="text"
-                    value={formFileName}
-                    onChange={(e) => setFormFileName(e.target.value)}
-                    placeholder="e.g. DPC_Act_1971.pdf"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="formPublicUrl" className="block font-bold text-zinc-700 mb-1 text-xs">
+                      Public Website Route Path *
+                    </label>
+                    <input
+                      id="formPublicUrl"
+                      type="text"
+                      required
+                      value={formPublicUrl}
+                      onChange={(e) => setFormPublicUrl(e.target.value)}
+                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] font-mono text-xs"
+                      placeholder="/About/About-Us/..."
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="formLanguage" className="block font-bold text-zinc-700 mb-1 text-xs">
+                      Language Mode
+                    </label>
+                    <select
+                      id="formLanguage"
+                      value={formLanguage}
+                      onChange={(e) => setFormLanguage(e.target.value as any)}
+                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-medium"
+                    >
+                      <option value="Bilingual">Bilingual (English + Hindi)</option>
+                      <option value="EN">English Only</option>
+                      <option value="HI">हिन्दी Only</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="formIsActive" className="block font-bold text-zinc-700 mb-1 text-xs">
+                      Publication Status
+                    </label>
+                    <select
+                      id="formIsActive"
+                      value={formIsActive ? 'Active' : 'Inactive'}
+                      onChange={(e) => setFormIsActive(e.target.value === 'Active')}
+                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-medium"
+                    >
+                      <option value="Active">Active (Published on Live Site)</option>
+                      <option value="Inactive">Inactive (Draft / Hidden)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              {/* Language & Publish Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Language Mode</label>
-                  <select
-                    value={formLanguage}
-                    onChange={(e) => setFormLanguage(e.target.value as any)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    <option value="Bilingual">Bilingual (English + Hindi)</option>
-                    <option value="EN">English Only</option>
-                    <option value="HI">हिन्दी Only</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Publication Status</label>
-                  <select
-                    value={formIsActive ? 'Active' : 'Inactive'}
-                    onChange={(e) => setFormIsActive(e.target.value === 'Active')}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Form Actions */}
-              <div className="pt-4 border-t border-zinc-200 flex items-center justify-end gap-3">
+              {/* Form Action Buttons */}
+              <div className="pt-4 border-t border-zinc-200 flex items-center justify-end gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
@@ -1245,10 +2059,12 @@ function AdminAboutRegistryContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 text-white font-bold rounded-none text-xs shadow-xs cursor-pointer"
+                  disabled={uploadingDoc || uploadingImg}
+                  className="px-6 py-2 text-white font-bold rounded-none text-xs shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
                 >
-                  {editingRawId ? 'Save Changes' : 'Register Record'}
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{editingRawId ? 'Save & Update Record' : 'Register Section Record'}</span>
                 </button>
               </div>
             </form>

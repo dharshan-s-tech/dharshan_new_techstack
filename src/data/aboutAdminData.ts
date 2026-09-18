@@ -21,6 +21,28 @@ export interface AboutRecord {
   item_count?: number;
   created_at: string;
   modified_at: string;
+
+  // Subtopic-Specific Attributes
+  prefix_name?: string;
+  designation_display_name?: string;
+  designation_hi?: string;
+  department?: string;
+  department_hi?: string;
+  email?: string;
+  mobile_no?: string;
+  reporting_offices?: string;
+  reporting_offices_hi?: string;
+  chart_position?: 'left' | 'right' | 'top' | 'secretary';
+  tenure_from?: string;
+  tenure_to?: string;
+  legacy_title?: string;
+  history_volume?: string;
+  chapter_number?: string;
+  gazette_ref?: string;
+  gazette_year?: string;
+  member_expertise?: string;
+  member_expertise_hi?: string;
+  display_order?: number;
 }
 
 export const ALL_ABOUT_DB_RECORDS: AboutRecord[] = [
