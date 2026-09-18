@@ -20,7 +20,7 @@ pipeline {
         // SonarQube
         // ============================================================
         SONAR_SERVER  = 'sonar-server'
-        SONAR_SCANNER = 'SonarScanner'
+        SONAR_SCANNER = 'sonar-scanner'
 
         SONAR_PROJECT_KEY  = 'CAG_Website_V2'
         SONAR_PROJECT_NAME = 'CAG_Website_V2'
