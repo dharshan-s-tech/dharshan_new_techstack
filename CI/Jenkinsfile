@@ -1,4 +1,4 @@
-pipeline {
+﻿pipeline {
     agent any
 
     environment {
@@ -401,52 +401,61 @@ pipeline {
         stage('Start Backend Test Container') {
             steps {
 
-                sh '''
-                    set -e
+                withCredentials([
+                    string(
+                        credentialsId: 'cag-website-v2-ci-encryption-key',
+                        variable: 'ENCRYPTION_KEY'
+                    )
+                ]) {
 
-                    echo "=============================================="
-                    echo "START BACKEND TEST CONTAINER"
-                    echo "=============================================="
+                    sh '''
+                        set -e
 
-                    docker run -d \
-                        --name "${BACKEND_CONTAINER}" \
-                        --network "${CI_NETWORK}" \
-                        -e ENVIRONMENT=production \
-                        -e DB_HOST=postgres \
-                        -e DB_PORT=5432 \
-                        -e DB_NAME="${POSTGRES_DB}" \
-                        -e DB_USER="${POSTGRES_USER}" \
-                        -e DB_PASSWORD="${POSTGRES_PASSWORD}" \
-                        -e DB_SCHEMA=cag_new \
-                        -e DATABASE_URL="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}" \
-                        "${BACKEND_IMAGE}:${GIT_COMMIT}"
+                        echo "=============================================="
+                        echo "START BACKEND TEST CONTAINER"
+                        echo "=============================================="
 
-                    echo ""
-                    echo "Backend container started:"
+                        docker run -d \
+                            --name "${BACKEND_CONTAINER}" \
+                            --network "${CI_NETWORK}" \
+                            -e ENVIRONMENT=production \
+                            -e ENCRYPTION_KEY="${ENCRYPTION_KEY}" \
+                            -e DB_HOST=postgres \
+                            -e DB_PORT=5432 \
+                            -e DB_NAME="${POSTGRES_DB}" \
+                            -e DB_USER="${POSTGRES_USER}" \
+                            -e DB_PASSWORD="${POSTGRES_PASSWORD}" \
+                            -e DB_SCHEMA=cag_new \
+                            -e DATABASE_URL="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}" \
+                            "${BACKEND_IMAGE}:${GIT_COMMIT}"
 
-                    docker ps \
-                        --filter "name=${BACKEND_CONTAINER}"
+                        echo ""
+                        echo "Backend container started:"
 
-                    echo ""
-                    echo "Backend image:"
+                        docker ps \
+                            --filter "name=${BACKEND_CONTAINER}"
 
-                    docker inspect \
-                        "${BACKEND_CONTAINER}" \
-                        --format '{{.Config.Image}}'
+                        echo ""
+                        echo "Backend image:"
 
-                    echo ""
-                    echo "Backend container started successfully."
+                        docker inspect \
+                            "${BACKEND_CONTAINER}" \
+                            --format '{{.Config.Image}}'
 
-                    # IMPORTANT:
-                    # Do NOT use:
-                    # docker inspect <container> --format '{{.Os}}/{{.Architecture}}'
-                    #
-                    # Container inspect does not expose these image
-                    # platform fields in this template.
-                    #
-                    # Architecture was already verified during
-                    # docker image inspect in the build stage.
-                '''
+                        echo ""
+                        echo "Backend container started successfully."
+
+                        # IMPORTANT:
+                        # Do NOT use:
+                        # docker inspect <container> --format '{{.Os}}/{{.Architecture}}'
+                        #
+                        # Container inspect does not expose these image
+                        # platform fields in this template.
+                        #
+                        # Architecture was already verified during
+                        # docker image inspect in the build stage.
+                    '''
+                }
             }
         }
 
