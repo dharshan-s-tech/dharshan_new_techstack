@@ -829,6 +829,13 @@ class ReportsService:
         if conn:
             try:
                 cur = conn.cursor(cursor_factory=RealDictCursor)
+                # Increment view count
+                try:
+                    cur.execute("UPDATE cag_revamp.audit_reports SET total_view = COALESCE(total_view, 0) + 1 WHERE id = %s;", [str(report_id)])
+                    conn.commit()
+                except Exception:
+                    pass
+
                 query_sql = """
                     SELECT 
                         ar.id,
@@ -837,11 +844,17 @@ class ReportsService:
                         ar.overview,
                         ar.year_of_report as year,
                         ar.date_on_which_report_tabled as tabled_date,
+                        ar.date_of_sending_the_report_to_government,
                         ar.main_report_file,
                         ar.download_audit_report,
+                        ar.file_title,
+                        ar.noody_book,
+                        ar.noody_book_title,
                         ar.youtube_video_url,
                         ar.digital_report,
                         ar.report_thumb_img,
+                        ar.total_view,
+                        ar.show_in_whats_new,
                         ar.sector as raw_sector,
                         ar.report_type as raw_report_type,
                         s.id as state_id,
@@ -884,6 +897,9 @@ class ReportsService:
                     video_url = ""
                     if raw_video and raw_video not in ('[""]', '[]', 'None'):
                         video_url = raw_video.strip('[]"\' ')
+
+                    nb_file = r.get("noody_book") or ""
+                    noody_book_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/noody_book/{nb_file}" if nb_file else ""
 
                     # Fetch child chapters
                     cur.execute("""
@@ -944,6 +960,7 @@ class ReportsService:
                         "year": year_val,
                         "tabled_date": tabled,
                         "date": date_str,
+                        "date_of_sending_to_govt": str(r.get("date_of_sending_the_report_to_government") or ""),
                         "level": r.get("level") or "Union",
                         "report_type": formatted_type,
                         "sector": formatted_sector,
@@ -954,6 +971,12 @@ class ReportsService:
                         "pdf_url": pdf_url,
                         "file_name": main_file,
                         "video_url": video_url,
+                        "noody_book": nb_file,
+                        "noody_book_title": r.get("noody_book_title") or "",
+                        "noody_book_url": noody_book_url,
+                        "digital_report": r.get("digital_report") or "",
+                        "total_view": int(r.get("total_view") or 0),
+                        "show_in_whats_new": bool(r.get("show_in_whats_new")),
                         "chapters": chapters,
                         "files": files,
                         "source": "remote_db",
@@ -2190,7 +2213,1086 @@ class ReportsService:
             "total_pages": (total + page_size - 1) // page_size if page_size else 1,
         }
 
+    # =========================================================================
+    # 4. OLD / HISTORICAL AUDIT REPORTS (cag_revamp.old_audit_reports)
+    # =========================================================================
+    @staticmethod
+    def get_old_audit_reports(
+        page: int = 1,
+        page_size: int = 15,
+        query: str = "",
+        government_type: Optional[str] = None,
+        union_department_type: Optional[str] = None,
+        state_id: Optional[int] = None,
+        year: str = "",
+        language: str = "en",
+        sort: str = "year_desc",
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        page = max(1, page)
+        page_size = max(1, min(page_size, 100))
+        offset = (page - 1) * page_size
+        conn = _get_remote_conn()
+        items = []
+        total = 0
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                where = ["1=1"]
+                params: List[Any] = []
+                if status == "active":
+                    where.append("oar.status = 1")
+                elif status == "inactive":
+                    where.append("oar.status = 0")
+                elif status != "all":
+                    where.append("(oar.status = 1 OR oar.status IS NULL)")
+
+                if query:
+                    where.append("(oar.title ILIKE %s OR oar.content ILIKE %s)")
+                    params.extend([f"%{query}%", f"%{query}%"])
+                if year and year != "All":
+                    where.append("oar.year_of_report = %s")
+                    params.append(str(year))
+                if state_id:
+                    where.append("oar.state = %s")
+                    params.append(state_id)
+                if government_type and government_type != "All":
+                    if str(government_type).isdigit():
+                        where.append("oar.government_type = %s")
+                        params.append(int(government_type))
+                    else:
+                        where.append("gc_gov.title ILIKE %s")
+                        params.append(f"%{government_type}%")
+                if union_department_type and union_department_type != "All":
+                    if str(union_department_type).isdigit():
+                        where.append("oar.union_department_type = %s")
+                        params.append(int(union_department_type))
+                    else:
+                        where.append("gc_dept.title ILIKE %s")
+                        params.append(f"%{union_department_type}%")
+
+                where_sql = " AND ".join(where)
+                count_sql = f"""
+                    SELECT count(*) as cnt 
+                    FROM cag_revamp.old_audit_reports oar
+                    LEFT JOIN cag_revamp.states s ON oar.state = s.id
+                    LEFT JOIN cag_revamp.general_categories gc_gov ON oar.government_type = gc_gov.id
+                    LEFT JOIN cag_revamp.general_categories gc_dept ON oar.union_department_type = gc_dept.id
+                    WHERE {where_sql};
+                """
+                cur.execute(count_sql, params)
+                total = cur.fetchone()["cnt"]
+
+                order_sql = "ORDER BY oar.id DESC"
+                if sort in ("year_asc", "oldest"):
+                    order_sql = "ORDER BY oar.year_of_report ASC, oar.id ASC"
+                elif sort in ("year_desc", "newest"):
+                    order_sql = "ORDER BY oar.year_of_report DESC, oar.id DESC"
+                elif sort == "title_asc":
+                    order_sql = "ORDER BY oar.title ASC"
+                elif sort == "title_desc":
+                    order_sql = "ORDER BY oar.title DESC"
+
+                data_sql = f"""
+                    SELECT 
+                        oar.id, oar.title, oar.content, oar.year_of_report, oar.government_type,
+                        oar.union_department_type, oar.state as state_id, oar.local_body_types, oar.status,
+                        s.name as state_name,
+                        gc_gov.title as government_type_name,
+                        gc_dept.title as union_department_name
+                    FROM cag_revamp.old_audit_reports oar
+                    LEFT JOIN cag_revamp.states s ON oar.state = s.id
+                    LEFT JOIN cag_revamp.general_categories gc_gov ON oar.government_type = gc_gov.id
+                    LEFT JOIN cag_revamp.general_categories gc_dept ON oar.union_department_type = gc_dept.id
+                    WHERE {where_sql}
+                    {order_sql}
+                    LIMIT %s OFFSET %s;
+                """
+                cur.execute(data_sql, params + [page_size, offset])
+                for r in cur.fetchall():
+                    items.append({
+                        "id": r["id"],
+                        "rawId": f"old-rep-{r['id']}",
+                        "title": r.get("title") or "Old Audit Report",
+                        "title_en": r.get("title") or "Old Audit Report",
+                        "content": r.get("content") or "",
+                        "year_of_report": r.get("year_of_report") or "",
+                        "year": r.get("year_of_report") or "",
+                        "government_type": r.get("government_type"),
+                        "government_type_name": r.get("government_type_name") or "Union",
+                        "union_department_type": r.get("union_department_type"),
+                        "union_department_name": r.get("union_department_name") or "",
+                        "state_id": r.get("state_id"),
+                        "state_name": r.get("state_name") or "",
+                        "local_body_types": r.get("local_body_types") or "",
+                        "is_active": r.get("status") == 1,
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
+                        "source": "cag_revamp.old_audit_reports",
+                    })
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[OldAuditReports] Query failed: {e}")
+                if conn: conn.close()
+        return {
+            "items": items,
+            "data": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if page_size else 1,
+        }
+
+    @staticmethod
+    def get_old_audit_report_by_id(report_id: str) -> Optional[Dict[str, Any]]:
+        conn = _get_remote_conn()
+        if not conn:
+            return None
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            clean_id = str(report_id).replace("old-rep-", "")
+            cur.execute("""
+                SELECT 
+                    oar.id, oar.title, oar.content, oar.year_of_report, oar.government_type,
+                    oar.union_department_type, oar.state as state_id, oar.local_body_types, oar.status,
+                    s.name as state_name,
+                    gc_gov.title as government_type_name,
+                    gc_dept.title as union_department_name
+                FROM cag_revamp.old_audit_reports oar
+                LEFT JOIN cag_revamp.states s ON oar.state = s.id
+                LEFT JOIN cag_revamp.general_categories gc_gov ON oar.government_type = gc_gov.id
+                LEFT JOIN cag_revamp.general_categories gc_dept ON oar.union_department_type = gc_dept.id
+                WHERE oar.id::text = %s
+                LIMIT 1;
+            """, [clean_id])
+            r = cur.fetchone()
+            cur.close()
+            conn.close()
+            if r:
+                return {
+                    "id": r["id"],
+                    "rawId": f"old-rep-{r['id']}",
+                    "title": r.get("title") or "Old Audit Report",
+                    "title_en": r.get("title") or "Old Audit Report",
+                    "content": r.get("content") or "",
+                    "year_of_report": r.get("year_of_report") or "",
+                    "government_type": r.get("government_type"),
+                    "government_type_name": r.get("government_type_name") or "Union",
+                    "union_department_type": r.get("union_department_type"),
+                    "union_department_name": r.get("union_department_name") or "",
+                    "state_id": r.get("state_id"),
+                    "state_name": r.get("state_name") or "",
+                    "local_body_types": r.get("local_body_types") or "",
+                    "is_active": r.get("status") == 1,
+                    "status": "Active" if r.get("status") == 1 else "Inactive",
+                }
+        except Exception as e:
+            logger.error(f"[OldAuditReport] Fetch detail failed: {e}")
+            if conn: conn.close()
+        return None
+
+    @staticmethod
+    def save_old_audit_report(data: Dict[str, Any]) -> Dict[str, Any]:
+        conn = _get_write_conn()
+        rec_id = str(data.get("id", "")).replace("old-rep-", "")
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                title = data.get("title") or data.get("title_en") or "Old Audit Report"
+                content = data.get("content") or data.get("overview") or ""
+                year = str(data.get("year_of_report") or data.get("year") or "")
+                status = 1 if data.get("is_active", True) else 0
+                state_id = data.get("state_id") or data.get("state")
+                gov_type = data.get("government_type")
+                dept_type = data.get("union_department_type")
+
+                if rec_id and rec_id.isdigit():
+                    cur.execute("""
+                        UPDATE cag_revamp.old_audit_reports
+                        SET title = %s, content = %s, year_of_report = %s, status = %s,
+                            state = %s, government_type = %s, union_department_type = %s
+                        WHERE id = %s;
+                    """, (title, content, year, status, state_id, gov_type, dept_type, int(rec_id)))
+                    conn.commit()
+                else:
+                    cur.execute("""
+                        INSERT INTO cag_revamp.old_audit_reports 
+                        (title, content, year_of_report, status, state, government_type, union_department_type)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id;
+                    """, (title, content, year, status, state_id, gov_type, dept_type))
+                    inserted = cur.fetchone()
+                    rec_id = str(inserted["id"])
+                    conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[OldAuditReport] Save failed: {e}")
+                if conn: conn.close()
+        return {"id": rec_id, "rawId": f"old-rep-{rec_id}", "success": True, **data}
+
+    @staticmethod
+    def delete_old_audit_report(report_id: str) -> bool:
+        clean_id = str(report_id).replace("old-rep-", "")
+        conn = _get_write_conn()
+        if conn and clean_id.isdigit():
+            try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM cag_revamp.old_audit_reports WHERE id = %s;", [int(clean_id)])
+                conn.commit()
+                cur.close()
+                conn.close()
+                return True
+            except Exception as e:
+                logger.error(f"[OldAuditReport] Delete failed: {e}")
+                if conn: conn.close()
+        return False
+
+    # =========================================================================
+    # 5. STATUS OF AUDIT REPORTS / TABLING TRACKER (cag_revamp.status_of_audit_reports)
+    # =========================================================================
+    @staticmethod
+    def get_status_of_audit_reports(
+        page: int = 1,
+        page_size: int = 15,
+        query: str = "",
+        government_type: Optional[str] = None,
+        union_department_type: Optional[str] = None,
+        state_id: Optional[int] = None,
+        year: str = "",
+        language: str = "en",
+        sort: str = "year_desc",
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        page = max(1, page)
+        page_size = max(1, min(page_size, 100))
+        offset = (page - 1) * page_size
+        conn = _get_remote_conn()
+        items = []
+        total = 0
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                where = ["1=1"]
+                params: List[Any] = []
+                if status == "active":
+                    where.append("sar.status = 1")
+                elif status == "inactive":
+                    where.append("sar.status = 0")
+                elif status != "all":
+                    where.append("(sar.status = 1 OR sar.status IS NULL)")
+
+                if query:
+                    where.append("sar.title ILIKE %s")
+                    params.append(f"%{query}%")
+                if year and year != "All":
+                    where.append("sar.year_of_report = %s")
+                    params.append(str(year))
+                if state_id:
+                    where.append("sar.state = %s")
+                    params.append(state_id)
+                if government_type and government_type != "All":
+                    if str(government_type).isdigit():
+                        where.append("sar.government_type = %s")
+                        params.append(int(government_type))
+                    else:
+                        where.append("gc_gov.title ILIKE %s")
+                        params.append(f"%{government_type}%")
+                if union_department_type and union_department_type != "All":
+                    if str(union_department_type).isdigit():
+                        where.append("sar.union_department_type = %s")
+                        params.append(int(union_department_type))
+                    else:
+                        where.append("gc_dept.title ILIKE %s")
+                        params.append(f"%{union_department_type}%")
+
+                where_sql = " AND ".join(where)
+                count_sql = f"""
+                    SELECT count(*) as cnt 
+                    FROM cag_revamp.status_of_audit_reports sar
+                    LEFT JOIN cag_revamp.states s ON sar.state = s.id
+                    LEFT JOIN cag_revamp.general_categories gc_gov ON sar.government_type = gc_gov.id
+                    LEFT JOIN cag_revamp.general_categories gc_dept ON sar.union_department_type = gc_dept.id
+                    WHERE {where_sql};
+                """
+                cur.execute(count_sql, params)
+                total = cur.fetchone()["cnt"]
+
+                order_sql = "ORDER BY sar.id DESC"
+                if sort in ("year_asc", "oldest"):
+                    order_sql = "ORDER BY sar.year_of_report ASC, sar.id ASC"
+                elif sort in ("year_desc", "newest"):
+                    order_sql = "ORDER BY sar.year_of_report DESC, sar.id DESC"
+                elif sort == "title_asc":
+                    order_sql = "ORDER BY sar.title ASC"
+                elif sort == "title_desc":
+                    order_sql = "ORDER BY sar.title DESC"
+
+                data_sql = f"""
+                    SELECT 
+                        sar.id, sar.title, sar.language, sar.year_of_report, sar.no_of_audit_reports,
+                        sar.date_of_sending_the_report_to_government,
+                        sar.date_on_which_report_tabled,
+                        sar.government_type, sar.union_department_type, sar.state as state_id, sar.local_body_types, sar.status,
+                        s.name as state_name,
+                        gc_gov.title as government_type_name,
+                        gc_dept.title as union_department_name
+                    FROM cag_revamp.status_of_audit_reports sar
+                    LEFT JOIN cag_revamp.states s ON sar.state = s.id
+                    LEFT JOIN cag_revamp.general_categories gc_gov ON sar.government_type = gc_gov.id
+                    LEFT JOIN cag_revamp.general_categories gc_dept ON sar.union_department_type = gc_dept.id
+                    WHERE {where_sql}
+                    {order_sql}
+                    LIMIT %s OFFSET %s;
+                """
+                cur.execute(data_sql, params + [page_size, offset])
+                for r in cur.fetchall():
+                    items.append({
+                        "id": r["id"],
+                        "rawId": f"status-rep-{r['id']}",
+                        "title": r.get("title") or "Status of Audit Report",
+                        "title_en": r.get("title") or "Status of Audit Report",
+                        "language": r.get("language") or "en",
+                        "year_of_report": r.get("year_of_report") or "",
+                        "year": r.get("year_of_report") or "",
+                        "no_of_audit_reports": r.get("no_of_audit_reports") or "1",
+                        "date_of_sending_the_report_to_government": str(r.get("date_of_sending_the_report_to_government") or ""),
+                        "submission_date": str(r.get("date_of_sending_the_report_to_government") or ""),
+                        "date_on_which_report_tabled": str(r.get("date_on_which_report_tabled") or ""),
+                        "tabled_date": str(r.get("date_on_which_report_tabled") or ""),
+                        "government_type": r.get("government_type"),
+                        "government_type_name": r.get("government_type_name") or "Union",
+                        "union_department_type": r.get("union_department_type"),
+                        "union_department_name": r.get("union_department_name") or "",
+                        "state_id": r.get("state_id"),
+                        "state_name": r.get("state_name") or "",
+                        "local_body_types": r.get("local_body_types") or "",
+                        "is_active": r.get("status") == 1,
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
+                        "source": "cag_revamp.status_of_audit_reports",
+                    })
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[StatusOfAuditReports] Query failed: {e}")
+                if conn: conn.close()
+        return {
+            "items": items,
+            "data": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if page_size else 1,
+        }
+
+    @staticmethod
+    def get_status_of_audit_report_by_id(report_id: str) -> Optional[Dict[str, Any]]:
+        conn = _get_remote_conn()
+        if not conn:
+            return None
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            clean_id = str(report_id).replace("status-rep-", "")
+            cur.execute("""
+                SELECT 
+                    sar.id, sar.title, sar.language, sar.year_of_report, sar.no_of_audit_reports,
+                    sar.date_of_sending_the_report_to_government,
+                    sar.date_on_which_report_tabled,
+                    sar.government_type, sar.union_department_type, sar.state as state_id, sar.local_body_types, sar.status,
+                    s.name as state_name,
+                    gc_gov.title as government_type_name,
+                    gc_dept.title as union_department_name
+                FROM cag_revamp.status_of_audit_reports sar
+                LEFT JOIN cag_revamp.states s ON sar.state = s.id
+                LEFT JOIN cag_revamp.general_categories gc_gov ON sar.government_type = gc_gov.id
+                LEFT JOIN cag_revamp.general_categories gc_dept ON sar.union_department_type = gc_dept.id
+                WHERE sar.id::text = %s
+                LIMIT 1;
+            """, [clean_id])
+            r = cur.fetchone()
+            cur.close()
+            conn.close()
+            if r:
+                return {
+                    "id": r["id"],
+                    "rawId": f"status-rep-{r['id']}",
+                    "title": r.get("title") or "Status of Audit Report",
+                    "title_en": r.get("title") or "Status of Audit Report",
+                    "language": r.get("language") or "en",
+                    "year_of_report": r.get("year_of_report") or "",
+                    "no_of_audit_reports": r.get("no_of_audit_reports") or "1",
+                    "date_of_sending_the_report_to_government": str(r.get("date_of_sending_the_report_to_government") or ""),
+                    "date_on_which_report_tabled": str(r.get("date_on_which_report_tabled") or ""),
+                    "government_type": r.get("government_type"),
+                    "government_type_name": r.get("government_type_name") or "Union",
+                    "union_department_type": r.get("union_department_type"),
+                    "union_department_name": r.get("union_department_name") or "",
+                    "state_id": r.get("state_id"),
+                    "state_name": r.get("state_name") or "",
+                    "is_active": r.get("status") == 1,
+                    "status": "Active" if r.get("status") == 1 else "Inactive",
+                }
+        except Exception as e:
+            logger.error(f"[StatusOfAuditReport] Fetch detail failed: {e}")
+            if conn: conn.close()
+        return None
+
+    @staticmethod
+    def save_status_of_audit_report(data: Dict[str, Any]) -> Dict[str, Any]:
+        conn = _get_write_conn()
+        rec_id = str(data.get("id", "")).replace("status-rep-", "")
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                title = data.get("title") or data.get("title_en") or "Status of Audit Report"
+                year = str(data.get("year_of_report") or data.get("year") or "")
+                no_reports = str(data.get("no_of_audit_reports") or "1")
+                date_sending = data.get("date_of_sending_the_report_to_government") or data.get("submission_date") or None
+                date_tabled = data.get("date_on_which_report_tabled") or data.get("tabled_date") or None
+                status = 1 if data.get("is_active", True) else 0
+                state_id = data.get("state_id") or data.get("state")
+                gov_type = data.get("government_type")
+                dept_type = data.get("union_department_type")
+                lang = data.get("language") or "en"
+
+                if rec_id and rec_id.isdigit():
+                    cur.execute("""
+                        UPDATE cag_revamp.status_of_audit_reports
+                        SET title = %s, year_of_report = %s, no_of_audit_reports = %s,
+                            date_of_sending_the_report_to_government = %s, date_on_which_report_tabled = %s,
+                            status = %s, state = %s, government_type = %s, union_department_type = %s, language = %s
+                        WHERE id = %s;
+                    """, (title, year, no_reports, date_sending, date_tabled, status, state_id, gov_type, dept_type, lang, int(rec_id)))
+                    conn.commit()
+                else:
+                    cur.execute("""
+                        INSERT INTO cag_revamp.status_of_audit_reports 
+                        (title, year_of_report, no_of_audit_reports, date_of_sending_the_report_to_government, date_on_which_report_tabled, status, state, government_type, union_department_type, language)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id;
+                    """, (title, year, no_reports, date_sending, date_tabled, status, state_id, gov_type, dept_type, lang))
+                    inserted = cur.fetchone()
+                    rec_id = str(inserted["id"])
+                    conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[StatusOfAuditReport] Save failed: {e}")
+                if conn: conn.close()
+        return {"id": rec_id, "rawId": f"status-rep-{rec_id}", "success": True, **data}
+
+    @staticmethod
+    def delete_status_of_audit_report(report_id: str) -> bool:
+        clean_id = str(report_id).replace("status-rep-", "")
+        conn = _get_write_conn()
+        if conn and clean_id.isdigit():
+            try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM cag_revamp.status_of_audit_reports WHERE id = %s;", [int(clean_id)])
+                conn.commit()
+                cur.close()
+                conn.close()
+                return True
+            except Exception as e:
+                logger.error(f"[StatusOfAuditReport] Delete failed: {e}")
+                if conn: conn.close()
+        return False
+
+    # =========================================================================
+    # 6. AG OTHER REPORTS (cag_revamp.ag_other_reports)
+    # =========================================================================
+    @staticmethod
+    def get_ag_other_reports(
+        page: int = 1,
+        page_size: int = 15,
+        query: str = "",
+        category_id: Optional[int] = None,
+        year: str = "",
+        language: str = "en",
+        sort: str = "year_desc",
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        page = max(1, page)
+        page_size = max(1, min(page_size, 100))
+        offset = (page - 1) * page_size
+        conn = _get_remote_conn()
+        items = []
+        total = 0
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                where = ["1=1"]
+                params: List[Any] = []
+                if status == "active":
+                    where.append("aor.status = 1")
+                elif status == "inactive":
+                    where.append("aor.status = 0")
+                elif status != "all":
+                    where.append("(aor.status = 1 OR aor.status IS NULL)")
+
+                if query:
+                    where.append("aor.title ILIKE %s")
+                    params.append(f"%{query}%")
+                if year and year != "All":
+                    where.append("aor.year = %s")
+                    params.append(str(year))
+                if category_id:
+                    where.append("aor.general_categories_id = %s")
+                    params.append(category_id)
+
+                where_sql = " AND ".join(where)
+                count_sql = f"""
+                    SELECT count(*) as cnt 
+                    FROM cag_revamp.ag_other_reports aor
+                    LEFT JOIN cag_revamp.general_categories gc ON aor.general_categories_id = gc.id
+                    WHERE {where_sql};
+                """
+                cur.execute(count_sql, params)
+                total = cur.fetchone()["cnt"]
+
+                order_sql = "ORDER BY aor.id DESC"
+                if sort in ("year_asc", "oldest"):
+                    order_sql = "ORDER BY aor.year ASC, aor.id ASC"
+                elif sort in ("year_desc", "newest"):
+                    order_sql = "ORDER BY aor.year DESC, aor.id DESC"
+                elif sort == "title_asc":
+                    order_sql = "ORDER BY aor.title ASC"
+                elif sort == "title_desc":
+                    order_sql = "ORDER BY aor.title DESC"
+
+                data_sql = f"""
+                    SELECT 
+                        aor.id, aor.title, aor.language, aor.year, aor.issue_date,
+                        aor.general_categories_id, aor.upload_file, aor.status,
+                        aor.created, aor.modified,
+                        gc.title as category_title
+                    FROM cag_revamp.ag_other_reports aor
+                    LEFT JOIN cag_revamp.general_categories gc ON aor.general_categories_id = gc.id
+                    WHERE {where_sql}
+                    {order_sql}
+                    LIMIT %s OFFSET %s;
+                """
+                cur.execute(data_sql, params + [page_size, offset])
+                for r in cur.fetchall():
+                    fname = r.get("upload_file") or ""
+                    pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/ag_other_reports/{fname}" if fname else "https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf"
+                    items.append({
+                        "id": r["id"],
+                        "rawId": f"ag-other-{r['id']}",
+                        "title": r.get("title") or "AG Other Report",
+                        "title_en": r.get("title") or "AG Other Report",
+                        "language": r.get("language") or "en",
+                        "year": r.get("year") or "",
+                        "issue_date": str(r.get("issue_date") or ""),
+                        "category_id": r.get("general_categories_id"),
+                        "category_title": r.get("category_title") or "Technical Guidance & Supervision",
+                        "file_name": fname,
+                        "file_url": pdf_url,
+                        "pdf_url": pdf_url,
+                        "created_at": str(r.get("created") or ""),
+                        "is_active": r.get("status") == 1,
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
+                        "source": "cag_revamp.ag_other_reports",
+                    })
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[AgOtherReports] Query failed: {e}")
+                if conn: conn.close()
+        return {
+            "items": items,
+            "data": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if page_size else 1,
+        }
+
+    @staticmethod
+    def get_ag_other_report_by_id(report_id: str) -> Optional[Dict[str, Any]]:
+        conn = _get_remote_conn()
+        if not conn:
+            return None
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            clean_id = str(report_id).replace("ag-other-", "")
+            cur.execute("""
+                SELECT 
+                    aor.id, aor.title, aor.language, aor.year, aor.issue_date,
+                    aor.general_categories_id, aor.upload_file, aor.status,
+                    aor.created, aor.modified,
+                    gc.title as category_title
+                FROM cag_revamp.ag_other_reports aor
+                LEFT JOIN cag_revamp.general_categories gc ON aor.general_categories_id = gc.id
+                WHERE aor.id::text = %s
+                LIMIT 1;
+            """, [clean_id])
+            r = cur.fetchone()
+            cur.close()
+            conn.close()
+            if r:
+                fname = r.get("upload_file") or ""
+                pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/ag_other_reports/{fname}" if fname else ""
+                return {
+                    "id": r["id"],
+                    "rawId": f"ag-other-{r['id']}",
+                    "title": r.get("title") or "AG Other Report",
+                    "title_en": r.get("title") or "AG Other Report",
+                    "language": r.get("language") or "en",
+                    "year": r.get("year") or "",
+                    "issue_date": str(r.get("issue_date") or ""),
+                    "category_id": r.get("general_categories_id"),
+                    "category_title": r.get("category_title") or "Technical Guidance & Supervision",
+                    "file_name": fname,
+                    "file_url": pdf_url,
+                    "pdf_url": pdf_url,
+                    "is_active": r.get("status") == 1,
+                    "status": "Active" if r.get("status") == 1 else "Inactive",
+                }
+        except Exception as e:
+            logger.error(f"[AgOtherReport] Fetch detail failed: {e}")
+            if conn: conn.close()
+        return None
+
+    @staticmethod
+    def save_ag_other_report(data: Dict[str, Any]) -> Dict[str, Any]:
+        conn = _get_write_conn()
+        rec_id = str(data.get("id", "")).replace("ag-other-", "")
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                title = data.get("title") or data.get("title_en") or "AG Other Report"
+                year = str(data.get("year") or data.get("year_of_report") or "")
+                upload_file = data.get("upload_file") or data.get("file_name") or ""
+                cat_id = data.get("general_categories_id") or data.get("category_id") or 826
+                status = 1 if data.get("is_active", True) else 0
+                lang = data.get("language") or "en"
+
+                if rec_id and rec_id.isdigit():
+                    cur.execute("""
+                        UPDATE cag_revamp.ag_other_reports
+                        SET title = %s, year = %s, upload_file = %s, general_categories_id = %s,
+                            status = %s, language = %s, modified = NOW()
+                        WHERE id = %s;
+                    """, (title, year, upload_file, cat_id, status, lang, int(rec_id)))
+                    conn.commit()
+                else:
+                    cur.execute("""
+                        INSERT INTO cag_revamp.ag_other_reports 
+                        (title, year, upload_file, general_categories_id, status, language, created_by, created, modified)
+                        VALUES (%s, %s, %s, %s, %s, %s, 1, NOW(), NOW())
+                        RETURNING id;
+                    """, (title, year, upload_file, cat_id, status, lang))
+                    inserted = cur.fetchone()
+                    rec_id = str(inserted["id"])
+                    conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[AgOtherReport] Save failed: {e}")
+                if conn: conn.close()
+        return {"id": rec_id, "rawId": f"ag-other-{rec_id}", "success": True, **data}
+
+    @staticmethod
+    def delete_ag_other_report(report_id: str) -> bool:
+        clean_id = str(report_id).replace("ag-other-", "")
+        conn = _get_write_conn()
+        if conn and clean_id.isdigit():
+            try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM cag_revamp.ag_other_reports WHERE id = %s;", [int(clean_id)])
+                conn.commit()
+                cur.close()
+                conn.close()
+                return True
+            except Exception as e:
+                logger.error(f"[AgOtherReport] Delete failed: {e}")
+                if conn: conn.close()
+        return False
+
+    # =========================================================================
+    # 7. PERFORMANCE & ACTIVITY REPORTS (cag_revamp.performance_activity_report)
+    # =========================================================================
+    @staticmethod
+    def get_performance_activity_reports(
+        page: int = 1,
+        page_size: int = 15,
+        query: str = "",
+        year: str = "",
+        language: str = "en",
+        sort: str = "year_desc",
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        page = max(1, page)
+        page_size = max(1, min(page_size, 100))
+        offset = (page - 1) * page_size
+        conn = _get_remote_conn()
+        items = []
+        total = 0
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                where = ["1=1"]
+                params: List[Any] = []
+                if status == "active":
+                    where.append("par.status = 1")
+                elif status == "inactive":
+                    where.append("par.status = 0")
+                elif status != "all":
+                    where.append("(par.status = 1 OR par.status IS NULL)")
+
+                if query:
+                    where.append("(par.title ILIKE %s OR par.body ILIKE %s)")
+                    params.extend([f"%{query}%", f"%{query}%"])
+
+                where_sql = " AND ".join(where)
+                count_sql = f"SELECT count(*) as cnt FROM cag_revamp.performance_activity_report par WHERE {where_sql};"
+                cur.execute(count_sql, params)
+                total = cur.fetchone()["cnt"]
+
+                order_sql = "ORDER BY par.id DESC"
+                if sort == "title_asc":
+                    order_sql = "ORDER BY par.title ASC"
+                elif sort == "title_desc":
+                    order_sql = "ORDER BY par.title DESC"
+
+                data_sql = f"""
+                    SELECT 
+                        par.id, par.title, par.language, par.body, par.file_title,
+                        par.upload_file, par.show_in_whats_new, par.status,
+                        par.created_at, par.updated_at
+                    FROM cag_revamp.performance_activity_report par
+                    WHERE {where_sql}
+                    {order_sql}
+                    LIMIT %s OFFSET %s;
+                """
+                cur.execute(data_sql, params + [page_size, offset])
+                for r in cur.fetchall():
+                    fname = r.get("upload_file") or ""
+                    pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/performance_activity_report/{fname}" if fname else "https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf"
+                    items.append({
+                        "id": r["id"],
+                        "rawId": f"perf-act-{r['id']}",
+                        "title": r.get("title") or "Performance & Activity Report",
+                        "title_en": r.get("title") or "Performance & Activity Report",
+                        "language": r.get("language") or "en",
+                        "body": r.get("body") or "",
+                        "file_title": r.get("file_title") or fname,
+                        "file_name": fname,
+                        "file_url": pdf_url,
+                        "pdf_url": pdf_url,
+                        "show_in_whats_new": bool(r.get("show_in_whats_new")),
+                        "created_at": str(r.get("created_at") or ""),
+                        "is_active": r.get("status") == 1,
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
+                        "source": "cag_revamp.performance_activity_report",
+                    })
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[PerformanceActivityReports] Query failed: {e}")
+                if conn: conn.close()
+        return {
+            "items": items,
+            "data": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if page_size else 1,
+        }
+
+    @staticmethod
+    def get_performance_activity_report_by_id(report_id: str) -> Optional[Dict[str, Any]]:
+        conn = _get_remote_conn()
+        if not conn:
+            return None
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            clean_id = str(report_id).replace("perf-act-", "")
+            cur.execute("""
+                SELECT 
+                    par.id, par.title, par.language, par.body, par.file_title,
+                    par.upload_file, par.show_in_whats_new, par.status,
+                    par.created_at, par.updated_at
+                FROM cag_revamp.performance_activity_report par
+                WHERE par.id::text = %s
+                LIMIT 1;
+            """, [clean_id])
+            r = cur.fetchone()
+            cur.close()
+            conn.close()
+            if r:
+                fname = r.get("upload_file") or ""
+                pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/performance_activity_report/{fname}" if fname else ""
+                return {
+                    "id": r["id"],
+                    "rawId": f"perf-act-{r['id']}",
+                    "title": r.get("title") or "Performance & Activity Report",
+                    "title_en": r.get("title") or "Performance & Activity Report",
+                    "language": r.get("language") or "en",
+                    "body": r.get("body") or "",
+                    "file_title": r.get("file_title") or fname,
+                    "file_name": fname,
+                    "file_url": pdf_url,
+                    "pdf_url": pdf_url,
+                    "show_in_whats_new": bool(r.get("show_in_whats_new")),
+                    "is_active": r.get("status") == 1,
+                    "status": "Active" if r.get("status") == 1 else "Inactive",
+                }
+        except Exception as e:
+            logger.error(f"[PerformanceActivityReport] Fetch detail failed: {e}")
+            if conn: conn.close()
+        return None
+
+    @staticmethod
+    def save_performance_activity_report(data: Dict[str, Any]) -> Dict[str, Any]:
+        conn = _get_write_conn()
+        rec_id = str(data.get("id", "")).replace("perf-act-", "")
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                title = data.get("title") or data.get("title_en") or "Performance & Activity Report"
+                body = data.get("body") or data.get("description") or ""
+                file_title = data.get("file_title") or ""
+                upload_file = data.get("upload_file") or data.get("file_name") or ""
+                whats_new = 1 if data.get("show_in_whats_new") else 0
+                status = 1 if data.get("is_active", True) else 0
+                lang = data.get("language") or "en"
+
+                if rec_id and rec_id.isdigit():
+                    cur.execute("""
+                        UPDATE cag_revamp.performance_activity_report
+                        SET title = %s, body = %s, file_title = %s, upload_file = %s,
+                            show_in_whats_new = %s, status = %s, language = %s, updated_at = NOW()
+                        WHERE id = %s;
+                    """, (title, body, file_title, upload_file, whats_new, status, lang, int(rec_id)))
+                    conn.commit()
+                else:
+                    cur.execute("""
+                        INSERT INTO cag_revamp.performance_activity_report 
+                        (title, body, file_title, upload_file, show_in_whats_new, status, language, created_by, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, 1, NOW(), NOW())
+                        RETURNING id;
+                    """, (title, body, file_title, upload_file, whats_new, status, lang))
+                    inserted = cur.fetchone()
+                    rec_id = str(inserted["id"])
+                    conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[PerformanceActivityReport] Save failed: {e}")
+                if conn: conn.close()
+        return {"id": rec_id, "rawId": f"perf-act-{rec_id}", "success": True, **data}
+
+    @staticmethod
+    def delete_performance_activity_report(report_id: str) -> bool:
+        clean_id = str(report_id).replace("perf-act-", "")
+        conn = _get_write_conn()
+        if conn and clean_id.isdigit():
+            try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM cag_revamp.performance_activity_report WHERE id = %s;", [int(clean_id)])
+                conn.commit()
+                cur.close()
+                conn.close()
+                return True
+            except Exception as e:
+                logger.error(f"[PerformanceActivityReport] Delete failed: {e}")
+                if conn: conn.close()
+        return False
+
+    # =========================================================================
+    # 8. OUTSTANDING TREASURY INSPECTION REPORTS (cag_revamp.outstanding_treasury_inspection_report)
+    # =========================================================================
+    @staticmethod
+    def get_outstanding_treasury_inspection_reports(
+        page: int = 1,
+        page_size: int = 15,
+        query: str = "",
+        language: str = "en",
+        sort: str = "newest",
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        page = max(1, page)
+        page_size = max(1, min(page_size, 100))
+        offset = (page - 1) * page_size
+        conn = _get_remote_conn()
+        items = []
+        total = 0
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                where = ["1=1"]
+                params: List[Any] = []
+                if status == "active":
+                    where.append("tir.status = 1")
+                elif status == "inactive":
+                    where.append("tir.status = 0")
+                elif status != "all":
+                    where.append("(tir.status = 1 OR tir.status IS NULL)")
+
+                if query:
+                    where.append("(tir.title ILIKE %s OR tir.description ILIKE %s)")
+                    params.extend([f"%{query}%", f"%{query}%"])
+
+                where_sql = " AND ".join(where)
+                count_sql = f"SELECT count(*) as cnt FROM cag_revamp.outstanding_treasury_inspection_report tir WHERE {where_sql};"
+                cur.execute(count_sql, params)
+                total = cur.fetchone()["cnt"]
+
+                order_sql = "ORDER BY tir.id DESC"
+                if sort == "title_asc":
+                    order_sql = "ORDER BY tir.title ASC"
+                elif sort == "title_desc":
+                    order_sql = "ORDER BY tir.title DESC"
+
+                data_sql = f"""
+                    SELECT 
+                        tir.id, tir.title, tir.language, tir.description, tir.file_title,
+                        tir.upload_file, tir.report_date, tir.status,
+                        tir.created_at, tir.updated_at
+                    FROM cag_revamp.outstanding_treasury_inspection_report tir
+                    WHERE {where_sql}
+                    {order_sql}
+                    LIMIT %s OFFSET %s;
+                """
+                cur.execute(data_sql, params + [page_size, offset])
+                for r in cur.fetchall():
+                    fname = r.get("upload_file") or ""
+                    pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/outstanding_treasury_inspection_report/{fname}" if fname else "https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf"
+                    items.append({
+                        "id": r["id"],
+                        "rawId": f"treasury-insp-{r['id']}",
+                        "title": r.get("title") or "Outstanding Treasury Inspection Report",
+                        "title_en": r.get("title") or "Outstanding Treasury Inspection Report",
+                        "language": r.get("language") or "en",
+                        "description": r.get("description") or "",
+                        "file_title": r.get("file_title") or fname,
+                        "file_name": fname,
+                        "file_url": pdf_url,
+                        "pdf_url": pdf_url,
+                        "report_date": str(r.get("report_date") or ""),
+                        "created_at": str(r.get("created_at") or ""),
+                        "is_active": r.get("status") == 1,
+                        "status": "Active" if r.get("status") == 1 else "Inactive",
+                        "source": "cag_revamp.outstanding_treasury_inspection_report",
+                    })
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[TreasuryInspectionReports] Query failed: {e}")
+                if conn: conn.close()
+        return {
+            "items": items,
+            "data": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total + page_size - 1) // page_size if page_size else 1,
+        }
+
+    @staticmethod
+    def get_outstanding_treasury_inspection_report_by_id(report_id: str) -> Optional[Dict[str, Any]]:
+        conn = _get_remote_conn()
+        if not conn:
+            return None
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            clean_id = str(report_id).replace("treasury-insp-", "")
+            cur.execute("""
+                SELECT 
+                    tir.id, tir.title, tir.language, tir.description, tir.file_title,
+                    tir.upload_file, tir.report_date, tir.status,
+                    tir.created_at, tir.updated_at
+                FROM cag_revamp.outstanding_treasury_inspection_report tir
+                WHERE tir.id::text = %s
+                LIMIT 1;
+            """, [clean_id])
+            r = cur.fetchone()
+            cur.close()
+            conn.close()
+            if r:
+                fname = r.get("upload_file") or ""
+                pdf_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/outstanding_treasury_inspection_report/{fname}" if fname else ""
+                return {
+                    "id": r["id"],
+                    "rawId": f"treasury-insp-{r['id']}",
+                    "title": r.get("title") or "Outstanding Treasury Inspection Report",
+                    "title_en": r.get("title") or "Outstanding Treasury Inspection Report",
+                    "language": r.get("language") or "en",
+                    "description": r.get("description") or "",
+                    "file_title": r.get("file_title") or fname,
+                    "file_name": fname,
+                    "file_url": pdf_url,
+                    "pdf_url": pdf_url,
+                    "report_date": str(r.get("report_date") or ""),
+                    "is_active": r.get("status") == 1,
+                    "status": "Active" if r.get("status") == 1 else "Inactive",
+                }
+        except Exception as e:
+            logger.error(f"[TreasuryInspectionReport] Fetch detail failed: {e}")
+            if conn: conn.close()
+        return None
+
+    @staticmethod
+    def save_outstanding_treasury_inspection_report(data: Dict[str, Any]) -> Dict[str, Any]:
+        conn = _get_write_conn()
+        rec_id = str(data.get("id", "")).replace("treasury-insp-", "")
+        if conn:
+            try:
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                title = data.get("title") or data.get("title_en") or "Outstanding Treasury Inspection Report"
+                desc = data.get("description") or data.get("overview") or ""
+                file_title = data.get("file_title") or ""
+                upload_file = data.get("upload_file") or data.get("file_name") or ""
+                rep_date = data.get("report_date") or None
+                status = 1 if data.get("is_active", True) else 0
+                lang = data.get("language") or "en"
+
+                if rec_id and rec_id.isdigit():
+                    cur.execute("""
+                        UPDATE cag_revamp.outstanding_treasury_inspection_report
+                        SET title = %s, description = %s, file_title = %s, upload_file = %s,
+                            report_date = %s, status = %s, language = %s, updated_at = NOW()
+                        WHERE id = %s;
+                    """, (title, desc, file_title, upload_file, rep_date, status, lang, int(rec_id)))
+                    conn.commit()
+                else:
+                    cur.execute("""
+                        INSERT INTO cag_revamp.outstanding_treasury_inspection_report 
+                        (title, description, file_title, upload_file, report_date, status, language, created_by, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, 1, NOW(), NOW())
+                        RETURNING id;
+                    """, (title, desc, file_title, upload_file, rep_date, status, lang))
+                    inserted = cur.fetchone()
+                    rec_id = str(inserted["id"])
+                    conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"[TreasuryInspectionReport] Save failed: {e}")
+                if conn: conn.close()
+        return {"id": rec_id, "rawId": f"treasury-insp-{rec_id}", "success": True, **data}
+
+    @staticmethod
+    def delete_outstanding_treasury_inspection_report(report_id: str) -> bool:
+        clean_id = str(report_id).replace("treasury-insp-", "")
+        conn = _get_write_conn()
+        if conn and clean_id.isdigit():
+            try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM cag_revamp.outstanding_treasury_inspection_report WHERE id = %s;", [int(clean_id)])
+                conn.commit()
+                cur.close()
+                conn.close()
+                return True
+            except Exception as e:
+                logger.error(f"[TreasuryInspectionReport] Delete failed: {e}")
+                if conn: conn.close()
+        return False
+
     @staticmethod
     def _get_fallback_reports() -> List[Dict[str, Any]]:
         return FIGMA_CURATED_REPORTS
+
 

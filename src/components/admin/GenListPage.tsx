@@ -14,22 +14,30 @@ function StatusBadge({ active }: { active: boolean }) {
   );
 }
 
-function fmt(val: any, type?: string): React.ReactNode {
-  if (val === null || val === undefined) return <span className="text-gray-300">—</span>;
+function fmt(val: any, type?: string, key?: string): React.ReactNode {
+  if (val === null || val === undefined || val === '') return <span className="text-gray-300">—</span>;
   if (type === 'boolean') return <StatusBadge active={!!val} />;
   if (type === 'date') return <span className="text-xs text-gray-500">{val ? new Date(val).toLocaleDateString('en-IN') : '—'}</span>;
-  if (type === 'image') {
-    return val ? (
-      <div className="flex items-center gap-2">
-        <img src={val} alt="" className="w-8 h-8 object-cover rounded shadow-sm border border-gray-100 flex-shrink-0" />
-        <FilePreviewAction url={val} type="image" />
-      </div>
-    ) : <span className="text-gray-300">—</span>;
+  
+  const strVal = String(val);
+  const lowerKey = (key || '').toLowerCase();
+  const isImage = type === 'image' || 
+    lowerKey.includes('image') || 
+    lowerKey.includes('photo') || 
+    lowerKey.includes('picture') || 
+    lowerKey.includes('thumbnail') || 
+    lowerKey.includes('banner') || 
+    lowerKey.includes('cover') || 
+    strVal.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)($|\?)/i) !== null;
+
+  if (isImage) {
+    return <FilePreviewAction url={strVal} type="image" showThumbnail={true} />;
   }
-  if (type === 'link' || type === 'file') {
-    return val ? <FilePreviewAction url={val} type="file" /> : <span className="text-gray-300">—</span>;
+
+  if (type === 'link' || type === 'file' || strVal.startsWith('/uploads/') || strVal.startsWith('/storage/') || strVal.startsWith('http://') || strVal.startsWith('https://')) {
+    return <FilePreviewAction url={strVal} type={strVal.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) ? 'image' : 'file'} />;
   }
-  return <span className="max-w-xs truncate block">{String(val)}</span>;
+  return <span className="max-w-xs truncate block">{strVal}</span>;
 }
 
 // ─── Generic list page component ──────────────────────────────────────────────
@@ -187,7 +195,7 @@ export async function GenListPage({
                     <td className="px-4 py-3 text-gray-400 text-xs">{(page - 1) * 20 + idx + 1}</td>
                     {cols.map(c => (
                       <td key={c.key} className="px-4 py-3 text-gray-700 text-sm">
-                        {c.render ? c.render(row) : fmt(row[c.key], c.type)}
+                        {c.render ? c.render(row) : fmt(row[c.key], c.type, c.key)}
                       </td>
                     ))}
                     <td className="px-4 py-3">

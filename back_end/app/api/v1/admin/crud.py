@@ -191,6 +191,96 @@ async def list_or_get_crud(
             "totalPages": result.get("total_pages", 1)
         }
 
+    if table in ("old_audit_reports", "old-audit-reports"):
+        if id:
+            item = ReportsService.get_old_audit_report_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_old_audit_reports(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+            status=status,
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
+    if table in ("status_of_audit_reports", "status-of-audit-reports"):
+        if id:
+            item = ReportsService.get_status_of_audit_report_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_status_of_audit_reports(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+            status=status,
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
+    if table in ("ag_other_reports", "ag-other-reports"):
+        if id:
+            item = ReportsService.get_ag_other_report_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_ag_other_reports(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+            status=status,
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
+    if table in ("performance_activity_report", "performance_activity_reports", "performance-activity-report"):
+        if id:
+            item = ReportsService.get_performance_activity_report_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_performance_activity_reports(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+            status=status,
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
+    if table in ("outstanding_treasury_inspection_report", "outstanding_treasury_inspection_reports", "outstanding-treasury-inspection-report"):
+        if id:
+            item = ReportsService.get_outstanding_treasury_inspection_report_by_id(str(id))
+            return {"data": [item] if item else []}
+        result = ReportsService.get_outstanding_treasury_inspection_reports(
+            page=page,
+            page_size=limit,
+            query=search or "",
+            sort=eff_sort,
+            status=status,
+        )
+        return {
+            "data": result.get("items", []),
+            "total": result.get("total", 0),
+            "page": page,
+            "totalPages": result.get("total_pages", 1)
+        }
+
     if table == "pages":
         from app.services.pages_service import SEED_PAGES, PagesService
         if id:
@@ -357,6 +447,21 @@ async def create_crud(
         elif table == "combined_accounts":
             saved = ReportsService.save_local_combined_account(data)
             record_id = str(saved.get("id"))
+        elif table in ("old_audit_reports", "old-audit-reports"):
+            saved = ReportsService.save_old_audit_report(data)
+            record_id = str(saved.get("id"))
+        elif table in ("status_of_audit_reports", "status-of-audit-reports"):
+            saved = ReportsService.save_status_of_audit_report(data)
+            record_id = str(saved.get("id"))
+        elif table in ("ag_other_reports", "ag-other-reports"):
+            saved = ReportsService.save_ag_other_report(data)
+            record_id = str(saved.get("id"))
+        elif table in ("performance_activity_report", "performance_activity_reports", "performance-activity-report"):
+            saved = ReportsService.save_performance_activity_report(data)
+            record_id = str(saved.get("id"))
+        elif table in ("outstanding_treasury_inspection_report", "outstanding_treasury_inspection_reports", "outstanding-treasury-inspection-report"):
+            saved = ReportsService.save_outstanding_treasury_inspection_report(data)
+            record_id = str(saved.get("id"))
         elif table in ("about", "about_us", "about_records"):
             from app.services.about_service import AboutAdminService
             saved = AboutAdminService.save_about_record(data, db=db)
@@ -458,6 +563,21 @@ async def update_crud(
         elif table == "combined_accounts":
             data["id"] = str(id)
             ReportsService.save_local_combined_account(data)
+        elif table in ("old_audit_reports", "old-audit-reports"):
+            data["id"] = str(id)
+            ReportsService.save_old_audit_report(data)
+        elif table in ("status_of_audit_reports", "status-of-audit-reports"):
+            data["id"] = str(id)
+            ReportsService.save_status_of_audit_report(data)
+        elif table in ("ag_other_reports", "ag-other-reports"):
+            data["id"] = str(id)
+            ReportsService.save_ag_other_report(data)
+        elif table in ("performance_activity_report", "performance_activity_reports", "performance-activity-report"):
+            data["id"] = str(id)
+            ReportsService.save_performance_activity_report(data)
+        elif table in ("outstanding_treasury_inspection_report", "outstanding_treasury_inspection_reports", "outstanding-treasury-inspection-report"):
+            data["id"] = str(id)
+            ReportsService.save_outstanding_treasury_inspection_report(data)
         elif table in ("about", "about_us", "about_records"):
             from app.services.about_service import AboutAdminService
             AboutAdminService.save_about_record({**data, "rawId": id}, db=db)
@@ -543,6 +663,16 @@ async def delete_crud(
             ReportsService.delete_local_state_account(str(id))
         elif table == "combined_accounts":
             ReportsService.delete_local_combined_account(str(id))
+        elif table in ("old_audit_reports", "old-audit-reports"):
+            ReportsService.delete_old_audit_report(str(id))
+        elif table in ("status_of_audit_reports", "status-of-audit-reports"):
+            ReportsService.delete_status_of_audit_report(str(id))
+        elif table in ("ag_other_reports", "ag-other-reports"):
+            ReportsService.delete_ag_other_report(str(id))
+        elif table in ("performance_activity_report", "performance_activity_reports", "performance-activity-report"):
+            ReportsService.delete_performance_activity_report(str(id))
+        elif table in ("outstanding_treasury_inspection_report", "outstanding_treasury_inspection_reports", "outstanding-treasury-inspection-report"):
+            ReportsService.delete_outstanding_treasury_inspection_report(str(id))
         elif table in ("about", "about_us", "about_records"):
             from app.services.about_service import AboutAdminService
             AboutAdminService.delete_about_record(str(id), db=db)

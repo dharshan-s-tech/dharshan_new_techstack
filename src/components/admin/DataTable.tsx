@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, ChevronLeft, ChevronRight, Pencil, Eye, Trash2, Plus, Filter, RefreshCw } from 'lucide-react';
+import { FilePreviewAction } from './ListClientHelpers';
 
 export interface Column<T> {
   key: keyof T | string;
@@ -10,6 +11,7 @@ export interface Column<T> {
   render?: (row: T) => React.ReactNode;
   sortable?: boolean;
   width?: string;
+  type?: 'text' | 'badge' | 'date' | 'image' | 'link' | 'boolean' | 'file';
 }
 
 interface DataTableProps<T> {
@@ -129,11 +131,51 @@ export default function DataTable<T extends { id: string | number }>({
               ) : data.map((row, idx) => (
                 <tr key={row.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                   <td className="px-4 py-3 text-gray-400 text-xs">{(page - 1) * pageSize + idx + 1}</td>
-                  {columns.map(col => (
-                    <td key={String(col.key)} className="px-4 py-3 text-gray-700">
-                      {col.render ? col.render(row) : String(getValue(row, String(col.key)) ?? '—')}
-                    </td>
-                  ))}
+                  {columns.map(col => {
+                    if (col.render) {
+                      return (
+                        <td key={String(col.key)} className="px-4 py-3 text-gray-700">
+                          {col.render(row)}
+                        </td>
+                      );
+                    }
+                    const rawVal = getValue(row, String(col.key));
+                    if (rawVal === null || rawVal === undefined || rawVal === '') {
+                      return <td key={String(col.key)} className="px-4 py-3 text-gray-300">—</td>;
+                    }
+                    const strVal = String(rawVal);
+                    const colKeyLower = String(col.key).toLowerCase();
+                    const isImg = col.type === 'image' || 
+                      colKeyLower.includes('image') || 
+                      colKeyLower.includes('photo') || 
+                      colKeyLower.includes('picture') || 
+                      colKeyLower.includes('thumbnail') || 
+                      colKeyLower.includes('banner') || 
+                      colKeyLower.includes('cover') || 
+                      strVal.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)($|\?)/i) !== null;
+
+                    if (isImg) {
+                      return (
+                        <td key={String(col.key)} className="px-4 py-3 text-gray-700">
+                          <FilePreviewAction url={strVal} type="image" showThumbnail={true} />
+                        </td>
+                      );
+                    }
+
+                    if (col.type === 'file' || col.type === 'link' || strVal.startsWith('http://') || strVal.startsWith('https://')) {
+                      return (
+                        <td key={String(col.key)} className="px-4 py-3 text-gray-700">
+                          <FilePreviewAction url={strVal} type={strVal.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) ? 'image' : 'file'} />
+                        </td>
+                      );
+                    }
+
+                    return (
+                      <td key={String(col.key)} className="px-4 py-3 text-gray-700">
+                        {strVal}
+                      </td>
+                    );
+                  })}
                   {(onEdit || onDelete || onView || extraActions) && (
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">

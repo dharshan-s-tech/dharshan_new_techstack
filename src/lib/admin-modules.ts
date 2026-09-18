@@ -72,6 +72,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'image_url', label: 'Image', type: 'image' },
       { key: 'news_type', label: 'Type' },
       { key: 'tag', label: 'Tag' },
       { key: 'publish_date', label: 'Published', type: 'date' },
@@ -201,6 +202,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'thumbnail_url', label: 'Picture / Preview', type: 'image' },
       { key: 'media_type', label: 'Type' },
       { key: 'gallery_date', label: 'Date', type: 'date' },
       { key: 'is_active', label: 'Status', type: 'boolean' },
@@ -227,6 +229,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'image_url', label: 'Image', type: 'image' },
       { key: 'venue', label: 'Venue' },
       { key: 'start_date', label: 'Start Date', type: 'date' },
       { key: 'end_date', label: 'End Date', type: 'date' },
@@ -273,6 +276,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'icon_url', label: 'Icon', type: 'image' },
       { key: 'url', label: 'URL', type: 'link' },
       { key: 'link_type', label: 'Type' },
       { key: 'display_order', label: 'Order' },
@@ -363,6 +367,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'full_name_en',
     columns: [
       { key: 'full_name_en', label: 'Name (EN)' },
+      { key: 'profile_image', label: 'Photo', type: 'image' },
       { key: 'email', label: 'Email' },
       { key: 'charge_from', label: 'Charge From', type: 'date' },
       { key: 'is_active', label: 'Status', type: 'boolean' },
@@ -679,6 +684,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'name',
     columns: [
       { key: 'name', label: 'Officer Name' },
+      { key: 'profile_image', label: 'Photo', type: 'image' },
       { key: 'designation', label: 'Designation' },
       { key: 'charge', label: 'Portfolio / Charge' },
       { key: 'level', label: 'Level' },

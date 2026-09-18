@@ -22,27 +22,46 @@ async function getRecordDetail(table: string, id: string) {
 }
 
 function renderValue(key: string, val: any): React.ReactNode {
-  if (val === null || val === undefined) return '—';
+  if (val === null || val === undefined || val === '') return <span className="text-gray-300">—</span>;
   if (typeof val === 'boolean') {
-    return val ? 'Active (true)' : 'Inactive (false)';
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${val ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+        {val ? 'Active (true)' : 'Inactive (false)'}
+      </span>
+    );
   }
 
   const strVal = String(val);
   const lowerKey = key.toLowerCase();
   
+  const isImage = lowerKey.includes('image') || 
+    lowerKey.includes('photo') || 
+    lowerKey.includes('picture') || 
+    lowerKey.includes('thumbnail') || 
+    lowerKey.includes('banner') || 
+    lowerKey.includes('cover') || 
+    strVal.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)($|\?)/i) !== null;
+
+  if (isImage) {
+    return (
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-2 bg-white rounded-xl border border-gray-200">
+        <FilePreviewAction url={strVal} type="image" showThumbnail={true} />
+      </div>
+    );
+  }
+
   // Check if it's a file path or URL
-  const isFilePath = strVal.startsWith('/storage/') || strVal.startsWith('/admin-uploads/') || strVal.startsWith('http://') || strVal.startsWith('https://');
+  const isFilePath = strVal.startsWith('/storage/') || 
+    strVal.startsWith('/admin-uploads/') || 
+    strVal.startsWith('/uploads/') || 
+    strVal.startsWith('http://') || 
+    strVal.startsWith('https://') ||
+    strVal.toLowerCase().endsWith('.pdf') ||
+    lowerKey.includes('file') ||
+    lowerKey.includes('pdf') ||
+    lowerKey.includes('document');
   
   if (isFilePath) {
-    const isImage = strVal.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) || lowerKey.includes('image') || lowerKey.includes('thumbnail');
-    if (isImage) {
-      return (
-        <div className="flex items-center gap-3">
-          <img src={strVal} alt="" className="max-h-20 max-w-[150px] object-contain rounded border bg-white shadow-sm flex-shrink-0" />
-          <FilePreviewAction url={strVal} type="image" />
-        </div>
-      );
-    }
     return <FilePreviewAction url={strVal} type="file" />;
   }
 
