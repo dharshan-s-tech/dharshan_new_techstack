@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, NewsItem as DataNewsItem } from '@/lib/dataManager';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface NewsDisplayItem {
   id: string;
@@ -18,7 +19,7 @@ export default function AdminNews() {
   const API_URL = getApiBaseUrl();
   const [news, setNews] = useState<NewsDisplayItem[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Search Filters
   const [searchFor, setSearchFor] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -26,6 +27,8 @@ export default function AdminNews() {
   const [sortFilter, setSortFilter] = useState('newest');
 
   const [appliedSearch, setAppliedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -39,10 +42,11 @@ export default function AdminNews() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/news`);
+      const statusParam = statusFilter !== 'All' ? `status=${statusFilter.toLowerCase()}` : 'status=all';
+      const res = await fetch(`${API_URL}/api/news?${statusParam}`);
       if (!res.ok) throw new Error('API offline');
       const data = await res.json();
-      
+
       let rawList: any[] = Array.isArray(data) && data.length > 0 ? data : dataManager.getNews();
       let formatted: NewsDisplayItem[] = rawList.map((item: any) => ({
         id: item.id?.toString() || Math.random().toString(),
@@ -55,7 +59,7 @@ export default function AdminNews() {
       }));
 
       if (appliedSearch) {
-        formatted = formatted.filter((item) => 
+        formatted = formatted.filter((item) =>
           item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
         );
       }
@@ -87,7 +91,7 @@ export default function AdminNews() {
       }));
 
       if (appliedSearch) {
-        formatted = formatted.filter((item) => 
+        formatted = formatted.filter((item) =>
           item.title_en?.toLowerCase().includes(appliedSearch.toLowerCase())
         );
       }
@@ -204,13 +208,12 @@ export default function AdminNews() {
 
   return (
     <div className="space-y-6 text-xs text-zinc-700">
-      
+
       {/* 1. TOP FILTERS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">News & Press Releases Management (AeNotices)</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">Manage trending news tickers, featured notices, and public announcements.</p>
+            <h2 className="text-base font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
 
           <button
@@ -222,7 +225,7 @@ export default function AdminNews() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-2">
           <div>
             <label className="block text-zinc-555 font-bold mb-1">Search Headline:</label>
             <input
@@ -232,6 +235,19 @@ export default function AdminNews() {
               placeholder="Enter Keywords"
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>
@@ -279,26 +295,51 @@ export default function AdminNews() {
       </div>
 
       {/* 2. TABLE GRID PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
-          <h3 className="font-semibold text-zinc-800">
-            AeNotices Records [ Displaying {news.length} of {news.length} ]
-          </h3>
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">News & Events</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {news.length === 0 ? 0 : ((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, news.length)} of {news.length.toLocaleString()}.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span className="font-semibold">Rows per page</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-200 rounded-md px-2 py-1.5 bg-white text-zinc-800"
+              >
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+            <button
+              onClick={handleOpenCreate}
+              className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs flex items-center gap-1.5 cursor-pointer bg-[#751639] hover:bg-[#5f0f2d]"
+            >
+              + Add New
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-4 py-3.5 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3.5 border-r border-white/20">Notice Title</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-32">Type</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-28">Tag</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-32">Publish Date</th>
-                <th className="px-4 py-3.5 text-center w-28">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Title</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-32">Type</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28">Tag</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-32">Publish Date</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28 text-center">Status</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -315,31 +356,48 @@ export default function AdminNews() {
                   </td>
                 </tr>
               ) : (
-                news.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
+                news.slice((page - 1) * pageSize, page * pageSize).map((item, idx) => (
+                  <tr key={item.id} className="border-b border-zinc-50 hover:bg-zinc-50/70 transition-colors text-zinc-800">
+                    <td className="px-4 py-3.5">
+                      <span className="font-bold text-[#751639]">#{item.id ?? ((page - 1) * pageSize + idx + 1)}</span>
+                    </td>
+                    <td className="px-4 py-3.5 font-bold text-[#751639] max-w-md">
                       <div>{item.title_en}</div>
                       <div className="text-[11px] text-zinc-500 font-normal mt-0.5 truncate">{item.desc_en}</div>
                     </td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] capitalize font-medium">{item.news_type}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-zinc-600">{item.tag}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-mono text-zinc-500">{item.publish_date}</td>
-                    
-                    <td className="px-4 py-3 text-center space-x-1.5">
+                    <td className="px-4 py-3.5 capitalize font-medium">{item.news_type}</td>
+                    <td className="px-4 py-3.5 text-zinc-600">{item.tag}</td>
+                    <td className="px-4 py-3.5 font-mono text-zinc-500">{item.publish_date}</td>
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                        item.is_active
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.is_active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        {item.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3 text-center whitespace-nowrap space-x-1.5">
+                      {/* Edit */}
                       <button
                         onClick={() => handleOpenEdit(item.id)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7"
+                        className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Edit Record"
                       >
-                        📝
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
                       </button>
+
+                      {/* Delete */}
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7"
+                        className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="Delete Record"
                       >
-                        🗑️
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
                       </button>
                     </td>
                   </tr>
@@ -348,12 +406,37 @@ export default function AdminNews() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {Math.ceil(news.length / pageSize) > 1 && (
+          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
+            <span className="text-[11px] text-zinc-500">
+              Page <strong>{page}</strong> of <strong>{Math.ceil(news.length / pageSize)}</strong> ({news.length} records)
+            </span>
+            <div className="flex gap-1">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
+              >
+                ← Prev
+              </button>
+              <button
+                disabled={page >= Math.ceil(news.length / pageSize)}
+                onClick={() => setPage(p => Math.min(Math.ceil(news.length / pageSize), p + 1))}
+                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Form Slide Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold"

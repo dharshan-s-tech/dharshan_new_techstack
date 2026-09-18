@@ -9,8 +9,8 @@ router = APIRouter()
 @router.get("/")
 async def get_reports(
     page: int = Query(1, ge=1),
-    pageSize: Optional[int] = Query(None, ge=1, le=100),
-    page_size: Optional[int] = Query(None, ge=1, le=100),
+    pageSize: Optional[int] = Query(None, ge=1, le=1000),
+    page_size: Optional[int] = Query(None, ge=1, le=1000),
     query: Optional[str] = Query(None, description="Search term in title or overview"),
     search: Optional[str] = Query(None, description="Alternative search parameter"),
     level: str = Query("", description="Government level (Union, States, Local Bodies)"),
@@ -21,6 +21,7 @@ async def get_reports(
     state_id: Optional[int] = Query(None, description="State ID"),
     language: str = Query("en", description="Language code"),
     sort: str = Query("newest", description="Sort order (newest, oldest, title_asc, title_desc)"),
+    status: Optional[str] = Query(None, description="Publish Status (all, active, inactive)"),
 ):
     """Retrieve paginated audit reports matching filters."""
     eff_page_size = pageSize or page_size or 9
@@ -37,6 +38,7 @@ async def get_reports(
         state_id=state_id,
         language=language,
         sort=sort,
+        status=status,
     )
 
 

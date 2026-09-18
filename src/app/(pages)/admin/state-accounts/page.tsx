@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
+import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/AdminPagination';
 
 interface StateLookup {
   id: number;
@@ -44,6 +46,7 @@ function AdminStateAccountsContent() {
 
   // Search & Filter Fields
   const [searchFor, setSearchFor] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [stateFilter, setStateFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [yearFilter, setYearFilter] = useState('All');
@@ -157,6 +160,8 @@ function AdminStateAccountsContent() {
       params.set('page', page.toString());
       params.set('pageSize', pageSize.toString());
       if (appliedSearch) params.set('query', appliedSearch);
+      if (statusFilter !== 'All') params.set('status', statusFilter.toLowerCase());
+      else params.set('status', 'all');
       if (stateFilter !== 'All') params.set('state_id', stateFilter);
       if (categoryFilter !== 'All') params.set('category', categoryFilter);
       if (yearFilter !== 'All') params.set('year', yearFilter);
@@ -248,6 +253,11 @@ function AdminStateAccountsContent() {
     if (monthFilter !== 'All') {
       fallback = fallback.filter(item => (item.month || '').toLowerCase() === monthFilter.toLowerCase());
     }
+    if (statusFilter === 'Active') {
+      fallback = fallback.filter(item => item.is_active);
+    } else if (statusFilter === 'Inactive') {
+      fallback = fallback.filter(item => !item.is_active);
+    }
 
     const parseId = (val: any) => {
       const match = String(val || '').match(/\d+/g);
@@ -303,7 +313,7 @@ function AdminStateAccountsContent() {
 
   useEffect(() => {
     loadData();
-  }, [page, pageSize, appliedSearch, stateFilter, categoryFilter, yearFilter, monthFilter, sortFilter]);
+  }, [page, pageSize, appliedSearch, statusFilter, stateFilter, categoryFilter, yearFilter, monthFilter, sortFilter]);
 
   const handleSearchGo = () => {
     setAppliedSearch(searchFor);
@@ -313,6 +323,7 @@ function AdminStateAccountsContent() {
   const handleSearchReset = () => {
     setSearchFor('');
     setAppliedSearch('');
+    setStatusFilter('All');
     setStateFilter('All');
     setCategoryFilter('All');
     setYearFilter('All');
@@ -361,11 +372,13 @@ function AdminStateAccountsContent() {
     if (!confirm('Are you sure you want to delete this state account statement record?')) return;
     try {
       await fetch(`${API_URL}/api/state-accounts/${rawId}`, { method: 'DELETE' });
-    } catch {}
+    } catch (err) {
+      console.error('Failed to delete state account:', err);
+    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('stateAccountsChange'));
     }
-    loadData();
+    await loadData();
     if (viewingAccount?.rawId === rawId) {
       setViewingAccount(null);
     }
@@ -428,7 +441,7 @@ function AdminStateAccountsContent() {
     <div className="space-y-4 text-xs text-zinc-700 font-sans">
       
       {/* 1. TOP FILTERS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         
         {/* Row 1: Search, State, Category, Year */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -495,8 +508,24 @@ function AdminStateAccountsContent() {
           </div>
         </div>
 
-        {/* Row 2: Month, Sort By, Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
+        {/* Row 2: Publish Status, Month, Sort By, Actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-zinc-700 font-bold mb-1">Statement Month:</label>
             <select
@@ -534,7 +563,7 @@ function AdminStateAccountsContent() {
             </select>
           </div>
 
-          <div className="flex items-end gap-2 sm:col-span-2">
+          <div className="flex items-end gap-2">
             <button
               onClick={handleSearchGo}
               className="border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-5 py-1.5 rounded-none transition-colors font-bold bg-white cursor-pointer shadow-xs"
@@ -547,27 +576,43 @@ function AdminStateAccountsContent() {
             >
               Reset
             </button>
-            <div className="ml-auto text-[11px] text-zinc-500 font-medium">
-              Source: <span className="text-emerald-700 font-bold">PostgreSQL state_accounts_report + Local CMS</span>
-            </div>
           </div>
         </div>
       </div>
 
       {/* 2. TABLE GRID PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
-          <h3 className="font-bold text-zinc-800 text-sm">
-            State Finance Accounts Registry [ Displaying {accounts.length} of {totalCount.toLocaleString()} ]
-          </h3>
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">State & UT Accounts</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {accounts.length === 0 ? 0 : ((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}.
+            </p>
+          </div>
           
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span className="font-semibold">Rows per page</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-zinc-200 rounded-md px-2 py-1.5 bg-white text-zinc-800"
+              >
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
             <button
               onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs flex items-center gap-1.5 cursor-pointer bg-[#751639] hover:bg-[#5f0f2d]"
             >
-              <span>+ Add State Account Statement</span>
+              <span>+ Add New</span>
             </button>
           </div>
         </div>
@@ -575,19 +620,16 @@ function AdminStateAccountsContent() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3 border-r border-white/20">Account Statement Title</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36">State / UT</th>
-                <th className="px-3 py-3 border-r border-white/20 w-44">Category</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Year</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Month / Vol</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Document</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Status</th>
-                <th className="px-3 py-3 text-center w-36">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Title</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-36">State / UT</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-44">Category</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20 text-center">Year</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-24 text-center">Volume</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-24 text-center">File</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28 text-center">Status</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -609,27 +651,27 @@ function AdminStateAccountsContent() {
               ) : (
                 accounts.map((item) => (
                   <tr key={item.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400 text-[11px]">{item.id}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
+                    <td className="px-3 py-3 text-center font-mono text-zinc-400 text-[11px]">{item.id}</td>
+                    <td className="px-4 py-3 font-bold text-[#751639] max-w-md">
                       <div className="line-clamp-2 cursor-pointer hover:underline" onClick={() => setViewingAccount(item)} title="Click to view details">
                         {item.title_en}
                       </div>
                       {item.title_hi && <div className="text-[11px] text-zinc-500 font-normal mt-0.5">{item.title_hi}</div>}
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-800">
+                    <td className="px-3 py-3 font-medium text-zinc-800">
                       {item.state_name}
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7]">
+                    <td className="px-3 py-3">
                       <span className="px-2 py-0.5 rounded text-[10.5px] font-semibold bg-gray-100 text-zinc-700 border border-zinc-200 inline-block">
                         {item.category_name}
                       </span>
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-700 font-semibold">{item.account_year}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-600">
+                    <td className="px-3 py-3 text-center font-mono text-zinc-700 font-semibold">{item.account_year}</td>
+                    <td className="px-3 py-3 text-center text-zinc-600">
                       <div>{item.month}</div>
                       <div className="text-[10px] text-zinc-400">{item.volume}</div>
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                    <td className="px-3 py-3 text-center">
                       <a
                         href={item.file_url || '#'}
                         target="_blank"
@@ -640,43 +682,56 @@ function AdminStateAccountsContent() {
                         PDF
                       </a>
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                        item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'
+                    <td className="px-3 py-3 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                        item.is_active
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
                       }`}>
                         {item.is_active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-center space-x-1.5 whitespace-nowrap">
+                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
+                      {/* View */}
                       <button
                         onClick={() => setViewingAccount(item)}
-                        className="p-1 border border-emerald-300 hover:bg-emerald-50 text-emerald-700 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
+                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
                         title="View Full Details"
                       >
-                        👁️
+                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>View</span>
                       </button>
+
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleOpenEdit(item)}
+                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        title="Edit Record"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
+                        <span>Edit</span>
+                      </button>
+
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDelete(item.rawId)}
+                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        title="Delete Record"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
+                      </button>
+
+                      {/* Live Link */}
                       <Link
                         href="/Reports/accounts"
                         target="_blank"
-                        className="p-1 border border-blue-200 hover:bg-blue-50 text-blue-600 inline-flex items-center justify-center w-7 h-7 text-xs"
+                        className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
                         title="Preview Public Page ↗"
                       >
-                        ↗
+                        <ExternalLink className="w-3 h-3 text-blue-600" />
+                        <span>Live</span>
                       </Link>
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
-                        title="Edit Record"
-                      >
-                        📝
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.rawId)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7 text-xs cursor-pointer"
-                        title="Delete Record"
-                      >
-                        🗑️
-                      </button>
                     </td>
                   </tr>
                 ))
@@ -685,36 +740,19 @@ function AdminStateAccountsContent() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} statements)
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                ← Prev
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          onPageChange={setPage}
+          noun="statements"
+        />
       </div>
 
       {/* 3. VIEW DETAILS MODAL */}
       {viewingAccount && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
             {/* Modal Header */}
             <div 
@@ -781,25 +819,46 @@ function AdminStateAccountsContent() {
               </div>
 
               {/* Footer */}
-              <div className="pt-4 border-t border-zinc-200 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
+                <Link
+                  href="/Reports/accounts"
+                  target="_blank"
+                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Public Page ↗</span>
+                </Link>
+
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => {
                       const acc = viewingAccount;
                       setViewingAccount(null);
                       handleOpenEdit(acc);
                     }}
-                    className="px-4 py-2 border border-[#751639] text-[#751639] hover:bg-pink-50 font-bold text-xs cursor-pointer"
+                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    📝 Edit Statement
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit Record</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const idToDelete = viewingAccount.rawId;
+                      setViewingAccount(null);
+                      handleDelete(idToDelete);
+                    }}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Record</span>
+                  </button>
+                  <button
+                    onClick={() => setViewingAccount(null)}
+                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
+                  >
+                    Close
                   </button>
                 </div>
-                <button
-                  onClick={() => setViewingAccount(null)}
-                  className="px-6 py-2 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-xs cursor-pointer"
-                >
-                  Close
-                </button>
               </div>
             </div>
 
@@ -810,7 +869,7 @@ function AdminStateAccountsContent() {
       {/* 4. ADD / EDIT MODAL FORM */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
@@ -1066,7 +1125,7 @@ function AdminStateAccountsContent() {
 
 export default function AdminStateAccounts() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading State Accounts Registry...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading...</div>}>
       <AdminStateAccountsContent />
     </Suspense>
   );

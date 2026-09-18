@@ -29,7 +29,8 @@ export default function AdminTenders() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/tenders`);
+      const statusParam = statusFilter !== 'All' ? `status=${statusFilter.toLowerCase()}` : 'status=all';
+      const res = await fetch(`${API_URL}/api/tenders?${statusParam}`);
       if (!res.ok) throw new Error('API offline');
       const data = await res.json();
       
@@ -176,11 +177,10 @@ export default function AdminTenders() {
     <div className="space-y-6 text-xs text-zinc-700">
       
       {/* 1. TOP FILTERS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">Tenders & Procurement Notices Management</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">Manage active tender notices, CA empanelments, and procurement file links.</p>
+            <h2 className="text-base font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
 
           <button
@@ -192,7 +192,7 @@ export default function AdminTenders() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
           <div>
             <label className="block text-zinc-555 font-bold mb-1">Search Keywords:</label>
             <input
@@ -202,6 +202,19 @@ export default function AdminTenders() {
               placeholder="Ref No / Title"
               className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
             />
+          </div>
+
+          <div>
+            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div>
@@ -236,26 +249,26 @@ export default function AdminTenders() {
       </div>
 
       {/* 2. TABLE GRID PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
-          <h3 className="font-semibold text-zinc-800">
-            Tenders [ Displaying {tenders.length} of {tenders.length} ]
-          </h3>
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">Tenders</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {tenders.length === 0 ? 0 : 1}–{tenders.length} of {tenders.length}.
+            </p>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-4 py-3.5 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-44">Reference No</th>
-                <th className="px-4 py-3.5 border-r border-white/20">Tender Title</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-36">Closing Date</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-20 text-center">Status</th>
-                <th className="px-4 py-3.5 text-center w-28">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-44">Reference No</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Title</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-36">Closing Date</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28 text-center">Status</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -274,11 +287,11 @@ export default function AdminTenders() {
               ) : (
                 tenders.map((item, idx) => (
                   <tr key={item.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-mono text-zinc-700 font-bold">{item.reference_no || '-'}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">{item.title_en}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-mono text-zinc-600">{item.closing_date || '-'}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center">
+                    <td className="px-4 py-3 text-center font-mono text-zinc-400">{idx + 1}</td>
+                    <td className="px-4 py-3 font-mono text-zinc-700 font-bold">{item.reference_no || '-'}</td>
+                    <td className="px-4 py-3 font-bold text-[#751639] max-w-md">{item.title_en}</td>
+                    <td className="px-4 py-3 font-mono text-zinc-600">{item.closing_date || '-'}</td>
+                    <td className="px-4 py-3 text-center">
                       <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold ${
                         item.is_active 
                           ? 'bg-emerald-100 text-emerald-800' 
@@ -315,7 +328,7 @@ export default function AdminTenders() {
       {/* Form Slide Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold"

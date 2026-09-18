@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { dataManager, NewsItem } from '@/lib/dataManager';
+import { parseLocalizedText } from '@/lib/localeText';
 import defaultFeaturedNewsImage from '@/app/Assets/Images/e2c5a3b888a0623426c634ce2f2bee016b8fb5ab.png';
 import newsImage1 from '@/app/Assets/Images/4c1eaa81c93edbe02d6f7d5437565571dcec4b04.png';
 import newsImage2 from '@/app/Assets/Images/cc8a1a5614f48c98f397dcafcf38e8f22843dc2a.png';
@@ -160,14 +161,17 @@ export default function NewsEvents() {
             </h3>
             
             {trendingNews.map((news) => {
-              const details = isHindi && HINDI_NEWS_TRANSLATIONS[news.id] ? HINDI_NEWS_TRANSLATIONS[news.id] : {
-                title: news.title,
-                desc: news.desc
-              };
+              const resolvedTitle = isHindi && HINDI_NEWS_TRANSLATIONS[news.id]
+                ? HINDI_NEWS_TRANSLATIONS[news.id].title
+                : parseLocalizedText(news.title, isHindi ? 'hi' : 'en');
+              const resolvedDesc = isHindi && HINDI_NEWS_TRANSLATIONS[news.id]
+                ? HINDI_NEWS_TRANSLATIONS[news.id].desc
+                : parseLocalizedText(news.desc, isHindi ? 'hi' : 'en');
+              const details = { title: resolvedTitle, desc: resolvedDesc };
 
-              const isEmpanelment = news.id === 'news-3' || news.title.toLowerCase().includes('empanelment');
-              const isTraining = news.id === 'news-2' || news.title.toLowerCase().includes('training');
-              const isAccounts = news.id === 'news-1' || news.title.toLowerCase().includes('accounts');
+              const isEmpanelment = news.id === 'news-3' || resolvedTitle.toLowerCase().includes('empanelment');
+              const isTraining = news.id === 'news-2' || resolvedTitle.toLowerCase().includes('training');
+              const isAccounts = news.id === 'news-1' || resolvedTitle.toLowerCase().includes('accounts');
               
               if (isEmpanelment) {
                 return (
@@ -226,11 +230,15 @@ export default function NewsEvents() {
             })}
           </div>
 
-          {featuredNews && (
+          {featuredNews && (() => {
+            const featuredTitle = isHindi && HINDI_NEWS_TRANSLATIONS['news-featured']
+              ? HINDI_NEWS_TRANSLATIONS['news-featured'].title
+              : parseLocalizedText(featuredNews.title, isHindi ? 'hi' : 'en');
+            return (
             <Link href="/Reports/rep-3" className="featured-news cursor-pointer block hover:scale-[1.01] transition-transform">
               <img 
                 src={featuredNews.image || defaultFeaturedNewsImage.src} 
-                alt={isHindi && HINDI_NEWS_TRANSLATIONS['news-featured'] ? HINDI_NEWS_TRANSLATIONS['news-featured'].title : featuredNews.title} 
+                alt={featuredTitle} 
                 className="featured-news__photo" 
               />
               <div className="featured-news__overlay"></div>
@@ -238,11 +246,12 @@ export default function NewsEvents() {
               <div className="featured-news__text">
                 <span className="featured-news__date">{featuredNews.date}</span>
                 <h3 className="featured-news__headline">
-                  {isHindi && HINDI_NEWS_TRANSLATIONS['news-featured'] ? HINDI_NEWS_TRANSLATIONS['news-featured'].title : featuredNews.title}
+                  {featuredTitle}
                 </h3>
               </div>
             </Link>
-          )}
+            );
+          })()}
         </div>
       </section>
 

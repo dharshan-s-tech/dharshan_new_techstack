@@ -8,6 +8,20 @@ from app.services.pages_service import PagesService
 router = APIRouter()
 
 
+@router.get("")
+@router.get("/")
+async def get_page_by_query(
+    slug: Optional[str] = Query(None),
+    id: Optional[str] = Query(None),
+    language: Optional[str] = Query("en", alias="culture"),
+    db: Session = Depends(get_db)
+):
+    target = slug or id or "overview"
+    page_data = PagesService.get_page_by_slug_or_id(target, culture=language or "en", db=db)
+    if not page_data:
+        raise HTTPException(status_code=404, detail=f"Page '{target}' not found")
+    return page_data
+
 @router.get("/{slug_or_id}")
 async def get_page(
     slug_or_id: str,
