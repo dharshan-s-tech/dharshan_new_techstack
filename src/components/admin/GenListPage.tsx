@@ -1,38 +1,81 @@
-import AdminHeader from '@/components/admin/AdminHeader';
 import Link from 'next/link';
-import { Plus, Eye, Pencil, Search, Filter, RotateCcw } from 'lucide-react';
+import {
+  Plus, Eye, SquarePen, Search, Filter, RotateCcw, Download, FileText, Upload
+} from 'lucide-react';
 import { DeleteErrorAlert, PaginationLinks, DeleteButton, FilePreviewAction } from './ListClientHelpers';
-
-// ─── Shared rendering helpers ─────────────────────────────────────────────────
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-      ${active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+        active
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          : 'bg-rose-50 text-rose-700 border-rose-200'
+      }`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
       {active ? 'Active' : 'Inactive'}
     </span>
   );
 }
 
+function LangBadge({ value }: { value: unknown }) {
+  const raw = String(value || 'EN').toUpperCase();
+  const code = raw.includes('HI') || raw.includes('हिं') ? 'HI' : 'EN';
+  return (
+    <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-sky-50 text-sky-700 border border-sky-200">
+      {code}
+    </span>
+  );
+}
+
 function fmt(val: any, type?: string): React.ReactNode {
-  if (val === null || val === undefined) return <span className="text-gray-300">—</span>;
+  if (val === null || val === undefined) return <span className="text-zinc-300">—</span>;
   if (type === 'boolean') return <StatusBadge active={!!val} />;
-  if (type === 'date') return <span className="text-xs text-gray-500">{val ? new Date(val).toLocaleDateString('en-IN') : '—'}</span>;
+  if (type === 'language') return <LangBadge value={val} />;
+  if (type === 'date') {
+    const d = val ? new Date(val) : null;
+    if (!d || Number.isNaN(d.getTime())) return <span className="text-zinc-300">—</span>;
+    return (
+      <span className="text-[12px] text-zinc-500 whitespace-nowrap">
+        {d.toLocaleString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })}
+      </span>
+    );
+  }
   if (type === 'image') {
     return val ? (
       <div className="flex items-center gap-2">
-        <img src={val} alt="" className="w-8 h-8 object-cover rounded shadow-sm border border-gray-100 flex-shrink-0" />
+        <img src={val} alt="" className="w-8 h-8 object-cover rounded border border-zinc-100" />
         <FilePreviewAction url={val} type="image" />
       </div>
-    ) : <span className="text-gray-300">—</span>;
+    ) : <span className="text-zinc-300">—</span>;
   }
   if (type === 'link' || type === 'file') {
-    return val ? <FilePreviewAction url={val} type="file" /> : <span className="text-gray-300">—</span>;
+    if (!val) return <span className="text-zinc-300">—</span>;
+    const name = String(val).split('/').pop() || 'file';
+    return (
+      <a
+        href={val}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1.5 text-[#751639] hover:underline max-w-[180px]"
+        title={name}
+      >
+        <FileText className="w-4 h-4 shrink-0 text-rose-600" />
+        <span className="truncate text-[12px] font-medium">{name}</span>
+      </a>
+    );
   }
-  return <span className="max-w-xs truncate block">{String(val)}</span>;
+  return <span className="max-w-xs truncate block text-zinc-700">{String(val)}</span>;
 }
 
-// ─── Generic list page component ──────────────────────────────────────────────
 interface Col { key: string; label: string; type?: string; render?: (row: any) => React.ReactNode }
 interface GenListPageProps {
   title: string; table: string; addHref: string; editBase: string; viewBase?: string;
@@ -46,12 +89,13 @@ export async function GenListPage({
 }: GenListPageProps) {
   let rows: any[] = [];
   let total = 0;
+  const pageSize = 10;
 
   try {
     const params = new URLSearchParams();
     params.set('table', table);
     params.set('page', String(page));
-    params.set('limit', '20');
+    params.set('limit', String(pageSize));
     if (search) {
       params.set('search', search);
       params.set('searchCol', searchCol);
@@ -67,12 +111,11 @@ export async function GenListPage({
     const json = await res.json();
     rows = Array.isArray(json.data) ? json.data : [];
     total = json.total || rows.length || 0;
-  } catch (e) {
+  } catch {
     rows = [];
     total = 0;
   }
 
-  // Client-side filtering fallback if backend returned full set
   if (lang && lang !== 'all') {
     rows = rows.filter(r => !r.language || r.language === lang);
   }
@@ -81,135 +124,185 @@ export async function GenListPage({
     rows = rows.filter(r => r.is_active === undefined || r.is_active === isAct || r.status === (isAct ? 1 : 0));
   }
 
-  const totalPages = Math.ceil(total / 20) || 1;
+  const totalPages = Math.ceil(total / pageSize) || 1;
   const basePath = addHref.replace('/add', '');
-  const hasFilters = search || (lang && lang !== 'all') || (status && status !== 'all') || (sort && sort !== 'newest');
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <AdminHeader title={title} subtitle={`${total} total records`} />
-      <main className="flex-1 p-6">
-        <DeleteErrorAlert />
+    <div className="space-y-5 font-sans text-[14px] text-zinc-800">
+      <DeleteErrorAlert />
 
-        {/* ─── Universal Filter Toolbar on Every Admin Menu ─── */}
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
-          <form method="GET" className="flex flex-wrap items-center gap-3 justify-between">
-            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-              {/* Search Box */}
-              <div className="relative min-w-[220px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Search & Filter — Dashboard Admin mockup */}
+      <section className="bg-white rounded-xl border border-zinc-200 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="w-4 h-4 text-[#751639]" />
+          <h2 className="text-[15px] font-bold text-zinc-800">Search &amp; Filter</h2>
+        </div>
+
+        <form method="GET" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Search For</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                 <input
                   name="search"
                   defaultValue={search}
-                  placeholder={`Search by ${searchCol.replace('_', ' ')}...`}
-                  className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 w-full"
+                  placeholder="Enter keywords..."
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#751639]/20 focus:border-[#751639]"
                 />
               </div>
+            </div>
 
-              {/* Language Filter */}
+            <div>
+              <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Language</label>
               <select
                 name="lang"
                 defaultValue={lang}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 bg-white text-gray-700"
+                className="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#751639]/20"
               >
-                <option value="all">All Languages</option>
-                <option value="en">English (EN)</option>
-                <option value="hi">हिन्दी (HI)</option>
+                <option value="all">All</option>
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
               </select>
+            </div>
 
-              {/* Status Filter */}
+            <div>
+              <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Status</label>
               <select
                 name="status"
                 defaultValue={status}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 bg-white text-gray-700"
+                className="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#751639]/20"
               >
-                <option value="all">All Status</option>
+                <option value="all">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
+            </div>
+          </div>
 
-              {/* Sort Order Filter */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div className="flex items-center gap-2 text-[12px] text-zinc-600">
+              <span className="font-semibold">Rows per page</span>
               <select
-                name="sort"
-                defaultValue={sort}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#751639]/20 bg-white text-gray-700"
+                name="limit"
+                defaultValue="10"
+                className="px-2 py-1.5 border border-zinc-200 rounded-md bg-white text-sm"
               >
-                <option value="newest">Sort: Newest First</option>
-                <option value="oldest">Sort: Oldest First</option>
-                <option value="asc">Sort: Title / Name (A-Z)</option>
-                <option value="desc">Sort: Title / Name (Z-A)</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
               </select>
-
-              {/* Submit & Reset Buttons */}
-              <button
-                type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#751639] hover:bg-[#5f0f2d] text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
-              >
-                <Filter className="w-3.5 h-3.5" /> Apply Filter
-              </button>
-
-              {hasFilters && (
-                <Link
-                  href={basePath}
-                  className="flex items-center gap-1 px-3 py-2 border border-gray-200 text-sm text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" /> Reset
-                </Link>
-              )}
+              <input type="hidden" name="sort" value={sort || 'newest'} />
             </div>
 
-            {/* Add New Action */}
-            <Link
-              href={addHref}
-              className="flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f0f2d] text-white text-sm rounded-lg font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer shadow-sm"
-            >
-              <Plus className="w-4 h-4" /> Add New
-            </Link>
-          </form>
+            <div className="flex items-center gap-2">
+              <Link
+                href={basePath}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#751639]/40 text-[#751639] bg-[#fff5f8] text-sm font-semibold hover:bg-[#fde8ef] transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
+              </Link>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-white text-sm font-semibold shadow-sm transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                <Search className="w-3.5 h-3.5" /> Search
+              </button>
+              <Link
+                href={addHref}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow-sm transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                <Plus className="w-4 h-4" /> Add New
+              </Link>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      {/* Data table card */}
+      <section className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-[16px] font-bold text-zinc-800">{title}</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {start}–{end} of {total.toLocaleString()}.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#751639]/35 bg-white text-sm font-semibold text-[#751639] hover:bg-[#fff5f8]"
+          >
+            <Upload className="w-4 h-4" /> Export
+          </button>
         </div>
 
-        {/* ─── Data Table ─── */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                {cols.map((c) => (
+                  <th key={c.key} className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">
+                    {c.label}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase w-10">#</th>
-                  {cols.map(c => <th key={c.key} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{c.label}</th>)}
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase w-28">Actions</th>
+                  <td colSpan={cols.length + 2} className="text-center py-16 text-zinc-400 text-sm">
+                    No records found matching the criteria
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
-                  <tr><td colSpan={cols.length + 2} className="text-center py-16 text-gray-400 text-sm">No records found matching the criteria</td></tr>
-                ) : rows.map((row: any, idx: number) => (
-                  <tr key={row.id || idx} className="border-b border-gray-100 hover:bg-gray-50/50">
-                    <td className="px-4 py-3 text-gray-400 text-xs">{(page - 1) * 20 + idx + 1}</td>
-                    {cols.map(c => (
-                      <td key={c.key} className="px-4 py-3 text-gray-700 text-sm">
+              ) : (
+                rows.map((row: any, idx: number) => (
+                  <tr key={row.id || idx} className="border-b border-zinc-50 hover:bg-zinc-50/70 transition-colors">
+                    <td className="px-4 py-3.5">
+                      <span className="font-bold text-[#751639]">#{row.id ?? (page - 1) * pageSize + idx + 1}</span>
+                    </td>
+                    {cols.map((c) => (
+                      <td key={c.key} className="px-4 py-3.5">
                         {c.render ? c.render(row) : fmt(row[c.key], c.type)}
                       </td>
                     ))}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
                       <div className="flex items-center justify-end gap-1">
-                        {viewBase && <Link href={`${viewBase}/${row.id}`} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg" title="View"><Eye className="w-4 h-4" /></Link>}
-                        <Link href={`${editBase}/${row.id}/edit`} className="p-1.5 text-[#751639] hover:bg-[#751639]/5 rounded-lg" title="Edit"><Pencil className="w-4 h-4" /></Link>
+                        {viewBase && (
+                          <Link
+                            href={`${viewBase}/${row.id}`}
+                            className="p-1.5 text-zinc-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg"
+                            title="View"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                        )}
+                        <Link
+                          href={`${editBase}/${row.id}/edit`}
+                          className="p-1.5 text-zinc-500 hover:text-[#751639] hover:bg-[#751639]/5 rounded-lg"
+                          title="Edit"
+                        >
+                          <SquarePen className="w-4 h-4" />
+                        </Link>
                         <DeleteButton table={table} id={row.id} editBase={editBase} />
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-              <p className="text-xs text-gray-500">Page {page} of {totalPages}</p>
-              <PaginationLinks page={page} totalPages={totalPages} />
-            </div>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </main>
+
+        <PaginationLinks page={page} totalPages={totalPages} totalCount={total} />
+      </section>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { Office } from '@/types';
+import { parseLocalizedText } from '@/lib/localeText';
 
 export interface ReportItem {
   id: string;
@@ -1385,14 +1386,32 @@ export const dataManager = {
         .then(res => res.ok ? res.json() : null)
         .then(news => {
           if (Array.isArray(news) && news.length > 0) {
-            const formatted = news.map((n: any, idx: number) => ({
-              id: String(n.id || `news-${idx + 1}`),
-              title: n.title_en || n.title || 'News Update',
-              desc: n.description_en || n.desc || '',
-              date: n.published_date || n.date || '',
-              type: (n.is_trending ? 'trending' : 'featured') as 'trending' | 'featured',
-              tag: n.tag || 'News'
-            }));
+            const formatted = news.map((n: any, idx: number) => {
+              const title = parseLocalizedText(n.title_en || n.title, 'en') || 'News Update';
+              const desc = parseLocalizedText(n.description_en || n.desc_en || n.desc || n.content, 'en');
+              const explicitType = n.type || n.news_type;
+              const type: 'trending' | 'featured' =
+                explicitType === 'featured' || n.is_featured
+                  ? 'featured'
+                  : explicitType === 'trending' || n.is_trending || idx > 0
+                    ? 'trending'
+                    : 'featured';
+              return {
+                id: String(n.id || `news-${idx + 1}`),
+                title,
+                desc,
+                date: n.published_date || n.date || '',
+                type,
+                tag: n.tag || 'News',
+                image: n.image || n.image_url || undefined,
+              };
+            });
+            if (!formatted.some((n) => n.type === 'featured') && formatted.length > 0) {
+              formatted[0].type = 'featured';
+            }
+            if (!formatted.some((n) => n.type === 'trending') && formatted.length > 1) {
+              for (let i = 1; i < formatted.length; i++) formatted[i].type = 'trending';
+            }
             localStorage.setItem('cag_news', JSON.stringify(formatted));
             window.dispatchEvent(new Event('newsChange'));
           }

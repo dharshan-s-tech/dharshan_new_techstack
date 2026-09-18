@@ -8,9 +8,10 @@ import { ALL_ABOUT_DB_RECORDS, AboutRecord } from '@/data/aboutAdminData';
 import {
   Landmark, UserCheck, Compass, GitBranch, Award, Library, Users,
   Scale, ScrollText, BookOpen, Search, Filter, RotateCcw, ExternalLink,
-  Pencil, Eye, Plus, CheckCircle2, FileText, ChevronRight, Layers,
-  ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database
+  SquarePen, Eye, Plus, CheckCircle2, FileText, ChevronRight, Layers,
+  ArrowUpDown, X, Check, Globe, RefreshCw, AlertCircle, Trash2, Database, Upload
 } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/AdminPagination';
 
 function AdminAboutRegistryContent() {
   const API_URL = getApiBaseUrl();
@@ -415,30 +416,23 @@ function AdminAboutRegistryContent() {
   };
 
   return (
-    <div className="space-y-4 text-xs text-zinc-700 font-sans">
+    <div className="space-y-5 text-sm text-zinc-700 font-sans">
 
-      {/* 1. TOP FILTERS PANEL (Figma Burgundy Header matching Reports) */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      {/* 1. Search & Filter — Dashboard Admin mockup */}
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h2 className="text-base font-bold text-[#751639]">About Us Management Registry</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">Manage Who We Are profiles, Leadership & Legacy galleries, and Governance hierarchy content published on the CAG portal.</p>
+          <div className="flex items-start gap-2">
+            <Filter className="w-4 h-4 text-[#751639] shrink-0" />
+            <h2 className="text-[15px] font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/About/About-Us/Cag-Of-India"
-              target="_blank"
-              className="border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs rounded-none flex items-center gap-1.5 cursor-pointer bg-white"
-            >
-              <span>Live Public Portal ↗</span>
-            </Link>
             <button
               onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs inline-flex items-center gap-1.5 cursor-pointer hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
             >
-              <span>+ Add New Section Record</span>
+              <Plus className="w-3.5 h-3.5" /> Add New
             </button>
           </div>
         </div>
@@ -453,7 +447,7 @@ function AdminAboutRegistryContent() {
               value={searchFor}
               onChange={(e) => setSearchFor(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none placeholder-zinc-400 focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             />
           </div>
 
@@ -466,7 +460,7 @@ function AdminAboutRegistryContent() {
                 setSubTopicFilter('All');
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             >
               <option value="All">All Categories (3 Tiers - {categoryStats.total})</option>
               {categories.map((c) => (
@@ -483,7 +477,7 @@ function AdminAboutRegistryContent() {
                 setSubTopicFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             >
               {subTopicOptions.map((st) => (
                 <option key={st.value} value={st.value}>{st.label}</option>
@@ -499,7 +493,7 @@ function AdminAboutRegistryContent() {
                 setLanguageFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             >
               <option value="All">All Languages</option>
               <option value="Bilingual">Bilingual (English + Hindi)</option>
@@ -510,16 +504,16 @@ function AdminAboutRegistryContent() {
         </div>
 
         {/* Row 2: Database Table, Publish Status, Sort By, Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Database Table Source:</label>
+            <label className="block text-zinc-700 font-bold mb-1">Section:</label>
             <select
               value={tableFilter}
               onChange={(e) => {
                 setTableFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             >
               {tables.map((tbl) => (
                 <option key={tbl.value} value={tbl.value}>{tbl.label}</option>
@@ -535,7 +529,7 @@ function AdminAboutRegistryContent() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             >
               <option value="All">All Status</option>
               <option value="Active">Active</option>
@@ -551,7 +545,7 @@ function AdminAboutRegistryContent() {
                 setSortFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             >
               <option value="newest">Newly Added First</option>
               <option value="title_asc">Title / Name (A to Z)</option>
@@ -565,125 +559,122 @@ function AdminAboutRegistryContent() {
 
           <div className="flex items-end gap-2">
             <button
-              onClick={handleSearchGo}
-              className="flex-1 border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-4 py-1.5 rounded-none transition-colors font-bold bg-white cursor-pointer shadow-xs"
+              onClick={handleSearchReset}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#751639]/40 text-[#751639] bg-[#fff5f8] hover:bg-[#fde8ef] transition-colors font-semibold cursor-pointer"
             >
-              Apply Filter
+              <RotateCcw className="w-3.5 h-3.5" /> Reset
             </button>
             <button
-              onClick={handleSearchReset}
-              className="px-4 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 py-1.5 rounded-none transition-colors font-medium bg-white cursor-pointer"
+              onClick={handleSearchGo}
+              className="inline-flex items-center gap-1.5 flex-1 justify-center px-4 py-2 rounded-lg text-white transition-opacity font-semibold cursor-pointer shadow-sm hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
             >
-              Reset
+              <Search className="w-3.5 h-3.5" /> Search
             </button>
           </div>
         </div>
-
-        {/* Active Filter Summary Bar */}
-        <div className="flex flex-wrap items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-100 gap-2">
-          <span>
-            Active Filter: <strong>{categoryFilter}</strong> | Sub-Topic: <strong>{subTopicFilter}</strong> | Table: <strong>{tableFilter}</strong> | Status: <strong>{statusFilter}</strong>
-          </span>
-          <span>
-            Source: <strong className="text-emerald-700">PostgreSQL cag_db_final (155 DB Records) + Local CMS</strong>
-          </span>
-        </div>
       </div>
 
-      {/* ─── 2. TABLE GRID PANEL (Figma Burgundy Header Gradient matching Reports) ─── */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
-          <h3 className="font-bold text-zinc-800 text-sm flex items-center gap-2">
-            <span>About Us Section Registry</span>
-            <span className="text-zinc-500 font-normal">[ Displaying {records.length} of {totalCount.toLocaleString()} records ]</span>
-          </h3>
+      {/* ─── 2. TABLE GRID PANEL — Dashboard Admin mockup ─── */}
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">
+              {subTopicFilter !== 'All'
+                ? (subTopicOptions.find((s) => s.value === subTopicFilter)?.label.replace(/\s*\(\d+\)$/, '') || 'About Us')
+                : categoryFilter !== 'All'
+                  ? categoryFilter
+                  : 'About Us'}
+            </h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {records.length === 0 ? 0 : ((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}.
+            </p>
+          </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-xs text-zinc-600">
-              <span>Per page:</span>
+              <span className="font-semibold">Rows per page</span>
               <select
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+                className="border border-zinc-200 rounded-md px-2 py-1.5 bg-white text-zinc-800"
               >
+                <option value={10}>10</option>
                 <option value={15}>15</option>
                 <option value={25}>25</option>
                 <option value={50}>50</option>
-                <option value={100}>100</option>
               </select>
             </div>
 
             <button
-              onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#751639]/35 bg-white text-sm font-semibold text-[#751639] hover:bg-[#fff5f8]"
             >
-              <span>+ Add New Section Record</span>
+              <Upload className="w-4 h-4" /> Export
+            </button>
+
+            <button
+              onClick={handleOpenCreate}
+              className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs inline-flex items-center gap-1.5 cursor-pointer hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+            >
+              <Plus className="w-3.5 h-3.5" /> Add New
             </button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Thumb</th>
-                <th className="px-4 py-3 border-r border-white/20 min-w-[280px]">About Us Title &amp; Summary</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36">Category</th>
-                <th className="px-3 py-3 border-r border-white/20 w-44">Sub-Topic / Section</th>
-                <th className="px-3 py-3 border-r border-white/20 w-32 font-mono">DB Table</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Lang</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Status</th>
-                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-zinc-500 font-bold">
+                <th className="px-4 py-3 text-[11px] uppercase tracking-wide w-20">ID</th>
+                <th className="px-3 py-3 text-[11px] uppercase tracking-wide w-24 text-center">Thumb</th>
+                <th className="px-4 py-3 text-[11px] uppercase tracking-wide min-w-[240px]">Title</th>
+                <th className="px-3 py-3 text-[11px] uppercase tracking-wide w-36">Category</th>
+                <th className="px-3 py-3 text-[11px] uppercase tracking-wide w-40">Sub-Topic</th>
+                <th className="px-3 py-3 text-[11px] uppercase tracking-wide w-20 text-center">Language</th>
+                <th className="px-3 py-3 text-[11px] uppercase tracking-wide w-28 text-center">Status</th>
+                <th className="px-3 py-3 text-[11px] uppercase tracking-wide text-right min-w-[140px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2e5e7]">
+            <tbody className="divide-y divide-zinc-100">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
-                      <span>Retrieving About Us records from database...</span>
+                      <span>Loading records...</span>
                     </div>
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
                     No matching About Us records found. Try adjusting your search or filters.
                   </td>
                 </tr>
               ) : (
                 records.map((item, idx) => (
                   <tr key={item.rawId ? `${item.rawId}-${item.id || idx}` : `about-${idx}`} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
-                    {/* ID */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-500 font-bold text-[11px]">
-                      {item.formattedId}
+                    <td className="px-4 py-3.5">
+                      <span className="font-bold text-[#751639]">#{item.formattedId || item.id || idx + 1}</span>
                     </td>
-
-                    {/* Thumbnail */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                    <td className="px-3 py-3.5 text-center">
                       <img
                         src={item.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
                         alt=""
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
                         }}
-                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100 mx-auto shadow-2xs"
+                        className="h-10 w-16 object-cover border border-zinc-200 rounded bg-gray-100 mx-auto"
                       />
                     </td>
-
-                    {/* Title & Summary */}
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
+                    <td className="px-4 py-3.5 font-semibold text-zinc-800 max-w-md">
                       <div
-                        className="line-clamp-2 cursor-pointer hover:underline text-sm"
+                        className="line-clamp-2 cursor-pointer hover:text-[#751639] hover:underline text-sm"
                         onClick={() => handleOpenView(item)}
                         title="Click to view full record details"
                       >
@@ -694,96 +685,60 @@ function AdminAboutRegistryContent() {
                           {item.title_hi}
                         </div>
                       )}
-                      {item.desc && (
-                        <div className="text-[11px] text-zinc-500 font-normal mt-0.5 line-clamp-1">
-                          {item.desc}
-                        </div>
-                      )}
                     </td>
-
-                    {/* Category */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block rounded-xs ${item.category === 'Who We Are' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                    <td className="px-3 py-3.5 font-medium text-zinc-700">
+                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider inline-block rounded ${item.category === 'Who We Are' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
                         item.category === 'Leadership & Legacy' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
                           'bg-amber-50 text-amber-800 border border-amber-200'
                         }`}>
                         {item.category}
                       </span>
                     </td>
-
-                    {/* Sub-Topic / Slug */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
-                      <div className="font-bold text-zinc-800 line-clamp-1">{item.subTopic}</div>
+                    <td className="px-3 py-3.5 font-medium text-zinc-700">
+                      <div className="font-semibold text-zinc-800 line-clamp-1">{item.subTopic}</div>
                       <div className="text-[10px] text-zinc-400 font-mono truncate">{item.primary_key_or_slug}</div>
                     </td>
-
-                    {/* DB Table */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-mono text-[11px] text-zinc-600">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${item.table_name.includes('pages') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                        item.table_name.includes('former_cag') ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                          'bg-teal-50 text-teal-700 border border-teal-200'
-                        }`}>
-                        {item.table_name.replace('cag_revamp.', '')}
-                      </span>
-                    </td>
-
-                    {/* Language */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-600 font-semibold text-[11px]">
-                      <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[10px]">
+                    <td className="px-3 py-3.5 text-center">
+                      <span className="px-2 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 rounded text-[10px] font-bold">
                         {item.language}
                       </span>
                     </td>
-
-                    {/* Status */}
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800 border border-rose-200'
-                        }`}>
-                        {item.is_active ? 'ACTIVE' : 'INACTIVE'}
+                    <td className="px-3 py-3.5 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${item.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.is_active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        {item.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-
-                    {/* Actions */}
-                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
-                      {/* View */}
+                    <td className="px-3 py-2 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleOpenView(item)}
-                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="View Full Record Details"
+                        className="p-1.5 text-zinc-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg inline-flex"
+                        title="View"
                       >
-                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>View</span>
+                        <Eye className="w-4 h-4" />
                       </button>
-
-                      {/* Edit */}
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Edit Record"
+                        className="p-1.5 text-zinc-500 hover:text-[#751639] hover:bg-[#751639]/5 rounded-lg inline-flex"
+                        title="Edit"
                       >
-                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
-                        <span>Edit</span>
+                        <SquarePen className="w-4 h-4" />
                       </button>
-
-                      {/* Delete */}
                       <button
                         onClick={() => handleDelete(item.rawId)}
-                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Delete / Archive Record"
+                        className="p-1.5 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg inline-flex"
+                        title="Delete"
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Delete</span>
+                        <Trash2 className="w-4 h-4" />
                       </button>
-
-                      {/* Live Link */}
                       {item.public_url && (
                         <Link
                           href={item.public_url}
                           target="_blank"
-                          className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
-                          title="Preview Public Page ↗"
+                          className="p-1.5 text-zinc-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg inline-flex"
+                          title="Live page"
                         >
-                          <ExternalLink className="w-3 h-3 text-blue-600" />
-                          <span>Live</span>
+                          <ExternalLink className="w-4 h-4" />
                         </Link>
                       )}
                     </td>
@@ -794,36 +749,19 @@ function AdminAboutRegistryContent() {
           </table>
         </div>
 
-        {/* ─── Pagination Bar ─── */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} total records)
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                ← Prev
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          onPageChange={setPage}
+          noun="records"
+        />
       </div>
 
       {/* ─── 3. VIEW DETAILS MODAL (Figma Burgundy Header Gradient matching Reports) ─── */}
       {viewingRecord && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
 
             {/* Modal Header */}
             <div
@@ -921,7 +859,7 @@ function AdminAboutRegistryContent() {
               {/* Technical Database & Routing Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50 p-3.5 border border-zinc-200">
                 <div>
-                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Database Table:</span>
+                  <span className="text-zinc-400 block font-bold text-[10px] uppercase">Section:</span>
                   <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.table_name}</span>
                 </div>
                 <div>
@@ -965,7 +903,7 @@ function AdminAboutRegistryContent() {
                   }}
                   className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  <Pencil className="w-3.5 h-3.5" />
+                  <SquarePen className="w-3.5 h-3.5" />
                   <span>Edit Record</span>
                 </button>
                 <button
@@ -994,7 +932,7 @@ function AdminAboutRegistryContent() {
       {/* ─── 4. CREATE / EDIT MODAL FORM (Matching Reports Modal Architecture) ─── */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
@@ -1002,7 +940,7 @@ function AdminAboutRegistryContent() {
               ✕
             </button>
             <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-200 pb-3 mb-4">
-              {editingRawId ? `Edit About Us Section Record [ID: ${editingRawId}]` : 'Register New About Us Section Record (Local CMS & PostgreSQL)'}
+              {editingRawId ? `Edit About Us Record #${editingRawId}` : 'Add New About Us Record'}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -1065,7 +1003,7 @@ function AdminAboutRegistryContent() {
                         setFormPublicUrl(defTopic.defaultUrl);
                       }
                     }}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
                   >
                     <option value="Who We Are">Who We Are</option>
                     <option value="Leadership & Legacy">Leadership & Legacy</option>
@@ -1087,7 +1025,7 @@ function AdminAboutRegistryContent() {
                       }
                     }}
                     required
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
                   >
                     {(SUBTOPICS_BY_CATEGORY[formCategory] || []).map(st => (
                       <option key={st.value} value={st.label}>{st.label}</option>
@@ -1099,7 +1037,7 @@ function AdminAboutRegistryContent() {
               {/* DB Table & Slug */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Database Table Source</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Section</label>
                   <input
                     type="text"
                     value={formTable}
@@ -1174,7 +1112,7 @@ function AdminAboutRegistryContent() {
                   <select
                     value={formLanguage}
                     onChange={(e) => setFormLanguage(e.target.value as any)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
                   >
                     <option value="Bilingual">Bilingual (English + Hindi)</option>
                     <option value="EN">English Only</option>
@@ -1187,7 +1125,7 @@ function AdminAboutRegistryContent() {
                   <select
                     value={formIsActive ? 'Active' : 'Inactive'}
                     onChange={(e) => setFormIsActive(e.target.value === 'Active')}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-2 text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
                   >
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
@@ -1222,7 +1160,7 @@ function AdminAboutRegistryContent() {
 
 export default function AdminAboutRegistry() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading About Us Admin Registry...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading...</div>}>
       <AdminAboutRegistryContent />
     </Suspense>
   );

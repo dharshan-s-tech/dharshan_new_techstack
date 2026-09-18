@@ -136,7 +136,7 @@ export default function AdminGlobalRelationsPage() {
       <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-xs">
         {loading ? (
           <div className="flex items-center justify-center py-12 text-zinc-500 text-sm">
-            Fetching record from PostgreSQL database...
+            Loading...
           </div>
         ) : (
           <form onSubmit={handleSave} className="space-y-6">
@@ -158,7 +158,7 @@ export default function AdminGlobalRelationsPage() {
                   Page Content (HTML Code / Rich Text)
                 </label>
                 <span className="text-[11px] text-zinc-400">
-                  Pre-populated live from database record
+                  Live record
                 </span>
               </div>
               <textarea

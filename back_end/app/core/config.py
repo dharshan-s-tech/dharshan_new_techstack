@@ -29,13 +29,18 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_url(self) -> str:
-        if self.DATABASE_URL:
-            return self.DATABASE_URL
+        # Prefer explicit DB_* from this project's .env.
+        # Ignore unrelated machine-level DATABASE_URL values (other local apps).
         password = quote_plus(self.DB_PASSWORD)
-        return (
+        built = (
             f"postgresql+psycopg2://{self.DB_USER}:{password}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
+        if self.DATABASE_URL and self.DATABASE_URL.strip():
+            url = self.DATABASE_URL.strip()
+            if self.DB_NAME in url and self.DB_HOST in url:
+                return url
+        return built
 
     def validate_security_compliance(self):
         """

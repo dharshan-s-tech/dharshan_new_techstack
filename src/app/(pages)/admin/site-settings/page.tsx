@@ -29,11 +29,10 @@ export default function AdminSiteSettings() {
     <div className="space-y-6 text-xs text-zinc-700">
       
       {/* HEADER BAR */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">Global Site Content & Page Text Settings</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">Edit site titles, Who We Are paragraphs, Vision & Mission statements, and footer contact details.</p>
+            <h2 className="text-base font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
 
           {savedSuccess && (
@@ -45,7 +44,7 @@ export default function AdminSiteSettings() {
       </div>
 
       {/* FORM SECTION */}
-      <form onSubmit={handleSubmit} className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6 mb-12">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-zinc-200 p-6 shadow-xs space-y-6 mb-12">
         
         {/* 1. BRANDING & HEADER TITLES */}
         <div className="space-y-4">

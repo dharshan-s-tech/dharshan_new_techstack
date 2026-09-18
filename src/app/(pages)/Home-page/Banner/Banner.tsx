@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { dataManager } from '@/lib/dataManager';
+import { parseLocalizedText } from '@/lib/localeText';
 
 import image1 from '@/app/Assets/Images/17a8a6edf588630a0c7494a054fb34e604c4f41c.png';
 import image2 from '@/app/Assets/Images/e2c5a3b888a0623426c634ce2f2bee016b8fb5ab.png';
@@ -97,18 +98,39 @@ export default function Banner() {
 
   const activeBanners = customBanners.filter(b => b.is_active !== false);
   const activeSlides = activeBanners.length > 0
-    ? activeBanners.map(b => ({
-        image: b.image_url || image1.src,
-        engLine1: b.title_en?.split(' ')[0] || 'Ensuring',
-        engLine2: b.title_en?.split(' ').slice(1, -1).join(' ') || 'Transparency, Integrity &',
-        engLine3: b.title_en?.split(' ').slice(-1)[0] || 'Accountability',
-        hinLine1: b.title_hi || 'सुनिश्चित करना',
-        hinLine2: '',
-        hinLine3: '',
-        engSub: b.subtitle_en || 'Access audit reports, accounts, and institutional resources.',
-        hinSub: b.subtitle_hi || 'सर्वोच्च लेखापरीक्षा संस्थान से रिपोर्ट प्राप्त करें।'
-      }))
-    : SLIDES;
+    ? activeBanners.map(b => {
+        const titleEn = parseLocalizedText(b.title_en || b.title || b.text, 'en');
+        const titleHi = parseLocalizedText(b.title_hi || b.title_en || b.title || b.text, 'hi') || titleEn;
+        const isCaption = titleEn.length > 80;
+        if (isCaption) {
+          return {
+            image: b.image_url || image1.src,
+            engLine1: 'Supreme Audit Institution of India',
+            engLine2: '',
+            engLine3: '',
+            hinLine1: 'भारत का सर्वोच्च लेखापरीक्षा संस्थान',
+            hinLine2: '',
+            hinLine3: '',
+            engSub: titleEn,
+            hinSub: titleHi,
+            isCaption: true,
+          };
+        }
+        const words = titleEn.split(/\s+/).filter(Boolean);
+        return {
+          image: b.image_url || image1.src,
+          engLine1: words[0] || 'Ensuring',
+          engLine2: words.slice(1, -1).join(' ') || 'Transparency, Integrity &',
+          engLine3: words.slice(-1)[0] || 'Accountability',
+          hinLine1: titleHi || 'सुनिश्चित करना',
+          hinLine2: '',
+          hinLine3: '',
+          engSub: parseLocalizedText(b.subtitle_en, 'en') || 'Access audit reports, accounts, and institutional resources.',
+          hinSub: parseLocalizedText(b.subtitle_hi, 'hi') || 'सर्वोच्च लेखापरीक्षा संस्थान से रिपोर्ट प्राप्त करें।',
+          isCaption: false,
+        };
+      })
+    : SLIDES.map((s) => ({ ...s, isCaption: false }));
 
   // Automatic slide rotation every 4 seconds
   useEffect(() => {
@@ -160,12 +182,16 @@ export default function Banner() {
         <div className="hero__content" data-node-id="356:17259" style={{ zIndex: 3 }}>
           <div className="hero__text-block" data-node-id="356:17260">
             <span className="hero__accent-line" data-node-id="356:17261"></span>
-            <h1 className="hero__heading" data-node-id="356:17262" style={{ transition: 'all 0.5s ease-in-out' }}>
+            <h1 className={`hero__heading ${activeSlide.isCaption ? 'hero__heading--caption' : ''}`} data-node-id="356:17262" style={{ transition: 'all 0.5s ease-in-out' }}>
               <span className="hero__heading-line1">{isHindi ? activeSlide.hinLine1 : activeSlide.engLine1}</span>
-              <span className="hero__heading-line2">{isHindi ? activeSlide.hinLine2 : activeSlide.engLine2}</span>
-              <span className="hero__heading-line2 hero__heading-accent">{isHindi ? activeSlide.hinLine3 : activeSlide.engLine3}</span>
+              {!activeSlide.isCaption && (
+                <>
+                  <span className="hero__heading-line2">{isHindi ? activeSlide.hinLine2 : activeSlide.engLine2}</span>
+                  <span className="hero__heading-line2 hero__heading-accent">{isHindi ? activeSlide.hinLine3 : activeSlide.engLine3}</span>
+                </>
+              )}
             </h1>
-            <p className="hero__subtext" data-node-id="356:17263" style={{ transition: 'all 0.5s ease-in-out' }}>
+            <p className={`hero__subtext ${activeSlide.isCaption ? 'hero__subtext--caption' : ''}`} data-node-id="356:17263" style={{ transition: 'all 0.5s ease-in-out' }}>
               {isHindi ? activeSlide.hinSub : activeSlide.engSub}
             </p>
           </div>

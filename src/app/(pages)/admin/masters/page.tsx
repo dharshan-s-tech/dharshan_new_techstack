@@ -188,11 +188,10 @@ export default function AdminMasters() {
     <div className="space-y-6 text-xs text-zinc-700">
       
       {/* 1. SECTION: STATES MASTER DATA */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden">
         <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
           <div>
-            <h3 className="font-bold text-[#751639] text-sm">State Jurisdictions Master Data</h3>
-            <p className="text-zinc-500 text-[11px]">System-wide state lookup dictionary used across reports and office filings.</p>
+            <h3 className="font-bold text-zinc-800 text-[16px]">States</h3>
           </div>
           <button
             onClick={handleOpenStateCreate}
@@ -206,15 +205,12 @@ export default function AdminMasters() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-4 py-3 border-r border-white/20 w-12 text-center">Id</th>
-                <th className="px-4 py-3 border-r border-white/20 w-24">State Code</th>
-                <th className="px-4 py-3 border-r border-white/20">Name (English)</th>
-                <th className="px-4 py-3 border-r border-white/20">Name (Hindi)</th>
-                <th className="px-4 py-3 text-center w-24">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-24">Code</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Name (English)</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Name (Hindi)</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -224,10 +220,10 @@ export default function AdminMasters() {
                 </tr>
               ) : states.map((item) => (
                 <tr key={item.id} className="hover:bg-zinc-50 transition-colors">
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{item.id}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-mono font-bold text-zinc-700">{item.code || '-'}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-bold text-[#751639]">{item.name_en}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-medium text-zinc-700">{item.name_hi || '-'}</td>
+                  <td className="px-4 py-2.5 text-center font-mono text-zinc-400">{item.id}</td>
+                  <td className="px-4 py-2.5 font-mono font-bold text-zinc-700">{item.code || '-'}</td>
+                  <td className="px-4 py-2.5 font-bold text-[#751639]">{item.name_en}</td>
+                  <td className="px-4 py-2.5 font-medium text-zinc-700">{item.name_hi || '-'}</td>
                   <td className="px-4 py-2.5 text-center space-x-1">
                     <button onClick={() => handleOpenStateEdit(item)} className="p-1 border border-zinc-300 text-[#751639] hover:bg-zinc-100">📝</button>
                     <button onClick={() => handleStateDelete(item.id)} className="p-1 border border-red-200 text-red-600 hover:bg-red-50">🗑️</button>
@@ -240,11 +236,10 @@ export default function AdminMasters() {
       </div>
 
       {/* 2. SECTION: GOVERNMENT LEVELS MASTER DATA */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden mb-12">
         <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
           <div>
-            <h3 className="font-bold text-[#751639] text-sm">Government Level Categories</h3>
-            <p className="text-zinc-500 text-[11px]">Audit level classifications (Union, State, Union Territory).</p>
+            <h3 className="font-bold text-zinc-800 text-[16px]">Government Levels</h3>
           </div>
           <button
             onClick={handleOpenGovCreate}
@@ -258,14 +253,11 @@ export default function AdminMasters() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-4 py-3 border-r border-white/20 w-12 text-center">Id</th>
-                <th className="px-4 py-3 border-r border-white/20">Category Name (English)</th>
-                <th className="px-4 py-3 border-r border-white/20">Category Name (Hindi)</th>
-                <th className="px-4 py-3 text-center w-24">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Name (English)</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Name (Hindi)</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -275,9 +267,9 @@ export default function AdminMasters() {
                 </tr>
               ) : govLevels.map((item) => (
                 <tr key={item.id} className="hover:bg-zinc-50 transition-colors">
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{item.id}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-bold text-[#751639]">{item.name_en}</td>
-                  <td className="px-4 py-2.5 border-r border-[#e2e5e7] font-medium text-zinc-700">{item.name_hi || '-'}</td>
+                  <td className="px-4 py-2.5 text-center font-mono text-zinc-400">{item.id}</td>
+                  <td className="px-4 py-2.5 font-bold text-[#751639]">{item.name_en}</td>
+                  <td className="px-4 py-2.5 font-medium text-zinc-700">{item.name_hi || '-'}</td>
                   <td className="px-4 py-2.5 text-center space-x-1">
                     <button onClick={() => handleOpenGovEdit(item)} className="p-1 border border-zinc-300 text-[#751639] hover:bg-zinc-100">📝</button>
                     <button onClick={() => handleGovDelete(item.id)} className="p-1 border border-red-200 text-red-600 hover:bg-red-50">🗑️</button>
@@ -292,7 +284,7 @@ export default function AdminMasters() {
       {/* STATE MODAL */}
       {isStateFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border border-[#ced4da] max-w-md w-full p-6 shadow-2xl relative">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl relative">
             <button onClick={() => setIsStateFormOpen(false)} className="absolute top-4 right-4 text-zinc-400 text-base font-bold">✕</button>
             <h3 className="text-sm font-bold text-zinc-900 border-b pb-3 mb-4">{editingStateId ? 'Edit State Master' : 'Add New State Master'}</h3>
             <form onSubmit={handleStateSubmit} className="space-y-3">
@@ -320,7 +312,7 @@ export default function AdminMasters() {
       {/* GOV LEVEL MODAL */}
       {isGovFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border border-[#ced4da] max-w-md w-full p-6 shadow-2xl relative">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl relative">
             <button onClick={() => setIsGovFormOpen(false)} className="absolute top-4 right-4 text-zinc-400 text-base font-bold">✕</button>
             <h3 className="text-sm font-bold text-zinc-900 border-b pb-3 mb-4">{editingGovId ? 'Edit Government Level' : 'Add Government Level'}</h3>
             <form onSubmit={handleGovSubmit} className="space-y-3">

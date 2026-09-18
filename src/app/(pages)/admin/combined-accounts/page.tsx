@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, CombinedAccountItem as LocalCombinedItem } from '@/lib/dataManager';
 import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/AdminPagination';
 
 export interface CombinedAccountDisplayItem {
   id: number | string;
@@ -399,15 +400,10 @@ function AdminCombinedAccountsContent() {
     <div className="space-y-4 text-xs text-zinc-700 font-sans">
       
       {/* 1. TOP HEADER & FILTER PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-200 pb-3">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">
-              Combined Finance Accounts &amp; Conference Materials
-            </h2>
-            <p className="text-[11px] text-zinc-500 font-medium">
-              Manage Combined Finance &amp; Revenue Accounts and State Finance Secretaries Conference compendiums
-            </p>
+            <h2 className="text-base font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
           
           <div className="flex items-center gap-3">
@@ -506,7 +502,7 @@ function AdminCombinedAccountsContent() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-zinc-150">
+        <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
             <button
               onClick={handleSearchGo}
@@ -521,34 +517,33 @@ function AdminCombinedAccountsContent() {
               Reset
             </button>
           </div>
-
-          <div className="text-[11px] text-zinc-500 font-medium">
-            Source: <span className="text-emerald-700 font-bold">PostgreSQL combined_accounts + Local CMS</span>
-          </div>
         </div>
       </div>
 
       {/* 2. DATA TABLE */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
-          <div className="font-bold text-zinc-800 text-sm">
-            Records Registry [ Displaying {accounts.length} of {totalCount.toLocaleString()} ]
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">Combined Accounts</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {accounts.length === 0 ? 0 : ((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}.
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-xs text-zinc-600">
-              <span>Per page:</span>
+              <span className="font-semibold">Rows per page</span>
               <select
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+                className="border border-zinc-200 rounded-md px-2 py-1.5 bg-white text-zinc-800"
               >
+                <option value={10}>10</option>
                 <option value={15}>15</option>
                 <option value={25}>25</option>
                 <option value={50}>50</option>
-                <option value={100}>100</option>
               </select>
             </div>
             <button
@@ -564,10 +559,9 @@ function AdminCombinedAccountsContent() {
                 setIsActive(true);
                 setIsDrawerOpen(true);
               }}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs flex items-center gap-1.5 cursor-pointer bg-[#751639] hover:bg-[#5f0f2d]"
             >
-              <span>+ Add Combined Record</span>
+              <span>+ Add New</span>
             </button>
           </div>
         </div>
@@ -575,18 +569,15 @@ function AdminCombinedAccountsContent() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3 border-r border-white/20">Document Title</th>
-                <th className="px-3 py-3 border-r border-white/20 w-44">Category</th>
-                <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Fiscal Year</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36">Volume</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">File Size</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
-                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Title</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-44">Category</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28 text-center">Year</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-36">Volume</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-24 text-center">Size</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28 text-center">Status</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -608,14 +599,14 @@ function AdminCombinedAccountsContent() {
               ) : (
                 accounts.map((item) => (
                   <tr key={item.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400 text-[11px]">{item.id}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
+                    <td className="px-3 py-3 text-center font-mono text-zinc-400 text-[11px]">{item.id}</td>
+                    <td className="px-4 py-3 font-bold text-[#751639] max-w-md">
                       <div className="line-clamp-2 cursor-pointer hover:underline" onClick={() => setViewingItem(item)} title="Click to view details">
                         {item.title_en}
                       </div>
                       {item.title_hi && <div className="text-[11px] text-zinc-500 font-normal mt-0.5">{item.title_hi}</div>}
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7]">
+                    <td className="px-3 py-3">
                       <span className={`inline-block px-2 py-0.5 text-[10.5px] font-bold rounded ${
                         item.category === 'combined' 
                           ? 'bg-blue-100 text-blue-800 border border-blue-200' 
@@ -624,10 +615,10 @@ function AdminCombinedAccountsContent() {
                         {item.category === 'combined' ? 'Combined Accounts' : 'Conference Compendium'}
                       </span>
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-700 font-bold">{item.account_year}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-zinc-600 font-medium">{item.volume || 'Full Volume'}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-500 font-mono">{item.size}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                    <td className="px-3 py-3 text-center font-mono text-zinc-700 font-bold">{item.account_year}</td>
+                    <td className="px-3 py-3 text-zinc-600 font-medium">{item.volume || 'Full Volume'}</td>
+                    <td className="px-3 py-3 text-center text-zinc-500 font-mono">{item.size}</td>
+                    <td className="px-3 py-3 text-center">
                       <button
                         onClick={() => handleToggleActive(item)}
                         className={`text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer transition-colors ${
@@ -690,36 +681,19 @@ function AdminCombinedAccountsContent() {
           </table>
         </div>
 
-        {/* Pagination Bar */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} documents)
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                ← Prev
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          onPageChange={setPage}
+          noun="documents"
+        />
       </div>
 
       {/* 3. VIEW DETAILS MODAL */}
       {viewingItem && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 rounded-none max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
             {/* Modal Header */}
             <div 
@@ -1094,7 +1068,7 @@ function AdminCombinedAccountsContent() {
 
 export default function AdminCombinedAccounts() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading Combined Accounts Registry...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading...</div>}>
       <AdminCombinedAccountsContent />
     </Suspense>
   );

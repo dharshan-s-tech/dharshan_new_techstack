@@ -5,25 +5,54 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
+ACTIVE_DB_PORT = settings.DB_PORT
+
+
+def _try_postgres(port: int):
+    url = settings.sqlalchemy_database_url
+    if port != settings.DB_PORT:
+        password = settings.DB_PASSWORD
+        from urllib.parse import quote_plus
+        encoded = quote_plus(password)
+        url = (
+            f"postgresql+psycopg2://{settings.DB_USER}:{encoded}"
+            f"@{settings.DB_HOST}:{port}/{settings.DB_NAME}"
+        )
+    pg_engine = create_engine(url, pool_pre_ping=True)
+    with pg_engine.connect() as conn:
+        conn.exec_driver_sql(f'SET search_path TO "{settings.DB_SCHEMA}", public')
+    global ACTIVE_DB_PORT
+    ACTIVE_DB_PORT = port
+    logger.info(
+        f"[Database] Connected to PostgreSQL {settings.DB_HOST}:{port}/{settings.DB_NAME} schema={settings.DB_SCHEMA}"
+    )
+    return pg_engine
+
 
 def create_resilient_engine():
-    try:
-        pg_engine = create_engine(
-            settings.sqlalchemy_database_url,
-            pool_pre_ping=True,
-        )
-        # Test connection
-        with pg_engine.connect() as conn:
-            pass
-        return pg_engine
-    except Exception as exc:
-        logger.warning(
-            f"[Database] PostgreSQL connection failed ({exc}). Falling back to local SQLite: cag_dev.db"
-        )
-        return create_engine(
-            "sqlite:///./cag_dev.db",
-            connect_args={"check_same_thread": False},
-        )
+    ports = [settings.DB_PORT]
+    if 5432 not in ports:
+        ports.append(5432)
+    if 5434 not in ports:
+        ports.append(5434)
+
+    last_error = None
+    for port in ports:
+        try:
+            return _try_postgres(port)
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                f"[Database] PostgreSQL {settings.DB_HOST}:{port}/{settings.DB_NAME} failed: {exc}"
+            )
+
+    logger.error(
+        f"[Database] All PostgreSQL ports failed ({last_error}). Falling back to empty SQLite — UI will have no live data."
+    )
+    return create_engine(
+        "sqlite:///./cag_dev.db",
+        connect_args={"check_same_thread": False},
+    )
 
 engine = create_resilient_engine()
 
@@ -54,14 +83,12 @@ def get_db():
 
 def get_psycopg2_connection():
     import psycopg2
-    if settings.DATABASE_URL:
-        url = settings.DATABASE_URL.replace("postgresql+psycopg2://", "postgresql://")
-        return psycopg2.connect(url)
     return psycopg2.connect(
         host=settings.DB_HOST,
-        port=settings.DB_PORT,
+        port=ACTIVE_DB_PORT,
         dbname=settings.DB_NAME,
         user=settings.DB_USER,
         password=settings.DB_PASSWORD,
+        options=f'-c search_path="{settings.DB_SCHEMA}",public',
     )
 

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { dataManager, BannerItem } from '@/lib/dataManager';
+import { Search, RotateCcw, Plus, SquarePen, Trash2 } from 'lucide-react';
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState<BannerItem[]>([]);
@@ -131,42 +132,44 @@ export default function AdminBanners() {
     <div className="space-y-6 text-xs text-zinc-700">
       
       {/* 1. TOP FILTERS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">Home Banners & Carousel Slideshow Management</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">Upload banner image files, edit hero headlines, display order, and redirect links.</p>
+            <h2 className="text-base font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
 
           <button
             onClick={handleOpenCreate}
-            className="text-white px-4 py-2 font-semibold transition-all shadow-xs rounded-none"
-            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+            className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs inline-flex items-center gap-1.5 cursor-pointer hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
           >
-            + Add New Banner
+            <Plus className="w-3.5 h-3.5" /> Add New
           </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
           <div>
-            <label className="block text-zinc-555 font-bold mb-1">Search Headline:</label>
-            <input
-              type="text"
-              value={searchFor}
-              onChange={(e) => setSearchFor(e.target.value)}
-              placeholder="Enter Keywords"
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
-            />
+            <label className="block text-zinc-600 font-semibold mb-1.5 text-[12px]">Search For</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <input
+                type="text"
+                value={searchFor}
+                onChange={(e) => setSearchFor(e.target.value)}
+                placeholder="Enter keywords..."
+                className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-zinc-555 font-bold mb-1">Publish Status:</label>
+            <label className="block text-zinc-600 font-semibold mb-1.5 text-[12px]">Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-750 focus:outline-none focus:border-[#751639]"
+              className="w-full px-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Statuses</option>
+              <option value="All">All</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
@@ -174,43 +177,44 @@ export default function AdminBanners() {
 
           <div className="flex items-end gap-2">
             <button
-              onClick={handleSearchGo}
-              className="border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-5 py-1.5 rounded-none transition-colors font-medium bg-white"
+              onClick={handleSearchReset}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#751639]/40 text-[#751639] bg-[#fff5f8] hover:bg-[#fde8ef] transition-colors font-semibold"
             >
-              GO
+              <RotateCcw className="w-3.5 h-3.5" /> Reset
             </button>
             <button
-              onClick={handleSearchReset}
-              className="border border-zinc-400 text-zinc-700 hover:bg-zinc-100 px-5 py-1.5 rounded-none transition-colors font-medium bg-white"
+              onClick={handleSearchGo}
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-white font-semibold shadow-sm hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
             >
-              Reset
+              <Search className="w-3.5 h-3.5" /> Search
             </button>
           </div>
         </div>
       </div>
 
       {/* 2. TABLE GRID PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
-          <h3 className="font-semibold text-zinc-800">
-            Banners & Slideshows [ Displaying {banners.length} of {banners.length} ]
-          </h3>
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">Banners</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {banners.length === 0 ? 0 : 1}–{banners.length} of {banners.length}.
+            </p>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-4 py-3.5 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-36">Image Preview</th>
-                <th className="px-4 py-3.5 border-r border-white/20">Banner Headline Title</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-48">Subtitle</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-24 text-center">Order No</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-20 text-center">Status</th>
-                <th className="px-4 py-3.5 text-center w-28">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-36">Image</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Title</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-48">Subtitle</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-24 text-center">Order</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-28 text-center">Status</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -228,43 +232,47 @@ export default function AdminBanners() {
                 </tr>
               ) : (
                 banners.map((banner, idx) => (
-                  <tr key={banner.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7]">
+                  <tr key={banner.id} className="border-b border-zinc-50 hover:bg-zinc-50/70 transition-colors text-zinc-800">
+                    <td className="px-4 py-3.5">
+                      <span className="font-bold text-[#751639]">#{banner.id ?? idx + 1}</span>
+                    </td>
+                    <td className="px-4 py-3.5">
                       <img 
                         src={banner.image_url || '/assets/0a49806ee3dbb7eb472a11bdfed5e0037a544c20.png'} 
                         alt={banner.title_en}
-                        className="h-10 w-24 object-cover border border-zinc-200"
+                        className="h-10 w-24 object-cover border border-zinc-200 rounded"
                       />
                     </td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-sm truncate">{banner.title_en}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-zinc-550 max-w-xs truncate">{banner.subtitle_en || '-'}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono">{banner.display_order}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold ${
-                        banner.is_active 
-                          ? 'bg-emerald-100 text-emerald-800' 
-                          : 'bg-zinc-100 text-zinc-650'
+                    <td className="px-4 py-3.5 font-semibold text-zinc-800 max-w-sm truncate">{banner.title_en}</td>
+                    <td className="px-4 py-3.5 text-zinc-500 max-w-xs truncate">{banner.subtitle_en || '—'}</td>
+                    <td className="px-4 py-3.5 text-center font-mono text-zinc-600">{banner.display_order}</td>
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                        banner.is_active
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
                       }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${banner.is_active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                         {banner.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    
-                    <td className="px-4 py-3 text-center space-x-1.5">
-                      <button
-                        onClick={() => handleOpenEdit(banner.id)}
-                        className="p-1 border border-zinc-300 hover:bg-zinc-100 text-[#751639] inline-flex items-center justify-center w-7 h-7"
-                        title="Edit Record"
-                      >
-                        📝
-                      </button>
-                      <button
-                        onClick={() => handleDelete(banner.id)}
-                        className="p-1 border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center w-7 h-7"
-                        title="Delete Record"
-                      >
-                        🗑️
-                      </button>
+                    <td className="px-4 py-3.5 text-right">
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleOpenEdit(banner.id)}
+                          className="p-1.5 text-zinc-500 hover:text-[#751639] hover:bg-[#751639]/5 rounded-lg"
+                          title="Edit"
+                        >
+                          <SquarePen className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(banner.id)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -277,7 +285,7 @@ export default function AdminBanners() {
       {/* Details Slide Modal Form */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold"
@@ -409,9 +417,9 @@ export default function AdminBanners() {
                 <button
                   type="submit"
                   className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs"
-                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
                 >
-                  Save Banner Record
+                  Save Banner
                 </button>
                 <button
                   type="button"

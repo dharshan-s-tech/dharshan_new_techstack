@@ -6,7 +6,8 @@ import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, ReportItem as DataReportItem } from '@/lib/dataManager';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
-import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
+import { Eye, Trash2, ExternalLink, Filter, ArrowUpDown, Search, RotateCcw, Plus, SquarePen, Upload } from 'lucide-react';
+import { AdminPagination } from '@/components/admin/AdminPagination';
 
 interface StateLookup {
   id: number;
@@ -479,52 +480,56 @@ function AdminReportsContent() {
 
 
   return (
-    <div className="space-y-4 text-xs text-zinc-700 font-sans">
+    <div className="space-y-5 text-sm text-zinc-700 font-sans">
       
-      {/* 1. TOP FILTERS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
+      {/* 1. Search & Filter — Dashboard Admin mockup */}
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Filter className="w-4 h-4 text-[#751639]" />
+          <h2 className="text-[15px] font-bold text-zinc-800">Search &amp; Filter</h2>
+        </div>
         
         {/* Row 1: Search, Status, Sector, Level, Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Search For</label>
             <input
               type="text"
               value={searchFor}
               onChange={(e) => setSearchFor(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
-              placeholder="Search reports registry..."
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
+              placeholder="Enter keywords..."
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none placeholder-zinc-400 focus:border-[#751639] focus:ring-2 focus:ring-[#751639]/15"
             />
           </div>
 
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Status</label>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Status</option>
+              <option value="All">All</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Audit Sector / Ministry:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Sector</label>
             <select
               value={sectorFilter}
               onChange={(e) => {
                 setSectorFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Sectors</option>
+              <option value="All">All</option>
               {sectors.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
@@ -532,16 +537,16 @@ function AdminReportsContent() {
           </div>
 
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Administrative Level:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Level</label>
             <select
               value={levelFilter}
               onChange={(e) => {
                 setLevelFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Levels</option>
+              <option value="All">All</option>
               <option value="Union">Union Government</option>
               <option value="States">State Government</option>
               <option value="Local Bodies">Local Bodies (PRI / ULB)</option>
@@ -549,16 +554,16 @@ function AdminReportsContent() {
           </div>
 
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Report Type:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Report Type</label>
             <select
               value={reportTypeFilter}
               onChange={(e) => {
                 setReportTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Report Types</option>
+              <option value="All">All</option>
               {reportTypes.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
@@ -567,18 +572,18 @@ function AdminReportsContent() {
         </div>
 
         {/* Row 2: Year, State, Sort By, Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Report Year:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Year</label>
             <select
               value={yearFilter}
               onChange={(e) => {
                 setYearFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Years</option>
+              <option value="All">All</option>
               {availableYears.map((yr) => (
                 <option key={yr} value={yr}>{yr}</option>
               ))}
@@ -586,7 +591,7 @@ function AdminReportsContent() {
           </div>
 
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">State / Union Territory:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">State / UT</label>
             <SearchableStateSelect
               value={stateFilter}
               onChange={(val) => {
@@ -602,14 +607,14 @@ function AdminReportsContent() {
           </div>
 
           <div>
-            <label className="block text-zinc-700 font-bold mb-1">Sort Order:</label>
+            <label className="block text-[12px] font-semibold text-zinc-600 mb-1.5">Sort</label>
             <select
               value={sortFilter}
               onChange={(e) => {
                 setSortFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+              className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-2.5 text-zinc-800 focus:outline-none focus:border-[#751639]"
             >
               <option value="newest">Newly Added First</option>
               <option value="year_desc">Year (Newest first)</option>
@@ -620,46 +625,46 @@ function AdminReportsContent() {
             </select>
           </div>
 
-          <div className="flex items-end gap-2">
-            <button
-              onClick={handleSearchGo}
-              className="flex-1 border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-4 py-1.5 rounded-none transition-colors font-bold bg-white cursor-pointer shadow-xs"
-            >
-              Apply Filter
-            </button>
+          <div className="flex items-end justify-end gap-2">
             <button
               onClick={handleSearchReset}
-              className="px-4 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 py-1.5 rounded-none transition-colors font-medium bg-white cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#751639]/40 text-[#751639] bg-[#fff5f8] hover:bg-[#fde8ef] transition-colors font-semibold text-sm cursor-pointer"
             >
-              Reset
+              <RotateCcw className="w-3.5 h-3.5" /> Reset
+            </button>
+            <button
+              onClick={handleSearchGo}
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-white transition-opacity font-semibold text-sm cursor-pointer shadow-sm hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+            >
+              <Search className="w-3.5 h-3.5" /> Search
             </button>
           </div>
         </div>
-
-        <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-100">
-          <span>Active Filter: <strong>{sectorFilter}</strong> | Level: <strong>{levelFilter}</strong> | Type: <strong>{reportTypeFilter}</strong> | Year: <strong>{yearFilter}</strong></span>
-          <span>Source: <strong className="text-emerald-700">PostgreSQL cag_db_final (2,746 reports) + Local CMS</strong></span>
-        </div>
       </div>
 
-      {/* 2. TABLE GRID PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
-          <h3 className="font-bold text-zinc-800 text-sm">
-            Audit Reports Management Registry [ Displaying {reports.length} of {totalCount.toLocaleString()} ]
-          </h3>
+      {/* 2. TABLE — Dashboard Admin mockup */}
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">Audit Reports</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {reports.length === 0 ? 0 : ((page - 1) * pageSize) + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount.toLocaleString()}.
+            </p>
+          </div>
           
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-zinc-600">
-              <span>Per page:</span>
+            <div className="flex items-center gap-2 text-[12px] text-zinc-600">
+              <span className="font-semibold">Rows per page</span>
               <select
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
+                className="border border-zinc-200 rounded-md px-2 py-1.5 bg-white text-zinc-800"
               >
+                <option value="10">10</option>
                 <option value="15">15</option>
                 <option value="25">25</option>
                 <option value="50">50</option>
@@ -668,34 +673,41 @@ function AdminReportsContent() {
             </div>
 
             <button
-              onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#751639]/35 bg-white text-sm font-semibold text-[#751639] hover:bg-[#fff5f8]"
             >
-              <span>+ Add New Audit Report Card</span>
+              <Upload className="w-4 h-4" /> Export
+            </button>
+
+            <button
+              onClick={handleOpenCreate}
+              className="text-white px-4 py-2 font-semibold transition-all shadow-sm rounded-lg text-xs inline-flex items-center gap-1.5 cursor-pointer hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+            >
+              <Plus className="w-3.5 h-3.5" /> Add New
             </button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24">Thumb</th>
-                <th className="px-4 py-3 border-r border-white/20">Audit Report Title & Summary</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36">Sector</th>
-                <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Type</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Year</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Level</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
-                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
+              <tr className="bg-[#f7f7f9] border-b border-zinc-100 text-zinc-500">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-20">
+                  <span className="inline-flex items-center gap-1">ID <ArrowUpDown className="w-3 h-3 opacity-50" /></span>
+                </th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide w-24">Thumb</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide min-w-[240px]">
+                  <span className="inline-flex items-center gap-1">Title <ArrowUpDown className="w-3 h-3 opacity-50" /></span>
+                </th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide w-36">Sector</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide w-28 text-center">Type</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide w-20 text-center">Year</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide w-24 text-center">Status</th>
+                <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-wide text-right w-28">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2e5e7]">
+            <tbody>
               {loading ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
@@ -713,84 +725,75 @@ function AdminReportsContent() {
                 </tr>
               ) : (
                 reports.map((report) => (
-                  <tr key={report.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400 text-[11px]">{report.id}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7]">
+                  <tr key={report.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800 border-b border-zinc-100">
+                    <td className="px-4 py-3.5">
+                      <span className="font-bold text-[#751639]">#{report.id}</span>
+                    </td>
+                    <td className="px-3 py-3.5">
                       <img 
                         src={report.image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'} 
                         alt="" 
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
                         }}
-                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100" 
+                        className="h-10 w-16 object-cover border border-zinc-200 rounded bg-gray-100" 
                       />
                     </td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
-                      <div className="line-clamp-2 cursor-pointer hover:underline" onClick={() => handleOpenView(report)} title="Click to view details">
+                    <td className="px-4 py-3.5 font-medium text-zinc-800 max-w-md">
+                      <div className="line-clamp-2 cursor-pointer hover:text-[#751639] hover:underline" onClick={() => handleOpenView(report)} title="Click to view details">
                         {report.title_en}
                       </div>
                       {report.desc && <div className="text-[11px] text-zinc-500 font-normal mt-0.5 line-clamp-1">{report.desc}</div>}
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
+                    <td className="px-3 py-3.5 font-medium text-zinc-700">
                       <span className="truncate block max-w-[130px]" title={report.sector}>{report.sector}</span>
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center capitalize text-zinc-600">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100">
+                    <td className="px-3 py-3.5 text-center capitalize text-zinc-600">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-zinc-700">
                         {report.report_type}
                       </span>
                     </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-600 font-semibold">{report.year_of_report}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-500 font-medium">{report.level || 'Union'}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
+                    <td className="px-3 py-3.5 text-center text-zinc-600 font-medium">{report.year_of_report}</td>
+                    <td className="px-3 py-3.5 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
                         report.is_active
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          : 'bg-rose-100 text-rose-800 border-rose-300'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
                       }`}>
-                        {report.is_active ? 'ACTIVE' : 'INACTIVE'}
+                        <span className={`w-1.5 h-1.5 rounded-full ${report.is_active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        {report.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     
-                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
-                      {/* View */}
+                    <td className="px-3 py-2 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleOpenView(report)}
-                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="View Full Report Details"
+                        className="p-1.5 text-zinc-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg inline-flex"
+                        title="View"
                       >
-                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>View</span>
+                        <Eye className="w-4 h-4" />
                       </button>
-
-                      {/* Edit */}
                       <button
                         onClick={() => handleOpenEdit(report)}
-                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Edit Record"
+                        className="p-1.5 text-zinc-500 hover:text-[#751639] hover:bg-[#751639]/5 rounded-lg inline-flex"
+                        title="Edit"
                       >
-                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
-                        <span>Edit</span>
+                        <SquarePen className="w-4 h-4" />
                       </button>
-
-                      {/* Delete */}
                       <button
                         onClick={() => handleDelete(report.rawId)}
-                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Delete Record"
+                        className="p-1.5 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg inline-flex"
+                        title="Delete"
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Delete</span>
+                        <Trash2 className="w-4 h-4" />
                       </button>
-
-                      {/* Live Link */}
                       <Link
                         href={`/Reports/${report.rawId}`}
                         target="_blank"
-                        className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
-                        title="Preview Public Page ↗"
+                        className="p-1.5 text-zinc-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg inline-flex"
+                        title="Live page"
                       >
-                        <ExternalLink className="w-3 h-3 text-blue-600" />
-                        <span>Live</span>
+                        <ExternalLink className="w-4 h-4" />
                       </Link>
                     </td>
                   </tr>
@@ -800,36 +803,19 @@ function AdminReportsContent() {
           </table>
         </div>
 
-        {/* Pagination Bar */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} records)
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                ← Prev
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination
+          page={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          onPageChange={setPage}
+          noun="records"
+        />
       </div>
 
       {/* 3. VIEW DETAILS MODAL */}
       {viewingReport && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
             {/* Modal Header */}
             <div 
@@ -984,7 +970,7 @@ function AdminReportsContent() {
                     }}
                     className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <SquarePen className="w-3.5 h-3.5" />
                     <span>Edit Record</span>
                   </button>
                   <button
@@ -1015,7 +1001,7 @@ function AdminReportsContent() {
       {/* 4. CREATE / EDIT MODAL FORM */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
@@ -1344,7 +1330,7 @@ function AdminReportsContent() {
                   className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs cursor-pointer"
                   style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
                 >
-                  Save to Local CMS Registry
+                  Save Record
                 </button>
                 <button
                   type="button"
@@ -1364,7 +1350,7 @@ function AdminReportsContent() {
 
 export default function AdminReports() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading Reports Registry...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[#751639] font-medium">Loading...</div>}>
       <AdminReportsContent />
     </Suspense>
   );

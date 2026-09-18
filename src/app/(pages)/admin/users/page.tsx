@@ -637,7 +637,7 @@ function UserManagementContent() {
           <span className="text-zinc-800 font-semibold">{viewMode === 'edit_role' ? 'Edit Role' : 'Add New Role'}</span>
         </div>
 
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-xs space-y-6">
           {/* Card Header */}
           <div className="flex items-center justify-between pb-4 border-b border-[#ced4da]">
             <div className="flex items-center gap-2.5">
@@ -822,7 +822,7 @@ function UserManagementContent() {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-xs space-y-6">
           {/* Card Top Header */}
           <div className="flex items-center justify-between pb-4 border-b border-[#ced4da]">
             <div className="flex items-center gap-2.5">
@@ -1068,7 +1068,7 @@ function UserManagementContent() {
           <span className="text-zinc-800 font-semibold">{viewMode === 'edit_wing' ? 'Edit CAG Wing' : 'Add New CAG Wing'}</span>
         </div>
 
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-xs space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-[#ced4da]">
             <div className="flex items-center gap-2.5">
               <Building2 className="w-5 h-5 text-[#751639]" />
@@ -1154,7 +1154,7 @@ function UserManagementContent() {
     <div className="space-y-4 text-xs text-zinc-700 font-sans">
       
       {/* 1. TOP SUBMODULE TABS & ACTION HEADER */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         
         {/* Tab Badges */}
         <div className="flex items-center gap-2">
@@ -1252,7 +1252,7 @@ function UserManagementContent() {
           TAB 1: USERS LIST
           ═════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'users' && (
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
+        <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
           
           {/* Filters Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
@@ -1350,7 +1350,7 @@ function UserManagementContent() {
                     <td colSpan={7} className="py-10 text-center text-zinc-500 font-medium">
                       <div className="flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-[#751639]" />
-                        <span>Loading user accounts from PostgreSQL database...</span>
+                        <span>Loading users...</span>
                       </div>
                     </td>
                   </tr>
@@ -1443,7 +1443,7 @@ function UserManagementContent() {
           TAB 2: ROLES LIST
           ═════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'roles' && (
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
+        <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
           
           {/* Filters Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1516,7 +1516,7 @@ function UserManagementContent() {
                     <td colSpan={5} className="py-10 text-center text-zinc-500 font-medium">
                       <div className="flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-[#751639]" />
-                        <span>Loading roles from database...</span>
+                        <span>Loading roles...</span>
                       </div>
                     </td>
                   </tr>
@@ -1580,7 +1580,7 @@ function UserManagementContent() {
           TAB 3: WINGS LIST
           ═════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'wings' && (
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
+        <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
           
           {/* Filters Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1638,7 +1638,7 @@ function UserManagementContent() {
                     <td colSpan={4} className="py-10 text-center text-zinc-500 font-medium">
                       <div className="flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-[#751639]" />
-                        <span>Loading wings from database...</span>
+                        <span>Loading wings...</span>
                       </div>
                     </td>
                   </tr>
