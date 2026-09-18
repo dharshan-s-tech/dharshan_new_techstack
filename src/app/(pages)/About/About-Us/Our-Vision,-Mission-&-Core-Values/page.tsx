@@ -45,8 +45,9 @@ const LOCAL_DICTS = {
 function VisionMissionContent() {
   const searchParams = useSearchParams();
   const isAdminEdit = searchParams.get('admin_edit') === 'true';
+  const langParam = searchParams.get('lang');
 
-  const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [lang, setLang] = useState<'English' | 'हिन्दी'>(langParam === 'HI' ? 'हिन्दी' : 'English');
   const [dataEn, setDataEn] = useState(LOCAL_DICTS.English);
   const [dataHi, setDataHi] = useState(LOCAL_DICTS['हिन्दी']);
   const [pageTitleEn, setPageTitleEn] = useState(LOCAL_DICTS.English.pageTitle);
@@ -60,8 +61,8 @@ function VisionMissionContent() {
 
   useEffect(() => {
     let isMounted = true;
-    const currentLang = dataManager.getLanguage();
-    setLang(currentLang);
+    const initialLang = langParam === 'HI' ? 'हिन्दी' : dataManager.getLanguage();
+    setLang(initialLang);
 
     const fetchAll = () => {
       // Fetch English Data

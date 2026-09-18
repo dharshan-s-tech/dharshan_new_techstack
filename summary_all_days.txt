@@ -1,0 +1,4462 @@
+=== DATE: 2026-09-09 (15 requests) ===
+  1. # Project Summary & Updated Code Architecture: CAG Website & Admin Suite
+
+
+
+This document summarizes the changes, additions, and enhancements made across the **Comptroller & Auditor General of India (CAG) Website (v2)** project, covering the **Backend**, the **Admin Management Suite**, and the public **Audit Reports & Accounts Suite**.
+
+
+
+---
+
+
+
+## 1. Executive Overview of Completed Work
+
+
+
+| Area | Before | Updated State |
+
+| :--- | :--- | :--- |
+
+| **Admin Navigation** | Flat, limited links to Reports | Dedicated **"Audit Reports & Accounts Suite"** with subpage links & 1-click live public previews (`/Reports`, `/Reports/accounts`). |
+
+| **Admin Reports CRUD** | Basic centered popup modal with limited fields | **Sliding Side Panel Drawer** (Figma-inspired) with 4 segmented tabs, live image previews, rich audit findings, and sticky footer actions. |
+
+| **Subpage Management** | No dedicated admin page for Combined Accounts | Added **Combined Accounts & Conferences Admin Page** (`/admin/combined-accounts`) with full CRUD and drawer editor. |
+
+| **Public Reports (`/Reports`)** | Hardcoded `"430 results"`, partial filtering (only search + year), no pagination, static fallback data | **Top Dropdown Toolbar** (Year, Sector, Level, Sort), dynamic results counter, multi-criteria sidebar synchronization, 9-item pagination, and working PDF downloads. |
+
+| **Report Details (`/Reports/[id]`)** | Hardcoded *Lorem Ipsum Sit Dolor* and dead alert popups | **Dynamic data binding**, realistic CAG constitutional audit narrative (Executive Summary, Key Findings, Recommendations), video briefing player, and related reports. |
+
+| **State Accounts (`/Reports/accounts`)** | Dead `alert()` handlers on download buttons | **Top quick dropdown selector** for States/UTs & fiscal periods, plus working PDF document downloads. |
+
+| **Data Layer (`dataManager.ts`)** | Basic 6-item schema with missing fields | Enriched **12-report master registry** across Union, States, Local Bodies, and all audit sectors with full bilingual fiel
+<truncated 6546 bytes>
+tion logic so existing local storage sessions receive the updated dataset.
+
+
+
+---
+
+
+
+## 3. How to Run & Verify Locally
+
+
+
+### 1. Start the FastAPI Backend
+
+```powershell
+
+cd d:\CAG_Website_v2\back_end
+
+.\venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+```
+
+- API Docs: `http://127.0.0.1:8000/docs`
+
+
+
+### 2. Start the Next.js Frontend
+
+```powershell
+
+cd d:\CAG_Website_v2
+
+npm run dev
+
+```
+
+- Frontend Portal: `http://localhost:3333`
+
+
+
+### 3. Key URLs for Testing
+
+| Destination | URL | Key Features to Test |
+
+| :--- | :--- | :--- |
+
+| **Admin Reports Management** | `http://localhost:3333/admin/reports` | Click "+ Add New Audit Report" or click 📝 on any row to open the **Side Panel Drawer**. Edit fields, change sector/type, and click "Save & Publish". |
+
+| **Admin Combined Accounts** | `http://localhost:3333/admin/combined-accounts` | Filter by category/year, test the slide-out drawer, and toggle document status. |
+
+| **Public Reports Listing** | `http://localhost:3333/Reports` | Test top dropdowns (Year, Sector, Level, Sort), test sidebar checkboxes, verify dynamic count, test pagination (`1, 2`), and click "Download Full Report". |
+
+| **Public Report Details** | `http://localhost:3333/Reports/rep-1` | Verify the constitutional executive summary, audit findings, recommendations, video briefing, and related reports. |
+
+| **Public State Accounts** | `http://localhost:3333/Reports/accounts` | Use the top quick State selector, toggle current/archive, and test PDF downloads. |
+
+
+
+<!-- GOAL_COMPLETE -->
+
+
+do like this for this updated and give me as a implemention plan for working on backend
+
+  2. D:\CAG_Website_v2\PROJECT_ANALYSIS_REPORTS_BACKEND_ADMIN.md
+
+give like this
+
+  3. Reports & Monitoring =side menu in admin panel 
+
+Reports=sub menu 
+
+/* Frame 1000005283 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px;
+gap: 40px;
+
+position: absolute;
+width: 355px;
+height: 977px;
+left: 1px;
+top: 80px;
+overflow-y: scroll;
+
+background: #751639;
+
+
+/* Frame 1000005456 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 24px;
+
+width: 307px;
+height: 902px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 16px;
+
+width: 307px;
+height: 902px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 2147227406 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 8px;
+
+width: 307px;
+height: 548px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-item-User Management */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 12px 0px;
+gap: 8px;
+
+width: 307px;
+height: 43px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-label */
+
+width: 281px;
+height: 19px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 19px;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* akar-icons:chevron-down-small */
+
+width: 18px;
+height: 18px;
+
+transform: matrix(1, 0, 0, -1, 0, 0);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 25%;
+top: 33.33%;
+bottom: 41.67%;
+
+border: 2px solid #FFFFFF;
+transform: matrix(1, 0, 0, -1, 0, 0);
+
+
+/* Frame 2147227413 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 4px;
+
+width: 307px;
+height: 497px;
+
+bo
+<truncated 14692 bytes>
+: 0;
+
+
+/* nav-item-User Management */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 12px 0px;
+gap: 8px;
+
+width: 307px;
+height: 43px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-label */
+
+width: 281px;
+height: 19px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 19px;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* akar-icons:chevron-down-small */
+
+width: 18px;
+height: 18px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 25%;
+top: 41.67%;
+bottom: 33.33%;
+
+border: 2px solid #FFFFFF;
+
+
+/* Frame 2147227412 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 4px;
+
+width: 307px;
+height: 43px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 6;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-item-User Management */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 12px 0px;
+gap: 8px;
+
+width: 307px;
+height: 43px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-label */
+
+width: 281px;
+height: 19px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 19px;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* akar-icons:chevron-down-small */
+
+width: 18px;
+height: 18px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 25%;
+top: 41.67%;
+bottom: 33.33%;
+
+border: 2px solid #FFFFFF;
+
+  4. run this locally
+
+  5. which db is using
+
+  6. /* Dashboard - Admin */
+
+box-sizing: border-box;
+
+position: relative;
+width: 1920px;
+height: 1057px;
+
+background: #F8F7F7;
+border: 1px solid #000000;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: flex-end;
+padding: 20px 30px;
+gap: 95px;
+
+position: absolute;
+visibility: hidden;
+width: 1918px;
+height: 54px;
+left: calc(50% - 1918px/2);
+bottom: 1px;
+
+
+
+/* Footer → © 2020 Soyuz - All Rights Reserved. */
+
+width: 302px;
+height: 21px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 21px;
+/* identical to box height, or 130% */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #8A98AC;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Footer → © 2020 Soyuz - All Rights Reserved. */
+
+width: 180px;
+height: 21px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 21px;
+/* identical to box height, or 130% */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #8A98AC;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Frame 1000005283 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px;
+gap: 40px;
+
+position: absolute;
+width: 355px;
+height: 977px;
+left: 1px;
+top: 80px;
+overflow-y: scroll;
+
+background: #751639;
+
+
+/* Frame 1000005456 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 24px;
+
+width: 307px;
+height: 902px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 16px;
+
+width: 307px;
+height: 902px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 2147227406 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 8px;
+
+width: 307px;
+height: 548px;
+
+
+/* Inside auto layout */
+flex:
+<truncated 62057 bytes>
+eight: 16px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 13px;
+line-height: 16px;
+/* identical to box height, or 123% */
+text-align: center;
+
+color: #64748B;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+width: 32px;
+height: 32px;
+
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* 3 */
+
+width: 9px;
+height: 16px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 13px;
+line-height: 16px;
+/* identical to box height, or 123% */
+text-align: center;
+
+color: #64748B;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+width: 32px;
+height: 32px;
+
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* › */
+
+width: 5px;
+height: 16px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 16px;
+/* identical to box height, or 100% */
+text-align: center;
+
+color: #90A1B9;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+  7. Host name/address: 13.127.137.52
+Port: 5434
+Maintenance database: cag_db_final
+Username: test
+Password: [Test@123](mailto:Test@123)
+schema : cag_revamp
+
+
+use this db cred just for viewing , now we are going to work with the reports page and and its sub pages with its admin panel also
+
+  8. Host	10.10.183.69
+Port	5434 (or 5432)
+Database	cag_db_final
+Username	test
+Password	Test@123
+Default Schema	cag_revamp
+
+
+use this db cred just for viewing , now we are going to work with the reports page and and its sub pages with its admin panel also
+
+  9. like we are doing now cms system for those reports page side menu
+
+  10. 
+
+  11. continue
+
+  12. for assets u can view from this url https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg
+
+which have place holder check and conntect it
+
+  13. continue
+
+  14. continue
+
+  15. conitnue
+
+=== DATE: 2026-09-10 (100 requests) ===
+  1. run this locally
+
+  2. continue
+
+  3. i need all the assests to be used from the http://d7i5wg8xwe4hf.cloudfront.net/en
+
+  4. i just need you work with the assest for reports pages
+
+  5. conitune
+
+  6. curated Featured in reports pages most of the imges are from locall only, analye the placeholders for all assests from db for the reports pages, and use http://d7i5wg8xwe4hf.cloudfront.net/en/home
+accordingly
+
+  7. continue
+
+  8. i need you to revert all the ui changes that have been made by you in reports pages
+
+  9. /* Reports */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 24px;
+
+position: absolute;
+width: 968px;
+height: 1087px;
+left: 408px;
+top: 233px;
+
+
+
+/* Reports */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 0px;
+gap: 24px;
+
+width: 968px;
+height: 352px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Card */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px 0px 16px;
+gap: 16px;
+
+width: 306px;
+height: 352px;
+
+background: #FFFFFF;
+border: 1px solid #E6E6E6;
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Mask group */
+
+width: 306px;
+height: 160px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Slot */
+
+position: absolute;
+width: 306px;
+height: 160px;
+left: 0px;
+top: 0px;
+
+
+
+/* Image */
+
+position: absolute;
+width: 308px;
+height: 160px;
+left: 0px;
+top: 0px;
+
+background: #D9D9D9;
+border-radius: 4px 4px 0px 0px;
+
+
+/* image 1617 */
+
+position: absolute;
+width: 394px;
+height: 197px;
+left: -73px;
+top: -18px;
+
+background: url(image.png);
+
+
+/* image 1626 */
+
+position: absolute;
+width: 321px;
+height: 226px;
+left: 0px;
+top: 0px;
+
+background: url(image.png);
+
+
+/* Tag */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 0px 16px;
+
+width: 306px;
+height: 22px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Tag */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 4px 8px;
+
+margin: 0 auto;
+width: 53px;
+height: 22px;
+
+background: #C7E3FC;
+border-radius: 4px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 37px;
+height: 14px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 10px;
+line-heig
+<truncated 36658 bytes>
+or */
+
+position: absolute;
+left: 4.48%;
+right: 4.54%;
+top: 0%;
+bottom: 0%;
+
+background: #0D61AE;
+
+
+/* Vector */
+
+position: absolute;
+left: 19.24%;
+right: 55.48%;
+top: 39.39%;
+bottom: 56.44%;
+
+background: #0D61AE;
+
+
+/* Vector */
+
+position: absolute;
+left: 52.47%;
+right: 18.96%;
+top: 55.31%;
+bottom: 12.46%;
+
+background: #0D61AE;
+
+
+/* Download Full Report */
+
+width: 243px;
+height: 16px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 12px;
+line-height: 16px;
+
+color: #0D61AE;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+
+/* Sector */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 4px;
+
+width: 275px;
+height: 17px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Sector: Finance */
+
+width: 275px;
+height: 17px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 500;
+font-size: 14px;
+line-height: 120%;
+/* identical to box height, or 17px */
+
+color: #2A2A2A;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Finance */
+
+display: none;
+width: 264px;
+height: 14px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 12px;
+line-height: 120%;
+/* or 14px */
+
+color: #2A2A2A;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+i need exactly like this
+
+  10. continue
+
+  11. so now we are going to work on the backend of these reports pages , so analazy the db , front end , placeholders accordingly , for this
+
+  12. so continue implementing this
+
+  13. continue
+
+  14. http://localhost:3333/Reports/rep-7
+
+i need like this the downloard btn
+
+  15. /* Reports */
+
+position: relative;
+width: 1440px;
+height: 2725px;
+
+background: #FFFFFF;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px 64px;
+gap: 10px;
+
+position: absolute;
+width: 1440px;
+height: 318px;
+left: calc(50% - 1440px/2 - 0.5px);
+bottom: 0px;
+
+background: #2A2A2A;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1312px;
+height: 270px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1121.91px;
+height: 184px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Logo */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+width: 211.91px;
+height: 48px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* image 1564 */
+
+width: 38px;
+height: 48px;
+
+background: url(image.png);
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 1000005316 */
+
+width: 165.91px;
+height: 40px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Comptroller and Auditor General of india */
+
+position: absolute;
+width: 144.04px;
+height: 28.77px;
+left: 46px;
+top: 4px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 600;
+font-size: 12px;
+line-height: 13px;
+/* or 110% */
+
+color: #FFFFFF;
+
+
+
+/* Supreme Audit Institution of india */
+
+position: absolute;
+width: 163.37px;
+height: 16.13px;
+left: 48.54px;
+top: 27.87px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 10px;
+line-height: 30px;
+/* or 302% */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Line 1564 */
+
+width: 186px;
+height: 0px;
+
+border: 1px solid #A2A2A2;
+transform: rotate(90deg);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Hyperlinks */
+
+/* Auto layout */
+display: flex;
+flex-direct
+<truncated 35736 bytes>
+le: normal;
+font-weight: 400;
+font-size: 12px;
+line-height: 16px;
+
+color: #2A2A2A;
+
+
+
+/* Container */
+
+width: 8px;
+height: 8px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Rounded Rectangle */
+
+position: absolute;
+width: 16px;
+height: 16px;
+left: -0.43px;
+top: 0.48px;
+
+
+
+/* Vector 20 */
+
+position: absolute;
+width: 5px;
+height: 8px;
+left: 0px;
+top: 2.5px;
+
+border: 1px solid #4D4D4D;
+transform: rotate(90deg);
+
+
+/* Language Select */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 4px;
+
+width: 53px;
+height: 16px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* Language Text */
+
+width: 41px;
+height: 16px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 12px;
+line-height: 16px;
+
+color: #2A2A2A;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Container */
+
+width: 8px;
+height: 8px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Rounded Rectangle */
+
+position: absolute;
+width: 16px;
+height: 16px;
+left: -0.43px;
+top: 0.48px;
+
+
+
+/* Vector 20 */
+
+position: absolute;
+width: 5px;
+height: 8px;
+left: 0px;
+top: 2.5px;
+
+border: 1px solid #4D4D4D;
+transform: rotate(90deg);
+
+
+/* CAG Logo */
+
+position: absolute;
+height: 104px;
+left: 4.44%;
+right: 88.62%;
+top: 8px;
+
+background: url(CAG-01);
+
+
+use this code for all type that cards
+
+  16. there is 2 nav paths bro in pages of those give as 2nd imgfor all
+
+  17. son do the bacnkend work
+
+  18. continue doing the backend for reports pages
+
+  19. continue doing the backend for reports pages without changing any ui
+
+  20. so now add modules for cms of the reports pages in the admin modules for controlling all the reports pages add filters , sorts , drop downs analyze the reports pages and work accordingly , add modules in the sidemenu of the admin panel for crud operations include view and all in same the same ui without any changes
+
+  21. continue
+
+  22. continue
+
+  23. so conffirm m that all components of the reports pages are editable from the admin panel , each and every one including icons , cards, data , all
+
+  24. so all are dynamic rght? and not hardcoded , backend completed
+
+  25. https://www.figma.com/design/nQSvPNPwAiqQMfCUKWB3ye/CAG?node-id=127-10210&t=BQNty8Qmy1u6K5ez-0
+
+use this reports and accounts pages and modify the names for those subtopics and titles in the admin panel according same names
+
+  26. use this strucure for db for sidemenus for admin panel
+
+  27. 
+
+  28. continue this
+
+  29. i need sidemenu , top bar in admin panel to be fixed while scrolling contents , aslo i need search options in states drop down
+
+  30. i need the sate dropdown in same ui with all state and seach barch in drop sown
+
+  31. i need the sate dropdown in same ui with all state and seach barch in drop down
+
+  32. Host	10.10.183.69
+Port	5434 (or 5432)
+Database	cag_db_final
+Username	test
+Password	Test@123
+Default Schema	cag_revamp
+
+use this db instead of existing db , and do accordingly all changes in this
+
+  33. is this all datas are from db , dynamic admin panel , all reports and acounts pages are dynamic crntrolable from admin panel each components , assests are from cloudfrom and crtly placed with data and time
+
+  34. SUPER ADMIN
+
+│
+
+├── Dashboard
+
+│
+
+├── Main CAG Website
+
+│   │
+
+│   ├── Home Page
+
+│   ├── Reports
+
+│   │
+
+│   ├── Our Presence
+
+│   │   │
+
+│   │   ├── State Level Offices
+
+│   │   │   ├── Accounts & Entitlement Offices
+
+│   │   │   └── State Audit Offices
+
+│   │   │
+
+│   │   ├── Central Audit Offices
+
+│   │   │   ├── Defence
+
+│   │   │   ├── Railway
+
+│   │   │   ├── Other Ministries
+
+│   │   │   └── Overseas
+
+│   │   │
+
+│   │   └── Training Institutes
+
+│   │       ├── Regional Training Institutes
+
+│   │       ├── iCED
+
+│   │       ├── iCISA
+
+│   │       ├── NAAA
+
+│   │       └── iCAL
+
+│   │
+
+│   ├── Global Relations
+
+│   │   │
+
+│   │   ├── International Bodies
+
+│   │   ├── Bilateral Relations
+
+│   │   ├── Audit Engagements
+
+│   │   └── Relations Wing
+
+│   │
+
+│   ├── Resources
+
+│   ├── Careers & Engagement
+
+│   ├── About Us
+
+│   ├── News & Events
+
+│   └── Contact
+
+│
+
+├── Shared Content
+
+│
+
+└── Administration
+
+    │
+
+    └── User Management
+
+use this sturucture for admin side menu
+
+  35. font-family: Inter;
+
+font-weight: 500;
+
+font-style: Medium;
+
+font-size: 16px;
+
+leading-trim: NONE;
+
+line-height: 100%;
+
+letter-spacing: 0%;
+
+
+
+use this font for side menu
+
+  36. continue
+
+  37. width: 355;
+
+height: 977;
+
+angle: 0 deg;
+
+opacity: 1;
+
+top: 80px;
+
+left: 1px;
+
+border-right-width: 1px;
+
+padding: 24px;
+
+gap: 40px;
+
+
+
+use this forsidemenu
+
+  38. ├── Home Page
+
+├── Reports
+
+│
+
+├── Our Presence
+
+│   ├── State Level Offices
+
+│   │   ├── Accounts & Entitlement Offices
+
+│   │   └── State Audit Offices
+
+│   ├── Central Audit Offices
+
+│   │   ├── Defence
+
+│   │   ├── Railway
+
+│   │   ├── Other Ministries
+
+│   │   └── Overseas
+
+│   └── Training Institutes
+
+│       ├── Regional Training Institutes
+
+│       ├── iCED
+
+│       ├── iCISA
+
+│       ├── NAAA
+
+│       └── iCAL
+
+│
+
+├── Global Relations
+
+│   ├── International Bodies
+
+│   ├── Bilateral Relations
+
+│   ├── Audit Engagements
+
+│   └── Relations Wing
+
+│
+
+├── Resources
+
+├── Careers & Engagement
+
+├── About Us
+
+├── News & Events
+
+└── Contact
+
+use this structure
+
+  39. Main CAG Website
+
+│
+
+├── Home Page
+
+├── Reports
+
+│
+
+├── Our Presence
+
+│   ├── State Level Offices
+
+│   │   ├── Accounts & Entitlement Offices
+
+│   │   └── State Audit Offices
+
+│   │
+
+│   ├── Central Audit Offices
+
+│   │   ├── Defence
+
+│   │   ├── Railway
+
+│   │   ├── Other Ministries
+
+│   │   └── Overseas
+
+│   │
+
+│   └── Training Institutes
+
+│       ├── Regional Training Institutes
+
+│       ├── iCED
+
+│       ├── iCISA
+
+│       ├── NAAA
+
+│       └── iCAL
+
+│
+
+├── Global Relations
+
+│   ├── International Bodies
+
+│   ├── Bilateral Relations
+
+│   ├── Audit Engagements
+
+│   └── Relations Wing
+
+│
+
+├── Resources
+
+├── Careers & Engagement
+
+├── About Us
+
+├── News & Events
+
+└── Contact
+
+
+width: 355;
+
+height: 977;
+
+angle: 0 deg;
+
+opacity: 1;
+
+top: 80px;
+
+left: 1px;
+
+border-right-width: 1px;
+
+padding: 24px;
+
+gap: 40px;
+
+
+
+
+
+use this for sidemenu
+i need it in the same ui like the pic
+
+  40. ├── Home Page
+
+├── Reports
+
+│
+
+├── Our Presence
+
+│   ├── State Level Offices
+
+│   │   ├── Accounts & Entitlement Offices
+
+│   │   └── State Audit Offices
+
+│   ├── Central Audit Offices
+
+│   │   ├── Defence
+
+│   │   ├── Railway
+
+│   │   ├── Other Ministries
+
+│   │   └── Overseas
+
+│   └── Training Institutes
+
+│       ├── Regional Training Institutes
+
+│       ├── iCED
+
+│       ├── iCISA
+
+│       ├── NAAA
+
+│       └── iCAL
+
+│
+
+├── Global Relations
+
+│   ├── International Bodies
+
+│   ├── Bilateral Relations
+
+│   ├── Audit Engagements
+
+│   └── Relations Wing
+
+│
+
+├── Resources
+
+├── Careers & Engagement
+
+├── About Us
+
+├── News & Events
+
+└── Contact
+
+use this structure contents only in the same ui
+
+  41. use same font sytle , colour , type /* Frame 1000005283 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px;
+gap: 40px;
+
+position: absolute;
+width: 355px;
+height: 977px;
+left: 1px;
+top: 80px;
+overflow-y: scroll;
+
+background: #751639;
+
+  42. background: #FFFFFF;
+
+
+
+use this code  for fonts of side menu
+
+  43. the reports sub drop downs are not there now add all of them for reports page and accounts page in the admin panel
+
+  44. https://www.figma.com/design/nQSvPNPwAiqQMfCUKWB3ye/CAG?node-id=127-10210&t=BQNty8Qmy1u6K5ez-0
+
+
+
+use this reports and accounts pages and modify the names for those subtopics and titles in the admin panel according same names
+
+dont add too many drop downs in sidepanel instead add sorts , filters , in the contents you done before
+
+  45. dont need this
+
+  46. continue
+
+  47. dont need live public portal
+
+  48. i think the sorts are not working crtly like new or old in the many on pages ,crt this
+
+  49. continue
+
+  50. continue
+
+  51. check in audit and reports related page only forr sorts error
+
+  52. i think crud operations not reflecting in the admin page, db, or even site too
+
+  53. continue
+
+  54. continue
+
+  55. continue checking and clearing
+
+  56. while selecting sort order in audit reports to newly added first its not showing crtly newone first 
+like this errors there so many , crt this in accounts and reports pages
+
+  57. continue
+
+  58. ok now in account there is no upload pdf doc option is there while addng
+
+  59. ok, now work with the accounts pages for backend and get data from the db and it also should be dynamic and accessible through the admin panel for each components like the reports pages , each page of accounts in website should work wth its subpages
+
+  60. continue
+
+  61. continue
+
+  62. continue
+
+  63. all datas are fetched from the db
+
+  64. Host	10.10.183.69
+Port	5434 (or 5432)
+Database	cag_db_final
+Username	test
+Password	Test@123
+Default Schema	cag_revamp
+
+use this db and work accordingly
+
+  65. it show Fetching reports registry..
+
+and datas are not loaded fully
+
+  66. continue
+
+  67. continue
+
+  68. i think all datas are not fetched from the db for accounts and reports in admin and site
+
+  69. continue
+
+  70. check all datas arefetched to accounts and reports in admin and site
+
+  71. i think there are 2500+ datas in audit reports and 4500+ in accounts reports
+
+  72. ok now do the accounts backend in the site and import all the data from db , admin panel aslo , it should reflect it in website also
+
+  73. continue
+
+  74. continue
+
+  75. continue
+
+  76. accounts page should be accesible from admin panel for each elements and every subtopics of the accounts in admin panel dynamically
+
+  77. dont add so many dropdowns in sidemenu , instead use sorts , filter for subtopics  in contents page
+
+  78. http://localhost:3333/admin/accounts
+
+no datas are been loaded
+
+  79. continue
+
+  80. push this
+
+  81. so now i have inserted the front end for abouts and its subpages , run that and check for errors in htose subpages or newly imported about us pages
+
+  82. 192.168.1.7 use this ipconfig
+
+  83. 192.168.1.7 use this ipconfig
+
+  84. https://github.com/IITMPravartak-Chai/CAG_Website_v2.git
+in dev branch ,
+check diff btwn thiscode for International Bodies
+[Association with INTOSAI](http://localhost:3333/About/Index-Menu-About/Global-relations/Association%20with%20INTOSAI)[Association with ASOSAI](http://localhost:3333/About/Index-Menu-About/Global-relations/Association%20with%20ASOSAI)[Multilateral Engagement](http://localhost:3333/About/Index-Menu-About/Global-relations/Multilateral%20Engagement)
+Bilateral Relations
+Explore SAI India's bilateral partnerships and international cooperation with audit institutions across countries
+[View all countries →](http://localhost:3333/About/Index-Menu-About/Global-relations/Bilateral%20Relations)
+Audit Engagements
+[UN Panel of External Auditors](http://localhost:3333/About/Index-Menu-About/Global-relations/UN%20Panel%20of%20External%20Auditors)[Present International Audits](http://localhost:3333/About/Index-Menu-About/Global-relations/Present%20International%20Audits)[Past International Audits](http://localhost:3333/About/Index-Menu-About/Global-relations/Past%20International%20Audits)
+
+using that github branch
+
+  85. now i need those pages like that branch is dev branch  https://github.com/IITMPravartak-Chai/CAG_Website_v2.git for those pages exactly but backend should be connected with our backend
+
+  86. About Us
+Who We Are
+[CAG of India Profile](http://localhost:3333/About/About-Us/Cag-Of-India)
+[Our Vision, Mission & Core Values](http://localhost:3333/About/About-Us/Our-Vision,-Mission-&-Core-Values)
+[Organisation-Chart](http://localhost:3333/About/About-Us/Organisation-Chart)
+Leadership & Legacy
+[Former CAGs Gallery](http://localhost:3333/About/About-Us/Former-Comptroller-and-Auditors-General)
+[History of IAAD](http://localhost:3333/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department)
+[Audit-Advisory-Board](http://localhost:3333/About/About-Us/Audit-Advisory-Board)
+Governance & Mandate
+[Constitutional-Provisions](http://localhost:3333/About/About-Us/Constitutional-Provisions)
+[Duties-&-Powers-Act](http://localhost:3333/About/About-Us/Duties-&-Powers-Act)
+[Audit-Regulation](http://localhost:3333/About/About-Us/Audit-Regulation)
+this pages also done in same branch ,
+do same forthis pages , they worked on about us pages, analyze this first
+
+  87. now i need those pages like that branch is dev branch  https://github.com/IITMPravartak-Chai/CAG_Website_v2.git for those pages exactly but backend should be connected with our backend
+
+  88. http://localhost:3333/About/About-Us/Duties-&-Powers-Act
+
+/* Duties & Powers Act */
+
+position: relative;
+width: 1440px;
+height: 10416px;
+
+background: #FFFFFF;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px 64px;
+gap: 10px;
+
+position: absolute;
+width: 1440px;
+height: 318px;
+left: calc(50% - 1440px/2 - 0.5px);
+bottom: 0px;
+
+background: #2A2A2A;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1312px;
+height: 270px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1121.91px;
+height: 184px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Logo */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+width: 211.91px;
+height: 48px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* image 1564 */
+
+width: 38px;
+height: 48px;
+
+background: url(image.png);
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 1000005316 */
+
+width: 165.91px;
+height: 40px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Comptroller and Auditor General of india */
+
+position: absolute;
+width: 144.04px;
+height: 28.77px;
+left: 46px;
+top: 4px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 600;
+font-size: 12px;
+line-height: 13px;
+/* or 110% */
+
+color: #FFFFFF;
+
+
+
+/* Supreme Audit Institution of india */
+
+position: absolute;
+width: 163.37px;
+height: 16.13px;
+left: 48.54px;
+top: 27.88px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 10px;
+line-height: 30px;
+/* or 302% */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Line 1564 */
+
+width: 186px;
+height: 0px;
+
+border: 1px solid #A2A2A2;
+transform: rotate(90deg);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-gr
+<truncated 75848 bytes>
+o give information and render assistance to the Union and States General provisions relating to audit Audit of receipts and expenditure of bodies or authorities substantially financed from Union or State Revenues Functions of Comptroller and Auditor General in the case of grants or loans given to other authorities or bodies Audit of receipts of Union or of States Audit of accounts of stores and stock Powers of Comptroller and Auditor General in connection with audit of accounts Audit of Government companies and corporations Laying of reports in relation to accounts of Government companies and corporations Audit of accounts of certain authorities or bodies */
+
+position: absolute;
+width: 590px;
+height: 532px;
+left: 753px;
+top: 684.59px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 28px;
+/* or 200% */
+
+color: #2A2A2A;
+
+
+
+/* DPC Act - CAG's Duties Powers and Conditions of Service */
+
+position: absolute;
+width: 667px;
+height: 38px;
+left: 398px;
+top: 184.02px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 700;
+font-size: 24px;
+line-height: 160%;
+/* or 38px */
+
+color: #751639;
+
+
+
+/* CAG Logo */
+
+position: absolute;
+width: 100px;
+height: 104px;
+left: 64.39px;
+top: 8px;
+
+background: url(CAG-01.png);
+
+
+do this page , these are the css code i need exactly like the page
+
+  89. http://localhost:3333/About/About-Us/Audit-Regulation
+
+/* Audit Regualtion */
+
+position: relative;
+width: 1440px;
+height: 1234px;
+
+background: #FFFFFF;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px 64px;
+gap: 10px;
+
+position: absolute;
+width: 1440px;
+height: 318px;
+left: calc(50% - 1440px/2 - 0.5px);
+bottom: 0px;
+
+background: #2A2A2A;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1312px;
+height: 270px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1121.91px;
+height: 184px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Logo */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+width: 211.91px;
+height: 48px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* image 1564 */
+
+width: 38px;
+height: 48px;
+
+background: url(image.png);
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 1000005316 */
+
+width: 165.91px;
+height: 40px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Comptroller and Auditor General of india */
+
+position: absolute;
+width: 144.04px;
+height: 28.77px;
+left: 46px;
+top: 4px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 600;
+font-size: 12px;
+line-height: 13px;
+/* or 110% */
+
+color: #FFFFFF;
+
+
+
+/* Supreme Audit Institution of india */
+
+position: absolute;
+width: 163.37px;
+height: 16.13px;
+left: 48.54px;
+top: 27.88px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 10px;
+line-height: 30px;
+/* or 302% */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Line 1564 */
+
+width: 186px;
+height: 0px;
+
+border: 1px solid #A2A2A2;
+transform: rotate(90deg);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+<truncated 47273 bytes>
+
+/* image 1629 */
+
+width: 27px;
+height: 32px;
+
+background: url(image.png);
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* PDF */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 4px;
+
+width: 52px;
+height: 39px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* 34.7 MB */
+
+width: 52px;
+height: 16px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 10px;
+line-height: 160%;
+/* identical to box height, or 16px */
+
+color: #565656;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* View PDF */
+
+width: 52px;
+height: 19px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 12px;
+line-height: 160%;
+/* or 19px */
+text-decoration-line: underline;
+
+color: #0D61AE;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Audit Regulation */
+
+position: absolute;
+width: 203px;
+height: 38px;
+left: 398px;
+top: 184px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 700;
+font-size: 24px;
+line-height: 160%;
+/* or 38px */
+
+color: #751639;
+
+
+
+/* CAG Logo */
+
+position: absolute;
+width: 100px;
+height: 104px;
+left: 64.39px;
+top: 8px;
+
+background: url(CAG-01.png);
+
+do this page , these are the css code i need exactly like the page
+
+  90. is about us page , global relationsand their subpags are connected to backend and admin panel ,with db?
+
+  91. push
+
+  92. # CAG 9 Pages: Database Schema & Data Rendering Specification
+This document provides a comprehensive technical guide on how the **9 specified CAG website pages** fetch data from PostgreSQL (`cag_db_final`, schema: `cag_revamp`), how the data is structured, and how the frontend/backend processes and renders tags, HTML content, images, attachments, and hierarchical structures.
+---
+## 1. Quick Reference Matrix
+| # | Page URL / Slug | Primary Database Table(s) | Primary Record ID / Key | Data Type | Rendering Engine / Template |
+|---|---|---|---|---|---|
+| **1** | `/en/page-duties-power-and-conditions-of-services-act` | `cag_revamp.pages` | `id = 3` | Dynamic CMS HTML (TOC, Accordions, Tables) | `single.php` |
+| **2** | `/en/page-cag-audit-regulations` | `cag_revamp.pages` | `id = 6685` | Dynamic CMS HTML (PDF List, Gazette links) | `single.php` |
+| **3** | `/en/page-constitutional-provisions` | `cag_revamp.pages` | `id = 2` | Dynamic CMS HTML (Articles TOC + Sticky sidebar) | `single.php` |
+| **4** | `/en/page-our-vision-mission-values` | `cag_revamp.pages` | `id = 10` | Dynamic CMS HTML (Cards, Icons, Text) | `single.php` |
+| **5** | `/en/page-cag-of-india` | `cag_revamp.pages` | `id = 17` | Dynamic CMS HTML (Profile, Bio, Photos) | `single.php` |
+| **6** | `/en/organisation-chart` | `cag_revamp.organisation_chart` | Dynamic query (70+ active officer records) | Relational multi-level hierarchy | `OrganisationChart/index.php` |
+| **7** | `/en/page-history-of-indian-audit-and-accounts-department` | `cag_revamp.pages` | `id = 41` | Dynamic CMS HTML (Chapters TOC + Content) | `single.php` |
+| **8** | `/en/former-cag` | `cag_revamp.former_cag` | Dynamic query (60+ records) | Grid / Card layout with photo lightbox | `FormerCag/index.php` |
+| **9** | `/en/page-audit-advisory-board` | `cag_revamp.pages` | `id = 40` | Dynamic CMS HTML (Members list, Chairman) | `single.php` |
+---
+## 2. Global CMS Rendering Rules (Pages 1, 2, 3, 4, 5, 7, 9)
+All 7 CMS pages follow a common rendering pattern driven by `cag_revam
+<truncated 15830 bytes>
+file}` |
+| **Former CAG Photos** | `former_cag.image` | `/uploads/former_cag/{image}` |
+| **Organisation Chart Profiles** | `organisation_chart.profile_image` | `/uploads/cag_emp_profile_pic/{profile_image}` |
+| **CMS Inline Media (Rich Text)** | Inlined in `content` | `/webroot/uploads/FileManager/{filename}` |
+| **CMS Icons** | Inlined in `content` | `/assets/images/cms_pages/{icon_name}.png` |
+
+
+dont change or alter the frontend , based on this db do backend and connect with frontend for this pages Who We Are
+[CAG of India Profile](http://localhost:3333/About/About-Us/Cag-Of-India)
+[Our Vision, Mission & Core Values](http://localhost:3333/About/About-Us/Our-Vision,-Mission-&-Core-Values)
+[Organisation-Chart](http://localhost:3333/About/About-Us/Organisation-Chart)
+Leadership & Legacy
+[Former CAGs Gallery](http://localhost:3333/About/About-Us/Former-Comptroller-and-Auditors-General)
+[History of IAAD](http://localhost:3333/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department)
+[Audit-Advisory-Board](http://localhost:3333/About/About-Us/Audit-Advisory-Board)
+Governance & Mandate
+[Constitutional-Provisions](http://localhost:3333/About/About-Us/Constitutional-Provisions)
+[Duties-&-Powers-Act](http://localhost:3333/About/About-Us/Duties-&-Powers-Act)
+[Audit-Regulation](http://localhost:3333/About/About-Us/Audit-Regulation)
+
+  93. 
+
+  94. continue
+
+  95. continue
+
+  96. continue your work
+
+  97. continue this
+
+  98. About Us
+
+│
+
+├── Who We Are
+
+│   ├── CAG of India Profile
+
+│   ├── Our Vision, Mission & Core Values
+
+│   └── Organisation-Chart
+
+│
+
+├── Leadership & Legacy
+
+│   ├── Former CAGs Gallery
+
+│   ├── History of IAAD
+
+│   └── Audit-Advisory-Board
+
+│
+
+└── Governance & Mandate
+
+    ├── Constitutional-Provisions
+
+    ├── Duties-&-Powers-Act
+
+    └── Audit-Regulation
+
+in admin side menu work only on about us menu like the given structure ,and every menu have filters
+
+  99. ok now i dont want so much drop down in the about us sidepanel in admin , instead use filters in content page , also side panel is not scrolable toend
+
+  100. continue
+
+=== DATE: 2026-09-11 (64 requests) ===
+  1. i need about us to be like the reports ui you made with filters and sorts
+
+  2. push
+
+  3. run this
+
+  4. Jenkins frontend Docker build is failing during TypeScript checking. Next.js compilation is successful, but the following TypeScript errors are stopping the build:
+Global-relations/[slug]/page.tsx — isPresentAudits, isPastAudits, isUnPanel are not defined.
+Central-Audit-Offices/page.tsx — .filter is being used on { offices, states } object; also an implicit any type error.
+Traning-Institutes/page.tsx — same .filter / implicit any type issue.
+Circulars/page.tsx — CircularItem type is missing title, refNo, category, date, docUrl.
+Tenders/page.tsx — TenderItem type is missing title, tenderNo, closingDate, status, docUrl; also closing_date vs closingDate mismatch.
+state-accounts/page.tsx — AccountItem is not defined.
+dataManager.ts — missing DEFAULT_CAG_PROFILE, DEFAULT_VISION_MISSION, DEFAULT_ORG_OFFICERS, DEFAULT_HISTORY_DOCUMENTS, DEFAULT_DUTIES_POWERS_CHAPTERS, DEFAULT_AUDIT_REGULATIONS, DEFAULT_CONSTITUTIONAL_PROVISIONS, and DEFAULT_AUDIT_ADVISORY_MEMBERS.
+
+deveops have gave this to me , first analyze and say me whats the prob first without changing anything
+
+  5. fix all
+
+  6. ok push now
+
+  7. so now work locally ,check that all about us , reports , account pages and its subpages are not hardcoded , just say to me dont make any changes
+
+  8. for about us and its subpages get datas from the db not as hardcoded , dont create any new tables in db ,for both site admin page
+
+  9. 
+
+  10. in about us page how many datas should be there
+
+  11. first check the data base Host	10.10.183.69
+Port	5434 (or 5432)
+Database	cag_db_final
+Username	test
+Password	Test@123
+Default Schema	cag_revamp
+for about us page datas , there is lot of data i existing data not newly createdone , maybe there is speling mistake there in names
+
+  12. still admin page not all datas for about us is not showing
+
+  13. Host	10.10.183.69
+Port	5434 (or 5432)
+Database	cag_db_final
+Username	test
+Password	Test@123
+Default Schema	cag_revamp
+
+continue
+
+  14. i need ui for all admin panel contents page to be excat structure of the reports page contents
+
+  15. Who We Are
+[CAG of India](http://localhost:3333/About/About-Us/Cag-Of-India)[Our Vision, Mission and Core Values](http://localhost:3333/About/About-Us/Our-Vision,-Mission-&-Core-Values)[Organisation Chart](http://localhost:3333/About/About-Us/Organisation-Chart)
+
+i think not full datas not loaded on these pages from db and assests
+
+  16. continue
+
+  17. so for all pages of the about us , accounts , reports , and their sub pages should be dynamic , load all datas from db , also assests from  , do this
+
+  18. /goal
+
+  19. i dont need this any of the page in admin panel
+
+  20. continur
+
+  21. ok now add 
+Per page:
+
+<div class="flex items-center gap-2 text-xs text-zinc-600"><span>Per page:</span><select class="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"><option value="15">15</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></div>
+like this btn in reports and accounts pages too
+
+  22. ok now add 
+Per page:
+
+<div class="flex items-center gap-2 text-xs text-zinc-600"><span>Per page:</span><select class="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"><option value="15">15</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></div>
+like this btn in admin panel for reports and accounts pages too
+
+  23. About Us
+
+├── Who We Are
+
+│   ├── CAG of India Profile
+
+│   ├── Our Vision, Mission & Core Values
+
+│   └── Organisation Chart
+
+│
+
+├── Leadership & Legacy
+
+│   ├── Former CAGs Gallery
+
+│   ├── History of IAAD
+
+│   └── Audit Advisory Board
+
+│
+
+└── Governance & Mandate
+
+    ├── Constitutional Provisions
+
+    ├── Duties & Powers Act
+
+    └── Audit Regulation
+
+use this tree for about us side panel in admin
+
+  24. if i selesct any one in the Hierarchy Category:only the relevent Sub-Topic / Section should come in the filters , work accordingly
+
+  25. if i selesct any one in the Hierarchy Category:only the relevent Sub-Topic / Section should come in the filters , work accordingly
+
+http://localhost:3333/admin/about
+
+  26. i think there are lot of subtopics that added unnessacerily , so only give the bout Us
+Who We Are
+[CAG of India Profile](http://localhost:3333/About/About-Us/Cag-Of-India)
+[Our Vision, Mission & Core Values](http://localhost:3333/About/About-Us/Our-Vision,-Mission-&-Core-Values)
+[Organisation-Chart](http://localhost:3333/About/About-Us/Organisation-Chart)
+Leadership & Legacy
+[Former CAGs Gallery](http://localhost:3333/About/About-Us/Former-Comptroller-and-Auditors-General)
+[History of IAAD](http://localhost:3333/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department)
+[Audit-Advisory-Board](http://localhost:3333/About/About-Us/Audit-Advisory-Board)
+Governance & Mandate
+[Constitutional-Provisions](http://localhost:3333/About/About-Us/Constitutional-Provisions)
+[Duties-&-Powers-Act](http://localhost:3333/About/About-Us/Duties-&-Powers-Act)
+[Audit-Regulation](http://localhost:3333/About/About-Us/Audit-Regulation)
+
+this topics only in admin panel of about us
+
+  27. 🏠SUPER ADMIN > Main CAG Website > About Us
+About Us Management
+Manage pages, former CAG profiles, and organisation hierarchy records.
+[Live Public Portal ↗](http://localhost:3333/About/About-Us/Cag-Of-India)+ Add New Section Record
+Search within Title / Summary / Officer:
+Hierarchy Category:All Categories (3 Tiers - 149)Who We AreLeadership & LegacyGovernance & Mandate
+Sub-Topic / Section:All Governance & Mandate Sub-Topics (9)Constitutional-Provisions (1)Duties-&-Powers-Act (3)Audit-Regulation (5)
+Content Language:All LanguagesBilingual (English + Hindi)English Only (EN)हिन्दी Only (HI)
+Database Table Source:All DB Tables (155)cag_revamp.pages (19 Pages)cag_revamp.former_cag (62 Records)cag_revamp.organisation_chart (74 Officers)
+Publish Status:All StatusActive (Published)Inactive (Draft)
+Sort Order:Default DB OrderRecord ID (Ascending)Record ID (Descending)Title / Name (A to Z)Title / Name (Z to A)Category (Hierarchy)Last Updated (Newest)Last Updated (Oldest)
+Apply FilterReset
+Active Filter: Governance & Mandate | Sub-Topic: All | Table: All | Status: AllData Source: PostgreSQL cag_db_final (155 DB Records)
+About Us Section Registry[ Displaying 14 of 14 records ]
+Per page:152550100
++ Add New Record
+#
+Thumb
+About Us Title & Summary
+Category
+Sub-Topic / Key
+DB Table
+Lang
+Status
+Actions
+#AB-PG005
+Bilateral Relations of SAI India
+साई इंडिया के द्विपक्षीय संबंध
+Statutory CMS content for Bilateral Relations of SAI India from cag_revamp.pages
+Governance & Mandate
+Bilateral Relations of SAI India
+page-bilateral-relations-of-sai-india (ID: 5)
+pages
+Bilingual
+Active
+👁️[↗](http://localhost:3333/About/About-Us/Cag-Of-India)📝🗑️
+#AB-PG016
+Citizen&#039;s Charter
+नागरिक चार्टर
+Statutory CMS content for Citizen&#039;s Charter from cag_revamp.pages
+Governance & Mandate
+Citizen Charter
+page-citizen-s-charter (ID: 16)
+pages
+Bilingual
+Active
+👁️[↗](http://localhost:3333/About/About-Us/Constitutional-Provi
+<truncated 4117 bytes>
+(http://localhost:3333/About/About-Us/Duties-&-Powers-Act)📝🗑️
+#AB-PG002
+Constitutional Provisions
+संवैधानिक प्रावधान
+Statutory CMS content for Constitutional Provisions from cag_revamp.pages
+Governance & Mandate
+Constitutional-Provisions
+page-constitutional-provisions (ID: 2)
+pages
+Bilingual
+Active
+👁️[↗](http://localhost:3333/About/About-Us/Constitutional-Provisions)📝🗑️
+Copyright © 2026 Comptroller and Auditor General of India. All Rights Reserved.
+Admin Suite v2.0
+1/1
+[Next.js 16.3.1 (stale)Turbopack](https://nextjs.org/docs/messages/version-staleness)
+Console Error
+Encountered two children with the same key, `page-3`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+src/app/(pages)/admin/about/page.tsx (655:19) @ <unknown>
+653 | ) : (
+654 | records.map((item) => (
+> 655 | <tr key={item.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
+| ^
+656 | {/* ID */}
+657 | <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-500 font-bold text-[11px]">
+658 | {item.formattedId}
+Call Stack24
+Show 19 ignore-listed frame(s)
+tr
+<anonymous>
+<unknown>
+src/app/(pages)/admin/about/page.tsx (655:19)
+Array.map
+<anonymous>
+AdminAboutRegistryContent
+src/app/(pages)/admin/about/page.tsx (654:25)
+AdminAboutRegistry
+src/app/(pages)/admin/about/page.tsx (1122:7)
+[Was this helpful?](https://nextjs.org/telemetry#error-feedback)
+
+  28. 👁️[↗](http://localhost:3333/About/About-Us/Constitutional-Provisions)📝🗑️
+Copyright © 2026 Comptroller and Auditor General of India. All Rights Reserved.
+Admin Suite v2.0
+1/1
+[Next.js 16.3.1 (stale)Turbopack](https://nextjs.org/docs/messages/version-staleness)
+Console Error
+Encountered two children with the same key, `page-3`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+src/app/(pages)/admin/about/page.tsx (655:19) @ <unknown>
+653 | ) : (
+654 | records.map((item) => (
+> 655 | <tr key={item.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
+| ^
+656 | {/* ID */}
+657 | <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-500 font-bold text-[11px]">
+658 | {item.formattedId}
+Call Stack24
+Show 19 ignore-listed frame(s)
+tr
+<anonymous>
+<unknown>
+src/app/(pages)/admin/about/page.tsx (655:19)
+Array.map
+<anonymous>
+AdminAboutRegistryContent
+src/app/(pages)/admin/about/page.tsx (654:25)
+AdminAboutRegistry
+src/app/(pages)/admin/about/page.tsx (1122:7)
+[Was this helpful?](https://nextjs.org/telemetry#error-feedback)
+
+  29. ## Error Type
+
+Console Error
+
+
+
+## Error Message
+
+Encountered two children with the same key, `page-3`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+
+
+
+
+    at tr (<anonymous>:null:null)
+
+    at <unknown> (src/app/(pages)/admin/about/page.tsx:655:19)
+
+    at Array.map (<anonymous>:null:null)
+
+    at AdminAboutRegistryContent (src/app/(pages)/admin/about/page.tsx:654:25)
+
+    at AdminAboutRegistry (src/app/(pages)/admin/about/page.tsx:1122:7)
+
+
+
+## Code Frame
+
+  653 |               ) : (
+
+  654 |                 records.map((item) => (
+
+> 655 |                   <tr key={item.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
+
+      |                   ^
+
+  656 |                     {/* ID */}
+
+  657 |                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-500 font-bold text-[11px]">
+
+  658 |                       {item.formattedId}
+
+
+
+Next.js version: 16.3.1 (Turbopack)
+
+  30. so now confrim me that :
+reports pages , accounts pages , about us pages all are dynamic , all accessible through admin panel for each and every components , crud ops in admin or website reflects in the db as well without changing any ui
+
+  31. continue
+
+  32. so confrim me that about us , reports pages , accounts pages and their subsites all are accesible from admin panel for modifying each and every components , all are getting data and assests fullly from db not hardcoded , those pages are dynamic
+
+  33. each and every components of those pages are accesisible from admin panel right , and crud opereation in admin panel will reflect in the db ?
+
+  34. all datas are extracting from db for all those pages and reflect in the webiste and admin panel
+
+  35. https://github.com/dharshan-s-tech/dharshan_new_techstack.git
+
+push to new branch as day2
+
+  36. i added new  function is not working in admin panel for about us , and others , and reflecting in the db , check for other functions also
+
+  37. i added new record but its showing in the list ,many crud  function is not working in admin panel for about us , and others , and reflecting in the db , check for other functions also
+
+  38. continue
+
+  39. continue
+
+  40. conitue
+
+  41. continue
+
+  42. conitue working
+
+  43. continue this
+
+  44. continue
+
+  45. Superuser)	User: postgres | Password: postgres
+
+
+
+use this db user for write and read acces
+
+  46. so now you can do crud operatio in admin and reflect in db for all those pages ,
+
+  47. push to that day2 branch
+
+  48. now confirm that all datas are used from db for all those paages
+
+  49. there is not edit and del options in the admin pages fo about us
+
+  50. i need admin ui for about us content page like reporsts page in admin panel
+
+  51. http://localhost:3333/About/About-Us/Former-Comptroller-and-Auditors-General
+
+imags are not visible
+
+  52. continue
+
+  53. /goal
+
+  54. see for all pages like this all data  ,assests , details are fetching to site
+
+  55. continue
+
+  56. continue
+
+  57. continue
+
+  58. continue
+
+  59. continue
+
+  60. push this to github as new branch day eve
+
+  61. summerize all the chats done before for referencence to the new chat without missing anything
+
+  62. sothis includes all the updates that are made for about us , reports , accounts, and datas from db , all others
+
+  63. is this project isready for deploy forabout us , account ,reports  pages and its subsites
+
+  64. the db is connected?
+
+=== DATE: 2026-09-13 (34 requests) ===
+  1. the db is connected now?
+
+  2. can i work in the front end , after completeing it , can i connect to the db that is Host	10.10.183.69
+Port	5434 (or 5432)
+Database	cag_db_final
+Username	test
+Password	Test@123
+Default Schema	cag_revamp
+
+  3. ok now we going to work on the ui be ready
+
+  4. ineed the admin pabel side menu to look exactly like this but dont change the exsisting tree structure components , just change the ui of it using this css code
+/* Frame 1000005283 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px;
+gap: 40px;
+
+position: relative;
+width: 355px;
+height: 977px;
+overflow-y: scroll;
+
+background: #751639;
+
+
+/* Frame 1000005456 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 24px;
+
+width: 307px;
+height: 902px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 16px;
+
+width: 307px;
+height: 902px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 2147227406 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 8px;
+
+width: 307px;
+height: 548px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-item-User Management */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 12px 0px;
+gap: 8px;
+
+width: 307px;
+height: 43px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-label */
+
+width: 281px;
+height: 19px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 19px;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* akar-icons:chevron-down-small */
+
+width: 18px;
+height: 18px;
+
+transform: matrix(1, 0, 0, -1, 0, 0);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 25%;
+top: 33.33%;
+bottom: 41.67%;
+
+border: 2px solid #FFFFFF;
+transform: matrix(1, 0, 0, -1, 0, 0);
+
+
+/* Frame 2147227413 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items
+<truncated 15278 bytes>
+s:chevron-down-small */
+
+width: 18px;
+height: 18px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 25%;
+top: 41.67%;
+bottom: 33.33%;
+
+border: 2px solid #FFFFFF;
+
+
+/* Frame 2147227412 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 4px;
+
+width: 307px;
+height: 43px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 6;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-item-User Management */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 12px 0px;
+gap: 8px;
+
+width: 307px;
+height: 43px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* nav-label */
+
+width: 281px;
+height: 19px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 19px;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* akar-icons:chevron-down-small */
+
+width: 18px;
+height: 18px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector */
+
+position: absolute;
+left: 25%;
+right: 25%;
+top: 41.67%;
+bottom: 33.33%;
+
+border: 2px solid #FFFFFF;
+
+  5. i need  only ui to look like this , revert  changes masde in modules tree structure to before
+
+  6. ui exacatly like this drop down , fonts style , colour , but contents should not change in admin panel
+
+http://localhost:3333/admin
+
+  7. ui exacatly like this drop down , fonts style , colour , but contents should not change in admin panel
+
+http://localhost:3333/admin
+
+https://www.figma.com/design/nQSvPNPwAiqQMfCUKWB3ye/CAG?node-id=1538-19821&t=96iCtXb5nfb6jJU2-4
+
+  8. i need drop downs should like this ui , dont change modules tree structure
+
+  9. background: rgba(117, 22, 57, 1);
+
+
+
+use this colour ,
+
+  10. like this img use the fonts colour based on main title , drop down , sun dropdown
+
+  11. conitinue
+
+  12. ok
+
+  13. https://www.figma.com/design/nQSvPNPwAiqQMfCUKWB3ye/CAG?node-id=115-2232&t=96iCtXb5nfb6jJU2-4
+
+
+http://localhost:3333/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department
+
+the logos should  be changed as per fgma design
+
+  14. these are the csss code for that three logos/* Analytical History */
+
+width: 32px;
+height: 32px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Ellipse 783 */
+
+position: absolute;
+width: 32px;
+height: 32px;
+left: 0px;
+top: 13px;
+
+background: #751639;
+
+
+/* Analytical History */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 2px;
+gap: 10px;
+
+position: absolute;
+width: 24px;
+height: 24px;
+left: 4px;
+top: 17px;
+
+
+
+/* Analytical History */
+
+width: 20px;
+height: 20px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 1;
+
+
+/* Rectangle 34625711 (Stroke) */
+
+position: absolute;
+width: 17.95px;
+height: 17.84px;
+left: 2px;
+top: 2px;
+
+background: #FFFFFF;
+
+
+/* Rectangle 34625712 (Stroke) */
+
+position: absolute;
+width: 9.42px;
+height: 3.66px;
+left: 6.23px;
+top: 9.57px;
+
+background: #FFFFFF;
+
+
+/* Line 1594 (Stroke) */
+
+position: absolute;
+width: 17.55px;
+height: 0.49px;
+left: 2.21px;
+top: 5.97px;
+
+background: #FFFFFF;
+
+
+/* Line 1597 (Stroke) */
+
+position: absolute;
+width: 6.02px;
+height: 0.49px;
+left: 6.48px;
+top: 15.56px;
+
+background: #FFFFFF;
+
+
+/* Line 1595 (Stroke) */
+
+position: absolute;
+width: 1.98px;
+height: 0.49px;
+left: 8.64px;
+top: 11.14px;
+
+background: #FFFFFF;
+transform: rotate(-90deg);
+
+
+/* Line 1596 (Stroke) */
+
+position: absolute;
+width: 0.99px;
+height: 0.49px;
+left: 11.61px;
+top: 12.12px;
+
+background: #FFFFFF;
+transform: rotate(-90deg);
+
+
+/* Vector 604 (Stroke) */
+
+position: absolute;
+width: 7.42px;
+height: 3.06px;
+left: 6.91px;
+top: 7.55px;
+
+background: #FFFFFF;
+
+
+/* Ellipse 778 (Stroke) */
+
+position: absolute;
+width: 8.73px;
+height: 8.63px;
+left: 13.27px;
+top: 13.37px;
+
+background: #FFFFFF;
+
+
+/* Ellipse 779 (Stroke) */
+
+position: absolute;
+width: 0.78px;
+height: 0.77px;
+left: 4.92px;
+top: 15.67px;
+
+background: #FFFFFF;
+
+
+/* Ellipse 780 (Stroke) */
+
+position: absolute;
+width: 0.78px;
+height: 0.77px;
+left: 13.08px;
+top: 3.97px;
+
+background: #FFFFFF;
+
+
+/* Ellipse 781 (Stroke) */
+
+position: absolute;
+width
+<truncated 3025 bytes>
+25713 (Stroke) */
+
+position: absolute;
+width: 4.46px;
+height: 7.59px;
+left: 17.53px;
+top: 2px;
+
+background: #FFFFFF;
+
+
+/* Rectangle 34625714 (Stroke) */
+
+position: absolute;
+width: 15.93px;
+height: 6.05px;
+left: 2px;
+top: 15.95px;
+
+background: #FFFFFF;
+transform: matrix(1, 0, 0, -1, 0, 0);
+
+
+/* Rectangle 34625715 (Stroke) */
+
+position: absolute;
+width: 14.71px;
+height: 15.79px;
+left: 5.15px;
+top: 2px;
+
+background: #FFFFFF;
+
+
+/* Para */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 2px;
+
+position: absolute;
+width: 6.85px;
+height: 7.39px;
+left: 8.09px;
+top: 7.02px;
+
+
+
+/* Vector 606 (Stroke) */
+
+width: 8px;
+height: 0.5px;
+
+background: #FFFFFF;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Vector 607 (Stroke) */
+
+width: 8px;
+height: 0.5px;
+
+background: #FFFFFF;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Vector 608 (Stroke) */
+
+width: 8px;
+height: 0.5px;
+
+background: #FFFFFF;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Vector 609 (Stroke) */
+
+width: 8px;
+height: 0.5px;
+
+background: #FFFFFF;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* History */
+
+position: absolute;
+width: 4.97px;
+height: 5.03px;
+left: 16.36px;
+top: 10.26px;
+
+
+
+/* Ellipse 778 (Stroke) */
+
+position: absolute;
+width: 4.97px;
+height: 5.03px;
+left: 16.36px;
+top: 10.26px;
+
+background: #FFFFFF;
+
+
+/* Vector 605 (Stroke) */
+
+position: absolute;
+width: 1.04px;
+height: 3.12px;
+left: 18.7px;
+top: 11.05px;
+
+background: #FFFFFF;
+
+  15. ok
+
+  16. no verify that all the pages are done with backend and connected to the admin page for dynamic , fully customisabelthrouh admin , not hardcoded , just say to me
+
+  17. now verify that all the pages are done with backend and connected to the admin page for dynamic , fully customisabelthrouh admin , not hardcoded , just say to me
+
+  18. full website
+
+  19. push to github asnew branch as day 3
+
+  20. just do work on the resourses pages
+
+  21. https://www.figma.com/design/nQSvPNPwAiqQMfCUKWB3ye/CAG?node-id=87-3817&p=f&t=96iCtXb5nfb6jJU2-0
+
+  22. https://www.figma.com/design/nQSvPNPwAiqQMfCUKWB3ye/CAG?node-id=87-3817&p=f&t=96iCtXb5nfb6jJU2-0
+
+exatcly like this for resources
+
+  23. continue
+
+  24. continue
+
+  25. continue
+
+  26. conyinue
+
+  27. http://localhost:3333/
+
+the drop down is not working properly for resources
+
+  28. Host / Endpoint	<DB_HOST> (Elastic IP, ap-south-1)
+Port	5432
+Database Name	cag_new
+Default Schema	cag_revamp (also search_path: cag_revamp, public)
+Username	<DB_USER>
+Password	<DB_PASSWORD>
+
+  29. Host / Endpoint	<DB_HOST> (Elastic IP, ap-south-1)
+Port	5432
+Database Name	cag_new
+Default Schema	cag_revamp (also search_path: cag_revamp, public)
+Username	<DB_USER>
+Password	<DB_PASSWORD>
+
+use this db for all datas , backend purposes , stricly do not make anychanges to this db and create new tables by yourself , all chanegs should be done through the admin panel by users only , includinf all crud operations too
+
+  30. Host / Endpoint	<DB_HOST> (Elastic IP, ap-south-1)
+Port	5432
+Database Name	cag_new
+Default Schema	cag_revamp (also search_path: cag_revamp, public)
+Username	<DB_USER>
+Password	<DB_PASSWORD>
+
+use this db for all datas , backend purposes , stricly do not make anychanges to this db and create new tables by yourself , all chanegs should be done through the admin panel by users only , includinf all crud operations too
+
+  31. Host / Endpoint	<DB_HOST> (Elastic IP, ap-south-1)
+Port	5432
+Database Name	cag_new
+Default Schema	cag_revamp (also search_path: cag_revamp, public)
+Username	<DB_USER>
+Password	<DB_PASSWORD>
+
+use this db for all datas , backend purposes , stricly do not make anychanges to this db and create new tables by yourself , all chanegs should be done through the admin panel by users only , includinf all crud operations too
+
+
+"C:\Users\SEC\Downloads\ADMIN_DATABASE_SCHEMA_CORRELATION.md"
+
+"C:\Users\SEC\Downloads\ADMIN_MENU_FUNCTIONAL_GUIDE.md"
+
+use this files for references
+
+  32. continue
+
+  33. continue
+
+  34. push
+
+=== DATE: 2026-09-14 (16 requests) ===
+  1. "C:\Users\SEC\Downloads\handover\handover"
+
+this is given bydeveloper who made the old php version of this webaite , analyze this fully
+
+  2. so now do our website backend and everythng accordingly as the analysis
+
+  3. ok , but dong change our website UI
+
+  4. continue
+
+  5. conitune
+
+  6. "C:\Users\SEC\Downloads\handover"
+
+analyze this for our doing our websites backend once again
+
+  7. continue
+
+  8. continue
+
+  9. continue
+
+  10. SECURITY_SALT=<SECURITY_SALT>  this is used in old php
+
+  11. so you completed all backend for this website, and all datas and assests are loading for all page
+
+  12. ENCRYPTION_KEY=<ENCRYPTION_KEY>
+
+Searched for "ENCRYPTION_KEY"
+
+
+Searched for "Security::"
+
+
+Viewed SubscribersController.php:50-120
+
+
+Viewed constants.php:330-355
+ 
+**`ENCRYPTION_KEY` is actively used in the application as a 256-bit (32-byte) symmetric encryption secret key** for two-way AES-256 encryption and decryption.
+ 
+---
+ 
+### 1. Where and Why It Is Used
+ 
+#### A. Subscriber Email Verification & Verification Tokens (`SubscribersController.php`)
+
+
+When citizens subscribe to CAG email alerts/newsletters on the portal:
+
+
+1. **Generating Secure Verification Links**:
+
+
+   Instead of exposing the raw database ID in public links (which would allow attackers to guess IDs and confirm subscriptions on behalf of other citizens), the system encrypts the subscriber's ID:
+
+
+   ```php
+
+
+   // When user subscribes:
+
+
+   $token = Security::encrypt($subscriber->id, ENCRYPTION_KEY);
+
+
+   // An email is dispatched with link: /subscribers/subscribe/<encrypted_token>
+
+
+   ```
+
+
+2. **Decrypting Callback Links**:
+
+
+   When the citizen clicks the verification link in their email, the controller decrypts the token back to the subscriber record using the same key:
+
+
+   ```php
+
+
+   // When user clicks verification link:
+
+
+   $token = Security::decrypt($token, ENCRYPTION_KEY);
+
+
+   $subscriber = $this->Subscribers->find()->where(['id' => base64_decode($token)])->first();
+
+
+   ```
+ 
+#### B. Cryptographic Payload & Token Obfuscation
+
+
+`ENCRYPTION_KEY` is used whenever data needs to be safely transmitted through public URLs or untrusted clients and later recovered on the server without tampering.
+ 
+---
+ 
+### 2. Why Is It Configured as an Environment Variable?
+ 
+During the CERT-In / security compliance remediation:
+
+
+1. **The Vulnerability**: Originally, `config/constants.php` had a hardcoded default key string in the codebase (`'<ENCRYPTION_KEY>'`). If anyone had read access to the source code, they could forge tokens or decrypt subscriber data.
+
+
+2. **The Security Rule**: Government security guidelines mandate that symmetric cryptographic keys **must not be hardcoded in the repository**.
+
+
+3. **The Current Enforcement (`config/constants.php`)**:
+
+
+   ```php
+
+
+   define('ENCRYPTION_KEY', getenv('ENCRYPTION_KEY') ?: (function() {
+
+
+       if (getenv('APP_ENV') === 'production' && !getenv('DEV_MODE')) {
+
+
+           throw new \RuntimeException('ENCRYPTION_KEY environment variable must be set in production');
+
+
+       }
+
+
+       return '<ENCRYPTION_KEY>'; // Local dev fallback only
+
+
+   })());
+
+
+   ```
+
+
+   In production, the application will refuse to boot if `ENCRYPTION_KEY` is not supplied in the environment.
+ 
+---
+ 
+### 3. Difference Between `SECURITY_SALT` and `ENCRYPTION_KEY`
+ 
+| Configuration Key | Type | Primary Purpose |
+
+
+|---|---|---|
+
+
+| **`SECURITY_SALT`** | One-Way Salt | Used for **one-way hashing** (SHA-512 password hashing, CSRF tokens, session anti-tamper cookies). Data hashed with salt *cannot* be decrypted. |
+
+
+| **`ENCRYPTION_KEY`** | Two-Way AES Key | Used for **symmetric encryption & decryption** (AES-256). Data encrypted with this key *can* and *is* decrypted back to its original value on the server. |
+
+  13. run
+
+  14. continue
+
+  15. so you completed all backend for this website, and all datas and assests are loading for all page
+
+  16. push to day3 branch and link for sharing code
+
+=== DATE: 2026-09-15 (18 requests) ===
+  1. run
+
+  2. confirm that no single page should be hardcoded , use all tabels and api connectors
+
+  3. continue
+
+  4. Searched for "ENCRYPTION_KEY"
+
+
+Searched for "Security::"
+
+
+Viewed SubscribersController.php:50-120
+
+
+Viewed constants.php:330-355
+ 
+**`ENCRYPTION_KEY` is actively used in the application as a 256-bit (32-byte) symmetric encryption secret key** for two-way AES-256 encryption and decryption.
+ 
+---
+ 
+### 1. Where and Why It Is Used
+ 
+#### A. Subscriber Email Verification & Verification Tokens (`SubscribersController.php`)
+
+
+When citizens subscribe to CAG email alerts/newsletters on the portal:
+
+
+1. **Generating Secure Verification Links**:
+
+
+   Instead of exposing the raw database ID in public links (which would allow attackers to guess IDs and confirm subscriptions on behalf of other citizens), the system encrypts the subscriber's ID:
+
+
+   ```php
+
+
+   // When user subscribes:
+
+
+   $token = Security::encrypt($subscriber->id, ENCRYPTION_KEY);
+
+
+   // An email is dispatched with link: /subscribers/subscribe/<encrypted_token>
+
+
+   ```
+
+
+2. **Decrypting Callback Links**:
+
+
+   When the citizen clicks the verification link in their email, the controller decrypts the token back to the subscriber record using the same key:
+
+
+   ```php
+
+
+   // When user clicks verification link:
+
+
+   $token = Security::decrypt($token, ENCRYPTION_KEY);
+
+
+   $subscriber = $this->Subscribers->find()->where(['id' => base64_decode($token)])->first();
+
+
+   ```
+ 
+#### B. Cryptographic Payload & Token Obfuscation
+
+
+`ENCRYPTION_KEY` is used whenever data needs to be safely transmitted through public URLs or untrusted clients and later recovered on the server without tampering.
+ 
+---
+ 
+### 2. Why Is It Configured as an Environment Variable?
+ 
+During the CERT-In / security compliance remediation:
+
+
+1. **The Vulnerability**: Originally, `config/constants.php` had a hardcoded default key string in the codebase (`'<ENCRYPTION_KEY>'`). If anyone had read access to the source code, they could forge tokens or decrypt subscriber data.
+
+
+2. **The Security Rule**: Government security guidelines mandate that symmetric cryptographic keys **must not be hardcoded in the repository**.
+
+
+3. **The Current Enforcement (`config/constants.php`)**:
+
+
+   ```php
+
+
+   define('ENCRYPTION_KEY', getenv('ENCRYPTION_KEY') ?: (function() {
+
+
+       if (getenv('APP_ENV') === 'production' && !getenv('DEV_MODE')) {
+
+
+           throw new \RuntimeException('ENCRYPTION_KEY environment variable must be set in production');
+
+
+       }
+
+
+       return '<ENCRYPTION_KEY>'; // Local dev fallback only
+
+
+   })());
+
+
+   ```
+
+
+   In production, the application will refuse to boot if `ENCRYPTION_KEY` is not supplied in the environment.
+ 
+---
+ 
+### 3. Difference Between `SECURITY_SALT` and `ENCRYPTION_KEY`
+ 
+| Configuration Key | Type | Primary Purpose |
+
+
+|---|---|---|
+
+
+| **`SECURITY_SALT`** | One-Way Salt | Used for **one-way hashing** (SHA-512 password hashing, CSRF tokens, session anti-tamper cookies). Data hashed with salt *cannot* be decrypted. |
+
+
+| **`ENCRYPTION_KEY`** | Two-Way AES Key | Used for **symmetric encryption & decryption** (AES-256). Data encrypted with this key *can* and *is* decrypted back to its original value on the server. |
+ 
+
+do accordingly only in backend , cms
+
+  5. continue
+
+  6. continue
+
+  7. continue
+
+  8. how are the assets fetched and where
+
+  9. where is backend for careers and engament, is it rfetching from db 
+http://localhost:3333/Career-Engagement
+
+  10. continue , just say
+
+  11. tell me the exact locations in code which are responsible for proper db fetching for resources module in frontend and how they are integrated with the components in frontend
+
+  12. give as a md
+
+  13. run
+
+  14. landing page (home page) ui should be there in our code fronend without changes in other pages
+
+  15. branh day3 landing page (home page) ui should be there in our code fronend without changes in other pages
+
+  16. summarite all the chnages made in this chat today except the homepage frontend and backend . give in.md file clear and clean
+
+  17. give in new md file that i am going to do the same changes i made today in copy of the old code, except hompage
+
+  18. today changes only made in this chat except the homepages
+
+=== DATE: 2026-09-16 (50 requests) ===
+  1. run this foldetcode
+
+  2. push this to new branch as day 4
+
+  3. continue
+
+  4. so now we are going to work on the global relation part of this site , that is aldready done by other dev in github link https://github.com/akilann-m/akilan_cagv2.git  in dev breanch ,
+in our code merge that global relation part only , do it in local
+
+  5. /goal
+
+  6. 
+
+  7. thes modules in admin panel should look like this, please change in the curretn admin panel menu the same way as this. touch only the frontend admin ui, functionality, working everything shd remain the way it is now. currently the admin panel looks like the second image, i want it to look like first image
+
+  8. ok now check all the functionalities are working for reports account , accounts all should reflect in db , not hardcoded, all accesible through the admin panel , also refelect in site if changes made in admin or db
+
+  9. in admin page if i edit somthing it is added as new thing as duplicate http://localhost:3333/admin/reports,
+for example : Clean Energy Infrastructure Audit 2026
+
+  10. continue
+
+  11. about us , reports , accounts which table will be reflected , aslo give its field names , relation mapping as md file
+
+  12. so check that edit prob is there in any other modules
+
+  13. continue
+
+  14. i think del option is not workin in abouts us also check with others
+
+  15. continue
+
+  16. continue
+
+  17. http://localhost:3333/admin/about
+
+in this status catogary change draft to inactive
+
+  18. http://localhost:3333/admin/about
+if i select Publish Status:  it show only active records , in need all to be there
+
+  19. continue
+
+  20. do this for all
+
+  21. continue
+
+  22. continue
+
+  23. continue
+
+  24. run this
+
+  25. remove ststus catogary in unwanted modules
+
+  26. so now all crud opteration will reflect in the db , site and dynamic
+
+  27. ALL buttons and compoents in admin panel will work
+
+  28. push to new branch as day5_merged
+
+  29. run this
+
+  30. http://localhost:3333/admin/combined-accounts
+
+in this all status set to inactive, delete function not working in site and db also
+
+  31. continue
+
+  32. also add filter for status in recquired places
+
+  33. in admin panel only
+
+  34. http://localhost:3333/admin/accounts
+
+deleting  does not reflect in db but reflected in site
+
+  35. continue
+
+  36. continue
+
+  37. also check with the http://localhost:3333/admin/state-accounts
+
+like add , edit , del function reflect  in db , site
+
+  38. continue
+
+  39. push to day5_merged branch
+
+  40. ok , now e goint to work on the admin panel for  usermanagement module that is done by another developer for our website in this github 
+
+https://github.com/YokeshVijayakumar-Pravartak/CAG_Website_v2.git
+
+dev branch,
+
+  41. ok , now e goint to work on the admin panel for  usermanagement module that is done by another developer for our website in this github 
+
+https://github.com/YokeshVijayakumar-Pravartak/CAG_Website_v2.git
+
+Dev branch,
+
+just work on the usermanament module only dont change anyother modules in our code ,
+
+
+just do in local dont push to github
+
+  42. continue
+
+  43. continue
+
+  44. add usermanagement module in sidemenu of admin
+
+  45. add usermanagement module in sidemenu of admin 
+http://localhost:3333/admin
+
+usermanagement url
+http://localhost:3333/admin/users?tab=users
+
+  46. use titles , topics ,module names should exactly as the github of other dev, olny do changes for usermanagenment module
+
+  47. http://localhost:3333/api/admin/crud?table=users
+
+Request Method
+
+POST
+
+Status Code
+
+500 Internal Server Error
+
+Remote Address
+
+127.0.0.1:3333
+
+Referrer Policy
+
+strict-origin-when-cross-origin
+
+Failed to save user.
+
+http://localhost:3333/admin/users?tab=users
+
+  48. Password was used recently. Please choose a different password (cannot reuse last 3 passwords).
+
+i need to give same pass after edit opr
+
+  49. remove the wing catagary from the http://localhost:3333/admin/users?tab=users
+and edit option too
+
+  50. https://github.com/dharshan-s-tech/CAG_Website_v2.git
+
+push to this in dev branch
+
+=== DATE: 2026-09-17 (34 requests) ===
+  1. in about us page cag of indian profile and vision misssion vission are hardcoded?
+
+  2. so if i want to edit those through admin page , where do i do it
+
+  3. #AB-PG10795
+hddddddddddd
+Statutory CMS content for hdddeeee from cag_revamp.pages
+Who We Are
+CAG of India Profile
+page-cag-of-india-ee2035 (ID: 10795)
+pages
+EN
+ACTIVE
+ViewEditDelete[Live](http://localhost:3333/About/About-Us/Cag-Of-India)
+#AB-PG017
+
+if edit this in admin page its not in live site http://localhost:3333/About/About-Us/Cag-Of-India
+
+  4. continue
+
+  5. i want that to be dynamic 
+
+Hardcoded Hero Elements in Frontend:
+
+CAG Profile (/About-Us/Cag-Of-India): The banner card text ("Shri K Sanjay Murthy" & "Comptroller and Audit General of India") was hardcoded in the JSX component template rather than bound to the database title/excerpt.
+
+Vision & Mission (/About-Us/Our-Vision,-Mission-&-Core-Values): The 3 cards (Vision, Mission, Core Values) were reading from a local dictionary (LOCAL_DICTS) rather than dynamic DB content.
+
+  6. ok now which table is it comimg from db
+
+  7. add , dek edit options should work in admin for these pages , also reflect in db
+
+  8. push to day5_merged
+
+  9. now do locally 
+
+
+i dont need add function in  about us (cag of india , our vision mission ),Governance & Mandate(Constitutional Provisions
+
+,DPC Act - CAG's Duties Powers And Conditions of Service
+
+)
+
+in this pages in admin i need only edit option only not add function , 
+
+
+also do add a function that these pages frontend (UI) should appear in those respestive page in admin panel  as like a pdf editor , in that we can able edit the pages contents all through the admin page , it should reflect in the db and the site too
+
+  10. 
+
+  11. continue
+
+  12. ok but those pages should look exactly like the frontend page in the visual live edit
+
+  13. its almost ok , but not exact like the front end pages
+
+  14. add delete option in those pages
+
+  15. ok , if i clicked del button its changing ststus to inactive , instead i  need it to get delete
+
+  16. #AB-PG10797
+
+i deleted this in about us but its not deleted , instead ststus only changed
+
+  17. the changes made in admin - about us ->cag of india profile 
+
+http://localhost:3333/admin/about
+
+not reflected in site and db
+
+  18. have you added any new table in db?
+
+  19. what are thing you changed in table and in db , list all
+
+  20. in thumb catagories all imges are same , clear this
+
+  21. remove thumb , table catogaries in the about us page in admin page
+
+  22. remove thumb , DB Table catogaries in the about us page in admin page
+
+  23. http://localhost:3333/admin/about
+
+  24. http://localhost:3333/About/About-Us/Cag-Of-India
+
+the changes i made in admin panel for cag of india profile but its not reflected in site and db
+
+  25. so now all changes made in about us all subcatogaries will reflect in db and site
+
+  26. http://localhost:3333/admin/about
+
+edit option not working , cant able to add new lines
+
+  27. changes made reflect in db ? , give table name and is
+
+  28. changes made reflect in db ? , give table name and id
+
+  29. push to day5
+
+  30. so now work locally
+http://localhost:3333/admin/about
+Register New About Us Section Record (Local CMS & PostgreSQL)
+this should be able to add docs img , url for recquired ones, 
+
+remove unwanted things from frontend for users accessability
+
+  31. continue
+
+  32. crt the add option for about us page also for all subpages , do work according to the based ont the type ,for all 9 subtitles of it , organization needs diff operatins for adding new record , like this make a plan and do it
+
+  33. in organization chart diff types  of input need for it , analyze this and plan accordingly , do this for all
+
+  34. ok ,dont create new table,
+
+so all recquired inputs can be given for all those subsites right
+
+=== DATE: 2026-09-18 (5 requests) ===
+  1. run
+
+  2. push to day5_merged
+
+  3. ok now work locally , in reports , accounts , its subpages in that add options for editing its contents in the pages
+
+  4. in admin panel there is edit option is aldready there , in that edit panel for those pages give acess to edit the contents of the pages
+
+  5. give all the chats done before today in this chat as a summary for reference
+
+=== DATE: Unknown (1 requests) ===
+  1. <USER_REQUEST>
+just do in local hereafter for resoursess front end ,
+
+/* CAG of India */
+
+position: relative;
+width: 1440px;
+height: 1334px;
+
+/* base/white */
+background: #FFFFFF;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 24px 64px;
+gap: 10px;
+
+position: absolute;
+width: 1440px;
+height: 318px;
+left: calc(50% - 1440px/2 - 0.5px);
+bottom: 0px;
+
+background: #2A2A2A;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1312px;
+height: 270px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Footer */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1121.91px;
+height: 184px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Logo */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+width: 211.91px;
+height: 48px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* image 1564 */
+
+width: 38px;
+height: 48px;
+
+background: url(image.png);
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 1000005316 */
+
+width: 165.91px;
+height: 40px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Comptroller and Auditor General of india */
+
+position: absolute;
+width: 144.04px;
+height: 28.77px;
+left: 46px;
+top: 4px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 600;
+font-size: 12px;
+line-height: 13px;
+/* or 110% */
+
+/* base/white */
+color: #FFFFFF;
+
+
+
+/* Supreme Audit Institution of india */
+
+position: absolute;
+width: 163.37px;
+height: 16.13px;
+left: 48.54px;
+top: 27.87px;
+
+font-family: 'Noto Sans';
+font-style: normal;
+font-weight: 400;
+font-size: 10px;
+line-height: 30px;
+/* or 302% */
+display: flex;
+align-items: center;
+
+/* base/white */
+color: #FFFFFF;
+
+
+
+/* Line 1564 */
+
+width: 186px;
+height: 0px;
+
+border: 1px solid #A2A2A2;
+transform: rotate(90deg);
+
+/* Inside auto
+<truncated 188065 bytes>
+ex-start;
+padding: 0px;
+
+width: 297px;
+height: 37px;
+
+background: #751639;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Content */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 10px 12px;
+
+width: 297px;
+height: 37px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 273px;
+height: 17px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 13px;
+line-height: 130%;
+/* identical to box height, or 17px */
+text-align: center;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* Cell */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+padding: 0px;
+
+width: 297px;
+height: 37px;
+
+background: #751639;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Content */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 10px 12px;
+
+width: 297px;
+height: 37px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Text */
+
+width: 273px;
+height: 17px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 13px;
+line-height: 130%;
+/* identical to box height, or 17px */
+text-align: center;
+
+color: #FFFFFF;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+
+/* .Row */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: flex-start;
+padding: 0px;
+
+width: 976px;
+height: 101px;
+
+background: rgba(255, 255, 255, 0.0001);
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Cell */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: 
+<truncated 2742429 bytes>
+
+NOTE: The output was truncated because it was too long. Use a more targeted query or a smaller range to get the information you need.
+

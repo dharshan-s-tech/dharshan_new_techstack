@@ -99,8 +99,9 @@ const TABLE_DATA = [
 function DutiesPowersActContent() {
   const searchParams = useSearchParams();
   const isAdminEdit = searchParams.get('admin_edit') === 'true';
+  const langParam = searchParams.get('lang');
 
-  const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [lang, setLang] = useState<'English' | 'हिन्दी'>(langParam === 'HI' ? 'हिन्दी' : 'English');
   const isHindi = lang === 'हिन्दी';
   const [pageTitleEn, setPageTitleEn] = useState("DPC Act - CAG's Duties Powers and Conditions of Service");
   const [pageTitleHi, setPageTitleHi] = useState('डीपीसी अधिनियम - सीएजी के कर्तव्य, शक्तियां और सेवा की शर्तें');
@@ -116,8 +117,8 @@ function DutiesPowersActContent() {
 
   useEffect(() => {
     let isMounted = true;
-    const currentLang = dataManager.getLanguage();
-    setLang(currentLang);
+    const initialLang = langParam === 'HI' ? 'हिन्दी' : dataManager.getLanguage();
+    setLang(initialLang);
 
     const fetchAll = () => {
       dataManager.fetchPageData('page-duties-power-and-conditions-of-services-act', 'en').then((res) => {

@@ -137,8 +137,9 @@ const DEFAULT_ARTICLES: ArticleItem[] = [
 function ConstitutionalProvisionsContent() {
   const searchParams = useSearchParams();
   const isAdminEdit = searchParams.get('admin_edit') === 'true';
+  const langParam = searchParams.get('lang');
 
-  const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [lang, setLang] = useState<'English' | 'हिन्दी'>(langParam === 'HI' ? 'हिन्दी' : 'English');
   const [pageTitleEn, setPageTitleEn] = useState('Constitutional Provisions');
   const [pageTitleHi, setPageTitleHi] = useState('संवैधानिक प्रावधान');
   const [articles, setArticles] = useState<ArticleItem[]>(DEFAULT_ARTICLES);
@@ -151,8 +152,8 @@ function ConstitutionalProvisionsContent() {
 
   useEffect(() => {
     let isMounted = true;
-    const currentLang = dataManager.getLanguage();
-    setLang(currentLang);
+    const initialLang = langParam === 'HI' ? 'हिन्दी' : dataManager.getLanguage();
+    setLang(initialLang);
 
     const fetchAll = () => {
       dataManager.fetchPageData('page-constitutional-provisions', 'en').then((res) => {

@@ -2,7 +2,7 @@
 
 **Database**: PostgreSQL (`cag_new`)  
 **Schema**: `cag_revamp`  
-**Host**: `15.252.41.241:5432`  
+**Host**: `<DB_HOST>:5432`  
 **Target Modules**: **About Us**, **Reports**, and **Accounts**
 
 ---

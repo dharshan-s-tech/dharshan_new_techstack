@@ -705,7 +705,7 @@ function AccountsPageContent() {
   return (
     <div className="w-full bg-white min-h-[600px]">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 py-6 font-sans">
-        
+
         {/* Breadcrumb Trail */}
         <nav className="flex items-center gap-2 text-[12px] text-[#565656] mb-6" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-[#0a3d30] transition-colors">{isHindi ? 'होम' : 'Home'}</Link>
@@ -723,7 +723,7 @@ function AccountsPageContent() {
 
         {/* Two-Column Layout */}
         <div className="flex flex-col lg:flex-row items-start gap-8 w-full">
-          
+
           {/* Left Column: Filters Sidebar */}
           <aside className="w-full lg:w-[280px] xl:w-[290px] flex-shrink-0 bg-white border border-[#e6e6e6] rounded-[8px] p-5 shadow-xs">
             <h2 className="text-[18px] font-bold text-[#111827] m-0 mb-3">{text.filters}</h2>
@@ -814,7 +814,7 @@ function AccountsPageContent() {
 
           {/* Right Column: Main Content Details Panel */}
           <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
-            
+
             {/* Dynamic Page Header */}
             <div className="flex items-center justify-between gap-4">
               <h1 className="text-[22px] md:text-[24px] font-bold text-[#751639] m-0 leading-tight">

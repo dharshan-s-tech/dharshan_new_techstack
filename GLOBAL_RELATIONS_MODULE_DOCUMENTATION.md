@@ -1,7 +1,7 @@
 # 🌐 CAG Global Relations Module — Architecture & Technical Implementation Guide
 
 > **Repository**: `akilan_cagv2` | **Module**: About Us → Global Relations  
-> **Database Host**: `15.252.41.241:5432` | **Database Name**: `cag_new` | **Schema**: `cag_revamp`  
+> **Database Host**: `<DB_HOST>:5432` | **Database Name**: `cag_new` | **Schema**: `cag_revamp`  
 > **CDN Base Domain**: `https://d7i5wg8xwe4hf.cloudfront.net` | **Status**: `Verified & Production Ready`
 
 ---
@@ -33,7 +33,7 @@ This guide details the complete end-to-end technical architecture and implementa
 
 ```mermaid
 graph TD
-    DB[("PostgreSQL Database<br/><code>15.252.41.241:5432 / cag_new / cag_revamp</code>")]
+    DB[("PostgreSQL Database<br/><code><DB_HOST>:5432 / cag_new / cag_revamp</code>")]
     API["FastAPI Backend Endpoint<br/><code>/api/v1/admin/global-relations/pages/{slug}</code>"]
     CDN["AWS CloudFront CDN<br/><code>d7i5wg8xwe4hf.cloudfront.net</code>"]
     FE["Next.js Dynamic Route<br/><code>/About/Index-Menu-About/Global-relations/[slug]</code>"]
@@ -158,26 +158,26 @@ Global Relations
 
 ### Step 1: Centralized Database Configuration
 
-1. **Environment Config ([`back_end/.env`](file:///c:/Users/mered/OneDrive/Desktop/cag-newtechpull/cag-newtechstack-akilan/back_end/.env))**:
+1. **Environment Config (`back_end/.env`)**:
    ```env
    ENVIRONMENT=development
-   DB_HOST=15.252.41.241
+   DB_HOST=<DB_HOST>
    DB_PORT=5432
    DB_NAME=cag_new
-   DB_USER=kreethi
-   DB_PASSWORD=kreethi@123
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
    DB_SCHEMA=cag_revamp
-   DATABASE_URL=postgresql+psycopg2://kreethi:kreethi%40123@15.252.41.241:5432/cag_new
+   DATABASE_URL=postgresql+psycopg2://<user>:<password>@<host>:<port>/<dbname>
    ```
 
-2. **Application Settings ([`back_end/app/core/config.py`](file:///c:/Users/mered/OneDrive/Desktop/cag-newtechpull/cag-newtechstack-akilan/back_end/app/core/config.py))**:
+2. **Application Settings (`back_end/app/core/config.py`)**:
    ```python
    class Settings(BaseSettings):
-       DB_HOST: str = "15.252.41.241"
+       DB_HOST: str = "localhost"
        DB_PORT: int = 5432
        DB_NAME: str = "cag_new"
-       DB_USER: str = "kreethi"
-       DB_PASSWORD: str = "kreethi@123"
+       DB_USER: str = ""
+       DB_PASSWORD: str = ""
        DB_SCHEMA: str = "cag_revamp"
        DATABASE_URL: str | None = None
        CLOUDFRONT_BASE_URL: str = "https://d7i5wg8xwe4hf.cloudfront.net"
@@ -280,7 +280,7 @@ In [`src/app/(pages)/admin/layout.tsx`](file:///c:/Users/mered/OneDrive/Desktop/
 > [!NOTE]
 > All endpoints, frontend pages, asset URLs, and admin navigation controls have been verified in the development environment.
 
-- [x] **Backend Connection Health**: `http://127.0.0.1:8000/health` returns `200 OK` connected to `15.252.41.241:5432/cag_new` with schema `cag_revamp`.
+- [x] **Backend Connection Health**: `http://127.0.0.1:8000/health` returns `200 OK` connected to `<DB_HOST>:5432/cag_new` with schema `cag_revamp`.
 - [x] **API Page List**: `/api/v1/admin/global-relations/pages` successfully fetches all 7 active database records.
 - [x] **CloudFront CDN Assets**: All MoU PDFs and flag images resolve smoothly via `https://d7i5wg8xwe4hf.cloudfront.net/...`.
 - [x] **Visual Grid Uniformity**: All 33 country flag cards render inside structured 6-column white card containers.

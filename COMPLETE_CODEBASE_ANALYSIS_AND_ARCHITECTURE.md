@@ -67,7 +67,7 @@ The **Comptroller & Auditor General of India (CAG) Web Portal (v2)** is an enter
 1. **Frontend Framework**: **Next.js 16.3.1 (App Router)** with React 19.2.8, TypeScript 5, TailwindCSS v4, PostCSS, Lucide Icons, and NextAuth.js.
 2. **Backend Framework**: **FastAPI (Python 3.14)** with Uvicorn ASGI server, SQLAlchemy 2.0 ORM, Pydantic v2 validation, Psycopg2-binary, and WatchFiles reloader.
 3. **Database Layer**:
-   - **Primary Engine**: PostgreSQL 16 (`cag_new` database, `cag_revamp` schema) hosted on AWS RDS / remote server (`15.252.41.241:5432`).
+   - **Primary Engine**: PostgreSQL 16 (`cag_new` database, `cag_revamp` schema) hosted on AWS RDS / remote server (`<DB_HOST>:5432`).
    - **Local Dev Resilient Fallback Engine**: SQLite 3 (`cag_dev.db`) with automatic schema synchronization.
 4. **Media & Document Storage**: AWS CloudFront CDN (`https://d7i5wg8xwe4hf.cloudfront.net/uploads`) + local static mounting (`public/admin-uploads`).
 5. **State Management & Communication**: Event-driven decoupled pub-sub bus (`dataManager.ts`), RESTful API bridge (`api.ts`), and Next.js Turbopack proxy rewrites.
@@ -126,7 +126,7 @@ flowchart TB
 
     subgraph StorageLayer ["Data Persistence & Storage Layer"]
         DB_Router{"Database Engine Router"}
-        DB_Postgres[("Remote PostgreSQL (15.252.41.241)\nSchema: cag_revamp\n37,257+ Reports | 11,561+ Accounts")]
+        DB_Postgres[("Remote PostgreSQL (<DB_HOST>)\nSchema: cag_revamp\n37,257+ Reports | 11,561+ Accounts")]
         DB_SQLite[("Local SQLite Fallback (cag_dev.db)\nResilient Offline Mode")]
         CDN_Storage[("AWS CloudFront CDN\n(d7i5wg8xwe4hf.cloudfront.net)\nPDFs, Banners, Photos")]
         Disk_Uploads[("Local Disk Storage\n(public/admin-uploads)")]
@@ -165,8 +165,8 @@ The CAG backend uses a **dual-engine resilient connection architecture** impleme
 
 ### Connection Logic:
 1. **Primary PostgreSQL Mode**:
-   - Reads connection parameters from environment variables: `DB_HOST=15.252.41.241`, `DB_PORT=5432`, `DB_NAME=cag_new`, `DB_USER=kreethi`, `DB_PASSWORD=kreethi@123`, `DB_SCHEMA=cag_revamp`.
-   - Constructs SQLAlchemy connection string: `postgresql://kreethi:kreethi@123@15.252.41.241:5432/cag_new`.
+   - Reads connection parameters from environment variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SCHEMA`.
+   - Constructs SQLAlchemy connection string: `postgresql://<user>:<password>@<host>:<port>/<dbname>`.
    - Automatically executes: `SET search_path TO cag_revamp, public;` on every connection.
    - Connection pool settings: `pool_size=10`, `max_overflow=20`, `pool_pre_ping=True`, `connect_timeout=5`.
 

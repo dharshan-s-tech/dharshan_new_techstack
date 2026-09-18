@@ -415,6 +415,15 @@ async def create_crud(
         db.add(audit_entry)
         db.commit()
 
+        if table in ("about", "about_us", "about_records"):
+            return {
+                "success": True,
+                "id": record_id,
+                "rawId": data.get("rawId") or record_id,
+                "formattedId": data.get("formattedId") or f"#AB-{record_id}",
+                "data": data
+            }
+
         return {"success": True, "id": record_id}
     except ValueError as e:
         db.rollback()

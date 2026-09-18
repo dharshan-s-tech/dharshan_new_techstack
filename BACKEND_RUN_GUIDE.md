@@ -55,14 +55,14 @@ pip install -r requirements.txt
 Ensure the file `back_end/.env` exists with the following configuration:
 
 ```ini
-DB_HOST=15.252.41.241
+DB_HOST=<DB_HOST>
 DB_PORT=5432
 DB_NAME=cag_new
-DB_USER=kreethi
-DB_PASSWORD=kreethi@123
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
 DB_SCHEMA=cag_revamp
-SECURITY_SALT=c3fd7183d431b3f8967db69db1d089200427fa226185a9af60e16a1d19312368
-ENCRYPTION_KEY=wt1U5MACWJFTXGenFoZosTtLGrCSdbHA
+SECURITY_SALT=your_security_salt
+ENCRYPTION_KEY=your_encryption_key
 ```
 
 ---
@@ -96,7 +96,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 ┌───────────────────────────────┐         ┌───────────────────────────────┐         ┌───────────────────────────────┐
 │       Next.js Frontend        │         │        FastAPI Backend        │         │      PostgreSQL Database      │
-│     http://localhost:3333     │ ──────> │     http://127.0.0.1:8000     │ ──────> │      15.252.41.241:5432       │
+│     http://localhost:3333     │ ──────> │     http://127.0.0.1:8000     │ ──────> │      <DB_HOST>:5432       │
 │  (Proxies /api/* requests)    │         │  (Serves REST & CRUD APIs)    │         │     (Schema: cag_revamp)      │
 └───────────────────────────────┘         └───────────────────────────────┘         └───────────────────────────────┘
 ```

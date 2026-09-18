@@ -74,7 +74,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return False
 
 def _get_aes_key(key: Optional[str] = None) -> bytes:
-    raw_key = (key or settings.ENCRYPTION_KEY or "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA").encode("utf-8")
+    raw_key = (key or settings.ENCRYPTION_KEY or "cag_default_dev_encryption_key32").encode("utf-8")
     if len(raw_key) == 32:
         return raw_key
     return hashlib.sha256(raw_key).digest()

@@ -43,6 +43,14 @@ export interface AboutRecord {
   member_expertise?: string;
   member_expertise_hi?: string;
   display_order?: number;
+  speech_date?: string;
+  date_of_issue?: string;
+  show_in_whats_new?: boolean;
+  body?: string;
+  mou_doc?: string;
+  content_type?: string;
+  link?: string;
+  file_title?: string;
 }
 
 export const ALL_ABOUT_DB_RECORDS: AboutRecord[] = [

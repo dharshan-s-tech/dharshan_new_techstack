@@ -56,30 +56,31 @@ function AdminAboutRegistryContent() {
   const [tableFilter, setTableFilter] = useState('All');
   const [sortFilter, setSortFilter] = useState('newest');
 
-  // Lookups & Subtopics grouped by Category (9 canonical About Us sections)
+  // Lookups & Subtopics grouped by Category (All About Us subpages from aboutus.md)
   const categories = ['Who We Are', 'Leadership & Legacy', 'Governance & Mandate'];
-  const SUBTOPICS_BY_CATEGORY: Record<string, { label: string; value: string; defaultSlug: string; defaultUrl: string }[]> = {
+  const SUBTOPICS_BY_CATEGORY: Record<string, { label: string; value: string; defaultSlug: string; defaultUrl: string; defaultTable: string }[]> = {
     'Who We Are': [
-      { label: 'CAG of India Profile', value: 'cag-of-india', defaultSlug: 'page-cag-of-india', defaultUrl: '/About/About-Us/Cag-Of-India' },
-      { label: 'Our Vision, Mission & Core Values', value: 'our-vision-mission-values', defaultSlug: 'page-our-vision-mission-values', defaultUrl: '/About/About-Us/Our-Vision,-Mission-&-Core-Values' },
-      { label: 'Organisation-Chart', value: 'organisation-chart', defaultSlug: 'organisation-chart', defaultUrl: '/About/About-Us/Organisation-Chart' },
+      { label: 'CAG of India Profile', value: 'cag-of-india', defaultSlug: 'page-cag-of-india', defaultUrl: '/About/About-Us/Cag-Of-India', defaultTable: 'cag_revamp.pages' },
+      { label: 'Our Vision, Mission & Core Values', value: 'our-vision-mission-values', defaultSlug: 'page-our-vision-mission-values', defaultUrl: '/About/About-Us/Our-Vision,-Mission-&-Core-Values', defaultTable: 'cag_revamp.pages' },
+      { label: 'Organisation-Chart', value: 'organisation-chart', defaultSlug: 'organisation-chart', defaultUrl: '/About/About-Us/Organisation-Chart', defaultTable: 'cag_revamp.organisation_chart' },
     ],
     'Leadership & Legacy': [
-      { label: 'Former CAGs Gallery', value: 'former-cags', defaultSlug: 'former-cags', defaultUrl: '/About/About-Us/Former-Comptroller-and-Auditors-General' },
-      { label: 'History of IAAD', value: 'history-of-indian-audit-and-accounts-department', defaultSlug: 'page-history-of-indian-audit-and-accounts-department', defaultUrl: '/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department' },
-      { label: 'Audit-Advisory-Board', value: 'audit-advisory-board', defaultSlug: 'page-audit-advisory-board', defaultUrl: '/About/About-Us/Audit-Advisory-Board' },
+      { label: 'Former CAGs Gallery', value: 'former-cags', defaultSlug: 'former-cags', defaultUrl: '/About/About-Us/Former-Comptroller-and-Auditors-General', defaultTable: 'cag_revamp.former_cag' },
+      { label: 'History of IAAD', value: 'history-of-indian-audit-and-accounts-department', defaultSlug: 'page-history-of-indian-audit-and-accounts-department', defaultUrl: '/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department', defaultTable: 'cag_revamp.pages' },
+      { label: 'Audit-Advisory-Board', value: 'audit-advisory-board', defaultSlug: 'page-audit-advisory-board', defaultUrl: '/About/About-Us/Audit-Advisory-Board', defaultTable: 'cag_revamp.board_committees' },
     ],
     'Governance & Mandate': [
-      { label: 'Constitutional-Provisions', value: 'constitutional-provisions', defaultSlug: 'page-constitutional-provisions', defaultUrl: '/About/About-Us/Constitutional-Provisions' },
-      { label: 'Duties-&-Powers-Act', value: 'duties-power-and-conditions-of-services-act', defaultSlug: 'page-duties-power-and-conditions-of-services-act', defaultUrl: '/About/About-Us/Duties-&-Powers-Act' },
-      { label: 'Audit-Regulation', value: 'cag-audit-regulations', defaultSlug: 'page-cag-audit-regulations', defaultUrl: '/About/About-Us/Audit-Regulation' },
+      { label: 'Constitutional-Provisions', value: 'constitutional-provisions', defaultSlug: 'page-constitutional-provisions', defaultUrl: '/About/About-Us/Constitutional-Provisions', defaultTable: 'cag_revamp.pages' },
+      { label: 'Duties-&-Powers-Act', value: 'duties-power-and-conditions-of-services-act', defaultSlug: 'page-duties-power-and-conditions-of-services-act', defaultUrl: '/About/About-Us/Duties-&-Powers-Act', defaultTable: 'cag_revamp.pages' },
+      { label: 'Audit-Regulation', value: 'cag-audit-regulations', defaultSlug: 'page-cag-audit-regulations', defaultUrl: '/About/About-Us/Audit-Regulation', defaultTable: 'cag_revamp.pages' },
     ]
   };
   const tables = [
-    { label: 'All DB Tables (155)', value: 'All' },
-    { label: 'cag_revamp.pages (19 Pages)', value: 'cag_revamp.pages' },
-    { label: 'cag_revamp.former_cag (62 Records)', value: 'cag_revamp.former_cag' },
-    { label: 'cag_revamp.organisation_chart (74 Officers)', value: 'cag_revamp.organisation_chart' },
+    { label: 'All DB Tables (About Us)', value: 'All' },
+    { label: 'cag_revamp.pages', value: 'cag_revamp.pages' },
+    { label: 'cag_revamp.former_cag', value: 'cag_revamp.former_cag' },
+    { label: 'cag_revamp.organisation_chart', value: 'cag_revamp.organisation_chart' },
+    { label: 'cag_revamp.board_committees', value: 'cag_revamp.board_committees' },
   ];
 
   // Dynamic category and table counts from live state
@@ -208,6 +209,15 @@ function AdminAboutRegistryContent() {
   const [formRegulationClass, setFormRegulationClass] = useState('Regulations on Audit & Accounts');
   const [formGazetteRef, setFormGazetteRef] = useState('');
   const [formGazetteYear, setFormGazetteYear] = useState('2020');
+
+  // 6. Speeches, YPP, SIP, Rajbhasha, Collaborations, Welfare, Admin Info States
+  const [formSpeechDate, setFormSpeechDate] = useState('');
+  const [formDateOfIssue, setFormDateOfIssue] = useState('');
+  const [formShowInWhatsNew, setFormShowInWhatsNew] = useState(false);
+  const [formBody, setFormBody] = useState('');
+  const [formLink, setFormLink] = useState('');
+  const [formFileTitle, setFormFileTitle] = useState('');
+  const [formContentType, setFormContentType] = useState('General');
 
   const docInputRef = React.useRef<HTMLInputElement>(null);
   const imgInputRef = React.useRef<HTMLInputElement>(null);
@@ -400,44 +410,39 @@ function AdminAboutRegistryContent() {
 
   const handleOpenCreate = () => {
     setEditingRawId(null);
-    const activeSub = subTopicFilter !== 'All' ? subTopicFilter : 'cag-of-india';
-    
-    // Determine category and subtopic based on active subtopic filter
-    let cat: 'Who We Are' | 'Leadership & Legacy' | 'Governance & Mandate' = 'Who We Are';
-    let sub = 'Organisation-Chart';
-    let defUrl = '/About/About-Us/Organisation-Chart';
-    let tbl = 'cag_revamp.organisation_chart';
+    const activeSub = subTopicFilter !== 'All' ? subTopicFilter : 'organisation-chart';
 
-    if (activeSub === 'former-cags' || categoryFilter === 'Leadership & Legacy') {
-      cat = 'Leadership & Legacy';
-      sub = 'Former CAGs Gallery';
-      defUrl = '/About/About-Us/Former-Comptroller-and-Auditors-General';
-      tbl = 'cag_revamp.former_cag';
-    } else if (activeSub === 'history-of-indian-audit-and-accounts-department') {
-      cat = 'Leadership & Legacy';
-      sub = 'History of IAAD';
-      defUrl = '/About/About-Us/History-of-Indian-Audit-ans-Accounts-Department';
-      tbl = 'cag_revamp.pages';
-    } else if (activeSub === 'audit-advisory-board') {
-      cat = 'Leadership & Legacy';
-      sub = 'Audit-Advisory-Board';
-      defUrl = '/About/About-Us/Audit-Advisory-Board';
-      tbl = 'cag_revamp.pages';
-    } else if (activeSub === 'cag-audit-regulations' || categoryFilter === 'Governance & Mandate') {
-      cat = 'Governance & Mandate';
-      sub = 'Audit-Regulation';
-      defUrl = '/About/About-Us/Audit-Regulation';
-      tbl = 'cag_revamp.pages';
+    // Determine category and subtopic based on active subtopic filter
+    let cat: 'Who We Are' | 'Leadership & Legacy' | 'Governance & Mandate' = (categoryFilter !== 'All' ? categoryFilter : 'Who We Are') as any;
+    let foundTopic: any = null;
+
+    for (const [cName, list] of Object.entries(SUBTOPICS_BY_CATEGORY)) {
+      const match = list.find(st => st.value === activeSub || st.label.toLowerCase() === activeSub.toLowerCase() || st.defaultSlug === activeSub);
+      if (match) {
+        cat = cName as any;
+        foundTopic = match;
+        break;
+      }
+    }
+
+    if (!foundTopic) {
+      foundTopic = SUBTOPICS_BY_CATEGORY[cat]?.[0] || {
+        label: 'Organisation-Chart',
+        value: 'organisation-chart',
+        defaultSlug: 'organisation-chart',
+        defaultUrl: '/About/About-Us/Organisation-Chart',
+        defaultTable: 'cag_revamp.organisation_chart'
+      };
     }
 
     setFormCategory(cat);
-    setFormSubTopic(sub);
+    setFormSubTopic(foundTopic.label);
     setFormTitleEn('');
     setFormTitleHi('');
     setFormDesc('');
-    setFormTable(tbl);
+    setFormTable(foundTopic.defaultTable);
     setFormSlug(`record-${Date.now()}`);
-    setFormPublicUrl(defUrl);
+    setFormPublicUrl(foundTopic.defaultUrl);
     setFormFileUrl('');
     setFormFileName('');
     setFormThumbImage('https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg');
@@ -466,6 +471,13 @@ function AdminAboutRegistryContent() {
     setFormRegulationClass('Regulations on Audit & Accounts');
     setFormGazetteRef('');
     setFormGazetteYear('2020');
+    setFormSpeechDate('2026-09-01');
+    setFormDateOfIssue('2026-06-01');
+    setFormShowInWhatsNew(false);
+    setFormBody('');
+    setFormLink('');
+    setFormFileTitle('');
+    setFormContentType('General');
 
     setIsFormOpen(true);
   };
@@ -508,6 +520,13 @@ function AdminAboutRegistryContent() {
     setFormRegulationClass('Regulations on Audit & Accounts');
     setFormGazetteRef(item.gazette_ref || '');
     setFormGazetteYear(item.gazette_year || '2020');
+    setFormSpeechDate(item.speech_date || '');
+    setFormDateOfIssue(item.date_of_issue || '');
+    setFormShowInWhatsNew(!!item.show_in_whats_new);
+    setFormBody(item.body || item.desc || '');
+    setFormLink(item.link || '');
+    setFormFileTitle(item.file_title || item.file_name || '');
+    setFormContentType(item.content_type || 'General');
 
     setIsFormOpen(true);
   };
@@ -608,6 +627,14 @@ function AdminAboutRegistryContent() {
       gazette_year: formGazetteYear,
       member_expertise: formMemberExpertiseEn,
       member_expertise_hi: formMemberExpertiseHi,
+      speech_date: formSpeechDate,
+      date_of_issue: formDateOfIssue,
+      show_in_whats_new: formShowInWhatsNew,
+      body: formBody || formDesc,
+      link: formLink,
+      file_title: formFileTitle || formFileName,
+      content_type: formContentType,
+      mou_doc: formFileUrl,
     };
 
     let updated: AboutRecord[];
@@ -1226,7 +1253,7 @@ function AdminAboutRegistryContent() {
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full p-0 shadow-2xl relative max-h-[90vh] flex flex-col">
-            
+
             {/* Modal Header */}
             <div
               className="p-4 text-white flex justify-between items-center shrink-0"
@@ -1263,7 +1290,7 @@ function AdminAboutRegistryContent() {
 
             {/* Scrollable Form Body */}
             <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
-              
+
               {/* Section 1: Classification & Dynamic Sub-Topic Specific Form Engine */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-1.5 border-b border-zinc-200">
@@ -1326,9 +1353,7 @@ function AdminAboutRegistryContent() {
                           setFormSubTopic(defTopic.label);
                           setFormSlug(defTopic.defaultSlug);
                           setFormPublicUrl(defTopic.defaultUrl);
-                          if (defTopic.value === 'organisation-chart') setFormTable('cag_revamp.organisation_chart');
-                          else if (defTopic.value === 'former-cags') setFormTable('cag_revamp.former_cag');
-                          else setFormTable('cag_revamp.pages');
+                          setFormTable(defTopic.defaultTable || 'cag_revamp.pages');
                         }
                       }}
                       className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-medium"
@@ -1353,9 +1378,7 @@ function AdminAboutRegistryContent() {
                         if (found) {
                           setFormSlug(found.defaultSlug);
                           setFormPublicUrl(found.defaultUrl);
-                          if (found.value === 'organisation-chart') setFormTable('cag_revamp.organisation_chart');
-                          else if (found.value === 'former-cags') setFormTable('cag_revamp.former_cag');
-                          else setFormTable('cag_revamp.pages');
+                          setFormTable(found.defaultTable || 'cag_revamp.pages');
                         }
                       }}
                       required

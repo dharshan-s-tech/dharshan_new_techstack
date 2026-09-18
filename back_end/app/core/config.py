@@ -16,14 +16,14 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
 
-    DB_HOST: str = "15.252.41.241"
+    DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "cag_new"
-    DB_USER: str = "kreethi"
-    DB_PASSWORD: str = "kreethi@123"
+    DB_USER: str = ""
+    DB_PASSWORD: str = ""
     DB_SCHEMA: str = "cag_revamp"
-    SECURITY_SALT: str = "c3fd7183d431b3f8967db69db1d089200427fa226185a9af60e16a1d19312368"
-    ENCRYPTION_KEY: str = "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA"
+    SECURITY_SALT: str = ""
+    ENCRYPTION_KEY: str = ""
     DATABASE_URL: str | None = None
     CLOUDFRONT_BASE_URL: str = "https://d7i5wg8xwe4hf.cloudfront.net"
 
@@ -31,10 +31,13 @@ class Settings(BaseSettings):
     def sqlalchemy_database_url(self) -> str:
         if self.DATABASE_URL:
             return self.DATABASE_URL
-        password = quote_plus(self.DB_PASSWORD)
+        if not self.DB_USER or not self.DB_HOST:
+            return "sqlite:///./cag_dev.db"
+        password = quote_plus(self.DB_PASSWORD) if self.DB_PASSWORD else ""
+        auth = f"{self.DB_USER}:{password}@" if self.DB_USER else ""
         return (
-            f"postgresql+psycopg2://{self.DB_USER}:{password}"
-            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            f"postgresql+psycopg2://{auth}"
+            f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
     def validate_security_compliance(self):
@@ -43,7 +46,7 @@ class Settings(BaseSettings):
         In production, ENCRYPTION_KEY and SECURITY_SALT must not be empty or default.
         """
         if self.ENVIRONMENT.lower() == "production":
-            if not self.ENCRYPTION_KEY or self.ENCRYPTION_KEY == "wt1U5MACWJFTXGenFoZosTtLGrCSdbHA":
+            if not self.ENCRYPTION_KEY or self.ENCRYPTION_KEY == "cag_default_dev_encryption_key32":
                 raise RuntimeError("CERT-In Violation: ENCRYPTION_KEY environment variable must be set in production")
             if not self.SECURITY_SALT:
                 raise RuntimeError("CERT-In Violation: SECURITY_SALT environment variable must be set in production")
