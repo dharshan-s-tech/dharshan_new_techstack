@@ -249,6 +249,57 @@ function AccountsPageContent() {
     }
   }, [showArchive]);
 
+  const [dynamicStates, setDynamicStates] = useState<StateOption[]>([]);
+  const [dynamicTerritories, setDynamicTerritories] = useState<StateOption[]>([]);
+  const [customDisclaimerEn, setCustomDisclaimerEn] = useState<string | null>(null);
+  const [customDisclaimerHi, setCustomDisclaimerHi] = useState<string | null>(null);
+
+  // Fetch dynamic states from backend database API
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/states`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : (data.items || []);
+          if (items.length > 0) {
+            const utKeywords = ['puducherry', 'jammu', 'delhi', 'ladakh', 'chandigarh', 'andaman', 'dadra', 'daman', 'lakshadweep'];
+            const statesArr: StateOption[] = [];
+            const utsArr: StateOption[] = [];
+            items.forEach((st: any) => {
+              const name = st.name_en || st.name || '';
+              if (!name) return;
+              const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+              const isUt = utKeywords.some(kw => name.toLowerCase().includes(kw));
+              if (isUt) {
+                utsArr.push({ name, slug });
+              } else {
+                statesArr.push({ name, slug });
+              }
+            });
+            if (statesArr.length > 0) setDynamicStates(statesArr);
+            if (utsArr.length > 0) setDynamicTerritories(utsArr);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch dynamic states:', err);
+      }
+    };
+    fetchStates();
+
+    // Fetch dynamic accounts page data / disclaimer
+    dataManager.fetchPageData('page-accounts', 'en').then((res) => {
+      if (res?.excerpt_en || res?.content_en) {
+        setCustomDisclaimerEn(res.excerpt_en || res.content_en);
+      }
+    }).catch(() => {});
+    dataManager.fetchPageData('page-accounts', 'hi').then((res) => {
+      if (res?.excerpt_hi || res?.content_hi) {
+        setCustomDisclaimerHi(res.excerpt_hi || res.content_hi);
+      }
+    }).catch(() => {});
+  }, [API_URL]);
+
   useEffect(() => {
     setLang(dataManager.getLanguage());
     const handleLangChange = () => {
@@ -260,6 +311,7 @@ function AccountsPageContent() {
 
   const isHindi = lang === 'हिन्दी';
   const text = LOCAL_DICTS[lang] || LOCAL_DICTS.English;
+  const activeDisclaimer = (isHindi ? customDisclaimerHi : customDisclaimerEn) || text.disclaimer;
 
   // List of states and territories
   const statesList: StateOption[] = useMemo(() => [
@@ -302,7 +354,9 @@ function AccountsPageContent() {
     { name: 'Chandigarh', slug: 'chandigarh' }
   ], []);
 
-  const activeGeoList = category === 'territories-accounts' ? territoriesList : statesList;
+  const activeStatesList = dynamicStates.length > 0 ? dynamicStates : statesList;
+  const activeTerritoriesList = dynamicTerritories.length > 0 ? dynamicTerritories : territoriesList;
+  const activeGeoList = category === 'territories-accounts' ? activeTerritoriesList : activeStatesList;
 
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
@@ -916,7 +970,7 @@ function AccountsPageContent() {
                 <div className="bg-white border border-[#e6e6e6] rounded-[8px] p-6 shadow-xs">
                   <p className="text-[13px] md:text-[13.5px] text-[#4b5563] leading-relaxed m-0">
                     <strong className="font-bold text-[#111827]">{text.disclaimerLabel}</strong>{' '}
-                    {text.disclaimer}
+                    {activeDisclaimer}
                   </p>
                   <div className="border-t border-[#e5e7eb] my-5"></div>
                   <div className="flex items-center justify-between bg-[#fafafa] border-l-[3px] border-[#751639] px-5 py-3.5 h-[58px] rounded-r-[4px] hover:bg-[#f5f5f5] transition-colors">

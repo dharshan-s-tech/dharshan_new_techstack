@@ -24,6 +24,7 @@ export interface ReportItem {
   keyFindings?: string[];
   recommendations?: string[];
   videoUrl?: string;
+  chapters?: any[];
 }
 
 export interface CombinedAccountItem {
@@ -46,6 +47,7 @@ export interface NewsItem {
   type: 'trending' | 'featured';
   tag?: string;
   image?: string;
+  image_url?: string;
 }
 
 export interface StateOfficeSubDetail {
@@ -281,7 +283,7 @@ export const DEFAULT_AUDIT_REGULATIONS: AuditRegulationItem[] = [
     title_hi: 'लेखापरीक्षा एवं लेखा विनियम - 2020 का राजपत्र प्रकाशन',
     file_format: 'PDF',
     file_size: '34.7 MB',
-    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2020-Gazette-60b73c4d7d91e8-78235251.pdf',
+    file_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Regulations-on-Audit-and-Accounts-2020-Gazette-60b73c4d7d91e8-78235251.pdf',
     icon_type: 'gazette',
     is_active: true,
     isActive: true,
@@ -293,7 +295,7 @@ export const DEFAULT_AUDIT_REGULATIONS: AuditRegulationItem[] = [
     title_hi: 'पुस्तक - लेखापरीक्षा एवं लेखा विनियम - 2020',
     file_format: 'PDF',
     file_size: '34.7 MB',
-    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2020-60b73b5f00e954-46908386.pdf',
+    file_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Regulations-on-Audit-and-Accounts-2020-60b73b5f00e954-46908386.pdf',
     icon_type: 'book',
     is_active: true,
     isActive: true,
@@ -305,7 +307,7 @@ export const DEFAULT_AUDIT_REGULATIONS: AuditRegulationItem[] = [
     title_hi: 'लेखापरीक्षा एवं लेखा विनियम का पूर्व संस्करण - 2007',
     file_format: 'PDF',
     file_size: '34.7 MB',
-    file_url: 'https://cag.gov.in/uploads/media/Regulations-on-Audit-and-Accounts-2007-5f7560da1d0347-15102559.pdf',
+    file_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Regulations-on-Audit-and-Accounts-2007-5f7560da1d0347-15102559.pdf',
     icon_type: 'archive',
     is_active: true,
     isActive: true,

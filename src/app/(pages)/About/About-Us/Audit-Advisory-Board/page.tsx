@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager } from '@/lib/dataManager';
+import { Plus, Trash2, Edit3, Check, RotateCcw } from 'lucide-react';
 
 interface MemberItem {
   id: string;
@@ -20,7 +22,7 @@ interface BoardSection {
   members: MemberItem[];
 }
 
-const BOARD_SECTIONS: BoardSection[] = [
+const DEFAULT_BOARD_SECTIONS: BoardSection[] = [
   {
     id: 'chairman',
     titleEn: 'Chairman',
@@ -203,53 +205,252 @@ const BOARD_SECTIONS: BoardSection[] = [
   }
 ];
 
-export default function AuditAdvisoryBoardPage() {
-  const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
-  const [pageData, setPageData] = useState<any>(null);
+const DEFAULT_INTRO_EN = [
+  'The Audit Advisory Board provides suggestions on matters relating to audit, including coverage, scope and prioritization of audits together with suggestions regarding audit approaches and techniques within the framework of the Constitution and statutory mandate of the Comptroller & Auditor General of India. The members of the Audit Advisory Board will function in an honorary capacity.',
+  'Comptroller & Auditor General of India is pleased to constitute the Twelfth Audit Advisory Board for a period of two years from 16-07-2025. The composition of the Twelfth Audit Advisory Board would be as under'
+];
+
+const DEFAULT_INTRO_HI = [
+  'लेखापरीक्षा सलाहकार बोर्ड लेखापरीक्षा से संबंधित मामलों पर सुझाव प्रदान करता है, जिसमें लेखापरीक्षा के कवरेज, दायरे और प्राथमिकता के साथ-साथ भारत के नियंत्रक और महालेखापरीक्षक के संवैधानिक और वैधानिक जनादेश के ढांचे के भीतर लेखापरीक्षा दृष्टिकोण और तकनीकों के संबंध में सुझाव शामिल हैं। लेखापरीक्षा सलाहकार बोर्ड के सदस्य मानद क्षमता में कार्य करेंगे।',
+  'भारत के नियंत्रक और महालेखापरीक्षक 16-07-2025 से दो वर्ष की अवधि के लिए बारहवें लेखापरीक्षा सलाहकार बोर्ड का गठन करते हुए प्रसन्न हैं। बारहवें लेखापरीक्षा सलाहकार बोर्ड की संरचना इस प्रकार होगी:'
+];
+
+function AuditAdvisoryBoardContent() {
+  const searchParams = useSearchParams();
+  const isAdminEdit = searchParams.get('admin_edit') === 'true';
+  const langParam = searchParams.get('lang');
+
+  const [lang, setLang] = useState<'English' | 'हिन्दी'>(langParam === 'HI' ? 'हिन्दी' : 'English');
+  const [pageTitleEn, setPageTitleEn] = useState('Audit Advisory Board');
+  const [pageTitleHi, setPageTitleHi] = useState('लेखापरीक्षा सलाहकार बोर्ड');
+  const [introEn, setIntroEn] = useState<string[]>(DEFAULT_INTRO_EN);
+  const [introHi, setIntroHi] = useState<string[]>(DEFAULT_INTRO_HI);
+  const [sections, setSections] = useState<BoardSection[]>(DEFAULT_BOARD_SECTIONS);
+
+  const stateRef = useRef({
+    pageTitleEn,
+    pageTitleHi,
+    introEn,
+    introHi,
+    sections
+  });
+
+  useEffect(() => {
+    stateRef.current = {
+      pageTitleEn,
+      pageTitleHi,
+      introEn,
+      introHi,
+      sections
+    };
+  }, [pageTitleEn, pageTitleHi, introEn, introHi, sections]);
 
   useEffect(() => {
     let isMounted = true;
-    const currentLang = dataManager.getLanguage();
-    setLang(currentLang);
+    const initialLang = langParam === 'HI' ? 'हिन्दी' : dataManager.getLanguage();
+    setLang(initialLang);
 
-    dataManager.fetchPageData('page-audit-advisory-board', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
-      if (isMounted && res) setPageData(res);
-    });
+    const fetchAll = () => {
+      // Fetch English Page Data
+      dataManager.fetchPageData('page-audit-advisory-board', 'en').then((res) => {
+        if (isMounted && res) {
+          if (res.title) setPageTitleEn(res.title);
+          if (res.content && typeof res.content === 'string') {
+            if (res.content.trim().startsWith('{')) {
+              try {
+                const parsed = JSON.parse(res.content);
+                if (parsed.introEn) setIntroEn(parsed.introEn);
+                if (parsed.sections) setSections(parsed.sections);
+              } catch (e) { }
+            }
+          }
+        }
+      });
+
+      // Fetch Hindi Page Data
+      dataManager.fetchPageData('page-audit-advisory-board', 'hi').then((res) => {
+        if (isMounted && res) {
+          if (res.title) setPageTitleHi(res.title);
+          if (res.content && typeof res.content === 'string') {
+            if (res.content.trim().startsWith('{')) {
+              try {
+                const parsed = JSON.parse(res.content);
+                if (parsed.introHi) setIntroHi(parsed.introHi);
+                if (parsed.sections) {
+                  // Merge Hindi fields into sections if provided
+                  setSections(prev => prev.map((s, sIdx) => {
+                    const parsedSec = parsed.sections?.[sIdx];
+                    if (!parsedSec) return s;
+                    return {
+                      ...s,
+                      titleHi: parsedSec.titleHi || s.titleHi,
+                      members: s.members.map((m, mIdx) => {
+                        const parsedMem = parsedSec.members?.[mIdx];
+                        if (!parsedMem) return m;
+                        return {
+                          ...m,
+                          nameHi: parsedMem.nameHi || m.nameHi,
+                          desigHi: parsedMem.desigHi || m.desigHi
+                        };
+                      })
+                    };
+                  }));
+                }
+              } catch (e) { }
+            }
+          }
+        }
+      });
+    };
+
+    fetchAll();
 
     const handleLangChange = () => {
       const newLang = dataManager.getLanguage();
       setLang(newLang);
-      dataManager.fetchPageData('page-audit-advisory-board', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
-        if (isMounted && res) setPageData(res);
-      });
     };
 
     window.addEventListener('languageChange', handleLangChange);
+    window.addEventListener('aboutDataChange', fetchAll);
+    window.addEventListener('pageDataChange', fetchAll);
+
+    // Cross-frame messaging for Admin Live Editor
+    const handleMessage = (e: MessageEvent) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === 'SET_LANG') {
+        const targetLang = e.data.lang === 'HI' ? 'हिन्दी' : 'English';
+        dataManager.setLanguage(targetLang);
+        setLang(targetLang);
+      } else if (e.data.type === 'REQUEST_DATA') {
+        const cur = stateRef.current;
+        const fullPayload = {
+          title_en: cur.pageTitleEn,
+          title_hi: cur.pageTitleHi,
+          desc: cur.introEn?.[0] || '',
+          content_val: JSON.stringify({
+            introEn: cur.introEn,
+            sections: cur.sections
+          }),
+          content_hi_val: JSON.stringify({
+            introHi: cur.introHi,
+            sections: cur.sections
+          })
+        };
+        window.parent.postMessage({
+          type: 'DATA_REPLY',
+          payload: fullPayload
+        }, '*');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
     return () => {
       isMounted = false;
       window.removeEventListener('languageChange', handleLangChange);
+      window.removeEventListener('aboutDataChange', fetchAll);
+      window.removeEventListener('pageDataChange', fetchAll);
+      window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [langParam]);
 
   const isHindi = lang === 'हिन्दी';
-  const pageTitle = pageData?.title || (isHindi ? 'लेखापरीक्षा सलाहकार बोर्ड' : 'Audit Advisory Board');
+  const pageTitle = isHindi ? pageTitleHi : pageTitleEn;
+  const introParagraphs = isHindi ? introHi : introEn;
+
+  // Member CRUD handlers for Admin Edit mode
+  const handleUpdateMember = (secId: string, memberId: string, field: keyof MemberItem, val: string) => {
+    setSections(prev => prev.map(sec => {
+      if (sec.id !== secId) return sec;
+      return {
+        ...sec,
+        members: sec.members.map(m => {
+          if (m.id !== memberId) return m;
+          const updated = { ...m, [field]: val };
+          if (field === 'nameEn' && val.trim()) {
+            updated.avatarLetter = val.trim().charAt(0).toUpperCase();
+          }
+          return updated;
+        })
+      };
+    }));
+  };
+
+  const handleAddMember = (secId: string) => {
+    const newId = `mem-${Date.now()}`;
+    setSections(prev => prev.map(sec => {
+      if (sec.id !== secId) return sec;
+      return {
+        ...sec,
+        members: [
+          ...sec.members,
+          {
+            id: newId,
+            avatarLetter: 'N',
+            nameEn: 'New Board Member',
+            nameHi: 'नया बोर्ड सदस्य',
+            desigEn: 'Designation / Portfolio',
+            desigHi: 'पदनाम / पोर्टफोलियो'
+          }
+        ]
+      };
+    }));
+  };
+
+  const handleDeleteMember = (secId: string, memberId: string) => {
+    setSections(prev => prev.map(sec => {
+      if (sec.id !== secId) return sec;
+      return {
+        ...sec,
+        members: sec.members.filter(m => m.id !== memberId)
+      };
+    }));
+  };
 
   return (
     <AboutLayout title={pageTitle}>
       <div className="flex flex-col items-start w-full max-w-[978px]">
+        {/* Admin Live Editor Banner */}
+        {isAdminEdit && (
+          <div className="w-full bg-[#FFF8E7] border border-[#FFE082] p-4 rounded-lg mb-6 text-sm text-[#795548] flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-[#751639]">LIVE ADMIN EDIT MODE:</span>
+              <span>Click on titles, text, or member cards to edit. Changes sync live with the Save button.</span>
+            </div>
+            <span className="text-xs bg-[#751639] text-white px-2.5 py-1 rounded font-semibold uppercase">
+              {isHindi ? 'हिन्दी मोड' : 'English Mode'}
+            </span>
+          </div>
+        )}
+
         {/* Main Title matching Figma CSS */}
-        <h1 
-          className="text-2xl font-bold mb-6 text-left self-start"
-          style={{
-            fontFamily: 'Noto Sans, sans-serif',
-            fontWeight: 700,
-            fontSize: '24px',
-            lineHeight: '160%',
-            color: '#751639'
-          }}
-        >
-          {pageTitle}
-        </h1>
+        {isAdminEdit ? (
+          <input
+            type="text"
+            value={isHindi ? pageTitleHi : pageTitleEn}
+            onChange={(e) => isHindi ? setPageTitleHi(e.target.value) : setPageTitleEn(e.target.value)}
+            className="text-2xl font-bold mb-6 text-left w-full border-b-2 border-dashed border-[#751639] bg-transparent outline-none focus:border-solid"
+            style={{
+              fontFamily: 'Noto Sans, sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '160%',
+              color: '#751639'
+            }}
+          />
+        ) : (
+          <h1 
+            className="text-2xl font-bold mb-6 text-left self-start"
+            style={{
+              fontFamily: 'Noto Sans, sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '160%',
+              color: '#751639'
+            }}
+          >
+            {pageTitle}
+          </h1>
+        )}
 
         {/* Intro Paragraph matching Figma CSS */}
         <div 
@@ -262,23 +463,35 @@ export default function AuditAdvisoryBoardPage() {
             color: '#2A2A2A'
           }}
         >
-          <p className="m-0">
-            {isHindi
-              ? 'लेखापरीक्षा सलाहकार बोर्ड लेखापरीक्षा से संबंधित मामलों पर सुझाव प्रदान करता है, जिसमें लेखापरीक्षा के कवरेज, दायरे और प्राथमिकता के साथ-साथ भारत के नियंत्रक और महालेखापरीक्षक के संवैधानिक और वैधानिक जनादेश के ढांचे के भीतर लेखापरीक्षा दृष्टिकोण और तकनीकों के संबंध में सुझाव शामिल हैं। लेखापरीक्षा सलाहकार बोर्ड के सदस्य मानद क्षमता में कार्य करेंगे।'
-              : 'The Audit Advisory Board provides suggestions on matters relating to audit, including coverage, scope and prioritization of audits together with suggestions regarding audit approaches and techniques within the framework of the Constitution and statutory mandate of the Comptroller & Auditor General of India. The members of the Audit Advisory Board will function in an honorary capacity.'}
-          </p>
-          <p className="m-0">
-            {isHindi
-              ? 'भारत के नियंत्रक और महालेखापरीक्षक 16-07-2025 से दो वर्ष की अवधि के लिए बारहवें लेखापरीक्षा सलाहकार बोर्ड का गठन करते हुए प्रसन्न हैं। बारहवें लेखापरीक्षा सलाहकार बोर्ड की संरचना इस प्रकार होगी:'
-              : 'Comptroller & Auditor General of India is pleased to constitute the Twelfth Audit Advisory Board for a period of two years from 16-07-2025. The composition of the Twelfth Audit Advisory Board would be as under'}
-          </p>
+          {introParagraphs.map((para, idx) => (
+            isAdminEdit ? (
+              <textarea
+                key={idx}
+                rows={3}
+                value={para}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (isHindi) {
+                    setIntroHi(prev => prev.map((p, i) => i === idx ? val : p));
+                  } else {
+                    setIntroEn(prev => prev.map((p, i) => i === idx ? val : p));
+                  }
+                }}
+                className="w-full p-2 border border-dashed border-gray-300 rounded bg-[#FAF9F6] outline-none focus:border-[#751639] text-sm"
+              />
+            ) : (
+              <p key={idx} className="m-0">
+                {para}
+              </p>
+            )
+          ))}
         </div>
 
         {/* Board Sections Containers */}
         <div className="flex flex-col gap-6 w-full">
-          {BOARD_SECTIONS.map(section => {
+          {sections.map(section => {
             const sectionTitle = isHindi ? section.titleHi : section.titleEn;
-            const isSingle = section.members.length === 1;
+            const isSingle = section.members.length === 1 && !isAdminEdit;
 
             return (
               <section 
@@ -287,27 +500,62 @@ export default function AuditAdvisoryBoardPage() {
                 aria-labelledby={`sec-title-${section.id}`}
               >
                 {/* Category Header */}
-                <div className="flex items-center gap-4">
-                  {/* Heading Icon 32px diameter */}
-                  <img 
-                    src="/assets/board_heading_icon.png" 
-                    alt="Section Icon" 
-                    className="w-[32px] h-[32px] rounded-full object-cover shrink-0"
-                  />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    {/* Heading Icon 32px diameter */}
+                    <img 
+                      src="/assets/board_heading_icon.png" 
+                      alt="Section Icon" 
+                      className="w-[32px] h-[32px] rounded-full object-cover shrink-0"
+                    />
 
-                  <h2 
-                    id={`sec-title-${section.id}`} 
-                    className="text-xl font-semibold text-[#2E2E31] m-0"
-                    style={{
-                      fontFamily: 'Noto Sans, sans-serif',
-                      fontWeight: 600,
-                      fontSize: '20px',
-                      lineHeight: '27px',
-                      color: '#2E2E31'
-                    }}
-                  >
-                    {sectionTitle}
-                  </h2>
+                    {isAdminEdit ? (
+                      <input
+                        type="text"
+                        value={sectionTitle}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSections(prev => prev.map(s => {
+                            if (s.id !== section.id) return s;
+                            return isHindi ? { ...s, titleHi: val } : { ...s, titleEn: val };
+                          }));
+                        }}
+                        className="text-xl font-semibold text-[#2E2E31] border-b border-dashed border-gray-400 bg-transparent outline-none focus:border-[#751639]"
+                        style={{
+                          fontFamily: 'Noto Sans, sans-serif',
+                          fontWeight: 600,
+                          fontSize: '20px',
+                          lineHeight: '27px',
+                          color: '#2E2E31'
+                        }}
+                      />
+                    ) : (
+                      <h2 
+                        id={`sec-title-${section.id}`} 
+                        className="text-xl font-semibold text-[#2E2E31] m-0"
+                        style={{
+                          fontFamily: 'Noto Sans, sans-serif',
+                          fontWeight: 600,
+                          fontSize: '20px',
+                          lineHeight: '27px',
+                          color: '#2E2E31'
+                        }}
+                      >
+                        {sectionTitle}
+                      </h2>
+                    )}
+                  </div>
+
+                  {isAdminEdit && (
+                    <button
+                      type="button"
+                      onClick={() => handleAddMember(section.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#751639] text-white rounded-md hover:bg-[#5a112c] transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Member
+                    </button>
+                  )}
                 </div>
 
                 {/* Horizontal Line Divider */}
@@ -322,7 +570,7 @@ export default function AuditAdvisoryBoardPage() {
                     return (
                       <div 
                         key={member.id}
-                        className="bg-[#FAFAFA] p-[8px_16px] flex flex-col justify-center items-start gap-1 w-full min-h-[115px]"
+                        className="bg-[#FAFAFA] p-[8px_16px] flex flex-col justify-center items-start gap-1 w-full min-h-[115px] relative group"
                         style={{
                           backgroundColor: '#FAFAFA',
                           borderLeft: '2px solid transparent',
@@ -332,29 +580,54 @@ export default function AuditAdvisoryBoardPage() {
                           padding: '8px 16px',
                         }}
                       >
+                        {/* Admin Delete button */}
+                        {isAdminEdit && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMember(section.id, member.id)}
+                            className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 rounded bg-white shadow-xs opacity-80 hover:opacity-100 transition-opacity cursor-pointer z-10"
+                            title="Delete Member"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
                         {/* Unit Container */}
                         <div className="flex flex-col justify-center items-start gap-2.5 w-full">
                           {/* Profile Avatar Circle 40px #F0CFDB */}
-                          <div 
-                            className="w-[40px] h-[40px] rounded-full bg-[#F0CFDB] flex items-center justify-center shrink-0"
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              backgroundColor: '#F0CFDB',
-                              borderRadius: '50px',
-                            }}
-                          >
-                            <span 
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-[40px] h-[40px] rounded-full bg-[#F0CFDB] flex items-center justify-center shrink-0"
                               style={{
-                                fontFamily: 'Noto Sans, sans-serif',
-                                fontWeight: 700,
-                                fontSize: '24px',
-                                lineHeight: '33px',
-                                color: '#751639'
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: '#F0CFDB',
+                                borderRadius: '50px',
                               }}
                             >
-                              {member.avatarLetter}
-                            </span>
+                              <span 
+                                style={{
+                                  fontFamily: 'Noto Sans, sans-serif',
+                                  fontWeight: 700,
+                                  fontSize: '24px',
+                                  lineHeight: '33px',
+                                  color: '#751639'
+                                }}
+                              >
+                                {member.avatarLetter || (memberName ? memberName.charAt(0).toUpperCase() : 'A')}
+                              </span>
+                            </div>
+
+                            {isAdminEdit && (
+                              <input
+                                type="text"
+                                maxLength={2}
+                                value={member.avatarLetter}
+                                onChange={(e) => handleUpdateMember(section.id, member.id, 'avatarLetter', e.target.value.toUpperCase())}
+                                className="w-8 text-center text-xs font-bold border border-gray-300 rounded bg-white py-0.5"
+                                title="Avatar Letter"
+                              />
+                            )}
                           </div>
 
                           {/* Line 1609 Divider */}
@@ -370,30 +643,51 @@ export default function AuditAdvisoryBoardPage() {
 
                           {/* Name & Subtitle Text Block */}
                           <div className="flex flex-col items-start gap-1 w-full text-left">
-                            <span 
-                              style={{
-                                fontFamily: 'Noto Sans, sans-serif',
-                                fontWeight: 600,
-                                fontSize: '14px',
-                                lineHeight: '19px',
-                                color: '#000000',
-                                display: 'block'
-                              }}
-                            >
-                              {memberName}
-                            </span>
-                            <span 
-                              style={{
-                                fontFamily: 'Noto Sans, sans-serif',
-                                fontWeight: 400,
-                                fontSize: '12px',
-                                lineHeight: '16px',
-                                color: '#565656',
-                                display: 'block'
-                              }}
-                            >
-                              {memberDesig}
-                            </span>
+                            {isAdminEdit ? (
+                              <>
+                                <input
+                                  type="text"
+                                  value={memberName}
+                                  onChange={(e) => handleUpdateMember(section.id, member.id, isHindi ? 'nameHi' : 'nameEn', e.target.value)}
+                                  className="w-full text-xs font-semibold text-black border-b border-dashed border-gray-400 bg-transparent outline-none focus:border-[#751639] py-0.5"
+                                  placeholder={isHindi ? "सदस्य का नाम" : "Member Name"}
+                                />
+                                <input
+                                  type="text"
+                                  value={memberDesig}
+                                  onChange={(e) => handleUpdateMember(section.id, member.id, isHindi ? 'desigHi' : 'desigEn', e.target.value)}
+                                  className="w-full text-[11px] text-[#565656] border-b border-dashed border-gray-300 bg-transparent outline-none focus:border-[#751639] py-0.5"
+                                  placeholder={isHindi ? "पदनाम / विवरण" : "Designation / Title"}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <span 
+                                  style={{
+                                    fontFamily: 'Noto Sans, sans-serif',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    lineHeight: '19px',
+                                    color: '#000000',
+                                    display: 'block'
+                                  }}
+                                >
+                                  {memberName}
+                                </span>
+                                <span 
+                                  style={{
+                                    fontFamily: 'Noto Sans, sans-serif',
+                                    fontWeight: 400,
+                                    fontSize: '12px',
+                                    lineHeight: '16px',
+                                    color: '#565656',
+                                    display: 'block'
+                                  }}
+                                >
+                                  {memberDesig}
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -411,3 +705,14 @@ export default function AuditAdvisoryBoardPage() {
   );
 }
 
+export default function AuditAdvisoryBoardPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-12 text-center text-[#751639] font-medium">
+        Loading Audit Advisory Board...
+      </div>
+    }>
+      <AuditAdvisoryBoardContent />
+    </Suspense>
+  );
+}

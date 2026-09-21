@@ -72,7 +72,15 @@ export default function ReportDetailPage({ params }: SubpageProps) {
     pdfUrl: report?.pdf_url || report?.pdfUrl || '#',
     overview: report?.overview || report?.desc || '',
     videoUrl: report?.video_url || report?.videoUrl || '',
-    image: report?.image || imageBannerMain.src
+    image: report?.image || imageBannerMain.src,
+    quote: report?.quote || report?.highlight_quote || 'Independent constitutional audit empowers democratic governance through rigorous accountability and evidence-based reporting.',
+    findingsPara1: report?.findings_paragraph_1 || report?.content_paragraph_1 || 'The Comptroller and Auditor General of India conducts constitutional audits of departments and entities in accordance with the Regulations on Audit and Accounts. This report assesses compliance with statutory authorities, budget execution, internal control mechanisms, and public value realization.',
+    findingsPara2: report?.findings_paragraph_2 || report?.content_paragraph_2 || 'Audit findings and systemic recommendations contained in this volume have been communicated to executive ministries and tabled before the Legislature for scrutiny by Parliamentary/Legislative Committees.',
+    methodologyText: report?.methodology_text || 'Audit examination follows standardized methodologies comprising risk assessment, sampling of field formations, vouching of sanctions, physical verification where applicable, and reconciliation with primary accounting records.',
+    recommendations: report?.recommendations || report?.recommendations_text || 'The report underscores key corrective measures including automated ledger reconciliation, adherence to public procurement benchmarks, timely submission of utilization certificates, and robust internal audit oversight.',
+    remedialSummary: report?.remedial_summary || 'The recommendations are aimed at preventing recurrence of irregularities, optimizing resource deployment, and safeguarding public revenue.',
+    portraitImage: report?.portrait_image || report?.side_image || imagePortrait.src,
+    conclusionText: report?.conclusion_text || 'The Comptroller and Auditor General of India presents these findings in pursuance of Article 151 of the Constitution. Reports tabled in Parliament and State Legislatures stand referred to the Public Accounts Committee (PAC) and Committee on Public Undertakings (COPU) for detailed executive accountability hearings.'
   };
 
   return (
@@ -122,19 +130,23 @@ export default function ReportDetailPage({ params }: SubpageProps) {
                   href={reportDetails.pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="report-detail-cta"
+                  className="report-detail-pdf-btn cursor-pointer inline-flex items-center gap-1.5"
                 >
-                  <ReportDownloadIcon className="report-detail-cta__icon text-[#0D61AE]" />
-                  <span className="report-detail-cta__text">Download Full Report</span>
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  <span>Download Report</span>
                 </a>
               ) : (
                 <button
                   type="button"
-                  onClick={() => alert('Official digital report copy is registered in national archives.')}
-                  className="report-detail-cta cursor-pointer"
+                  disabled
+                  className="report-detail-pdf-btn cursor-not-allowed opacity-60 inline-flex items-center gap-1.5"
                 >
-                  <ReportDownloadIcon className="report-detail-cta__icon text-[#0D61AE]" />
-                  <span className="report-detail-cta__text">Download Full Report</span>
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>PDF in Process</span>
                 </button>
               )}
             </div>
@@ -163,11 +175,11 @@ export default function ReportDetailPage({ params }: SubpageProps) {
             ) : null}
 
             <p className="report-detail-card__paragraph">
-              The Comptroller and Auditor General of India conducts constitutional audits of departments and entities in accordance with the Regulations on Audit and Accounts. This report assesses compliance with statutory authorities, budget execution, internal control mechanisms, and public value realization.
+              {reportDetails.findingsPara1}
             </p>
 
             <p className="report-detail-card__paragraph">
-              Audit findings and systemic recommendations contained in this volume have been communicated to executive ministries and tabled before the Legislature for scrutiny by Parliamentary/Legislative Committees.{' '}
+              {reportDetails.findingsPara2}{' '}
               <span className="font-bold text-[#751639]">Public accountability and financial transparency remain central to institutional governance.</span>
             </p>
 
@@ -175,32 +187,32 @@ export default function ReportDetailPage({ params }: SubpageProps) {
             <div className="report-detail-card__two-col my-4">
               <div className="report-detail-card__col-text">
                 <blockquote className="text-[20px] sm:text-[24px] font-bold text-[#751639] leading-[1.3] mb-4 tracking-tight">
-                  &ldquo;Independent constitutional audit empowers democratic governance through rigorous accountability and evidence-based reporting.&rdquo;
+                  &ldquo;{reportDetails.quote}&rdquo;
                 </blockquote>
 
                 <p className="report-detail-card__paragraph mb-3">
-                  Audit examination follows standardized methodologies comprising risk assessment, sampling of field formations, vouching of sanctions, physical verification where applicable, and reconciliation with primary accounting records.
+                  {reportDetails.methodologyText}
                 </p>
 
                 <p className="report-detail-card__paragraph mb-3">
-                  <span className="font-bold text-[#751639]">Recommendations and Remedial Actions:</span> The report underscores key corrective measures including automated ledger reconciliation, adherence to public procurement benchmarks, timely submission of utilization certificates, and robust internal audit oversight.
+                  <span className="font-bold text-[#751639]">Recommendations and Remedial Actions:</span> {reportDetails.recommendations}
                 </p>
 
                 <p className="report-detail-card__paragraph">
-                  The recommendations are aimed at preventing recurrence of irregularities, optimizing resource deployment, and safeguarding public revenue.
+                  {reportDetails.remedialSummary}
                 </p>
               </div>
 
               <div className="report-detail-card__col-img">
                 <img
-                  src={imagePortrait.src}
+                  src={reportDetails.portraitImage}
                   alt="CAG Heritage Monument"
                 />
               </div>
             </div>
 
             <p className="report-detail-card__paragraph">
-              The Comptroller and Auditor General of India presents these findings in pursuance of Article 151 of the Constitution. Reports tabled in Parliament and State Legislatures stand referred to the Public Accounts Committee (PAC) and Committee on Public Undertakings (COPU) for detailed executive accountability hearings.
+              {reportDetails.conclusionText}
             </p>
           </div>
         </div>

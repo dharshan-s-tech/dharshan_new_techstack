@@ -41,6 +41,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
+      { key: 'card_image', label: 'Photo / Preview', type: 'image' },
       { key: 'year_of_report', label: 'Year' },
       { key: 'report_type', label: 'Report Type' },
       { key: 'sector', label: 'Sector' },
@@ -58,6 +59,10 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
       { name: 'sector', label: 'Sector', type: 'text' },
       { name: 'year_of_report', label: 'Year of Report', type: 'number' },
       { name: 'date_tabled', label: 'Date Tabled in Parliament', type: 'date' },
+      { name: 'card_image', label: 'Banner Card Image', type: 'image' },
+      { name: 'highlight_quote', label: 'Detail Page Highlight Quote', type: 'textarea' },
+      { name: 'recommendations', label: 'Key Recommendations & Remedial Actions', type: 'textarea' },
+      { name: 'portrait_image', label: 'Detail Page Side Portrait Image', type: 'image' },
       { name: 'main_report_file', label: 'Main Report File (PDF)', type: 'file' },
       { name: 'noody_book_file', label: 'Noody Book (PDF)', type: 'file' },
       { name: 'youtube_video_url', label: 'YouTube Video URL', type: 'url' },
@@ -72,7 +77,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
-      { key: 'image_url', label: 'Image', type: 'image' },
+      { key: 'image_url', label: 'Photo / Preview', type: 'image' },
       { key: 'news_type', label: 'Type' },
       { key: 'tag', label: 'Tag' },
       { key: 'publish_date', label: 'Published', type: 'date' },
@@ -127,7 +132,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title' },
-      { key: 'image_url', label: 'Image', type: 'image' },
+      { key: 'image_url', label: 'Photo / Preview', type: 'image' },
       { key: 'display_order', label: 'Order' },
       { key: 'is_active', label: 'Status', type: 'boolean' },
     ],
@@ -202,7 +207,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
-      { key: 'thumbnail_url', label: 'Picture / Preview', type: 'image' },
+      { key: 'thumbnail_url', label: 'Photo / Preview', type: 'image' },
       { key: 'media_type', label: 'Type' },
       { key: 'gallery_date', label: 'Date', type: 'date' },
       { key: 'is_active', label: 'Status', type: 'boolean' },
@@ -229,7 +234,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
-      { key: 'image_url', label: 'Image', type: 'image' },
+      { key: 'image_url', label: 'Photo / Preview', type: 'image' },
       { key: 'venue', label: 'Venue' },
       { key: 'start_date', label: 'Start Date', type: 'date' },
       { key: 'end_date', label: 'End Date', type: 'date' },
@@ -276,7 +281,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'title_en',
     columns: [
       { key: 'title_en', label: 'Title (EN)' },
-      { key: 'icon_url', label: 'Icon', type: 'image' },
+      { key: 'icon_url', label: 'Photo / Preview', type: 'image' },
       { key: 'url', label: 'URL', type: 'link' },
       { key: 'link_type', label: 'Type' },
       { key: 'display_order', label: 'Order' },
@@ -367,7 +372,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'full_name_en',
     columns: [
       { key: 'full_name_en', label: 'Name (EN)' },
-      { key: 'profile_image', label: 'Photo', type: 'image' },
+      { key: 'profile_image', label: 'Photo / Preview', type: 'image' },
       { key: 'email', label: 'Email' },
       { key: 'charge_from', label: 'Charge From', type: 'date' },
       { key: 'is_active', label: 'Status', type: 'boolean' },
@@ -508,6 +513,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     columns: [
       { key: 'volume_number', label: 'Volume' },
       { key: 'issue_number', label: 'Issue' },
+      { key: 'cover_image', label: 'Photo / Preview', type: 'image' },
       { key: 'year', label: 'Year' },
       { key: 'issn', label: 'ISSN' },
       { key: 'publication_date', label: 'Published', type: 'date' },
@@ -684,7 +690,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
     searchColumn: 'name',
     columns: [
       { key: 'name', label: 'Officer Name' },
-      { key: 'profile_image', label: 'Photo', type: 'image' },
+      { key: 'profile_image', label: 'Photo / Preview', type: 'image' },
       { key: 'designation', label: 'Designation' },
       { key: 'charge', label: 'Portfolio / Charge' },
       { key: 'level', label: 'Level' },
@@ -716,7 +722,7 @@ export const ADMIN_MODULES: Record<string, AdminModule> = {
       { key: 'name', label: 'Officer Name' },
       { key: 'tenure_from', label: 'Tenure From' },
       { key: 'tenure_to', label: 'Tenure To' },
-      { key: 'image', label: 'Photo', type: 'image' },
+      { key: 'image', label: 'Photo / Preview', type: 'image' },
       { key: 'title', label: 'Category' },
     ],
     formFields: [

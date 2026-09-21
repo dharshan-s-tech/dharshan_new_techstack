@@ -130,6 +130,7 @@ class FormerCagService:
         # 1. Attempt PostgreSQL Query
         if db and engine.dialect.name == "postgresql":
             try:
+                lang_code = "hi" if is_hi else "en"
                 query = text("""
                     SELECT
                         id,
@@ -141,24 +142,31 @@ class FormerCagService:
                         language
                     FROM cag_revamp.former_cag
                     WHERE status = 1
+                      AND (
+                          ( :lang = 'hi' AND LOWER(COALESCE(language, '')) IN ('hi', '2', 'hindi') )
+                          OR
+                          ( :lang = 'en' AND (LOWER(COALESCE(language, 'en')) IN ('en', '1', 'english') OR language IS NULL) )
+                      )
                     ORDER BY NULLIF(REGEXP_REPLACE(COALESCE(tenure_from, '0'), '[^0-9]', '', 'g'), '')::INTEGER DESC NULLS LAST, id DESC;
                 """)
-                rows = db.execute(query, {"lang": "hi" if is_hi else "en"}).mappings().fetchall()
+                rows = db.execute(query, {"lang": lang_code}).mappings().fetchall()
 
                 if rows:
                     items = []
                     for r in rows:
                         img = r.get("image") or ""
                         if img:
-                            if img.startswith("http://") or img.startswith("https://"):
+                            if img.startswith("https://d7i5wg8xwe4hf.cloudfront.net"):
                                 pass
+                            elif "cag.gov.in" in img:
+                                img = img.replace("https://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("http://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("/webroot", "")
                             elif img.startswith("/uploads/"):
                                 img = f"https://d7i5wg8xwe4hf.cloudfront.net{img}"
                             elif img.startswith("uploads/"):
                                 img = f"https://d7i5wg8xwe4hf.cloudfront.net/{img}"
                             elif img.startswith("/assets/"):
                                 pass
-                            else:
+                            elif not img.startswith(("/", "http://", "https://")):
                                 img = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/{img}"
 
                         items.append({

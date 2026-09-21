@@ -110,12 +110,19 @@ export function FilePreviewAction({
   const [imgError, setImgError] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
 
-  if (!url) return <span className="text-gray-300">—</span>;
+  if (!url || url === '#' || url === '—' || url === 'null' || url === 'undefined') {
+    return <span className="text-gray-300">—</span>;
+  }
 
   const resolvedUrl = getCloudFrontUrl(url);
   const isImage = type === 'image' || 
     url.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)($|\?)/i) !== null ||
-    resolvedUrl.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)($|\?)/i) !== null;
+    resolvedUrl.match(/\.(jpeg|jpg|gif|png|webp|svg|ico)($|\?)/i) !== null ||
+    resolvedUrl.includes('/former_cag/') ||
+    resolvedUrl.includes('/union_department/') ||
+    resolvedUrl.includes('/banners/') ||
+    url.startsWith('FG-') ||
+    url.startsWith('banner-');
   const isPdf = url.toLowerCase().endsWith('.pdf') || resolvedUrl.toLowerCase().endsWith('.pdf') || type === 'file' || type === 'link';
   const fileName = resolvedUrl.split('/').pop()?.split('?')[0] || 'file';
 

@@ -96,6 +96,15 @@ function AdminAccountsManagementHubContent() {
   const [externalLink, setExternalLink] = useState('');
   const [isActive, setIsActive] = useState(true);
 
+  // Batch / Bulk Add Modal State
+  const [isBatchOpen, setIsBatchOpen] = useState(false);
+  const [batchStateId, setBatchStateId] = useState('');
+  const [batchStateName, setBatchStateName] = useState('Andhra Pradesh');
+  const [batchYear, setBatchYear] = useState('2026-27');
+  const [batchCategory, setBatchCategory] = useState('Monthly Key Indicators');
+  const [batchBaseFileUrl, setBatchBaseFileUrl] = useState('https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf');
+  const [isBatchSubmitting, setIsBatchSubmitting] = useState(false);
+
   // Sync with URL params
   useEffect(() => {
     const sub = searchParams.get('subtopic') || searchParams.get('category');
@@ -514,6 +523,71 @@ function AdminAccountsManagementHubContent() {
     loadData();
   };
 
+  const handleBatchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsBatchSubmitting(true);
+
+    const stName = batchStateName || (states.find(s => String(s.id) === String(batchStateId))?.name) || 'Andhra Pradesh';
+    const isMonthly = batchCategory.toLowerCase().includes('monthly');
+    const itemsToCreate: any[] = [];
+
+    if (isMonthly) {
+      const months = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
+      months.forEach((m) => {
+        itemsToCreate.push({
+          title_en: `${m}, ${batchYear} - Monthly Key Indicators of ${stName}`,
+          title_hi: `${m}, ${batchYear} - ${stName} के मासिक मुख्य संकेतक`,
+          state_id: batchStateId || undefined,
+          state_name: stName,
+          category_name: 'Monthly Key Indicators',
+          account_year: batchYear,
+          year: batchYear,
+          month: m,
+          volume: m,
+          file_url: batchBaseFileUrl,
+          pdf_url: batchBaseFileUrl,
+          is_active: true
+        });
+      });
+    } else {
+      ['Finance Accounts Vol I', 'Finance Accounts Vol II'].forEach((vol) => {
+        itemsToCreate.push({
+          title_en: `${vol} of ${stName} for ${batchYear}`,
+          title_hi: `${batchYear} के लिए ${stName} के वित्त खाते ${vol.replace('Finance Accounts ', '')}`,
+          state_id: batchStateId || undefined,
+          state_name: stName,
+          category_name: 'Finance Accounts',
+          account_year: batchYear,
+          year: batchYear,
+          volume: vol,
+          file_url: batchBaseFileUrl,
+          pdf_url: batchBaseFileUrl,
+          is_active: true
+        });
+      });
+    }
+
+    try {
+      for (const item of itemsToCreate) {
+        await fetch(`${API_URL}/api/state-accounts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item)
+        });
+      }
+    } catch (err) {
+      console.warn('Batch submit warning:', err);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('stateAccountsChange'));
+    }
+
+    setIsBatchSubmitting(false);
+    setIsBatchOpen(false);
+    loadData();
+  };
+
   const activeSubtopicLabel = SUBTOPIC_OPTIONS.find(o => o.id === activeSubtopic)?.label || 'All Subtopics';
 
   return (
@@ -719,6 +793,13 @@ function AdminAccountsManagementHubContent() {
               <span>Preview Public Page</span>
               <span>↗</span>
             </Link>
+            <button
+              onClick={() => setIsBatchOpen(true)}
+              className="px-3.5 py-2 border border-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-none transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Generate 12 monthly statements or multi-volume accounts in 1 click"
+            >
+              <span>⚡ Batch Add (12 Months / Volumes)</span>
+            </button>
             <button
               onClick={handleOpenCreate}
               className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
@@ -1210,6 +1291,115 @@ function AdminAccountsManagementHubContent() {
               </form>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* 5. BATCH ADD / GENERATOR MODAL */}
+      {isBatchOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border-t-4 border-emerald-700 shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div className="p-5 border-b border-zinc-200 flex justify-between items-center bg-emerald-50/50">
+              <div>
+                <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
+                  <span>⚡</span>
+                  <span>Batch Account Statements Generator</span>
+                </h3>
+                <p className="text-[11px] text-zinc-500 mt-0.5">
+                  Generate and publish 12 monthly indicators or multi-part volumes in a single click
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBatchOpen(false)}
+                className="text-zinc-400 hover:text-zinc-700 font-bold text-lg w-7 h-7 flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleBatchSubmit} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">Select Generator Type:</label>
+                <select
+                  value={batchCategory}
+                  onChange={(e) => setBatchCategory(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 px-3 py-2 text-zinc-800 focus:outline-none focus:border-emerald-700"
+                >
+                  <option value="Monthly Key Indicators">Monthly Key Indicators (Generates 12 Monthly Statements: Apr - Mar)</option>
+                  <option value="Finance Accounts">Finance Accounts (Generates Volume I & Volume II)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">Jurisdiction / State / UT:</label>
+                <select
+                  value={batchStateId}
+                  onChange={(e) => {
+                    setBatchStateId(e.target.value);
+                    const found = states.find(s => s.id.toString() === e.target.value);
+                    if (found) setBatchStateName(found.name);
+                  }}
+                  className="w-full bg-white border border-zinc-300 px-3 py-2 text-zinc-800 focus:outline-none focus:border-emerald-700"
+                >
+                  {states.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">Financial Year:</label>
+                <select
+                  value={batchYear}
+                  onChange={(e) => setBatchYear(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 px-3 py-2 text-zinc-800 focus:outline-none focus:border-emerald-700"
+                >
+                  {['2026-27', '2025-26', '2024-25', '2023-24', '2022-23', '2021-22', '2020-21'].map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">Default Template Document (PDF URL):</label>
+                <input
+                  type="text"
+                  value={batchBaseFileUrl}
+                  onChange={(e) => setBatchBaseFileUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full bg-white border border-zinc-300 px-3 py-2 text-zinc-800 focus:outline-none focus:border-emerald-700 font-mono text-[11px]"
+                />
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 p-3 text-[11px] text-emerald-800 leading-relaxed">
+                ℹ️ Clicking below will automatically populate the database registry for <strong>{batchStateName || 'Selected State'}</strong> ({batchYear}) under <strong>{batchCategory}</strong>.
+              </div>
+
+              <div className="pt-4 border-t border-zinc-200 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBatchOpen(false)}
+                  className="px-4 py-2 border border-zinc-300 text-zinc-600 hover:bg-zinc-100 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isBatchSubmitting}
+                  className="px-6 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold inline-flex items-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  {isBatchSubmitting ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Generating Records...</span>
+                    </>
+                  ) : (
+                    <span>⚡ Generate & Publish Batch</span>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

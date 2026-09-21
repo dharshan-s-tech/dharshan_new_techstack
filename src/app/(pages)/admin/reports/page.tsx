@@ -7,6 +7,7 @@ import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, ReportItem as DataReportItem } from '@/lib/dataManager';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
 import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
+import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
 
 interface StateLookup {
   id: number;
@@ -114,6 +115,10 @@ function AdminReportsContent() {
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [highlightQuote, setHighlightQuote] = useState('');
+  const [recommendations, setRecommendations] = useState('');
+  const [portraitImage, setPortraitImage] = useState('');
+  const [formChapters, setFormChapters] = useState<{ id: string; title: string; pdf_url: string; size?: string }[]>([]);
 
   // Load Filters & Lookup dictionaries
   useEffect(() => {
@@ -385,6 +390,10 @@ function AdminReportsContent() {
     setUploadedPdfSize('');
     setVideoUrl('');
     setIsActive(true);
+    setHighlightQuote('');
+    setRecommendations('');
+    setPortraitImage('');
+    setFormChapters([]);
     setIsFormOpen(true);
   };
 
@@ -404,6 +413,15 @@ function AdminReportsContent() {
     setUploadedPdfSize('');
     setVideoUrl(item.video_url || '');
     setIsActive(item.is_active ?? true);
+    setHighlightQuote((item as any).highlight_quote || (item as any).quote || '');
+    setRecommendations((item as any).recommendations || '');
+    setPortraitImage((item as any).portrait_image || '');
+    setFormChapters((item.chapters || []).map((ch: any) => ({
+      id: String(ch.id || `ch-${Date.now()}`),
+      title: ch.title,
+      pdf_url: ch.file_url || ch.pdf_url || '#',
+      size: ch.size || '12.4 MB'
+    })));
     setIsFormOpen(true);
   };
 
@@ -440,7 +458,8 @@ function AdminReportsContent() {
       label: sector,
       desc: overviewEn || titleEn,
       pdfUrl: mainReportFile,
-      videoUrl: videoUrl
+      videoUrl: videoUrl,
+      chapters: formChapters
     };
 
     let finalId = targetId;
@@ -456,7 +475,11 @@ function AdminReportsContent() {
           overview: overviewEn,
           status: isActive ? 1 : 0,
           is_active: isActive,
-          state_id: selectedStateId ? parseInt(selectedStateId) : undefined
+          state_id: selectedStateId ? parseInt(selectedStateId) : undefined,
+          highlight_quote: highlightQuote,
+          recommendations: recommendations,
+          portrait_image: portraitImage,
+          chapters: formChapters
         })
       });
       if (res.ok) {
@@ -685,7 +708,7 @@ function AdminReportsContent() {
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
                 <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24">Thumb</th>
+                <th className="px-3 py-3 border-r border-white/20 w-32 text-center">Photo / Preview</th>
                 <th className="px-4 py-3 border-r border-white/20">Audit Report Title & Summary</th>
                 <th className="px-3 py-3 border-r border-white/20 w-36">Sector</th>
                 <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Type</th>
@@ -698,7 +721,7 @@ function AdminReportsContent() {
             <tbody className="divide-y divide-[#e2e5e7]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
                       <span>Retrieving reports records...</span>
@@ -707,7 +730,7 @@ function AdminReportsContent() {
                 </tr>
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
                     No matching report records found. Try adjusting your filters.
                   </td>
                 </tr>
@@ -715,14 +738,12 @@ function AdminReportsContent() {
                 reports.map((report) => (
                   <tr key={report.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400 text-[11px]">{report.id}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7]">
-                      <img 
-                        src={report.image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'} 
-                        alt="" 
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
-                        }}
-                        className="h-10 w-16 object-cover border border-zinc-200 bg-gray-100" 
+                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                      <FilePreviewAction 
+                        url={report.image || report.pdf_url || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'} 
+                        type={report.image ? "image" : "file"} 
+                        showThumbnail={true} 
+                        alt={report.title_en} 
                       />
                     </td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
@@ -1336,6 +1357,112 @@ function AdminReportsContent() {
                   className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
                   placeholder="https://youtube.com/..."
                 />
+              </div>
+
+              {/* DETAIL PAGE CUSTOMIZATIONS */}
+              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
+                <div className="font-bold text-xs uppercase tracking-wide text-[#751639] border-b border-zinc-200 pb-1">
+                  Detail Page Custom Text &amp; Portrait
+                </div>
+                
+                <div>
+                  <label className="block font-bold text-zinc-700 text-xs mb-1">Highlight Callout Quote</label>
+                  <textarea
+                    rows={2}
+                    value={highlightQuote}
+                    onChange={(e) => setHighlightQuote(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                    placeholder="Independent constitutional audit empowers democratic governance..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-zinc-700 text-xs mb-1">Key Recommendations &amp; Remedial Actions</label>
+                  <textarea
+                    rows={2}
+                    value={recommendations}
+                    onChange={(e) => setRecommendations(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                    placeholder="The report underscores key corrective measures including automated ledger reconciliation..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-zinc-700 text-xs mb-1">Side Portrait Image (URL or CloudFront link)</label>
+                  <input
+                    type="text"
+                    value={portraitImage}
+                    onChange={(e) => setPortraitImage(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                    placeholder="Leave empty for default heritage monument photo"
+                  />
+                </div>
+              </div>
+
+              {/* REPORT VOLUMES / CHAPTERS MANAGER */}
+              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-200 pb-1">
+                  <div className="font-bold text-xs uppercase tracking-wide text-[#751639]">
+                    Multi-Part Volumes &amp; Chapter PDFs ({formChapters.length})
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormChapters(prev => [
+                        ...prev,
+                        {
+                          id: `ch-${Date.now()}`,
+                          title: `Chapter ${prev.length + 1}: Detailed Volume`,
+                          pdf_url: mainReportFile !== '#' ? mainReportFile : 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf',
+                          size: '12.4 MB'
+                        }
+                      ]);
+                    }}
+                    className="px-2.5 py-1 text-xs font-bold bg-[#751639] text-white hover:bg-[#5f122d] transition-colors cursor-pointer"
+                  >
+                    + Add Chapter / Annexure
+                  </button>
+                </div>
+
+                {formChapters.length === 0 ? (
+                  <p className="text-xs text-zinc-500 italic m-0">No separate chapter PDFs added. Main Report File will be used.</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {formChapters.map((ch, chIdx) => (
+                      <div key={ch.id || chIdx} className="bg-white border border-zinc-200 p-2.5 flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-400 min-w-[20px]">#{chIdx + 1}</span>
+                        <input
+                          type="text"
+                          value={ch.title}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormChapters(prev => prev.map((item, i) => i === chIdx ? { ...item, title: val } : item));
+                          }}
+                          placeholder="Chapter Title"
+                          className="flex-1 px-2 py-1 text-xs border border-zinc-300 outline-none focus:border-[#751639]"
+                        />
+                        <input
+                          type="text"
+                          value={ch.pdf_url}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormChapters(prev => prev.map((item, i) => i === chIdx ? { ...item, pdf_url: val } : item));
+                          }}
+                          placeholder="PDF URL"
+                          className="flex-1 px-2 py-1 text-xs border border-zinc-300 outline-none focus:border-[#751639] font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormChapters(prev => prev.filter((_, i) => i !== chIdx))}
+                          className="text-zinc-400 hover:text-red-600 font-bold px-1.5 cursor-pointer"
+                          title="Remove Chapter"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">

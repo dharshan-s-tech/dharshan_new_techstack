@@ -26,6 +26,7 @@ api_router.include_router(pages.router, prefix="/page-content", tags=["page-cont
 api_router.include_router(states.router, prefix="/states", tags=["states"])
 api_router.include_router(organisation_chart.router, prefix="/organisation-chart", tags=["organisation-chart"])
 api_router.include_router(former_cag.router, prefix="/former-cag", tags=["former-cag"])
+api_router.include_router(former_cag.router, prefix="/former-cags", tags=["former-cags"])
 api_router.include_router(tenders_circulars.tenders_router, prefix="/tenders", tags=["tenders"])
 api_router.include_router(tenders_circulars.circulars_router, prefix="/circulars", tags=["circulars"])
 api_router.include_router(resources.router, prefix="/resources", tags=["resources"])

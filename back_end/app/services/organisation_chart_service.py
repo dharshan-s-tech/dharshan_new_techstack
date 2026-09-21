@@ -181,8 +181,17 @@ class OrganisationChartService:
                         phone = f"{r['std_code'] or ''}-{r['mobile_no'] or ''}".strip("- ")
 
                         img = r.get("profile_image") or ""
-                        if img and not img.startswith(("http://", "https://", "/")):
-                            img = f"https://cag.gov.in/uploads/cag_emp_profile_pic/{img}"
+                        if img:
+                            if img.startswith("https://d7i5wg8xwe4hf.cloudfront.net"):
+                                pass
+                            elif "cag.gov.in" in img:
+                                img = img.replace("https://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("http://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("/webroot", "")
+                            elif img.startswith("/uploads/"):
+                                img = f"https://d7i5wg8xwe4hf.cloudfront.net{img}"
+                            elif img.startswith("uploads/"):
+                                img = f"https://d7i5wg8xwe4hf.cloudfront.net/{img}"
+                            elif not img.startswith(("/", "http://", "https://")):
+                                img = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/cag_emp_profile_pic/{img}"
 
                         level = r["dh_level"] if r["dh_level"] is not None else 2
                         if r["id"] == 1:

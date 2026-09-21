@@ -13,12 +13,14 @@ import {
   Upload, Image as ImageIcon, Paperclip, FileUp, Lock, Sparkles
 } from 'lucide-react';
 import VisualDocumentEditor from './VisualDocumentEditor';
+import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
 
 export const SINGLETON_SUBTOPICS = [
   'cag-of-india',
   'our-vision-mission-values',
   'constitutional-provisions',
-  'duties-power-and-conditions-of-services-act'
+  'duties-power-and-conditions-of-services-act',
+  'audit-advisory-board'
 ];
 
 function AdminAboutRegistryContent() {
@@ -890,6 +892,7 @@ function AdminAboutRegistryContent() {
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
                 <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
+                <th className="px-3 py-3 border-r border-white/20 w-32 text-center">Photo / Preview</th>
                 <th className="px-4 py-3 border-r border-white/20 min-w-[280px]">About Us Title &amp; Summary</th>
                 <th className="px-3 py-3 border-r border-white/20 w-36">Category</th>
                 <th className="px-3 py-3 border-r border-white/20 w-44">Sub-Topic / Section</th>
@@ -901,7 +904,7 @@ function AdminAboutRegistryContent() {
             <tbody className="divide-y divide-[#e2e5e7]">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
                       <span>Retrieving About Us records from database...</span>
@@ -910,7 +913,7 @@ function AdminAboutRegistryContent() {
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
                     No matching About Us records found. Try adjusting your search or filters.
                   </td>
                 </tr>
@@ -920,6 +923,16 @@ function AdminAboutRegistryContent() {
                     {/* ID */}
                     <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-500 font-bold text-[11px]">
                       {item.formattedId}
+                    </td>
+
+                    {/* Photo / Preview */}
+                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                      <FilePreviewAction
+                        url={item.thumb_image || item.file_url || ''}
+                        type={item.thumb_image ? 'image' : (item.file_url ? 'file' : undefined)}
+                        showThumbnail={true}
+                        alt={item.title_en}
+                      />
                     </td>
 
                     {/* Title & Summary */}

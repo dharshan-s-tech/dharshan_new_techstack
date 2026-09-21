@@ -193,11 +193,14 @@ export async function GenListPage({
                 ) : rows.map((row: any, idx: number) => (
                   <tr key={row.id || idx} className="border-b border-gray-100 hover:bg-gray-50/50">
                     <td className="px-4 py-3 text-gray-400 text-xs">{(page - 1) * 20 + idx + 1}</td>
-                    {cols.map(c => (
-                      <td key={c.key} className="px-4 py-3 text-gray-700 text-sm">
-                        {c.render ? c.render(row) : fmt(row[c.key], c.type, c.key)}
-                      </td>
-                    ))}
+                    {cols.map(c => {
+                      const cellVal = row[c.key] ?? (c.type === 'image' ? (row.image || row.image_url || row.thumbnail_url || row.profile_image || row.cover_image || row.card_image) : undefined);
+                      return (
+                        <td key={c.key} className="px-4 py-3 text-gray-700 text-sm">
+                          {c.render ? c.render(row) : fmt(cellVal, c.type, c.key)}
+                        </td>
+                      );
+                    })}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         {viewBase && <Link href={`${viewBase}/${row.id}`} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg" title="View"><Eye className="w-4 h-4" /></Link>}

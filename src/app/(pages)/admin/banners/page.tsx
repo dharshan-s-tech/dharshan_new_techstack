@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { dataManager, BannerItem } from '@/lib/dataManager';
+import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState<BannerItem[]>([]);
@@ -205,7 +206,7 @@ export default function AdminBanners() {
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
                 <th className="px-4 py-3.5 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-36">Image Preview</th>
+                <th className="px-4 py-3.5 border-r border-white/20 w-36 text-center">Photo / Preview</th>
                 <th className="px-4 py-3.5 border-r border-white/20">Banner Headline Title</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-48">Subtitle</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-24 text-center">Order No</th>
@@ -230,11 +231,12 @@ export default function AdminBanners() {
                 banners.map((banner, idx) => (
                   <tr key={banner.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
                     <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7]">
-                      <img 
-                        src={banner.image_url || '/assets/0a49806ee3dbb7eb472a11bdfed5e0037a544c20.png'} 
-                        alt={banner.title_en}
-                        className="h-10 w-24 object-cover border border-zinc-200"
+                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center">
+                      <FilePreviewAction 
+                        url={banner.image_url || '/assets/0a49806ee3dbb7eb472a11bdfed5e0037a544c20.png'} 
+                        type="image" 
+                        showThumbnail={true} 
+                        alt={banner.title_en} 
                       />
                     </td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-sm truncate">{banner.title_en}</td>

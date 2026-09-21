@@ -88,8 +88,17 @@ async def get_banners(db: Session = Depends(get_db)):
                 banners = []
                 for r in rows:
                     img = r.get("image") or ""
-                    if img and not (img.startswith("http://") or img.startswith("https://") or img.startswith("/assets/")):
-                        img = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/banner/{img}"
+                    if img:
+                        if img.startswith("https://d7i5wg8xwe4hf.cloudfront.net"):
+                            pass
+                        elif "cag.gov.in" in img:
+                            img = img.replace("https://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("http://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("/webroot", "")
+                        elif img.startswith("/uploads/"):
+                            img = f"https://d7i5wg8xwe4hf.cloudfront.net{img}"
+                        elif img.startswith("uploads/"):
+                            img = f"https://d7i5wg8xwe4hf.cloudfront.net/{img}"
+                        elif not (img.startswith("http://") or img.startswith("https://") or img.startswith("/assets/")):
+                            img = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/banner/{img}"
                     elif not img:
                         img = "/assets/0a49806ee3dbb7eb472a11bdfed5e0037a544c20.png"
 

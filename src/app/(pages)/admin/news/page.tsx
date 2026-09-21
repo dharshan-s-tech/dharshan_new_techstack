@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, NewsItem as DataNewsItem } from '@/lib/dataManager';
 import { Pencil, Trash2 } from 'lucide-react';
+import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
 
 interface NewsDisplayItem {
   id: string;
@@ -13,6 +14,7 @@ interface NewsDisplayItem {
   tag: string;
   publish_date: string;
   is_active: boolean;
+  image_url?: string;
 }
 
 export default function AdminNews() {
@@ -38,6 +40,7 @@ export default function AdminNews() {
   const [descEn, setDescEn] = useState('');
   const [newsType, setNewsType] = useState<'trending' | 'featured'>('trending');
   const [tag, setTag] = useState('General');
+  const [imageUrl, setImageUrl] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -55,7 +58,8 @@ export default function AdminNews() {
         news_type: item.news_type || item.type || 'trending',
         tag: item.tag || 'General',
         publish_date: item.publish_date || item.date || 'June 2026',
-        is_active: item.is_active !== undefined ? item.is_active : true
+        is_active: item.is_active !== undefined ? item.is_active : true,
+        image_url: item.image_url || item.image || ''
       }));
 
       if (appliedSearch) {
@@ -87,7 +91,8 @@ export default function AdminNews() {
         news_type: item.type,
         tag: item.tag || 'General',
         publish_date: item.date,
-        is_active: true
+        is_active: true,
+        image_url: item.image_url || ''
       }));
 
       if (appliedSearch) {
@@ -140,6 +145,7 @@ export default function AdminNews() {
     setDescEn('');
     setNewsType('trending');
     setTag('General');
+    setImageUrl('');
     setIsFormOpen(true);
   };
 
@@ -152,6 +158,7 @@ export default function AdminNews() {
     setDescEn(item.desc_en || '');
     setNewsType((item.news_type as any) || 'trending');
     setTag(item.tag || 'General');
+    setImageUrl(item.image_url || '');
     setIsFormOpen(true);
   };
 
@@ -179,7 +186,8 @@ export default function AdminNews() {
       desc: descEn,
       date: 'June 4, 2026',
       type: newsType,
-      tag: tag
+      tag: tag,
+      image_url: imageUrl
     };
 
     try {
@@ -336,6 +344,7 @@ export default function AdminNews() {
                 style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
               >
                 <th className="px-4 py-3.5 border-r border-white/20 w-12 text-center">#</th>
+                <th className="px-4 py-3.5 border-r border-white/20 w-32 text-center">Photo / Preview</th>
                 <th className="px-4 py-3.5 border-r border-white/20">Notice Title</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-32">Type</th>
                 <th className="px-4 py-3.5 border-r border-white/20 w-28">Tag</th>
@@ -347,13 +356,13 @@ export default function AdminNews() {
             <tbody className="divide-y divide-[#e2e5e7]">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-zinc-400">
+                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-400">
                     Loading news and announcements...
                   </td>
                 </tr>
               ) : news.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-zinc-400">
+                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-400">
                     No news items registered.
                   </td>
                 </tr>
@@ -361,6 +370,14 @@ export default function AdminNews() {
                 news.slice((page - 1) * pageSize, page * pageSize).map((item, idx) => (
                   <tr key={item.id} className="hover:bg-zinc-50/50 transition-colors text-zinc-800">
                     <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{(page - 1) * pageSize + idx + 1}</td>
+                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center">
+                      <FilePreviewAction 
+                        url={item.image_url || ''} 
+                        type="image" 
+                        showThumbnail={true} 
+                        alt={item.title_en} 
+                      />
+                    </td>
                     <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
                       <div>{item.title_en}</div>
                       <div className="text-[11px] text-zinc-500 font-normal mt-0.5 truncate">{item.desc_en}</div>
@@ -493,6 +510,17 @@ export default function AdminNews() {
                     placeholder="e.g. Audit / General"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">Photo / Thumbnail URL or CDN Key</label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  placeholder="e.g. /assets/news-1.jpg or https://d7i5wg8xwe4hf.cloudfront.net/..."
+                />
               </div>
 
               <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">

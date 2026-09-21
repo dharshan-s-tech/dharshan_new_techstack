@@ -66,7 +66,27 @@ class AboutAdminService:
                         p['slug'],
                         ('Governance & Mandate', p['title_en'] or p['slug'], '/About/About-Us/Cag-Of-India')
                     )
-                    file_url = f"https://cag.gov.in/uploads/cms_pages_files/{p['upload_file']}" if p.get('upload_file') else ""
+                    raw_uf = p.get('upload_file') or ""
+                    if raw_uf:
+                        if raw_uf.startswith("https://d7i5wg8xwe4hf.cloudfront.net"):
+                            file_url = raw_uf
+                        elif "cag.gov.in" in raw_uf:
+                            file_url = raw_uf.replace("https://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("http://cag.gov.in", "https://d7i5wg8xwe4hf.cloudfront.net").replace("/webroot", "")
+                        elif raw_uf.startswith("/uploads/"):
+                            file_url = f"https://d7i5wg8xwe4hf.cloudfront.net{raw_uf}"
+                        elif raw_uf.startswith("uploads/"):
+                            file_url = f"https://d7i5wg8xwe4hf.cloudfront.net/{raw_uf}"
+                        elif raw_uf.startswith("http://") or raw_uf.startswith("https://"):
+                            file_url = raw_uf
+                        else:
+                            file_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/cms_pages_files/{raw_uf}"
+                    else:
+                        file_url = ""
+                    # Determine real thumbnail image based on subtopic
+                    page_thumb = ""
+                    if p.get('slug') == 'page-cag-of-india':
+                        page_thumb = "/assets/cag-desk-photo.png"
+                    
                     records.append({
                         "id": rec_id,
                         "rawId": f"page-{p['id']}",
@@ -80,7 +100,7 @@ class AboutAdminService:
                         "table_name": "cag_revamp.pages",
                         "primary_key_or_slug": f"{p['slug']} (ID: {p['id']})",
                         "public_url": pub_url,
-                        "thumb_image": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg",
+                        "thumb_image": page_thumb,
                         "file_url": file_url,
                         "file_name": p.get('upload_file') or '',
                         "language": "Bilingual" if p.get('title_hi') else "EN",
@@ -97,7 +117,7 @@ class AboutAdminService:
                 for fc in fc_rows:
                     name = fc.get('tenure') or fc.get('title') or 'Former CAG'
                     img = fc.get('image') or ''
-                    img_url = f"https://cag.gov.in/uploads/former_cag/{img}" if img else ""
+                    img_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/former_cag/{img}" if img else ""
                     lang = "HI" if fc.get('language') == 'hi' else "EN"
                     
                     records.append({
@@ -113,7 +133,7 @@ class AboutAdminService:
                         "table_name": "cag_revamp.former_cag",
                         "primary_key_or_slug": f"ID: {fc['id']} ({fc.get('tenure_from')}-{fc.get('tenure_to')})",
                         "public_url": "/About/About-Us/Former-Comptroller-and-Auditors-General",
-                        "thumb_image": img_url or "https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg",
+                        "thumb_image": img_url,
                         "file_url": "",
                         "file_name": img,
                         "language": lang,
@@ -169,7 +189,7 @@ class AboutAdminService:
                             pass
 
                     img = oc.get('profile_image') or ''
-                    img_url = f"https://cag.gov.in/uploads/cag_emp_profile_pic/{img}" if img else ""
+                    img_url = f"https://d7i5wg8xwe4hf.cloudfront.net/uploads/cag_emp_profile_pic/{img}" if img else ""
                     is_active = (oc.get('status') == 1 and oc.get('retired') != 1)
 
                     records.append({
@@ -185,7 +205,7 @@ class AboutAdminService:
                         "table_name": "cag_revamp.organisation_chart",
                         "primary_key_or_slug": f"ID: {oc['id']} (Level {oc.get('dh_level', 2)})",
                         "public_url": "/About/About-Us/Organisation-Chart",
-                        "thumb_image": img_url or "https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg",
+                        "thumb_image": img_url,
                         "file_url": "",
                         "file_name": img,
                         "language": "Bilingual" if name_hi else "EN",
