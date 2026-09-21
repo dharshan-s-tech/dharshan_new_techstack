@@ -298,17 +298,17 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
           {/* Right Main Content Area */}
           <main className="flex-1 w-full min-w-0">
             {/* Top Hero Banner (Frame 2147227447) */}
-            <div className="relative w-full h-[141.33px] bg-white rounded-[8px] overflow-hidden mb-6 shadow-sm">
+            <div className="sub-site-banner relative w-full h-[141.33px] bg-white rounded-[8px] overflow-hidden mb-6 shadow-sm">
               {/* Background Banner Image */}
               <img 
                 src="/assets/Images/banner.png" 
                 alt="Header Background" 
-                className="absolute inset-0 w-full h-full object-cover"
+                className="sub-site-banner__bg absolute inset-0 w-full h-full object-cover"
               />
 
               {/* Left Title */}
-              <div className="absolute left-[37px] top-1/2 -translate-y-1/2 z-10 max-w-[650px]">
-                <h1 className="font-['Noto_Sans'] font-bold text-[24px] leading-[38px] text-white drop-shadow-sm">
+              <div className="sub-site-banner__content absolute left-[37px] top-1/2 -translate-y-1/2 z-10 max-w-[650px]">
+                <h1 className="sub-site-banner__title font-['Noto_Sans'] font-bold text-[24px] leading-[38px] text-white drop-shadow-sm">
                   {heroTitle}
                 </h1>
               </div>
@@ -318,7 +318,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
                 <img 
                   src="/assets/Images/unpanel-logo.svg" 
                   alt="UN Panel of External Auditors Logo" 
-                  className="absolute z-10"
+                  className="sub-site-banner__logo absolute z-10"
                   style={{
                     position: 'absolute',
                     width: '141.39px',
@@ -329,7 +329,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
                   }}
                 />
               ) : (
-                <div className="absolute right-0 top-0 bottom-0 w-[205px] z-10 flex items-center justify-center">
+                <div className="sub-site-banner__logo-wrapper absolute right-0 top-0 bottom-0 w-[205px] z-10 flex items-center justify-center">
                   <img 
                     src={
                       isIntosai 
@@ -341,7 +341,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
                                 : (isAsosai ? "/assets/Images/ASOSAI-logo.svg" : "/assets/Images/INTOSAI-logo.svg")))
                     } 
                     alt="Organization Logo" 
-                    className={
+                    className={`sub-site-banner__logo ${
                       isIntosai 
                         ? "w-[80px] h-[77px] object-contain"
                         : ((isPresentAudits || isPastAudits)
@@ -349,7 +349,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
                             : (isMultilateral 
                                 ? "w-[103px] h-[103px] object-contain" 
                                 : (isAsosai ? "w-[126px] h-[40px] object-contain" : "w-[80px] h-[77px] object-contain")))
-                    }
+                    }`}
                   />
                 </div>
               )}

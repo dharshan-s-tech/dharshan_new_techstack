@@ -6238,6 +6238,62 @@ a.grm-desc-box__cta:focus-visible {
   object-fit: contain;
 }
 
+/* Sub-site / Global Relations Header Banner (CMS-configurable) */
+.sub-site-banner {
+  position: relative;
+  width: 100%;
+  height: 141.33px;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sub-site-banner__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sub-site-banner__content {
+  position: absolute;
+  left: 37px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  max-width: 650px;
+}
+
+.sub-site-banner__title {
+  font-family: 'Noto Sans', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 38px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  margin: 0;
+}
+
+.sub-site-banner__logo-wrapper {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 205px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-site-banner__logo {
+  object-fit: contain;
+  display: block;
+}
+
 /* Our Presence - State Accounts & Entitlement Styles */
 .op-page {
   box-sizing: border-box;
