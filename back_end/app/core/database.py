@@ -7,23 +7,45 @@ from app.core.config import settings
 logger = logging.getLogger("uvicorn")
 
 def create_resilient_engine():
-    try:
-        pg_engine = create_engine(
-            settings.sqlalchemy_database_url,
-            pool_pre_ping=True,
-        )
-        # Test connection
-        with pg_engine.connect() as conn:
-            pass
-        return pg_engine
-    except Exception as exc:
-        logger.warning(
-            f"[Database] PostgreSQL connection failed ({exc}). Falling back to local SQLite: cag_dev.db"
-        )
+    if not settings.DB_USER or not settings.DB_HOST or "sqlite" in settings.sqlalchemy_database_url:
         return create_engine(
             "sqlite:///./cag_dev.db",
             connect_args={"check_same_thread": False},
         )
+
+    last_exc = None
+    for attempt in range(1, 4):
+        try:
+            pg_engine = create_engine(
+                settings.sqlalchemy_database_url,
+                pool_pre_ping=True,
+                pool_size=20,
+                max_overflow=40,
+                pool_recycle=300,
+                connect_args={
+                    "connect_timeout": 30,
+                    "keepalives": 1,
+                    "keepalives_idle": 30,
+                    "keepalives_interval": 10,
+                    "keepalives_count": 5
+                }
+            )
+            # Test connection
+            with pg_engine.connect() as conn:
+                pass
+            logger.info(f"[Database] Successfully connected to PostgreSQL ({settings.DB_HOST}/{settings.DB_NAME}) on attempt {attempt}")
+            return pg_engine
+        except Exception as exc:
+            last_exc = exc
+            logger.warning(f"[Database] PostgreSQL connection attempt {attempt} failed: {exc}")
+
+    logger.error(
+        f"[Database] All PostgreSQL connection attempts failed ({last_exc}). Falling back to local SQLite: cag_dev.db"
+    )
+    return create_engine(
+        "sqlite:///./cag_dev.db",
+        connect_args={"check_same_thread": False},
+    )
 
 engine = create_resilient_engine()
 

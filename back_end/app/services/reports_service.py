@@ -19,7 +19,7 @@ def _get_pg_config():
         "dbname": settings.DB_NAME,
         "user": settings.DB_USER,
         "password": settings.DB_PASSWORD,
-        "connect_timeout": 5,
+        "connect_timeout": 30,
         "options": f"-c search_path={settings.DB_SCHEMA},public",
     }
 
