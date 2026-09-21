@@ -1102,70 +1102,79 @@ function AdminAboutRegistryContent() {
       </div>
 
       {/* ─── 3. VIEW DETAILS MODAL (Figma Burgundy Header Gradient matching Reports) ─── */}
+      {/* ─── 3. VIEW DETAILS FULL-PAGE VIEW PANEL ─── */}
       {viewingRecord && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-
-            {/* Modal Header */}
-            <div
-              className="p-4 text-white flex justify-between items-start"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Full Page Header */}
+          <div 
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewingRecord(null)}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                title="Back to About Us Table"
+              >
+                <span>← Back</span>
+              </button>
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200 mb-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
                   About Us Record Details [ID: {viewingRecord.formattedId || viewingRecord.rawId}]
                 </div>
-                <h2 className="text-base font-bold leading-snug">
+                <h2 className="text-base sm:text-lg font-bold leading-tight">
                   {viewingRecord.title_en}
                 </h2>
                 {viewingRecord.title_hi && (
-                  <p className="text-xs text-pink-100 font-medium mt-1 font-hindi">
+                  <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
                     {viewingRecord.title_hi}
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setViewingRecord(null)}
-                className="text-white/80 hover:text-white text-xl font-bold ml-4 p-1 cursor-pointer"
-              >
-                ✕
-              </button>
             </div>
+            <button
+              onClick={() => setViewingRecord(null)}
+              className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Close</span>
+              <span className="text-sm leading-none">✕</span>
+            </button>
+          </div>
 
-            {/* Modal Body */}
-            <div className="p-6 space-y-5 text-zinc-800">
-
+          {/* Full Page Body */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <div className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
+              
               {/* Badges Bar */}
-              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
-                <span className="px-2.5 py-1 bg-[#751639] text-white font-bold text-[11px] rounded-xs">
+              <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
+                <span className="px-3 py-1 bg-[#751639] text-white font-bold text-xs rounded-xs">
                   {viewingRecord.category}
                 </span>
-                <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-xs rounded-xs">
                   Sub-Topic: {viewingRecord.subTopic}
                 </span>
-                <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-bold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-bold text-xs rounded-xs">
                   Language: {viewingRecord.language}
                 </span>
-                <span className={`ml-auto px-2.5 py-0.5 rounded-full font-bold text-[10px] ${viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'
-                  }`}>
+                <span className={`ml-auto px-3 py-1 rounded-full font-bold text-xs ${viewingRecord.is_active ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-rose-100 text-rose-900 border border-rose-300'}`}>
                   {viewingRecord.is_active ? '● ACTIVE' : '○ INACTIVE'}
                 </span>
               </div>
 
               {/* Banner & Preview */}
-              <div className="flex flex-col sm:flex-row gap-4 items-start bg-zinc-50 p-4 border border-zinc-200">
+              <div className="flex flex-col md:flex-row gap-6 items-start bg-zinc-50 p-5 border border-zinc-200">
                 <img
                   src={viewingRecord.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
                   alt="Card Preview"
-                  className="h-24 w-36 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
+                  className="h-36 w-56 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
                   }}
                 />
-                <div className="space-y-1.5 flex-1">
-                  <div className="font-bold text-zinc-900 text-xs">Section Card Image / Photo</div>
-                  <p className="text-[11px] text-zinc-500 break-all font-mono">
-                    {viewingRecord.thumb_image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
+                <div className="space-y-2 flex-1">
+                  <div className="font-bold text-zinc-900 text-sm">Section Card Image / Photo</div>
+                  <p className="text-xs text-zinc-500 break-all font-mono bg-white p-2.5 border border-zinc-200">
+                    {viewingRecord.thumb_image || 'No custom photo configured'}
                   </p>
                   {viewingRecord.file_url && (
                     <div className="pt-2">
@@ -1173,7 +1182,7 @@ function AdminAboutRegistryContent() {
                         href={viewingRecord.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
                       >
                         <Paperclip className="w-3.5 h-3.5" />
                         <span>Download Attached Reference Document ({viewingRecord.file_name || 'PDF'})</span>
@@ -1185,10 +1194,10 @@ function AdminAboutRegistryContent() {
 
               {/* Executive Summary & Scope Overview */}
               <div>
-                <h4 className="font-bold text-zinc-900 text-xs mb-1.5 uppercase tracking-wide text-[#751639]">
+                <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
                   Executive Summary &amp; Content Narrative
                 </h4>
-                <div className="bg-zinc-50 border border-zinc-200 p-3.5 text-zinc-700 leading-relaxed text-xs">
+                <div className="bg-zinc-50 border border-zinc-200 p-5 text-zinc-700 leading-relaxed text-sm">
                   {viewingRecord.desc ? (
                     <p>{viewingRecord.desc}</p>
                   ) : (
@@ -1198,111 +1207,118 @@ function AdminAboutRegistryContent() {
               </div>
 
               {/* Routing & Record Overview */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50 p-3.5 border border-zinc-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 p-5 border border-zinc-200">
                 <div>
-                  <span className="text-zinc-500 block font-bold text-[10px] uppercase">Live Public Route:</span>
-                  <span className="font-mono text-zinc-800 font-semibold text-xs truncate block">{viewingRecord.public_url}</span>
+                  <span className="text-zinc-500 block font-bold text-[11px] uppercase mb-1">Live Public Route:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs truncate block bg-white p-2 border border-zinc-200">{viewingRecord.public_url}</span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block font-bold text-[10px] uppercase">Record Code / ID:</span>
-                  <span className="font-mono text-zinc-800 font-semibold text-xs">{viewingRecord.formattedId || viewingRecord.rawId}</span>
+                  <span className="text-zinc-500 block font-bold text-[11px] uppercase mb-1">Record Code / ID:</span>
+                  <span className="font-mono text-zinc-800 font-semibold text-xs block bg-white p-2 border border-zinc-200">{viewingRecord.formattedId || viewingRecord.rawId}</span>
                 </div>
               </div>
 
               {/* Timestamps */}
-              <div className="flex justify-between text-[11px] text-zinc-400 pt-2 border-t border-zinc-150">
+              <div className="flex justify-between text-xs text-zinc-400 pt-3 border-t border-zinc-200">
                 <span>Created: {viewingRecord.created_at}</span>
                 <span>Last Modified: {viewingRecord.modified_at}</span>
               </div>
             </div>
+          </div>
 
-            {/* Modal Actions */}
-            <div className="p-6 pt-0 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 mt-4">
-              <Link
-                href={viewingRecord.public_url}
-                target="_blank"
-                className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+          {/* Full Page Footer Actions */}
+          <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
+            <Link
+              href={viewingRecord.public_url}
+              target="_blank"
+              className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Public Page ↗</span>
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const item = viewingRecord;
+                  setViewingRecord(null);
+                  handleOpenEdit(item);
+                }}
+                className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Open Public Page ↗</span>
-              </Link>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => {
-                    const item = viewingRecord;
-                    setViewingRecord(null);
-                    handleOpenEdit(item);
-                  }}
-                  className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  <span>Edit Record</span>
-                </button>
-                <button
-                  onClick={() => {
-                    const idToDelete = viewingRecord.rawId;
-                    setViewingRecord(null);
-                    handleDelete(idToDelete);
-                  }}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete Record</span>
-                </button>
-                <button
-                  onClick={() => setViewingRecord(null)}
-                  className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Edit Record</span>
+              </button>
+              <button
+                onClick={() => {
+                  const idToDelete = viewingRecord.rawId;
+                  setViewingRecord(null);
+                  handleDelete(idToDelete);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Record</span>
+              </button>
+              <button
+                onClick={() => setViewingRecord(null)}
+                className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ─── 4. CREATE / EDIT MODAL FORM (Accessible, Document & Image Upload Enabled) ─── */}
+      {/* ─── 4. CREATE / EDIT FULL-PAGE EDITOR PANEL ─── */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full p-0 shadow-2xl relative max-h-[90vh] flex flex-col">
-
-            {/* Modal Header */}
-            <div
-              className="p-4 text-white flex justify-between items-center shrink-0"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <FileUp className="w-5 h-5 text-pink-200" />
-                <div>
-                  <h3 className="text-sm font-bold leading-snug">
-                    {editingRawId ? `Edit About Us Record [ID: ${editingRawId}]` : 'Register New About Us Section Record'}
-                  </h3>
-                  <p className="text-[11px] text-pink-100 font-normal">
-                    Update CMS content, upload documents (PDF/DOCX), manage card images, and configure public links.
-                  </p>
-                </div>
-              </div>
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white text-lg font-bold p-1 cursor-pointer"
-                aria-label="Close modal"
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
               >
-                ✕
+                ← Back
               </button>
-            </div>
-
-            {/* Error Notification Banner */}
-            {uploadError && (
-              <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{uploadError}</span>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingRawId ? `Edit About Us Record [ID: ${editingRawId}]` : 'Register New About Us Section Record'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  Update CMS content, upload documents (PDF/DOCX), manage card images, and configure public links.
+                </p>
               </div>
-            )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
+            >
+              ✕
+            </button>
+          </div>
 
-            {/* Scrollable Form Body */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
+          {/* Body Content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <div className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8">
+              {/* Error Notification Banner */}
+              {uploadError && (
+                <div className="mb-6 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              {/* Form Body */}
+              <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Section 1: Classification & Dynamic Sub-Topic Specific Form Engine */}
               <div className="space-y-4">
@@ -2106,7 +2122,8 @@ function AdminAboutRegistryContent() {
             </form>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* ─── 5. VISUAL LIVE DOCUMENT / PDF CANVAS EDITOR ─── */}
       {visualEditingRecord && (

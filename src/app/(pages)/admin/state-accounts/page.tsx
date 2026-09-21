@@ -767,60 +767,75 @@ function AdminStateAccountsContent() {
       </div>
 
       {/* 3. VIEW DETAILS MODAL */}
+      {/* 3. VIEW DETAILS FULL-PAGE VIEW PANEL */}
       {viewingAccount && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            {/* Modal Header */}
-            <div 
-              className="p-4 text-white flex justify-between items-start"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Full Page Header */}
+          <div 
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewingAccount(null)}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                title="Back to State Accounts Table"
+              >
+                <span>← Back</span>
+              </button>
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200 mb-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
                   State Finance Account Details [ID: {viewingAccount.rawId}]
                 </div>
-                <h2 className="text-base font-bold leading-snug">
+                <h2 className="text-base sm:text-lg font-bold leading-tight">
                   {viewingAccount.title_en}
                 </h2>
                 {viewingAccount.title_hi && (
-                  <p className="text-xs text-pink-100 font-medium mt-1">
+                  <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
                     {viewingAccount.title_hi}
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setViewingAccount(null)}
-                className="text-white/80 hover:text-white text-xl font-bold ml-4 p-1 cursor-pointer"
-              >
-                ✕
-              </button>
             </div>
+            <button
+              onClick={() => setViewingAccount(null)}
+              className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Close</span>
+              <span className="text-sm leading-none">✕</span>
+            </button>
+          </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
-                <span className="px-2.5 py-1 bg-[#751639] text-white font-bold text-[11px] rounded-xs">
+          {/* Full Page Body */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <div className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
+              
+              {/* Badges Bar */}
+              <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
+                <span className="px-3 py-1 bg-[#751639] text-white font-bold text-xs rounded-xs">
                   State: {viewingAccount.state_name}
                 </span>
-                <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-xs rounded-xs">
                   {viewingAccount.category_name}
                 </span>
-                <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xs">
                   Year: {viewingAccount.account_year}
                 </span>
-                <span className="px-2.5 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs rounded-xs">
                   Month: {viewingAccount.month}
                 </span>
-                <span className="px-2.5 py-1 bg-zinc-100 text-zinc-700 border border-zinc-300 text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-zinc-100 text-zinc-700 border border-zinc-300 text-xs rounded-xs">
                   Volume: {viewingAccount.volume}
+                </span>
+                <span className="ml-auto px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs rounded-full">
+                  ● ACTIVE
                 </span>
               </div>
 
               {/* Document Download Panel */}
-              <div className="bg-zinc-50 border border-zinc-200 p-4 space-y-2">
-                <div className="font-bold text-zinc-800 text-xs">Official Document File &amp; Asset</div>
-                <p className="text-[11px] text-zinc-500 font-mono break-all">
+              <div className="bg-zinc-50 border border-zinc-200 p-6 space-y-3">
+                <div className="font-bold text-zinc-900 text-sm">Official Document File &amp; Asset</div>
+                <p className="text-xs text-zinc-500 font-mono break-all bg-white p-3 border border-zinc-200">
                   {viewingAccount.file_url || 'No cloud document uploaded'}
                 </p>
                 <div className="pt-2">
@@ -828,76 +843,99 @@ function AdminStateAccountsContent() {
                     href={viewingAccount.file_url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
                   >
                     <span>📥 Download State Account Statement (PDF)</span>
                   </a>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-                <Link
-                  href="/Reports/accounts"
-                  target="_blank"
-                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Open Public Page ↗</span>
-                </Link>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const acc = viewingAccount;
-                      setViewingAccount(null);
-                      handleOpenEdit(acc);
-                    }}
-                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Edit Record</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      const idToDelete = viewingAccount.rawId;
-                      setViewingAccount(null);
-                      handleDelete(idToDelete);
-                    }}
-                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Record</span>
-                  </button>
-                  <button
-                    onClick={() => setViewingAccount(null)}
-                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
             </div>
+          </div>
 
+          {/* Full Page Footer Actions */}
+          <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
+            <Link
+              href="/Reports/accounts"
+              target="_blank"
+              className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Public Page ↗</span>
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const acc = viewingAccount;
+                  setViewingAccount(null);
+                  handleOpenEdit(acc);
+                }}
+                className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Edit Record</span>
+              </button>
+              <button
+                onClick={() => {
+                  const idToDelete = viewingAccount.rawId;
+                  setViewingAccount(null);
+                  handleDelete(idToDelete);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Record</span>
+              </button>
+              <button
+                onClick={() => setViewingAccount(null)}
+                className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 4. ADD / EDIT MODAL FORM */}
+      {/* 4. CREATE / EDIT FULL-PAGE EDITOR PANEL */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                ← Back
+              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingId ? `Edit State Account Statement [ID: ${editingId}]` : 'Add New State Account Statement'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  {editingId ? `Editing Record ID #${editingId}` : 'Register new state account statement to CAG registry'}
+                </p>
+              </div>
+            </div>
             <button
+              type="button"
               onClick={() => setIsFormOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
             >
               ✕
             </button>
-            <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-200 pb-3 mb-4">
-              {editingId ? `Edit State Account Statement [ID: ${editingId}]` : 'Add New State Account Statement (Local CMS)'}
-            </h3>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Body Content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
               <div>
                 <label className="block font-bold text-zinc-700 mb-1">
                   Document Title (English) *

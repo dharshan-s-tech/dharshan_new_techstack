@@ -449,21 +449,44 @@ export default function AdminNews() {
         )}
       </div>
 
-      {/* Form Slide Modal */}
+      {/* CREATE / EDIT FULL-PAGE EDITOR PANEL */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                ← Back
+              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingId ? 'Edit Notice Record' : 'Register New Announcement'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  {editingId ? `Editing Notice ID #${editingId}` : 'Publish new headline announcement or news ticker'}
+                </p>
+              </div>
+            </div>
             <button
+              type="button"
               onClick={() => setIsFormOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold"
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
             >
               ✕
             </button>
-            <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-200 pb-3 mb-4">
-              {editingId ? 'Edit Notice Record' : 'Register New Announcement'}
-            </h3>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Body Content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
               <div>
                 <label className="block font-bold text-zinc-700 mb-1">Headline Title *</label>
                 <input
@@ -526,7 +549,7 @@ export default function AdminNews() {
               <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">
                 <button
                   type="submit"
-                  className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs"
+                  className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs cursor-pointer"
                   style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
                 >
                   Save Notice Record
@@ -534,7 +557,7 @@ export default function AdminNews() {
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-6 py-2.5 border border-zinc-350 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white"
+                  className="px-6 py-2.5 border border-zinc-350 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white cursor-pointer"
                 >
                   Cancel
                 </button>

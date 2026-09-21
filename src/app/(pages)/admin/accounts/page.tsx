@@ -959,144 +959,186 @@ function AdminAccountsManagementHubContent() {
         )}
       </div>
 
-      {/* 3. VIEW DETAILS MODAL */}
+      {/* 3. VIEW DETAILS FULL-PAGE VIEW PANEL */}
       {viewingItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div 
-              className="p-4 text-white flex justify-between items-start"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Full Page Header */}
+          <div 
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewingItem(null)}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                title="Back to Accounts Table"
+              >
+                <span>← Back</span>
+              </button>
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200 mb-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
                   Account Statement Metadata [ID: {viewingItem.rawId}]
                 </div>
-                <h2 className="text-base font-bold leading-snug">
+                <h2 className="text-base sm:text-lg font-bold leading-tight">
                   {viewingItem.title_en}
                 </h2>
                 {viewingItem.title_hi && (
-                  <p className="text-xs text-pink-100 font-medium mt-1">
+                  <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
                     {viewingItem.title_hi}
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setViewingItem(null)}
-                className="text-white/80 hover:text-white text-xl font-bold ml-4 p-1 cursor-pointer"
-              >
-                ✕
-              </button>
             </div>
+            <button
+              onClick={() => setViewingItem(null)}
+              className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Close</span>
+              <span className="text-sm leading-none">✕</span>
+            </button>
+          </div>
 
-            <div className="p-6 space-y-4">
-              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
-                <span className="px-2.5 py-1 bg-[#751639] text-white font-bold text-[11px] rounded-xs">
+          {/* Full Page Body */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <div className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
+              
+              {/* Badges Bar */}
+              <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
+                <span className="px-3 py-1 bg-[#751639] text-white font-bold text-xs rounded-xs">
                   Jurisdiction: {viewingItem.state_name}
                 </span>
-                <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-xs rounded-xs">
                   Category: {viewingItem.category_name}
                 </span>
-                <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xs">
                   Year: {viewingItem.account_year || viewingItem.year}
                 </span>
-                <span className="px-2.5 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs rounded-xs">
                   Month: {viewingItem.month}
                 </span>
-                <span className="px-2.5 py-1 bg-zinc-100 text-zinc-700 border border-zinc-300 text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-zinc-100 text-zinc-700 border border-zinc-300 text-xs rounded-xs">
                   Volume: {viewingItem.volume}
+                </span>
+                <span className="ml-auto px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs rounded-full">
+                  ● ACTIVE
                 </span>
               </div>
 
-              <div className="bg-zinc-50 border border-zinc-200 p-4 space-y-2">
-                <div className="font-bold text-zinc-800 text-xs">Official Document File &amp; Asset</div>
-                <p className="text-[11px] text-zinc-500 font-mono break-all">
+              {/* Official Document File & Asset */}
+              <div className="bg-zinc-50 border border-zinc-200 p-6 space-y-3">
+                <div className="font-bold text-zinc-900 text-sm">Official Document File &amp; Asset</div>
+                <p className="text-xs text-zinc-500 font-mono break-all bg-white p-3 border border-zinc-200">
                   {viewingItem.file_url || 'No document uploaded'}
                 </p>
-                <div className="pt-2">
+                <div className="pt-2 flex flex-wrap items-center gap-3">
                   <a
                     href={viewingItem.file_url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
                   >
                     <span>📥 Download Account Statement PDF</span>
                   </a>
+                  {viewingItem.external_link && (
+                    <a
+                      href={viewingItem.external_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 text-xs font-semibold"
+                    >
+                      <span>External Link ↗</span>
+                    </a>
+                  )}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-                <Link
-                  href="/Reports/accounts"
-                  target="_blank"
-                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Open Public Page ↗</span>
-                </Link>
+            </div>
+          </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const it = viewingItem;
-                      setViewingItem(null);
-                      handleOpenEdit(it);
-                    }}
-                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Edit Record</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      const itToDelete = viewingItem;
-                      setViewingItem(null);
-                      handleDelete(itToDelete);
-                    }}
-                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Record</span>
-                  </button>
-                  <button
-                    onClick={() => setViewingItem(null)}
-                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+          {/* Full Page Footer Actions */}
+          <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
+            <Link
+              href="/Reports/accounts"
+              target="_blank"
+              className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Public Page ↗</span>
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const it = viewingItem;
+                  setViewingItem(null);
+                  handleOpenEdit(it);
+                }}
+                className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Edit Record</span>
+              </button>
+              <button
+                onClick={() => {
+                  const itToDelete = viewingItem;
+                  setViewingItem(null);
+                  handleDelete(itToDelete);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Record</span>
+              </button>
+              <button
+                onClick={() => setViewingItem(null)}
+                className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 4. CREATE / EDIT DRAWER */}
+      {/* 4. CREATE / EDIT FULL-PAGE EDITOR PANEL */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex justify-end z-50 animate-fadeIn">
-          <div className="bg-white w-full max-w-xl h-full shadow-2xl flex flex-col justify-between border-l border-zinc-300 overflow-y-auto">
-            
-            <div>
-              <div 
-                className="p-5 text-white flex justify-between items-center"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
               >
-                <div>
-                  <h2 className="text-sm font-bold">
-                    {editingId ? 'Edit Account Statement Record' : 'Add New Account Statement Record'}
-                  </h2>
-                  <p className="text-[11px] text-pink-100 mt-0.5">
-                    Category: {formCategory}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsFormOpen(false)}
-                  className="text-white hover:text-pink-200 text-lg font-bold p-1 cursor-pointer"
-                >
-                  ✕
-                </button>
+                ← Back
+              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingId ? 'Edit Account Statement Record' : 'Add New Account Statement Record'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  {editingId ? `Editing Record ID #${editingId}` : 'Register new account statement to CAG registry'}
+                </p>
               </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
+            >
+              ✕
+            </button>
+          </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Body Content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-zinc-700 font-bold mb-1">
                     Account Subtopic Domain <span className="text-red-500">*</span>
@@ -1119,7 +1161,7 @@ function AdminAccountsManagementHubContent() {
                   </select>
                 </div>
 
-                {formSubtopic === 'state' && (
+                {formSubtopic === 'state' ? (
                   <div>
                     <label className="block text-zinc-700 font-bold mb-1">
                       Jurisdiction State / UT <span className="text-red-500">*</span>
@@ -1138,159 +1180,171 @@ function AdminAccountsManagementHubContent() {
                       size="md"
                     />
                   </div>
+                ) : (
+                  <div>
+                    <label className="block text-zinc-700 font-bold mb-1">
+                      Scope / Jurisdiction
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Union / Central Compilations"
+                      className="w-full bg-zinc-100 border border-zinc-300 rounded-none px-3 py-2 text-zinc-600"
+                    />
+                  </div>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">
+                  Category Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formCategory}
+                  onChange={(e) => setFormCategory(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                >
+                  {formSubtopic === 'state' ? (
+                    <>
+                      <option value="Finance Accounts">Finance Accounts</option>
+                      <option value="Accounts at a Glance">Accounts at a Glance</option>
+                      <option value="Appropriation Accounts">Appropriation Accounts</option>
+                      <option value="Monthly Key Indicators">Monthly Key Indicators</option>
+                      <option value="FA&AA Data">FA&AA Data</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Combined Finance and Revenue Accounts">Combined Finance and Revenue Accounts</option>
+                      <option value="Annual Conference of State Finance Secretaries">Annual Conference of State Finance Secretaries</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">
+                  Title (English) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                  placeholder="e.g. Finance Accounts 2026-27 (Volume I)"
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-bold mb-1">Title (Hindi):</label>
+                <input
+                  type="text"
+                  value={titleHi}
+                  onChange={(e) => setTitleHi(e.target.value)}
+                  placeholder="e.g. वित्त खाते 2026-27 (खंड I)"
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">Account Year:</label>
+                  <input
+                    type="text"
+                    value={formYear}
+                    onChange={(e) => setFormYear(e.target.value)}
+                    placeholder="2026"
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  />
+                </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">
-                    Category Type <span className="text-red-500">*</span>
-                  </label>
+                  <label className="block text-zinc-700 font-bold mb-1">Month:</label>
                   <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    value={formMonth}
+                    onChange={(e) => setFormMonth(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   >
-                    {formSubtopic === 'state' ? (
-                      <>
-                        <option value="Finance Accounts">Finance Accounts</option>
-                        <option value="Accounts at a Glance">Accounts at a Glance</option>
-                        <option value="Appropriation Accounts">Appropriation Accounts</option>
-                        <option value="Monthly Key Indicators">Monthly Key Indicators</option>
-                        <option value="FA&AA Data">FA&AA Data</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="Combined Finance and Revenue Accounts">Combined Finance and Revenue Accounts</option>
-                        <option value="Annual Conference of State Finance Secretaries">Annual Conference of State Finance Secretaries</option>
-                      </>
-                    )}
+                    {['Annual', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-bold mb-1">
-                    Title (English) <span className="text-red-500">*</span>
-                  </label>
+                  <label className="block text-zinc-700 font-bold mb-1">Volume:</label>
                   <input
                     type="text"
-                    required
-                    value={titleEn}
-                    onChange={(e) => setTitleEn(e.target.value)}
-                    placeholder="e.g. Finance Accounts 2026-27 (Volume I)"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    value={formVolume}
+                    onChange={(e) => setFormVolume(e.target.value)}
+                    placeholder="Vol I"
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-zinc-700 font-bold mb-1">Title (Hindi):</label>
+              <div className="bg-[#fafbfc] border border-zinc-300 p-5 space-y-3">
+                <label className="block text-zinc-800 font-bold text-xs uppercase tracking-wide text-[#751639]">
+                  Attach PDF Document (.pdf)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={handlePdfUpload}
+                  className="block w-full text-xs text-zinc-500 file:mr-4 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#751639] file:text-white hover:file:bg-[#5a112c] cursor-pointer"
+                />
+                {isUploading && (
+                  <div className="text-[11px] text-pink-700 flex items-center gap-1.5">
+                    <div className="w-3.5 h-3.5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
+                    <span>Uploading document...</span>
+                  </div>
+                )}
+                {uploadedFileName && (
+                  <div className="text-[11px] text-emerald-700 font-medium">
+                    ✓ Attached: {uploadedFileName} {uploadedFileSize ? `(${uploadedFileSize})` : ''}
+                  </div>
+                )}
+                <div className="pt-2">
+                  <label className="block text-zinc-600 text-[11px] mb-1 font-semibold">Or Document Direct Link:</label>
                   <input
                     type="text"
-                    value={titleHi}
-                    onChange={(e) => setTitleHi(e.target.value)}
-                    placeholder="e.g. वित्त खाते 2026-27 (खंड I)"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    value={fileUrl}
+                    onChange={(e) => setFileUrl(e.target.value)}
+                    placeholder="https://d7i5wg8xwe4hf.cloudfront.net/..."
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none text-[11px] font-mono"
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Account Year:</label>
-                    <input
-                      type="text"
-                      value={formYear}
-                      onChange={(e) => setFormYear(e.target.value)}
-                      placeholder="2026"
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                    />
-                  </div>
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="activeToggle"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 text-[#751639] rounded-none focus:ring-0 cursor-pointer"
+                />
+                <label htmlFor="activeToggle" className="text-zinc-800 font-semibold cursor-pointer text-sm">
+                  Publish this document on the public CAG website
+                </label>
+              </div>
 
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Month:</label>
-                    <select
-                      value={formMonth}
-                      onChange={(e) => setFormMonth(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                    >
-                      {['Annual', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Volume:</label>
-                    <input
-                      type="text"
-                      value={formVolume}
-                      onChange={(e) => setFormVolume(e.target.value)}
-                      placeholder="Vol I"
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-[#fafbfc] border border-zinc-300 p-4 space-y-2">
-                  <label className="block text-zinc-800 font-bold text-xs">
-                    Attach PDF Document (.pdf)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={handlePdfUpload}
-                    className="block w-full text-xs text-zinc-500 file:mr-4 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#751639] file:text-white hover:file:bg-[#5a112c] cursor-pointer"
-                  />
-                  {isUploading && (
-                    <div className="text-[11px] text-pink-700 flex items-center gap-1.5">
-                      <div className="w-3.5 h-3.5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
-                      <span>Uploading document...</span>
-                    </div>
-                  )}
-                  {uploadedFileName && (
-                    <div className="text-[11px] text-emerald-700 font-medium">
-                      ✓ Attached: {uploadedFileName} {uploadedFileSize ? `(${uploadedFileSize})` : ''}
-                    </div>
-                  )}
-                  <div className="pt-2">
-                    <label className="block text-zinc-600 text-[11px] mb-1">Or Document Direct Link:</label>
-                    <input
-                      type="text"
-                      value={fileUrl}
-                      onChange={(e) => setFileUrl(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none text-[11px] font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 pt-2">
-                  <input
-                    type="checkbox"
-                    id="activeToggle"
-                    checked={isActive}
-                    onChange={(e) => setIsActive(e.target.checked)}
-                    className="w-4 h-4 text-[#751639] rounded-none focus:ring-0 cursor-pointer"
-                  />
-                  <label htmlFor="activeToggle" className="text-zinc-800 font-semibold cursor-pointer">
-                    Publish this document on the public CAG website
-                  </label>
-                </div>
-
-                <div className="pt-6 border-t border-zinc-200 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsFormOpen(false)}
-                    className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold rounded-none cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-[#751639] hover:bg-[#5a112c] text-white font-bold rounded-none shadow-xs cursor-pointer"
-                  >
-                    {editingId ? 'Save & Update Record' : 'Create & Publish Record'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
+              <div className="pt-6 border-t border-zinc-200 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-6 py-2.5 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold rounded-none cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-8 py-2.5 bg-[#751639] hover:bg-[#5a112c] text-white font-bold rounded-none shadow-xs cursor-pointer"
+                >
+                  {editingId ? 'Save & Update Record' : 'Create & Publish Record'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

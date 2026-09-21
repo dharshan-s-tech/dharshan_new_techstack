@@ -717,56 +717,68 @@ function AdminCombinedAccountsContent() {
       </div>
 
       {/* 3. VIEW DETAILS MODAL */}
+      {/* 3. VIEW DETAILS FULL-PAGE VIEW PANEL */}
       {viewingItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            {/* Modal Header */}
-            <div 
-              className="p-4 text-white flex justify-between items-start"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Full Page Header */}
+          <div 
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewingItem(null)}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                title="Back to Combined Accounts Table"
+              >
+                <span>← Back</span>
+              </button>
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200 mb-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
                   Document Record Details [ID: {viewingItem.rawId}]
                 </div>
-                <h2 className="text-base font-bold leading-snug">
+                <h2 className="text-base sm:text-lg font-bold leading-tight">
                   {viewingItem.title_en}
                 </h2>
                 {viewingItem.title_hi && (
-                  <p className="text-xs text-pink-100 font-medium mt-1">
+                  <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
                     {viewingItem.title_hi}
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setViewingItem(null)}
-                className="text-white/80 hover:text-white text-xl font-bold ml-4 p-1 cursor-pointer"
-              >
-                ✕
-              </button>
             </div>
+            <button
+              onClick={() => setViewingItem(null)}
+              className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Close</span>
+              <span className="text-sm leading-none">✕</span>
+            </button>
+          </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
-                <span className={`px-2.5 py-1 font-bold text-[11px] rounded-xs ${
+          {/* Full Page Body */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <div className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
+              
+              {/* Badges Bar */}
+              <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
+                <span className={`px-3 py-1 font-bold text-xs rounded-xs ${
                   viewingItem.category === 'combined'
                     ? 'bg-blue-100 text-blue-900 border border-blue-200'
                     : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
                 }`}>
                   Category: {viewingItem.category === 'combined' ? 'Combined Finance & Revenue Accounts' : 'Conference Compendium'}
                 </span>
-                <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xs">
                   Fiscal Year: {viewingItem.account_year}
                 </span>
-                <span className="px-2.5 py-1 bg-zinc-100 text-zinc-700 border border-zinc-300 text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-zinc-100 text-zinc-700 border border-zinc-300 text-xs rounded-xs">
                   Volume: {viewingItem.volume}
                 </span>
-                <span className="px-2.5 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-mono rounded-xs">
+                <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs font-mono rounded-xs">
                   Size: {viewingItem.size}
                 </span>
-                <span className={`ml-auto px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`ml-auto px-3 py-1 text-xs font-bold rounded-full ${
                   viewingItem.is_active ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-zinc-200 text-zinc-600'
                 }`}>
                   {viewingItem.is_active ? '● PUBLISHED' : '○ UNPUBLISHED'}
@@ -774,9 +786,9 @@ function AdminCombinedAccountsContent() {
               </div>
 
               {/* Document Download Panel */}
-              <div className="bg-zinc-50 border border-zinc-200 p-4 space-y-2">
-                <div className="font-bold text-zinc-800 text-xs">Official Document File &amp; Asset</div>
-                <p className="text-[11px] text-zinc-500 font-mono break-all">
+              <div className="bg-zinc-50 border border-zinc-200 p-6 space-y-3">
+                <div className="font-bold text-zinc-900 text-sm">Official Document File &amp; Asset</div>
+                <p className="text-xs text-zinc-500 font-mono break-all bg-white p-3 border border-zinc-200">
                   {viewingItem.file_url || 'No cloud document attached'}
                 </p>
                 <div className="pt-2">
@@ -784,291 +796,293 @@ function AdminCombinedAccountsContent() {
                     href={viewingItem.file_url || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
                   >
                     <span>📥 Download Complete Volume (PDF)</span>
                   </a>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-                <Link
-                  href="/Reports/accounts"
-                  target="_blank"
-                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Open Public Page ↗</span>
-                </Link>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const item = viewingItem;
-                      setViewingItem(null);
-                      handleOpenEdit(item);
-                    }}
-                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Edit Record</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      const idToDelete = viewingItem.rawId;
-                      setViewingItem(null);
-                      handleDelete(idToDelete);
-                    }}
-                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Record</span>
-                  </button>
-                  <button
-                    onClick={() => setViewingItem(null)}
-                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
             </div>
+          </div>
 
+          {/* Full Page Footer Actions */}
+          <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
+            <Link
+              href="/Reports/accounts"
+              target="_blank"
+              className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Public Page ↗</span>
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const item = viewingItem;
+                  setViewingItem(null);
+                  handleOpenEdit(item);
+                }}
+                className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Edit Record</span>
+              </button>
+              <button
+                onClick={() => {
+                  const idToDelete = viewingItem.rawId;
+                  setViewingItem(null);
+                  handleDelete(idToDelete);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Record</span>
+              </button>
+              <button
+                onClick={() => setViewingItem(null)}
+                className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 4. SIDE PANEL DRAWER FOR CREATING / EDITING */}
+      {/* 4. CREATE / EDIT FULL-PAGE EDITOR PANEL */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden animate-fadeIn">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-            onClick={() => setIsDrawerOpen(false)}
-          />
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                ← Back
+              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingId ? `Edit Document Record [ID: ${editingId}]` : 'Add New Document Record'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  Provide publication parameters and file attachments
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(false)}
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
+            >
+              ✕
+            </button>
+          </div>
 
-          {/* Sliding Drawer Container */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-white shadow-2xl flex flex-col justify-between border-l-4 border-l-[#751639]">
-              
-              {/* Drawer Header */}
-              <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-[#fafbfc]">
-                <div>
-                  <h3 className="font-bold text-sm text-[#751639]">
-                    {editingId ? `Edit Document Record [ID: ${editingId}]` : 'Add New Document Record (Local CMS)'}
-                  </h3>
-                  <p className="text-[11px] text-zinc-500">
-                    Provide publication parameters and file attachments
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 text-sm font-bold cursor-pointer"
-                >
-                  ✕
-                </button>
+          {/* Body Form */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">
+                  Document Title (English) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  placeholder="Enter document title in English"
+                />
               </div>
 
-              {/* Drawer Body Form */}
-              <form onSubmit={handleSubmit} id="combinedForm" className="p-6 space-y-4 overflow-y-auto flex-grow">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">
+                  Document Title (Hindi)
+                </label>
+                <input
+                  type="text"
+                  value={titleHi}
+                  onChange={(e) => setTitleHi(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  placeholder="दस्तावेज़ का शीर्षक हिंदी में दर्ज करें"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
-                    Document Title (English) *
+                  <label className="block font-bold text-zinc-700 mb-1">Category *</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as any)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  >
+                    <option value="combined">Combined Finance Accounts</option>
+                    <option value="conference">Conference Materials</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Account Year *</label>
+                  <input
+                    type="text"
+                    required
+                    value={accountYear}
+                    onChange={(e) => setAccountYear(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                    placeholder="e.g. 2024 - 25"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">Volume Name</label>
+                  <input
+                    type="text"
+                    value={volume}
+                    onChange={(e) => setVolume(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                    placeholder="e.g. Vol I or Full Compendium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-zinc-700 mb-1">File Size</label>
+                  <input
+                    type="text"
+                    value={size}
+                    onChange={(e) => setSize(e.target.value)}
+                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                    placeholder="e.g. 18.5 MB"
+                  />
+                </div>
+              </div>
+
+              {/* PDF DOCUMENT UPLOAD PANEL */}
+              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-zinc-800 text-xs uppercase tracking-wide text-[#751639]">
+                    PDF Document File &amp; Attachment *
+                  </label>
+                  {isUploading && (
+                    <span className="text-[11px] text-[#751639] font-bold flex items-center gap-1">
+                      <span className="w-3 h-3 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></span>
+                      Uploading PDF...
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <label className="cursor-pointer bg-[#751639] hover:bg-[#5f122d] text-white px-4 py-2 text-xs font-bold transition-colors shrink-0 shadow-xs flex items-center gap-1.5 rounded-none">
+                    <span>📁 Upload PDF Document</span>
+                    <input
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={handlePdfFileUpload}
+                      className="hidden"
+                    />
                   </label>
                   <input
                     type="text"
                     required
-                    value={titleEn}
-                    onChange={(e) => setTitleEn(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                    placeholder="Enter document title in English"
+                    value={fileUrl}
+                    onChange={(e) => setFileUrl(e.target.value)}
+                    className="flex-grow w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-mono"
+                    placeholder="or paste CloudFront PDF Link / URL"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
-                    Document Title (Hindi)
-                  </label>
+                {/* Attached File Preview Badge */}
+                {uploadedFileName && (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="font-bold text-emerald-700">📄 Attached PDF:</span>
+                      <span className="font-mono truncate">{uploadedFileName}</span>
+                      {uploadedFileSize && <span className="text-[11px] text-emerald-600 font-semibold">({uploadedFileSize})</span>}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {fileUrl && fileUrl !== '#' && (
+                        <a
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#751639] hover:underline font-bold text-[11px]"
+                        >
+                          Preview ↗
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUploadedFileName('');
+                          setUploadedFileSize('');
+                          setFileUrl('#');
+                        }}
+                        className="text-zinc-500 hover:text-red-600 font-bold ml-2 cursor-pointer"
+                        title="Remove attached file"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 1-Click Sample CloudFront Document Presets */}
+                <div className="pt-1">
+                  <div className="text-[11px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
+                    Or select verified CloudFront PDF Presets:
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { name: 'CFRA Full Book (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '18.5 MB' },
+                      { name: 'Conference Material (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '12.3 MB' },
+                      { name: 'CFRA Volume II (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '15.8 MB' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => {
+                          setFileUrl(preset.url);
+                          setUploadedFileName(preset.name);
+                          setUploadedFileSize(preset.size);
+                          setSize(preset.size);
+                        }}
+                        className={`text-[10.5px] px-2.5 py-1 border transition-all cursor-pointer ${
+                          fileUrl === preset.url
+                            ? 'bg-[#751639] text-white border-[#751639] font-bold'
+                            : 'bg-white text-zinc-700 border-zinc-300 hover:border-[#751639] hover:text-[#751639]'
+                        }`}
+                      >
+                        {preset.name} ({preset.size})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 font-bold text-zinc-700 cursor-pointer">
                   <input
-                    type="text"
-                    value={titleHi}
-                    onChange={(e) => setTitleHi(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                    placeholder="दस्तावेज़ का शीर्षक हिंदी में दर्ज करें"
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="w-4 h-4 text-[#751639] accent-[#751639]"
                   />
-                </div>
+                  <span>Publish &amp; Display on Public Accounts Portal</span>
+                </label>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold text-zinc-700 mb-1">Category *</label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value as any)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                    >
-                      <option value="combined">Combined Finance Accounts</option>
-                      <option value="conference">Conference Materials</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-zinc-700 mb-1">Account Year *</label>
-                    <input
-                      type="text"
-                      required
-                      value={accountYear}
-                      onChange={(e) => setAccountYear(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                      placeholder="e.g. 2024 - 25"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold text-zinc-700 mb-1">Volume Name</label>
-                    <input
-                      type="text"
-                      value={volume}
-                      onChange={(e) => setVolume(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                      placeholder="e.g. Vol I or Full Compendium"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-zinc-700 mb-1">File Size</label>
-                    <input
-                      type="text"
-                      value={size}
-                      onChange={(e) => setSize(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                      placeholder="e.g. 18.5 MB"
-                    />
-                  </div>
-                </div>
-
-                {/* PDF DOCUMENT UPLOAD PANEL */}
-                <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block font-bold text-zinc-800 text-xs uppercase tracking-wide text-[#751639]">
-                      PDF Document File &amp; Attachment *
-                    </label>
-                    {isUploading && (
-                      <span className="text-[11px] text-[#751639] font-bold flex items-center gap-1">
-                        <span className="w-3 h-3 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></span>
-                        Uploading PDF...
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <label className="cursor-pointer bg-[#751639] hover:bg-[#5f122d] text-white px-4 py-2 text-xs font-bold transition-colors shrink-0 shadow-xs flex items-center gap-1.5 rounded-none">
-                      <span>📁 Upload PDF Document</span>
-                      <input
-                        type="file"
-                        accept=".pdf,application/pdf"
-                        onChange={handlePdfFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={fileUrl}
-                      onChange={(e) => setFileUrl(e.target.value)}
-                      className="flex-grow w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-mono"
-                      placeholder="or paste CloudFront PDF Link / URL"
-                    />
-                  </div>
-
-                  {/* Attached File Preview Badge */}
-                  {uploadedFileName && (
-                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="font-bold text-emerald-700">📄 Attached PDF:</span>
-                        <span className="font-mono truncate">{uploadedFileName}</span>
-                        {uploadedFileSize && <span className="text-[11px] text-emerald-600 font-semibold">({uploadedFileSize})</span>}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {fileUrl && fileUrl !== '#' && (
-                          <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#751639] hover:underline font-bold text-[11px]"
-                          >
-                            Preview ↗
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUploadedFileName('');
-                            setUploadedFileSize('');
-                            setFileUrl('#');
-                          }}
-                          className="text-zinc-500 hover:text-red-600 font-bold ml-2 cursor-pointer"
-                          title="Remove attached file"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 1-Click Sample CloudFront Document Presets */}
-                  <div className="pt-1">
-                    <div className="text-[11px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
-                      Or select verified CloudFront PDF Presets:
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { name: 'CFRA Full Book (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '18.5 MB' },
-                        { name: 'Conference Material (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '12.3 MB' },
-                        { name: 'CFRA Volume II (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '15.8 MB' },
-                      ].map((preset) => (
-                        <button
-                          key={preset.name}
-                          type="button"
-                          onClick={() => {
-                            setFileUrl(preset.url);
-                            setUploadedFileName(preset.name);
-                            setUploadedFileSize(preset.size);
-                            setSize(preset.size);
-                          }}
-                          className={`text-[10.5px] px-2.5 py-1 border transition-all cursor-pointer ${
-                            fileUrl === preset.url
-                              ? 'bg-[#751639] text-white border-[#751639] font-bold'
-                              : 'bg-white text-zinc-700 border-zinc-300 hover:border-[#751639] hover:text-[#751639]'
-                          }`}
-                        >
-                          {preset.name} ({preset.size})
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <label className="flex items-center gap-2 font-bold text-zinc-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isActive}
-                      onChange={(e) => setIsActive(e.target.checked)}
-                      className="w-4 h-4 text-[#751639] accent-[#751639]"
-                    />
-                    <span>Publish &amp; Display on Public Accounts Portal</span>
-                  </label>
-                </div>
-              </form>
-
-              {/* Drawer Footer Actions */}
-              <div className="px-6 py-4 border-t border-zinc-200 bg-[#fafbfc] flex items-center justify-between gap-3">
+              <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">
                 <button
                   type="submit"
-                  form="combinedForm"
                   className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs cursor-pointer"
                   style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
                 >
@@ -1077,13 +1091,12 @@ function AdminCombinedAccountsContent() {
                 <button
                   type="button"
                   onClick={() => setIsDrawerOpen(false)}
-                  className="px-5 py-2.5 border border-zinc-300 text-zinc-700 hover:bg-zinc-100 font-medium cursor-pointer"
+                  className="px-6 py-2.5 border border-zinc-350 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white cursor-pointer"
                 >
                   Cancel
                 </button>
               </div>
-
-            </div>
+            </form>
           </div>
         </div>
       )}

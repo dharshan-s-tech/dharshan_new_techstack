@@ -847,77 +847,86 @@ function AdminReportsContent() {
         )}
       </div>
 
-      {/* 3. VIEW DETAILS MODAL */}
+      {/* 3. VIEW DETAILS FULL-PAGE VIEW PANEL */}
       {viewingReport && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            {/* Modal Header */}
-            <div 
-              className="p-4 text-white flex justify-between items-start"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Full Page Header */}
+          <div 
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewingReport(null)}
+                className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                title="Back to Reports Table"
+              >
+                <span>← Back</span>
+              </button>
               <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200 mb-1">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
                   Audit Report Record Details [ID: {viewingReport.rawId}]
                 </div>
-                <h2 className="text-base font-bold leading-snug">
+                <h2 className="text-base sm:text-lg font-bold leading-tight">
                   {viewingReport.title_en}
                 </h2>
                 {viewingReport.title_hi && (
-                  <p className="text-xs text-pink-100 font-medium mt-1">
+                  <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
                     {viewingReport.title_hi}
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => setViewingReport(null)}
-                className="text-white/80 hover:text-white text-xl font-bold ml-4 p-1 cursor-pointer"
-              >
-                ✕
-              </button>
             </div>
+            <button
+              onClick={() => setViewingReport(null)}
+              className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Close</span>
+              <span className="text-sm leading-none">✕</span>
+            </button>
+          </div>
 
-            {/* Modal Body */}
-            <div className="p-6 space-y-5 text-zinc-800">
+          {/* Full Page Body */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <div className="max-w-6xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
               
               {/* Badges Bar */}
-              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-zinc-200">
-                <span className="px-2.5 py-1 bg-[#751639] text-white font-bold text-[11px] rounded-xs">
+              <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
+                <span className="px-3 py-1 bg-[#751639] text-white font-bold text-xs rounded-xs">
                   {viewingReport.sector}
                 </span>
-                <span className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-xs rounded-xs">
                   Level: {viewingReport.level || 'Union'}
                 </span>
-                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-xs rounded-xs">
                   Type: {viewingReport.report_type}
                 </span>
-                <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-[11px] rounded-xs">
+                <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xs">
                   Year: {viewingReport.year_of_report}
                 </span>
                 {viewingReport.tabled_date && (
-                  <span className="px-2.5 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-[11px] rounded-xs">
+                  <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs rounded-xs">
                     Tabled: {viewingReport.tabled_date}
                   </span>
                 )}
-                <span className="ml-auto px-2.5 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-[10px] rounded-full">
+                <span className="ml-auto px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs rounded-full">
                   ● ACTIVE
                 </span>
               </div>
 
               {/* Banner & Preview */}
-              <div className="flex flex-col sm:flex-row gap-4 items-start bg-zinc-50 p-4 border border-zinc-200">
+              <div className="flex flex-col md:flex-row gap-6 items-start bg-zinc-50 p-5 border border-zinc-200">
                 <img
                   src={viewingReport.image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
                   alt="Banner"
-                  className="h-24 w-36 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
+                  className="h-36 w-56 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
                   }}
                 />
-                <div className="space-y-1.5 flex-1">
-                  <div className="font-bold text-zinc-900 text-xs">Banner Asset & CloudFront Link</div>
-                  <p className="text-[11px] text-zinc-500 break-all font-mono">
+                <div className="space-y-2 flex-1">
+                  <div className="font-bold text-zinc-900 text-sm">Banner Asset &amp; CloudFront Link</div>
+                  <p className="text-xs text-zinc-500 break-all font-mono bg-white p-2.5 border border-zinc-200">
                     {viewingReport.image || 'Default Civil Sector Banner'}
                   </p>
                   <div className="pt-2">
@@ -925,7 +934,7 @@ function AdminReportsContent() {
                       href={viewingReport.pdf_url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
                     >
                       <span>📥 Download Full Report (PDF)</span>
                     </a>
@@ -935,10 +944,10 @@ function AdminReportsContent() {
 
               {/* Scope Overview Narrative */}
               <div>
-                <h4 className="font-bold text-zinc-900 text-xs mb-1.5 uppercase tracking-wide text-[#751639]">
+                <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
                   Executive Summary &amp; Scope Overview
                 </h4>
-                <div className="bg-zinc-50 border border-zinc-200 p-3.5 text-zinc-700 leading-relaxed text-xs">
+                <div className="bg-zinc-50 border border-zinc-200 p-5 text-zinc-700 leading-relaxed text-sm">
                   {viewingReport.desc ? (
                     <p>{viewingReport.desc}</p>
                   ) : (
@@ -950,31 +959,32 @@ function AdminReportsContent() {
               {/* Chapters List (If Available) */}
               {viewingReport.chapters && viewingReport.chapters.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-zinc-900 text-xs mb-1.5 uppercase tracking-wide text-[#751639]">
+                  <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
                     Report Chapters &amp; Individual Files ({viewingReport.chapters.length})
                   </h4>
-                  <div className="border border-zinc-200 max-h-48 overflow-y-auto">
+                  <div className="border border-zinc-200 max-h-72 overflow-y-auto">
                     <table className="w-full text-left text-xs border-collapse">
-                      <thead className="bg-zinc-100 text-zinc-700 border-b border-zinc-200">
+                      <thead className="bg-zinc-100 text-zinc-700 border-b border-zinc-200 sticky top-0">
                         <tr>
-                          <th className="px-3 py-2 w-10 text-center">#</th>
-                          <th className="px-3 py-2">Chapter Title</th>
-                          <th className="px-3 py-2 w-20 text-center">Action</th>
+                          <th className="px-4 py-2.5 w-12 text-center">#</th>
+                          <th className="px-4 py-2.5">Chapter Title</th>
+                          <th className="px-4 py-2.5 w-28 text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-200">
                         {viewingReport.chapters.map((ch, cidx) => (
                           <tr key={ch.id || cidx} className="hover:bg-zinc-50">
-                            <td className="px-3 py-2 text-center text-zinc-400 font-mono">{cidx + 1}</td>
-                            <td className="px-3 py-2 font-medium text-zinc-800">{ch.title}</td>
-                            <td className="px-3 py-2 text-center">
+                            <td className="px-4 py-2.5 text-center text-zinc-400 font-mono">{cidx + 1}</td>
+                            <td className="px-4 py-2.5 font-medium text-zinc-800 text-xs">{ch.title}</td>
+                            <td className="px-4 py-2.5 text-center">
                               <a
                                 href={ch.file_url || '#'}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#751639] hover:underline font-bold text-[11px]"
+                                className="text-[#751639] hover:underline font-bold text-xs inline-flex items-center gap-1"
                               >
-                                PDF ↗
+                                <span>PDF</span>
+                                <span>↗</span>
                               </a>
                             </td>
                           </tr>
@@ -985,125 +995,141 @@ function AdminReportsContent() {
                 </div>
               )}
 
-              {/* Footer Actions */}
-              <div className="pt-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
-                <Link
-                  href={`/Reports/${viewingReport.rawId}`}
-                  target="_blank"
-                  className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Open Public Page ↗</span>
-                </Link>
+            </div>
+          </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const r = viewingReport;
-                      setViewingReport(null);
-                      handleOpenEdit(r);
-                    }}
-                    className="px-4 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>Edit Record</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      const idToDelete = viewingReport.rawId;
-                      setViewingReport(null);
-                      handleDelete(idToDelete);
-                    }}
-                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Record</span>
-                  </button>
-                  <button
-                    onClick={() => setViewingReport(null)}
-                    className="px-4 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-medium text-xs rounded-none cursor-pointer"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+          {/* Full Page Footer Actions */}
+          <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
+            <Link
+              href={`/Reports/${viewingReport.rawId}`}
+              target="_blank"
+              className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Public Page ↗</span>
+            </Link>
 
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  const r = viewingReport;
+                  setViewingReport(null);
+                  handleOpenEdit(r);
+                }}
+                className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Edit Record</span>
+              </button>
+              <button
+                onClick={() => {
+                  const idToDelete = viewingReport.rawId;
+                  setViewingReport(null);
+                  handleDelete(idToDelete);
+                }}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Record</span>
+              </button>
+              <button
+                onClick={() => setViewingReport(null)}
+                className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 4. CREATE / EDIT MODAL FORM */}
+      {/* 4. CREATE / EDIT FULL-PAGE EDITOR PANEL */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                ← Back
+              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingRawId ? 'Edit Audit Report' : 'Add New Audit Report'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  {editingRawId ? `Editing Record ID #${editingRawId}` : 'Register new audit publication to CAG registry'}
+                </p>
+              </div>
+            </div>
             <button
+              type="button"
               onClick={() => setIsFormOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold cursor-pointer"
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
             >
               ✕
             </button>
-            <h3 className="text-sm font-bold text-zinc-900 border-b border-zinc-200 pb-3 mb-4">
-              {editingRawId ? `Edit Audit Report [ID: ${editingRawId}]` : 'Register New Audit Report Card (Local CMS)'}
-            </h3>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Body Content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
               <div>
-                <label className="block font-bold text-zinc-700 mb-1">
-                  Report Headline Title (English) *
-                </label>
+                <label className="block font-bold text-zinc-700 mb-1">Report Title (English) *</label>
                 <input
                   type="text"
                   required
                   value={titleEn}
                   onChange={(e) => setTitleEn(e.target.value)}
                   className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter full Report Title"
+                  placeholder="Report of the Comptroller and Auditor General of India..."
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-zinc-700 mb-1">
-                  Report Title (Hindi)
-                </label>
+                <label className="block font-bold text-zinc-700 mb-1">Report Title (Hindi)</label>
                 <input
                   type="text"
                   value={titleHi}
                   onChange={(e) => setTitleHi(e.target.value)}
                   className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="रिपोर्ट का शीर्षक (हिंदी)"
+                  placeholder="भारत के नियंत्रक एवं महालेखापरीक्षक का प्रतिवेदन..."
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-zinc-700 mb-1">
-                  Description / Overview Scope Summary
-                </label>
+                <label className="block font-bold text-zinc-700 mb-1">Executive Summary / Description</label>
                 <textarea
                   rows={3}
                   value={overviewEn}
                   onChange={(e) => setOverviewEn(e.target.value)}
                   className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter audit scope and key findings narrative"
+                  placeholder="Overview of audit findings and scope..."
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Administrative Level</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Government Level</label>
                   <select
                     value={govLevel}
                     onChange={(e) => setGovLevel(e.target.value)}
                     className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
                   >
-                    <option value="Union">Union Government</option>
-                    <option value="States">State Government</option>
-                    <option value="Local Bodies">Local Bodies (PRI / ULB)</option>
+                    <option value="Union">Union (National)</option>
+                    <option value="State">State Government</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Report Type</label>
+                  <label className="block font-bold text-zinc-700 mb-1">Audit Type</label>
                   <select
                     value={reportType}
                     onChange={(e) => setReportType(e.target.value)}
