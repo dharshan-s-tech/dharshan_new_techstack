@@ -1,4 +1,4 @@
-﻿from sqlalchemy import Column, Integer, BigInteger, SmallInteger, String, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, BigInteger, SmallInteger, String, Text, DateTime, ForeignKey, Boolean
 from datetime import datetime
 from app.core.database import Base
 
@@ -126,6 +126,7 @@ class Wing(Base):
 
 class Website(Base):
     __tablename__ = "websites"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
     parent_id = Column(Integer, nullable=True, default=0)

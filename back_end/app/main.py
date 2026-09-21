@@ -9,7 +9,7 @@ from app.core.database import Base, engine
 from app.api.router import api_router
 
 # Ensure models are registered before create_all
-from app.models import admin_user, audit_log, news, page, report, event, menu, organisation_chart, former_cag, user_management  # noqa: F401
+from app.models import admin_user, audit_log, news, page, report, event, menu, organisation_chart, former_cag, user_management, presence  # noqa: F401
 
 
 @asynccontextmanager

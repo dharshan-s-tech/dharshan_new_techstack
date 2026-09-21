@@ -16,6 +16,16 @@ function StateOfficesPageContent() {
     // Initial load from dataManager
     setStateOffices(dataManager.getStateOffices());
 
+    // Fetch live state cards from backend API
+    fetch('/api/presence', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.state_level_offices && data.state_level_offices.length > 0) {
+          setStateOffices(data.state_level_offices);
+        }
+      })
+      .catch(() => {});
+
     setLang(dataManager.getLanguage());
     const handleLangChange = () => {
       setLang(dataManager.getLanguage());

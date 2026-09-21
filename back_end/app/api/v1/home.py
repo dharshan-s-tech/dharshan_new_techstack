@@ -227,21 +227,52 @@ async def delete_banner(banner_id: int, db: Session = Depends(get_db)):
 
 @presence_router.get("")
 @presence_router.get("/")
-async def get_presence(db: Session = Depends(get_db)):
-    offices = []
-    states_data = []
-    if db and engine.dialect.name == "postgresql":
-        try:
-            q_states = text("SELECT id, name FROM cag_revamp.states ORDER BY name;")
-            rows_st = db.execute(q_states).mappings().fetchall()
-            states_data = [{"id": r["id"], "name": r["name"]} for r in rows_st]
-        except Exception as e:
-            logger.warning(f"Error fetching states: {e}")
+async def get_presence(
+    type: Optional[str] = Query(None),
+    filter: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    state_id: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    language: Optional[str] = Query("en"),
+    db: Session = Depends(get_db)
+):
+    from app.services.presence_service import PresenceService
+    eff_filter = filter or category or "all"
+    
+    if type in ("state", "state-level", "state-offices"):
+        return PresenceService.get_state_offices(db, filter_type=eff_filter)
+    
+    if type in ("central", "central-audit", "central-offices"):
+        return PresenceService.get_central_offices(db, category=eff_filter if eff_filter != "all" else "defense")
+        
+    if type in ("training", "training-institutes", "institutes"):
+        return PresenceService.get_training_institutes(db, category=eff_filter if eff_filter != "all" else "regional")
 
-    return {
-        "offices": offices,
-        "states": states_data
-    }
+    return PresenceService.get_all_presence_data(db, language=language or "en")
+
+
+@presence_router.get("/state-offices")
+async def get_state_presence_offices(filter: Optional[str] = Query("audit"), db: Session = Depends(get_db)):
+    from app.services.presence_service import PresenceService
+    return PresenceService.get_state_offices(db, filter_type=filter or "audit")
+
+
+@presence_router.get("/central-offices")
+async def get_central_presence_offices(category: Optional[str] = Query("defense"), db: Session = Depends(get_db)):
+    from app.services.presence_service import PresenceService
+    return PresenceService.get_central_offices(db, category=category or "defense")
+
+
+@presence_router.get("/training-institutes")
+async def get_training_presence_institutes(category: Optional[str] = Query("regional"), db: Session = Depends(get_db)):
+    from app.services.presence_service import PresenceService
+    return PresenceService.get_training_institutes(db, category=category or "regional")
+
+
+@presence_router.get("/state/{state_slug}")
+async def get_state_subsite_presence(state_slug: str, db: Session = Depends(get_db)):
+    from app.services.presence_service import PresenceService
+    return PresenceService.get_state_subsite_detail(db, state_slug=state_slug)
 
 
 @officers_router.get("")

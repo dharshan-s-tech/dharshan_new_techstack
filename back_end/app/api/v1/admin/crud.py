@@ -391,6 +391,37 @@ async def list_or_get_crud(
             return {"data": found}
         return UserManagementService.get_wings(db, page=page, limit=limit, search=search, status=status)
 
+    if table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+        from app.services.presence_service import PresenceService
+        if id:
+            office = PresenceService.get_office_by_id(db, id)
+            return {"data": [office] if office else []}
+        return PresenceService.get_offices_crud(
+            db=db,
+            page=page,
+            limit=limit,
+            search=search,
+            department_id=category or wings_id,
+            state_id=role_id,
+            status=status
+        )
+
+    if table in ("states", "states_list"):
+        from app.models.presence import State
+        st_rows = db.query(State).order_by(State.name.asc()).all()
+        formatted = [{"id": str(s.id), "name": s.name, "slug": s.slug, "image": s.image, "parent_id": s.parent_id} for s in st_rows]
+        if id:
+            formatted = [s for s in formatted if s["id"] == str(id)]
+        return {"data": formatted, "total": len(formatted), "page": 1, "totalPages": 1}
+
+    if table in ("departments", "dept_list"):
+        from app.models.presence import Department
+        dp_rows = db.query(Department).order_by(Department.id.asc()).all()
+        formatted = [{"id": str(d.id), "title": d.title.strip(), "slug": d.slug, "status": d.status} for d in dp_rows]
+        if id:
+            formatted = [d for d in formatted if d["id"] == str(id)]
+        return {"data": formatted, "total": len(formatted), "page": 1, "totalPages": 1}
+
     if table in ("subscribers", "newsletter_subscribers"):
         from app.services.subscribers_service import SubscribersService
         result = SubscribersService.get_subscribers(page=page, page_size=limit, query=search, status=status)
@@ -495,6 +526,10 @@ async def create_crud(
         elif table in ("user_offices", "user-offices"):
             from app.services.user_management_service import UserManagementService
             res = UserManagementService.create_user_office(db, data, actor_id=1)
+            record_id = str(res.get("id"))
+        elif table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+            from app.services.presence_service import PresenceService
+            res = PresenceService.create_office(db, data, actor_id=1)
             record_id = str(res.get("id"))
         else:
             record_id = str(uuid.uuid4())
@@ -604,6 +639,9 @@ async def update_crud(
         elif table in ("user_offices", "user-offices"):
             from app.services.user_management_service import UserManagementService
             UserManagementService.update_user_office(db, id, data, actor_id=1)
+        elif table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+            from app.services.presence_service import PresenceService
+            PresenceService.update_office(db, id, data, actor_id=1)
         else:
             items = MOCK_MODULE_STORE.get(table, [])
             found_idx = -1
@@ -703,6 +741,9 @@ async def delete_crud(
         elif table in ("user_offices", "user-offices"):
             from app.services.user_management_service import UserManagementService
             UserManagementService.delete_user_office(db, id)
+        elif table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+            from app.services.presence_service import PresenceService
+            PresenceService.delete_office(db, id)
         else:
             items = MOCK_MODULE_STORE.get(table, [])
             MOCK_MODULE_STORE[table] = [item for item in items if str(item.get("id")) != str(id)]
