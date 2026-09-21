@@ -58,7 +58,8 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
       if (
         !target.closest('.primary-nav') &&
         !target.closest('.about-menu') &&
-        !target.closest('.global-relations-menu')
+        !target.closest('.global-relations-menu') &&
+        !target.closest('.resources-menu')
       ) {
         if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
         setActiveMega(null);
@@ -224,7 +225,7 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
 
       {/* Resources dropdown */}
       <div 
-        className="nav-item relative cursor-pointer flex items-center gap-1"
+        className="nav-item cursor-pointer flex items-center gap-1"
         onMouseEnter={() => handleNavEnter('resources')}
         onMouseLeave={handleNavLeave}
       >
@@ -243,23 +244,109 @@ export default function Menu({ mobileMenuOpen, language }: { mobileMenuOpen: boo
         />
         {activeMega === 'resources' && (
           <div 
-            className="absolute top-[80%] left-0 pt-3 w-64 z-[1050]"
+            className="resources-menu" 
+            id="resources-mega-menu" 
+            role="menu"
             onMouseEnter={() => handleNavEnter('resources')}
             onMouseLeave={handleNavLeave}
           >
-            <div className="bg-white border border-[#d7d7d7] py-2 shadow-lg rounded-b-lg">
-              <Link href="/Resources#manuals" className="block px-4 py-2 text-xs text-[#2a2a2a] hover:bg-[#eee] transition-colors" onClick={() => setActiveMega(null)}>
-                {isHindi ? 'लेखा परीक्षा नियमावली और तकनीकी गाइड' : 'Audit Manuals & Technical Guides'}
-              </Link>
-              <Link href="/Resources#standards" className="block px-4 py-2 text-xs text-[#2a2a2a] hover:bg-[#eee] transition-colors" onClick={() => setActiveMega(null)}>
-                {isHindi ? 'मार्गदर्शन नोट और लेखा मानक' : 'Guidance Notes & Accounting Standards'}
-              </Link>
-              <Link href="/Resources#regulations" className="block px-4 py-2 text-xs text-[#2a2a2a] hover:bg-[#eee] transition-colors" onClick={() => setActiveMega(null)}>
-                {isHindi ? 'राजपत्र अधिसूचनाएं और विनियम' : 'Gazette Notifications & Regulations'}
-              </Link>
-              <Link href="/Resources#circulars" className="block px-4 py-2 text-xs text-[#2a2a2a] hover:bg-[#eee] transition-colors" onClick={() => setActiveMega(null)}>
-                {isHindi ? 'विभागीय परिपत्र और नियम' : 'Departmental Circulars & Rules'}
-              </Link>
+            <h2 className="grm-title text-left">{isHindi ? 'संसाधन' : 'Resources'}</h2>
+            <div className="grm-divider" aria-hidden="true"></div>
+            <div className="grm-columns" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
+              
+              {/* Col 1: Policies */}
+              <div className="grm-column">
+                <p className="grm-column__heading text-left" style={{ color: '#701537' }}>
+                  {isHindi ? 'नीतियां' : 'Policies'}
+                </p>
+                <div className="grm-link-group">
+                  <Link href="/Resources/Recruitment-Policy" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'भर्ती नीति' : 'Recruitment Policy'}
+                  </Link>
+                  <Link href="/Resources/Citizen-Charter" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'नागरिक अधिकार पत्र' : 'Citizen Charter'}
+                  </Link>
+                  <Link href="/Resources/Right-to-Information-Policy" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'सूचना का अधिकार नीति' : 'Right to Information Policy'}
+                  </Link>
+                  <Link href="/Resources/Administrative-Information-Policy" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'प्रशासनिक सूचना नीति' : 'Administrative Information Policy'}
+                  </Link>
+                  <Link href="/Resources/Social-Media-Policy" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'सोशल मीडिया नीति' : 'Social Media Policy'}
+                  </Link>
+                  <Link href="/Resources/PIDPI-Policy-for-Circulation" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'प्रसार के लिए पीआईडीपीआई नीति' : 'PIDPI Policy for Circulation'}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Col 2: Publications */}
+              <div className="grm-column">
+                <p className="grm-column__heading text-left" style={{ color: '#701537' }}>
+                  {isHindi ? 'प्रकाशन' : 'Publications'}
+                </p>
+                <div className="grm-link-group">
+                  <Link href="/Resources/Annual-Report" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'वार्षिक प्रतिवेदन' : 'Annual Report'}
+                  </Link>
+                  <Link href="/Resources/Peer-Review-Report" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'पीयर रिव्यू रिपोर्ट' : 'Peer Review Report'}
+                  </Link>
+                  <Link href="/Resources/Status-of-Accounts-of-State-PSUs" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'राज्य पीएसयू खातों की स्थिति' : 'Status of Accounts of State PSUs'}
+                  </Link>
+                  <Link href="/Resources/Study-Reports-and-Compendia" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'अध्ययन रिपोर्ट एवं संग्रह' : 'Study Reports & Compendia'}
+                  </Link>
+                  <Link href="/Resources/Rajbhasha-e-Patrika" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'राजभाषा ई-पत्रिका' : 'Rajbhasha e-Patrika'}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Col 3: Standards & Guidance */}
+              <div className="grm-column">
+                <p className="grm-column__heading text-left" style={{ color: '#701537' }}>
+                  {isHindi ? 'मानक एवं मार्गदर्शन' : 'Standards & Guidance'}
+                </p>
+                <div className="grm-link-group">
+                  <Link href="/Resources/Standing-Orders" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'स्थायी आदेश' : 'Standing Orders'}
+                  </Link>
+                  <Link href="/Resources/Guidelines" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'दिशा-निर्देश' : 'Guidelines'}
+                  </Link>
+                  <Link href="/Resources/Guidance-Notes" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'मार्गदर्शन नोट एवं अभ्यास गाइड' : 'Guidance Notes & Practice Guides'}
+                  </Link>
+                  <Link href="/Resources/Manuals" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'नियमावली (मैनुअल)' : 'Manuals'}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Col 4: Media & Archives */}
+              <div className="grm-column">
+                <p className="grm-column__heading text-left" style={{ color: '#701537' }}>
+                  {isHindi ? 'मीडिया एवं पुरालेख' : 'Media & Archives'}
+                </p>
+                <div className="grm-link-group">
+                  <Link href="/Resources/Press-Releases" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'प्रेस विज्ञप्तियां' : 'Press Releases'}
+                  </Link>
+                  <Link href="/Resources/Speeches" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'भाषण एवं वक्तव्य' : 'Speeches'}
+                  </Link>
+                  <Link href="/Resources/Photo-Gallery" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'फोटो गैलरी' : 'Photo Gallery'}
+                  </Link>
+                  <Link href="/Resources/Video-Gallery" className="grm-link-box" onClick={() => setActiveMega(null)}>
+                    {isHindi ? 'वीडियो गैलरी' : 'Video Gallery'}
+                  </Link>
+                </div>
+              </div>
+
             </div>
           </div>
         )}

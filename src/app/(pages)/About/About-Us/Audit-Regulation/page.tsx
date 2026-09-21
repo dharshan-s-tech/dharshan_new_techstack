@@ -31,15 +31,26 @@ function PdfBadgeIcon() {
 export default function AuditRegulationPage() {
   const [regulations, setRegulations] = useState<AuditRegulationItem[]>(DEFAULT_AUDIT_REGULATIONS);
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
   const [previewDoc, setPreviewDoc] = useState<AuditRegulationItem | null>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
     const initialList = dataManager.getAuditRegulations().filter((r) => r.is_active || r.isActive);
     setRegulations(initialList.length > 0 ? initialList : DEFAULT_AUDIT_REGULATIONS);
 
+    dataManager.fetchPageData('page-cag-audit-regulations', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
     const handleLangChange = () => {
-      setLang(dataManager.getLanguage());
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-cag-audit-regulations', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
     };
 
     const handleRegulationsChange = () => {
@@ -51,17 +62,19 @@ export default function AuditRegulationPage() {
     window.addEventListener('auditRegulationsChange', handleRegulationsChange);
 
     return () => {
+      isMounted = false;
       window.removeEventListener('languageChange', handleLangChange);
       window.removeEventListener('auditRegulationsChange', handleRegulationsChange);
     };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'लेखा परीक्षा विनियम' : 'Audit Regulation');
 
 
 
   return (
-    <AboutLayout title="Audit Regulation" hideTitleBorder={true}>
+    <AboutLayout title={pageTitle} hideTitleBorder={true}>
       <div className="w-full max-w-[978px] flex flex-col font-['Noto_Sans',sans-serif]">
         {/* Page Title */}
         <h1
@@ -74,7 +87,7 @@ export default function AuditRegulationPage() {
           }}
           className="text-left mb-6"
         >
-          {isHindi ? 'लेखा परीक्षा विनियम' : 'Audit Regulation'}
+          {pageTitle}
         </h1>
 
         {/* Accordion / Regulation Sections Container */}

@@ -15,11 +15,14 @@ from app.models import admin_user, audit_log, news, page, report, event, menu, o
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     with engine.begin() as conn:
-        if engine.dialect.name == "postgresql":
-            schema = settings.DB_SCHEMA
-            if schema:
-                conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
-        Base.metadata.create_all(bind=conn)
+        if engine.dialect.name == "sqlite":
+            Base.metadata.create_all(bind=conn)
+        else:
+            try:
+                # Do not modify or force DDL on remote PostgreSQL database
+                pass
+            except Exception:
+                pass
     yield
 
 
@@ -44,9 +47,20 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
+    db_ok = False
+    db_error = None
+    try:
+        with engine.connect() as conn:
+            conn.exec_driver_sql("SELECT 1")
+            db_ok = True
+    except Exception as exc:
+        db_error = str(exc)
     return {
-        "status": "ok",
+        "status": "ok" if db_ok and engine.dialect.name == "postgresql" else "degraded",
         "environment": settings.ENVIRONMENT,
-        "db": f"{settings.DB_HOST}/{settings.DB_NAME}",
+        "db": f"{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}",
         "schema": settings.DB_SCHEMA,
+        "dialect": engine.dialect.name,
+        "db_ok": db_ok,
+        "db_error": db_error,
     }

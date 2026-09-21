@@ -33,6 +33,7 @@ async def get_state_accounts(
     year: str = Query("", description="Accounting Year"),
     query: str = Query("", description="Search term"),
     sort: str = Query("year_desc", description="Sort order (year_desc, year_asc, title_asc, title_desc, state_asc)"),
+    status: Optional[str] = Query(None, description="Publish Status (all, active, inactive)"),
 ):
     """Retrieve state accounts statements with state, category, volume, and download link."""
     return ReportsService.get_state_accounts(
@@ -44,6 +45,7 @@ async def get_state_accounts(
         year=year,
         query=query,
         sort=sort,
+        status=status,
     )
 
 
@@ -94,6 +96,7 @@ async def get_combined_accounts(
     query: str = Query("", description="Search term"),
     category: str = Query("", description="combined or conference"),
     sort: str = Query("year_desc", description="Sort order (year_desc, year_asc, title_asc, title_desc)"),
+    status: Optional[str] = Query(None, description="Publish Status (all, active, inactive)"),
 ):
     """Retrieve Combined Finance & Revenue Accounts (CFRA) and Annual Conference Materials."""
     return ReportsService.get_combined_accounts(
@@ -103,6 +106,7 @@ async def get_combined_accounts(
         query=query,
         category=category,
         sort=sort,
+        status=status,
     )
 
 

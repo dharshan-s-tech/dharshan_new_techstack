@@ -38,20 +38,14 @@ export default function AdminOverview() {
   return (
     <div className="space-y-6 text-xs text-zinc-700">
       
-      {/* Welcome Banner */}
-      <div className="bg-[#751639]/5 border border-[#751639]/20 p-5 rounded-none">
-        <h2 className="text-sm font-bold text-[#751639]">Admin Control Suite Overview</h2>
-        <p className="text-[11px] text-zinc-650 mt-1 max-w-2xl leading-relaxed">
-          Welcome to the CAG administrative management desk. Select any section from the left navigation sidebar to manage website cards, hero banners, reports, and press releases.
-        </p>
-      </div>
+     
 
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {statCards.map((card, idx) => (
           <div
             key={idx}
-            className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-sm hover:border-zinc-350 transition-colors"
+            className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm hover:border-zinc-350 transition-colors"
           >
             <div className="flex justify-between items-start mb-4">
               <span className="text-lg">{card.icon}</span>
@@ -68,7 +62,7 @@ export default function AdminOverview() {
       </div>
 
       {/* Accounts Reports Subtopics Quick Access Console */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] p-5 shadow-sm space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm space-y-4">
         <div className="flex justify-between items-center border-b border-zinc-200 pb-3">
           <div>
             <h3 className="text-xs font-bold text-zinc-850 flex items-center gap-2">
@@ -116,7 +110,7 @@ export default function AdminOverview() {
       </div>
 
       {/* System Settings Table panel */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-sm">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm">
         <h3 className="text-xs font-bold text-zinc-850 mb-4 flex items-center gap-2">
           <span>⚙️</span>
           <span>System Coordinates</span>

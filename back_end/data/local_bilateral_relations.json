@@ -1,0 +1,332 @@
+[
+  {
+    "id": 1,
+    "country_en": "Bhutan",
+    "country_hi": "भूटान",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-bhutan.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-bhutan.jpg",
+    "local_fallback_flag": "/assets/Images/flags/bhutan.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MOU-with-SAI-Bhutan-06a69c5bf619591-84639417.pdf",
+    "display_order": 1
+  },
+  {
+    "id": 2,
+    "country_en": "Brazil",
+    "country_hi": "ब्राज़ील",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-brazil.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-brazil.jpg",
+    "local_fallback_flag": "/assets/Images/flags/brazil.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Brazil-MOU-20211018122505.pdf",
+    "display_order": 2
+  },
+  {
+    "id": 3,
+    "country_en": "Cambodia",
+    "country_hi": "कंबोडिया",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-combodia.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-combodia.jpg",
+    "local_fallback_flag": "/assets/Images/flags/cambodia.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Cambodia-MOU-20211018122515.pdf",
+    "display_order": 3
+  },
+  {
+    "id": 4,
+    "country_en": "Chile",
+    "country_hi": "चिली",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-chile.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-chile.jpg",
+    "local_fallback_flag": "/assets/Images/flags/Chile.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/ChileMOU-063f318cb0b6ba3-11650995.pdf",
+    "display_order": 4
+  },
+  {
+    "id": 5,
+    "country_en": "China",
+    "country_hi": "चीन",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-china.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-china.jpg",
+    "local_fallback_flag": "/assets/Images/flags/China.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/China-MOU-20211018122525.pdf",
+    "display_order": 5
+  },
+  {
+    "id": 6,
+    "country_en": "Indonesia",
+    "country_hi": "इंडोनेशिया",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-indonesia.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-indonesia.jpg",
+    "local_fallback_flag": "/assets/Images/flags/Indonesia.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-SAI-Indonesia-064ad3bcda0ada3-52366254.pdf",
+    "display_order": 6
+  },
+  {
+    "id": 7,
+    "country_en": "Iran",
+    "country_hi": "ईरान",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-iran.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-iran.jpg",
+    "local_fallback_flag": "/assets/Images/flags/Iran.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Iran-MOU-20211018122534.pdf",
+    "display_order": 7
+  },
+  {
+    "id": 8,
+    "country_en": "Israel",
+    "country_hi": "इजराइल",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-israel.png",
+    "legacy_image_path": "../assets/images/cms_pages/india-israel.png",
+    "local_fallback_flag": "/assets/Images/flags/Israel.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-with-SAI-Israel-06a69c5cbcdafe8-11942910.pdf",
+    "display_order": 8
+  },
+  {
+    "id": 9,
+    "country_en": "Kazakhstan",
+    "country_hi": "कज़ाकिस्तान",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/India-Kazakhstan.png",
+    "legacy_image_path": "../assets/images/cms_pages/India-Kazakhstan.png",
+    "local_fallback_flag": "/assets/Images/flags/Kazakhstan.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/KazakhstanMOU-063f316cbbee8b4-97377335.pdf",
+    "display_order": 9
+  },
+  {
+    "id": 10,
+    "country_en": "Korea",
+    "country_hi": "कोरिया",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-korea.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-korea.jpg",
+    "local_fallback_flag": "/assets/Images/flags/Korea.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/SAI-Korea-064ad3bdea67998-91422093.pdf",
+    "display_order": 10
+  },
+  {
+    "id": 11,
+    "country_en": "Kuwait",
+    "country_hi": "कुवैत",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/Indo-Kuwait_0.png",
+    "legacy_image_path": "../assets/images/cms_pages/Indo-Kuwait_0.png",
+    "local_fallback_flag": "/assets/Images/flags/Kuwait.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Kuwait-MOU-20211018122543.pdf",
+    "display_order": 11
+  },
+  {
+    "id": 12,
+    "country_en": "Maldives",
+    "country_hi": "मालदीव",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-maldivs.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-maldivs.jpg",
+    "local_fallback_flag": "/assets/Images/flags/Maldives.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MOU-Maldives-301021-20211101101328.pdf",
+    "display_order": 12
+  },
+  {
+    "id": 13,
+    "country_en": "Mauritius",
+    "country_hi": "मॉरीशस",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/indo-mauritius.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/indo-mauritius.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/SAI-Mauritius-MoU-english-06a20f33ab3bbd3-12372169.pdf",
+    "display_order": 13
+  },
+  {
+    "id": 14,
+    "country_en": "Mongolia",
+    "country_hi": "मंगोलिया",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/India-Mongolia-1.png",
+    "legacy_image_path": "../assets/images/cms_pages/India-Mongolia-1.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Mongolia-20211018122604.pdf",
+    "display_order": 14
+  },
+  {
+    "id": 15,
+    "country_en": "Morocco",
+    "country_hi": "मोरक्को",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/Indo-Mongolia.png",
+    "legacy_image_path": "../assets/images/cms_pages/Indo-Mongolia.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-with-SAI-Morocco09112022-0636e0abb3b73e9-47600485.pdf",
+    "display_order": 15
+  },
+  {
+    "id": 16,
+    "country_en": "Oman",
+    "country_hi": "ओमान",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-oman.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-oman.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Oman-new-0625e45d64474f5-25883550.pdf",
+    "display_order": 16
+  },
+  {
+    "id": 17,
+    "country_en": "Poland",
+    "country_hi": "पोलैंड",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-poland.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-poland.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Poland-20211018122622.pdf",
+    "display_order": 17
+  },
+  {
+    "id": 18,
+    "country_en": "Russia",
+    "country_hi": "रूस",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-russia.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-russia.jpg",
+    "local_fallback_flag": "/assets/Images/flags/Russia.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Russia-20211018122630.pdf",
+    "display_order": 18
+  },
+  {
+    "id": 19,
+    "country_en": "South Africa",
+    "country_hi": "दक्षिण अफ्रीका",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-southafrica.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-southafrica.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/South-Africa-20211018122640.pdf",
+    "display_order": 19
+  },
+  {
+    "id": 20,
+    "country_en": "Tajikistan",
+    "country_hi": "ताजिकिस्तान",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/India-Tajikistan.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/India-Tajikistan.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/TajikistanMOU-063f316d8affbe7-82375096.pdf",
+    "display_order": 20
+  },
+  {
+    "id": 21,
+    "country_en": "Turkiye",
+    "country_hi": "तुर्किये",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-turkiye.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-turkiye.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-SAI-Turkiye-064ad3bc208dd65-23836096.pdf",
+    "display_order": 21
+  },
+  {
+    "id": 22,
+    "country_en": "Ukraine",
+    "country_hi": "यूक्रेन",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-ukrain.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-ukrain.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Ukraine-20211018122657.pdf",
+    "display_order": 22
+  },
+  {
+    "id": 23,
+    "country_en": "Venezuela",
+    "country_hi": "वेनेजुएला",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/Indo-Venezuela.png",
+    "legacy_image_path": "../assets/images/cms_pages/Indo-Venezuela.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Venezuela-20211018122705.pdf",
+    "display_order": 23
+  },
+  {
+    "id": 24,
+    "country_en": "Vietnam",
+    "country_hi": "वियतनाम",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/india-vietnam.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/india-vietnam.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-with-SAI-Vietnam-06a69c5d5247741-33107511.pdf",
+    "display_order": 24
+  },
+  {
+    "id": 25,
+    "country_en": "Nepal",
+    "country_hi": "नेपाल",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_and_nepal.jpg",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_and_nepal.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-Nepal-06639ede4bd6148-77768945.pdf",
+    "display_order": 25
+  },
+  {
+    "id": 26,
+    "country_en": "Bulgaria",
+    "country_hi": "बुल्गारिया",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_bulgaria.png",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_bulgaria.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-SAI-Bulgaria-1-066335dfa084b35-77174433.pdf",
+    "display_order": 26
+  },
+  {
+    "id": 27,
+    "country_en": "Bahrain",
+    "country_hi": "बहरीन",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_bahrain_600x381.png",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_bahrain_600x381.png",
+    "local_fallback_flag": "/assets/Images/flags/Bahrain.svg",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Final-signed-MoU-with-SAI-Bahrain-066d81e5c28b3c1-06567011.pdf",
+    "display_order": 27
+  },
+  {
+    "id": 28,
+    "country_en": "UAE",
+    "country_hi": "संयुक्त अरब अमीरात (UAE)",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_uae_600x381.png",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_uae_600x381.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Signed-MoU-SAI-UAE-066dfece05da464-50517218.pdf",
+    "display_order": 28
+  },
+  {
+    "id": 29,
+    "country_en": "Saudi Arabia",
+    "country_hi": "सऊदी अरब",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_saudi_arabia_600x381.png",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/india_saudi_arabia_600x381.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Signed-MoU-Saudi-Arabia-066dfecef070386-27883992.pdf",
+    "display_order": 29
+  },
+  {
+    "id": 30,
+    "country_en": "Uzbekistan",
+    "country_hi": "उज़्बेकिस्तान",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/bilateral%20images/Untitled_design-Copy-1.png",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/bilateral images/Untitled_design-Copy-1.png",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-SAI-Uzbekistan-066ffa7513686b2-27858723.pdf",
+    "display_order": 30
+  },
+  {
+    "id": 31,
+    "country_en": "Seychelles",
+    "country_hi": "सेशेल्स",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/MoU_of_Seychelles.jpg",
+    "legacy_image_path": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/FileManager/MoU_of_Seychelles.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MoU-of-Seychelles-1-0672dda370df9d6-26505647.pdf",
+    "display_order": 31
+  },
+  {
+    "id": 32,
+    "country_en": "Sierra Leone",
+    "country_hi": "सिएरा लियोन",
+    "image_url": "https://d7i5wg8xwe4hf.cloudfront.net/assets/images/cms_pages/indo-sierra-leone.jpg",
+    "legacy_image_path": "../assets/images/cms_pages/indo-sierra-leone.jpg",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/English-version-MoU-Sierra-Leone-06a2fe8e8d52740-85901879.pdf",
+    "display_order": 32
+  },
+  {
+    "id": 33,
+    "country_en": "INTOSAI Development Initiative (IDI)",
+    "country_hi": "इंटोसाई विकास पहल (IDI)",
+    "image_url": "",
+    "legacy_image_path": "",
+    "local_fallback_flag": "",
+    "pdf_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/media/MOU-CAG-of-India-IDI-06996e09d64dc62-76456074.pdf",
+    "display_order": 33
+  }
+]

@@ -128,13 +128,10 @@ export default function AdminStateOffices() {
     <div className="space-y-6 text-xs text-zinc-700">
       
       {/* 1. HEADER & SEARCH ACTIONS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] p-5 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl border border-zinc-200 p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-bold text-[#751639]">State Level Offices Management (Audit & A&E Cards)</h2>
-            <p className="text-zinc-500 text-[11px] mt-0.5">
-              Edit each State Card, State Title, Hindi translation, and dynamic sub-offices / external URLs.
-            </p>
+            <h2 className="text-base font-bold text-zinc-800">Search &amp; Filter</h2>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -167,26 +164,26 @@ export default function AdminStateOffices() {
       </div>
 
       {/* 2. STATE CARDS MANAGEMENT TABLE */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex justify-between items-center bg-[#fafbfc]">
-          <h3 className="font-semibold text-zinc-800">
-            Registered State Offices [ Showing {filteredOffices.length} of {offices.length} ]
-          </h3>
+      <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden mb-12">
+        <div className="px-5 py-4 border-b border-zinc-100 flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-zinc-800 text-[16px]">State Level Offices</h3>
+            <p className="text-[12px] text-zinc-500 mt-0.5">
+              Displaying {filteredOffices.length === 0 ? 0 : 1}–{filteredOffices.length} of {offices.length}.
+            </p>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-4 py-3.5 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-48">State Name (English)</th>
-                <th className="px-4 py-3.5 border-r border-white/20 w-48">State Name (Hindi)</th>
-                <th className="px-4 py-3.5 border-r border-white/20">Audit Offices Details</th>
-                <th className="px-4 py-3.5 border-r border-white/20">A&E Offices Details</th>
-                <th className="px-4 py-3.5 text-center w-24">Actions</th>
+              <tr className="bg-[#f7f8fa] border-b border-zinc-100 text-left">
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-20">ID</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-48">State (English)</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 w-48">State (Hindi)</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">Audit Offices</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500">A&amp;E Offices</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase tracking-wide text-zinc-500 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e5e7]">
@@ -205,14 +202,14 @@ export default function AdminStateOffices() {
               ) : (
                 filteredOffices.map((office, idx) => (
                   <tr key={office.id} className="hover:bg-zinc-50/60 transition-colors text-zinc-800">
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400">{idx + 1}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639]">{office.name}</td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">{office.nameHindi || '-'}</td>
+                    <td className="px-4 py-3 text-center font-mono text-zinc-400">{idx + 1}</td>
+                    <td className="px-4 py-3 font-bold text-[#751639]">{office.name}</td>
+                    <td className="px-4 py-3 font-medium text-zinc-700">{office.nameHindi || '-'}</td>
                     
                     {/* Audit Details Column */}
-                    <td className="px-4 py-3 border-r border-[#e2e5e7]">
+                    <td className="px-4 py-3">
                       <div className="space-y-1">
-                        {office.auditDetails.map((sub, i) => (
+                        {(office.auditDetails || []).map((sub, i) => (
                           <div key={i} className="flex items-center gap-1.5 text-[11px]">
                             <span className="font-semibold text-zinc-800">• {sub.label}</span>
                             {sub.url && (
@@ -226,9 +223,9 @@ export default function AdminStateOffices() {
                     </td>
 
                     {/* A&E Details Column */}
-                    <td className="px-4 py-3 border-r border-[#e2e5e7]">
+                    <td className="px-4 py-3">
                       <div className="space-y-1">
-                        {office.aeDetails.map((sub, i) => (
+                        {(office.aeDetails || []).map((sub, i) => (
                           <div key={i} className="flex items-center gap-1.5 text-[11px]">
                             <span className="font-semibold text-zinc-800">• {sub.label}</span>
                             {sub.url && (
@@ -269,7 +266,7 @@ export default function AdminStateOffices() {
       {/* 3. SLIDE-OVER EDIT / CREATE FORM MODAL */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] max-w-3xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl border border-zinc-200 max-w-3xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 text-base font-bold"

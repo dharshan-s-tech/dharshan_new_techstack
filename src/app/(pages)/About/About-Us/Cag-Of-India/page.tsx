@@ -4,20 +4,50 @@ import React, { useState, useEffect } from 'react';
 import AboutLayout from '@/app/(pages)/About/AboutLayout';
 import { dataManager } from '@/lib/dataManager';
 
+function cleanBioContent(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<div class="rightFunctionality"[^>]*>[\s\S]*?<\/div>/gi, '')
+    .replace(/<div class="holderIndiaImg"[^>]*>[\s\S]*?<\/div>/gi, '')
+    .replace(/<h2[^>]*>.*?<\/h2>/gi, '')
+    .replace(/<div[^>]*>/gi, '')
+    .replace(/<\/div>/gi, '')
+    .trim();
+}
+
 export default function CagOfIndiaPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-cag-of-india', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-cag-of-india', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'CAG of India');
 
   return (
-    <AboutLayout title={isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'CAG of India'}>
+    <AboutLayout title={pageTitle}>
       <div className="w-full flex flex-col items-start">
         {/* Main Section Title matching Figma CSS */}
         <h1 
@@ -30,7 +60,7 @@ export default function CagOfIndiaPage() {
             color: '#751639'
           }}
         >
-          {isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'CAG of India'}
+          {pageTitle}
         </h1>
 
         {/* Profile Card Banner matching exact Figma specs */}
@@ -160,26 +190,34 @@ export default function CagOfIndiaPage() {
         </div>
 
         {/* Biography Paragraphs */}
-        <div 
-          className="cag-bio w-full max-w-[978px] text-left flex flex-col gap-5 text-[#2E2E31] text-[16px] leading-[24px]" 
-          style={{ fontFamily: 'Noto Sans, sans-serif' }}
-        >
-          {isHindi ? (
-            <>
-              <p><strong>श्री के. संजय मूर्ति</strong> ने 21 नवंबर 2024 को भारत के माननीय राष्ट्रपति द्वारा भारत के नियंत्रक और महालेखापरीक्षक के रूप में शपथ ली और उसी दिन पदभार ग्रहण किया।</p>
-              <p>सीएजी के रूप में अपनी नियुक्ति से पहले, 1989 बैच के आईएएस अधिकारी श्री के. संजय मूर्ति ने उच्च शिक्षा विभाग, शिक्षा मंत्रालय में सचिव के रूप में कार्य किया, यह पद उन्होंने 1 अक्टूबर, 2021 से 20 नवंबर, 2024 तक संभाला। इस भूमिका में, उन्होंने परिवर्तनकारी राष्ट्रीय शिक्षा नीति 2020 के कार्यान्वयन में महत्वपूर्ण भूमिका निभाई।</p>
-              <p>इससे पहले, उन्होंने वाणिज्य और उद्योग मंत्रालय के तहत नेशनल इंडस्ट्रियल कॉरिडोर डेवलपमेंट कॉर्पोरेशन लिमिटेड के मुख्य कार्यकारी अधिकारी और प्रबंध निदेशक का पद संभाला था। उन्होंने आवास और शहरी मामलों के मंत्रालय तथा सूचना और प्रसारण मंत्रालय में अतिरिक्त सचिव और संयुक्त सचिव के रूप में वरिष्ठ पदों पर भी कार्य किया, शहरी परिवहन तथा प्रसारण नियमों एवं लाइसेंसिंग के विकास की देखरेख की। राज्य सरकार में, उन्होंने शिक्षा, तकनीकी शिक्षा, बिजली और परिवहन क्षेत्रों में सचिव के रूप में कार्य किया। अपनी सेवा के दौरान, उन्होंने नेशनल इंस्टीट्यूट फॉर स्मार्ट गवर्नमेंट (एनआईएसजी) में भी कार्य किया, राज्य और केंद्र सरकार के मंत्रालयों/विभागों को उनके ई-गवर्नेंस अपनाने में सहायता की।</p>
-              <p>श्री मूर्ति अपने खाली समय में पढ़ना, संगीत सुनना, फोटोग्राफी के माध्यम से क्षणों को कैद करना और प्रकृति के साथ समय बिताना पसंद करते हैं।</p>
-            </>
-          ) : (
-            <>
-              <p><strong>Shri K. Sanjay Murthy</strong> was sworn in as the Comptroller and Auditor General of India on 21st November 2024 by the Hon’ble President of India and he assumed office on the same day.</p>
-              <p>Before his appointment as CAG, Shri K. Sanjay Murthy, an IAS Officer of 1989 batch, served as the Secretary in the Department of Higher Education, Ministry of Education, a position he held from 1st October, 2021 to 20th November, 2024. In this role, he played a pivotal role in implementation of the transformational National Education Policy 2020.</p>
-              <p>Previously, he held the position of Chief Executive Officer and Managing Director of the National Industrial Corridor Development Corporation Limited under the Ministry of Commerce and Industry. He also held senior positions as Additional Secretary and Joint Secretary in the Ministry of Housing and Urban Affairs and Ministry of Information and Broadcasting, overseeing development of urban transport and broadcast regulations and licensing. In the State Government, he worked as Secretary in the Education, Technical Education, Power and Transport sectors. During his service, he has also served in the National Institute of Smart Government (NISG), assisting State and Central Government Ministries/Departments with their e-governance adoption.</p>
-              <p>Shri Murthy likes to read, listen to music, capturing moments through photography and spending time with nature in his spare time.</p>
-            </>
-          )}
-        </div>
+        {pageData?.content && cleanBioContent(pageData.content).length > 30 ? (
+          <div 
+            className="cag-bio w-full max-w-[978px] text-left flex flex-col gap-5 text-[#2E2E31] text-[16px] leading-[24px]" 
+            style={{ fontFamily: 'Noto Sans, sans-serif' }}
+            dangerouslySetInnerHTML={{ __html: cleanBioContent(pageData.content) }}
+          />
+        ) : (
+          <div 
+            className="cag-bio w-full max-w-[978px] text-left flex flex-col gap-5 text-[#2E2E31] text-[16px] leading-[24px]" 
+            style={{ fontFamily: 'Noto Sans, sans-serif' }}
+          >
+            {isHindi ? (
+              <>
+                <p><strong>श्री के. संजय मूर्ति</strong> ने 21 नवंबर 2024 को भारत के माननीय राष्ट्रपति द्वारा भारत के नियंत्रक और महालेखापरीक्षक के रूप में शपथ ली और उसी दिन पदभार ग्रहण किया।</p>
+                <p>सीएजी के रूप में अपनी नियुक्ति से पहले, 1989 बैच के आईएएस अधिकारी श्री के. संजय मूर्ति ने उच्च शिक्षा विभाग, शिक्षा मंत्रालय में सचिव के रूप में कार्य किया, यह पद उन्होंने 1 अक्टूबर, 2021 से 20 नवंबर, 2024 तक संभाला। इस भूमिका में, उन्होंने परिवर्तनकारी राष्ट्रीय शिक्षा नीति 2020 के कार्यान्वयन में महत्वपूर्ण भूमिका निभाई।</p>
+                <p>इससे पहले, उन्होंने वाणिज्य और उद्योग मंत्रालय के तहत नेशनल इंडस्ट्रियल कॉरिडोर डेवलपमेंट कॉर्पोरेशन लिमिटेड के मुख्य कार्यकारी अधिकारी और प्रबंध निदेशक का पद संभाला था। उन्होंने आवास और शहरी मामलों के मंत्रालय तथा सूचना और प्रसारण मंत्रालय में अतिरिक्त सचिव और संयुक्त सचिव के रूप में वरिष्ठ पदों पर भी कार्य किया, शहरी परिवहन तथा प्रसारण नियमों एवं लाइसेंसिंग के विकास की देखरेख की। राज्य सरकार में, उन्होंने शिक्षा, तकनीकी शिक्षा, बिजली और परिवहन क्षेत्रों में सचिव के रूप में कार्य किया। अपनी सेवा के दौरान, उन्होंने नेशनल इंस्टीट्यूट फॉर स्मार्ट गवर्नमेंट (एनआईएसजी) में भी कार्य किया, राज्य और केंद्र सरकार के मंत्रालयों/विभागों को उनके ई-गवर्नेंस अपनाने में सहायता की।</p>
+                <p>श्री मूर्ति अपने खाली समय में पढ़ना, संगीत सुनना, फोटोग्राफी के माध्यम से क्षणों को कैद करना और प्रकृति के साथ समय बिताना पसंद करते हैं।</p>
+              </>
+            ) : (
+              <>
+                <p><strong>Shri K. Sanjay Murthy</strong> was sworn in as the Comptroller and Auditor General of India on 21st November 2024 by the Hon’ble President of India and he assumed office on the same day.</p>
+                <p>Before his appointment as CAG, Shri K. Sanjay Murthy, an IAS Officer of 1989 batch, served as the Secretary in the Department of Higher Education, Ministry of Education, a position he held from 1st October, 2021 to 20th November, 2024. In this role, he played a pivotal role in implementation of the transformational National Education Policy 2020.</p>
+                <p>Previously, he held the position of Chief Executive Officer and Managing Director of the National Industrial Corridor Development Corporation Limited under the Ministry of Commerce and Industry. He also held senior positions as Additional Secretary and Joint Secretary in the Ministry of Housing and Urban Affairs and Ministry of Information and Broadcasting, overseeing development of urban transport and broadcast regulations and licensing. In the State Government, he worked as Secretary in the Education, Technical Education, Power and Transport sectors. During his service, he has also served in the National Institute of Smart Government (NISG), assisting State and Central Government Ministries/Departments with their e-governance adoption.</p>
+                <p>Shri Murthy likes to read, listen to music, capturing moments through photography and spending time with nature in his spare time.</p>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </AboutLayout>
   );

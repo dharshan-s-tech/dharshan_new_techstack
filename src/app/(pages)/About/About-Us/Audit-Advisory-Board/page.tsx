@@ -205,18 +205,37 @@ const BOARD_SECTIONS: BoardSection[] = [
 
 export default function AuditAdvisoryBoardPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-audit-advisory-board', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-audit-advisory-board', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'लेखापरीक्षा सलाहकार बोर्ड' : 'Audit Advisory Board');
 
   return (
-    <AboutLayout title={isHindi ? 'लेखापरीक्षा सलाहकार बोर्ड' : 'Audit Advisory Board'}>
+    <AboutLayout title={pageTitle}>
       <div className="flex flex-col items-start w-full max-w-[978px]">
         {/* Main Title matching Figma CSS */}
         <h1 
@@ -229,7 +248,7 @@ export default function AuditAdvisoryBoardPage() {
             color: '#751639'
           }}
         >
-          {isHindi ? 'लेखापरीक्षा सलाहकार बोर्ड' : 'Audit Advisory Board'}
+          {pageTitle}
         </h1>
 
         {/* Intro Paragraph matching Figma CSS */}

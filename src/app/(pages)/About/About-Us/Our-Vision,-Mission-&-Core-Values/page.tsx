@@ -43,23 +43,40 @@ const LOCAL_DICTS = {
 
 export default function VisionMissionPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-our-vision-mission-values', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
     const handleLangChange = () => {
-      setLang(dataManager.getLanguage());
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-our-vision-mission-values', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
     };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
   const text = LOCAL_DICTS[lang] || LOCAL_DICTS.English;
+  const pageTitle = pageData?.title || text.pageTitle;
 
   return (
-    <AboutLayout title={text.pageTitle}>
+    <AboutLayout title={pageTitle}>
       <h1 className="cag-heading-title">
-        {text.pageTitle}
+        {pageTitle}
       </h1>
 
       <div className="flex flex-col gap-6 w-full max-w-[978px]">

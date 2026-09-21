@@ -89,6 +89,68 @@ const HISTORY_SECTIONS: SectionItem[] = [
   }
 ];
 
+const FigmaAnalyticalHistoryIcon = () => (
+  <div className="w-[24px] h-[24px] flex items-center justify-center relative">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Rectangle 34625711 (Stroke) */}
+      <rect x="2" y="2" width="17.95" height="17.84" rx="2" stroke="#FFFFFF" strokeWidth="1.2" />
+      
+      {/* Line 1594 (Stroke) */}
+      <line x1="2.2" y1="6" x2="19.75" y2="6" stroke="#FFFFFF" strokeWidth="0.8" />
+      
+      {/* Ellipse 780, 781, 782 */}
+      <circle cx="13.08" cy="4" r="0.6" fill="#FFFFFF" />
+      <circle cx="15.21" cy="4" r="0.6" fill="#FFFFFF" />
+      <circle cx="17.34" cy="4" r="0.6" fill="#FFFFFF" />
+      
+      {/* Vector 604 (Stroke) Trend Line */}
+      <path d="M6.9 10.4L9.3 7.6L11.7 9.5L14.3 7.6" stroke="#FFFFFF" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+      
+      {/* Rectangle 34625712 (Stroke) */}
+      <rect x="6.23" y="9.57" width="9.42" height="3.66" rx="0.5" stroke="#FFFFFF" strokeWidth="0.8" />
+      
+      {/* Line 1595, 1596 (Stroke) Bars */}
+      <line x1="8.64" y1="13.2" x2="8.64" y2="11.14" stroke="#FFFFFF" strokeWidth="0.9" strokeLinecap="round" />
+      <line x1="11.61" y1="13.2" x2="11.61" y2="12.12" stroke="#FFFFFF" strokeWidth="0.9" strokeLinecap="round" />
+      
+      {/* Ellipse 779 & Line 1597 (Stroke) */}
+      <circle cx="4.92" cy="15.7" r="0.55" fill="#FFFFFF" />
+      <line x1="6.48" y1="15.7" x2="12.5" y2="15.7" stroke="#FFFFFF" strokeWidth="0.8" strokeLinecap="round" />
+      
+      {/* History Clock Shield & Ring (Ellipse 778 & Vector 605) */}
+      <circle cx="17.6" cy="17.6" r="4.6" fill="#751639" />
+      <circle cx="17.6" cy="17.6" r="4.3" stroke="#FFFFFF" strokeWidth="1" />
+      <path d="M17.6 14.8V17.6H19.3" stroke="#FFFFFF" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  </div>
+);
+
+const FigmaThematicHistoryIcon = () => (
+  <div className="w-[24px] h-[24px] flex items-center justify-center relative">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Rectangle 34625713 (Stroke) top right tab */}
+      <rect x="17.53" y="2" width="4.46" height="7.59" rx="1" stroke="#FFFFFF" strokeWidth="0.85" />
+      
+      {/* Rectangle 34625714 (Stroke) bottom page */}
+      <rect x="2" y="10" width="15.93" height="6.05" rx="1" stroke="#FFFFFF" strokeWidth="0.85" />
+      
+      {/* Rectangle 34625715 (Stroke) main book page */}
+      <rect x="5.15" y="2" width="14.71" height="15.79" rx="1.5" stroke="#FFFFFF" strokeWidth="1.1" fill="#751639" />
+      
+      {/* Para Vectors 606, 607, 608, 609 */}
+      <line x1="8.1" y1="7" x2="16.1" y2="7" stroke="#FFFFFF" strokeWidth="0.85" strokeLinecap="round" />
+      <line x1="8.1" y1="9.2" x2="16.1" y2="9.2" stroke="#FFFFFF" strokeWidth="0.85" strokeLinecap="round" />
+      <line x1="8.1" y1="11.4" x2="14.8" y2="11.4" stroke="#FFFFFF" strokeWidth="0.85" strokeLinecap="round" />
+      <line x1="8.1" y1="13.6" x2="13.2" y2="13.6" stroke="#FFFFFF" strokeWidth="0.85" strokeLinecap="round" />
+      
+      {/* History Clock Shield & Ring (Ellipse 778 & Vector 605) */}
+      <circle cx="18.8" cy="12.8" r="3.2" fill="#751639" />
+      <circle cx="18.8" cy="12.8" r="2.6" stroke="#FFFFFF" strokeWidth="0.85" />
+      <path d="M18.8 11.2V12.8H19.9" stroke="#FFFFFF" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  </div>
+);
+
 const RedPdfIcon = () => (
   <img 
     src="/assets/pdf-red-icon.png" 
@@ -101,6 +163,7 @@ const RedPdfIcon = () => (
 
 export default function HistoryPage() {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [pageData, setPageData] = useState<any>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'analytical': true,
     'thematic-1': true,
@@ -109,20 +172,38 @@ export default function HistoryPage() {
   const [previewVolume, setPreviewVolume] = useState<VolumeItem | null>(null);
 
   useEffect(() => {
-    setLang(dataManager.getLanguage());
-    const handleLangChange = () => setLang(dataManager.getLanguage());
+    let isMounted = true;
+    const currentLang = dataManager.getLanguage();
+    setLang(currentLang);
+
+    dataManager.fetchPageData('page-history-of-indian-audit-and-accounts-department', currentLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+      if (isMounted && res) setPageData(res);
+    });
+
+    const handleLangChange = () => {
+      const newLang = dataManager.getLanguage();
+      setLang(newLang);
+      dataManager.fetchPageData('page-history-of-indian-audit-and-accounts-department', newLang === 'हिन्दी' ? 'hi' : 'en').then((res) => {
+        if (isMounted && res) setPageData(res);
+      });
+    };
+
     window.addEventListener('languageChange', handleLangChange);
-    return () => window.removeEventListener('languageChange', handleLangChange);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('languageChange', handleLangChange);
+    };
   }, []);
 
   const isHindi = lang === 'हिन्दी';
+  const pageTitle = pageData?.title || (isHindi ? 'भारतीय लेखापरीक्षा और लेखा विभाग का इतिहास' : 'History of Indian Audit and Accounts Department');
 
   const toggleSection = (id: string) => {
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   return (
-    <AboutLayout title={isHindi ? 'भारतीय लेखापरीक्षा और लेखा विभाग का इतिहास' : 'History of Indian Audit and Accounts Department'}>
+    <AboutLayout title={pageTitle}>
       <div className="flex flex-col items-start w-full max-w-[978px]">
         {/* Main Section Title matching Figma CSS */}
         <h1 
@@ -135,7 +216,7 @@ export default function HistoryPage() {
             color: '#751639'
           }}
         >
-          {isHindi ? 'भारतीय लेखापरीक्षा और लेखा विभाग का इतिहास' : 'History of Indian Audit and Accounts Department'}
+          {pageTitle}
         </h1>
 
         {/* Sections Listing */}
@@ -200,7 +281,7 @@ export default function HistoryPage() {
                   <div className="relative w-full pt-2 pb-1">
                     {/* Left Vertical Line matching Figma Line 1599 / Line 1600 / Line 1601 (#751639) */}
                     <div 
-                      className="absolute top-0 bottom-2 left-[15.5px] w-[1px] bg-[#751639] z-10 pointer-events-none" 
+                      className="absolute top-0 bottom-0 left-[15.5px] w-[1.5px] bg-[#751639] z-0 pointer-events-none" 
                       aria-hidden="true"
                     />
 
