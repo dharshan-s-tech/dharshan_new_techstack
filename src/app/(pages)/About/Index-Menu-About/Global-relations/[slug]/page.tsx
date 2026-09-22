@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { dataManager } from '@/lib/dataManager';
+import { getApiBaseUrl } from '@/lib/api';
 import DualFlagStand from '@/components/DualFlagStand';
 import { getCloudFrontUrl, transformHtmlAssetUrls } from '@/lib/cdnUtils';
 
@@ -23,6 +24,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   const resolvedParams = React.use(params);
   const rawSlug = decodeURIComponent(resolvedParams.slug);
   const slugDecoded = rawSlug.toLowerCase();
+  const API_URL = getApiBaseUrl();
   
   // Dynamic Language Synchronization (English ↔ हिन्दी)
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
@@ -51,7 +53,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
     };
 
     const backendSlug = getBackendSlug(slugDecoded);
-    fetch(`http://127.0.0.1:8000/api/v1/admin/global-relations/pages/${backendSlug}`)
+    fetch(`${API_URL}/api/admin/global-relations/pages/${backendSlug}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json && json.data && json.data.content) {
@@ -59,7 +61,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
         }
       })
       .catch((err) => console.warn('Could not fetch DB content for page:', err));
-  }, [slugDecoded]);
+  }, [API_URL, slugDecoded]);
 
   const isHindi = lang === 'हिन्दी';
 

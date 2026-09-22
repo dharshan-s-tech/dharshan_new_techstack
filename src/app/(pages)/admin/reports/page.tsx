@@ -8,6 +8,7 @@ import { dataManager, ReportItem as DataReportItem } from '@/lib/dataManager';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
 import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
 import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
+import { useAdminLanguage } from '@/lib/useAdminLanguage';
 
 interface StateLookup {
   id: number;
@@ -44,6 +45,7 @@ interface ReportDisplayItem {
 
 function AdminReportsContent() {
   const API_URL = getApiBaseUrl();
+  const { isHindi, t } = useAdminLanguage();
   const [reports, setReports] = useState<ReportDisplayItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -502,243 +504,466 @@ function AdminReportsContent() {
 
 
   return (
-    <div className="space-y-4 text-xs text-zinc-700 font-sans">
+    <div className="space-y-6 font-sans pb-16">
       
-      {/* 1. TOP FILTERS PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
-        
-        {/* Row 1: Search, Status, Sector, Level, Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
-            <input
-              type="text"
-              value={searchFor}
-              onChange={(e) => setSearchFor(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
-              placeholder="Search reports registry..."
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
-            />
-          </div>
+      {/* ── TOP PAGE TITLE ── */}
+      <div>
+        <h1 
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            fontSize: '20px',
+            lineHeight: '20px',
+            color: '#751639'
+          }}
+        >
+          {isHindi ? 'लेखापरीक्षा रिपोर्ट प्रबंधन' : 'Reports'}
+        </h1>
+      </div>
 
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
+      {/* ── 1. CARD: SEARCH & FILTER (Figma Container / Frame 2147227423) ── */}
+      <div 
+        className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+        style={{
+          boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+          boxSizing: 'border-box'
+        }}
+      >
+        {/* Card Header */}
+        <div className="px-5 py-4 h-[60px] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-[30px] h-[30px] rounded-[8px] bg-[#FDF2F5] flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 4H14M4 8H12M6 12H10" stroke="#751639" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <span 
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '20px',
+                color: '#0F172B'
               }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
             >
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Audit Sector / Ministry:</label>
-            <select
-              value={sectorFilter}
-              onChange={(e) => {
-                setSectorFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Sectors</option>
-              {sectors.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Administrative Level:</label>
-            <select
-              value={levelFilter}
-              onChange={(e) => {
-                setLevelFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Levels</option>
-              <option value="Union">Union Government</option>
-              <option value="States">State Government</option>
-              <option value="Local Bodies">Local Bodies (PRI / ULB)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Report Type:</label>
-            <select
-              value={reportTypeFilter}
-              onChange={(e) => {
-                setReportTypeFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Report Types</option>
-              {reportTypes.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+              {t.searchAndFilter}
+            </span>
           </div>
         </div>
 
-        {/* Row 2: Year, State, Sort By, Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Report Year:</label>
-            <select
-              value={yearFilter}
-              onChange={(e) => {
-                setYearFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Years</option>
-              {availableYears.map((yr) => (
-                <option key={yr} value={yr}>{yr}</option>
-              ))}
-            </select>
+        {/* Card Body */}
+        <div className="p-5 border-t border-[#F5F3F4] space-y-4">
+          {/* Row 1: 4 Column Input Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            {/* Search For */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.searchFor}
+              </label>
+              <input
+                type="text"
+                value={searchFor}
+                onChange={(e) => setSearchFor(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
+                placeholder={t.enterKeywords}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            {/* Sector */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.sector}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={sectorFilter}
+                  onChange={(e) => {
+                    setSectorFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  {sectors.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Level */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.level}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={levelFilter}
+                  onChange={(e) => {
+                    setLevelFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  <option value="Union">{isHindi ? 'केंद्रीय सरकार' : 'Union Government'}</option>
+                  <option value="States">{isHindi ? 'राज्य सरकार' : 'State Government'}</option>
+                  <option value="Local Bodies">{isHindi ? 'स्थानीय निकाय' : 'Local Bodies'}</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.status}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.allStatus}</option>
+                  <option value="Active">{t.active}</option>
+                  <option value="Inactive">{t.inactive}</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">State / Union Territory:</label>
-            <SearchableStateSelect
-              value={stateFilter}
-              onChange={(val) => {
-                setStateFilter(val);
-                setPage(1);
-              }}
-              states={states}
-              placeholder="All States & UTs"
-              allLabel="All States & UTs"
-              allowAll={true}
-              size="sm"
-            />
+          {/* Row 2: Secondary Filters & Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#F5F3F4]">
+            
+            {/* Report Type */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.reportType}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={reportTypeFilter}
+                  onChange={(e) => {
+                    setReportTypeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  {reportTypes.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Year */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.year}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={yearFilter}
+                  onChange={(e) => {
+                    setYearFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  {availableYears.map((yr) => (
+                    <option key={yr} value={yr}>{yr}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* State */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.state}
+              </label>
+              <SearchableStateSelect
+                value={stateFilter}
+                onChange={(val) => {
+                  setStateFilter(val);
+                  setPage(1);
+                }}
+                states={states}
+                placeholder={isHindi ? 'सभी राज्य और केंद्र शासित प्रदेश' : 'All States & UTs'}
+                allLabel={isHindi ? 'सभी राज्य और केंद्र शासित प्रदेश' : 'All States & UTs'}
+                allowAll={true}
+                size="sm"
+              />
+            </div>
+
           </div>
 
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Sort Order:</label>
-            <select
-              value={sortFilter}
-              onChange={(e) => {
-                setSortFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="newest">Newly Added First</option>
-              <option value="year_desc">Year (Newest first)</option>
-              <option value="year_asc">Year (Oldest first)</option>
-              <option value="oldest">Oldest Added First</option>
-              <option value="title_asc">Title (A to Z)</option>
-              <option value="title_desc">Title (Z to A)</option>
-            </select>
+          {/* Row 3: Action Bar (Rows per page + Reset / Search) */}
+          <div className="border-t border-[#F5F3F4] pt-4 mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            
+            {/* Rows per page */}
+            <div className="flex items-center gap-3">
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#45556C'
+                }}
+              >
+                {t.rowsPerPage}
+              </span>
+              <div className="relative">
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] w-[61px] h-[30px] px-2 text-[14px] text-[#314158] appearance-none focus:outline-none cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value={15}>15</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                    <path d="M1 1L5 5L9 1" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Reset & Search Buttons */}
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={handleSearchReset}
+                className="w-[71px] h-[35px] rounded-[8px] bg-[rgba(108,20,54,0.05)] hover:bg-[rgba(108,20,54,0.1)] transition-colors flex items-center justify-center cursor-pointer"
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#701537'
+                }}
+              >
+                {t.reset}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSearchGo}
+                className="w-[132px] h-[35px] rounded-[8px] text-white flex items-center justify-center cursor-pointer transition-all shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95"
+                style={{
+                  background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)',
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '16px'
+                }}
+              >
+                {t.search}
+              </button>
+            </div>
+
           </div>
 
-          <div className="flex items-end gap-2">
-            <button
-              onClick={handleSearchGo}
-              className="flex-1 border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-4 py-1.5 rounded-none transition-colors font-bold bg-white cursor-pointer shadow-xs"
-            >
-              Apply Filter
-            </button>
-            <button
-              onClick={handleSearchReset}
-              className="px-4 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 py-1.5 rounded-none transition-colors font-medium bg-white cursor-pointer"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-100">
-          <span>Active Filter: <strong>{sectorFilter}</strong> | Level: <strong>{levelFilter}</strong> | Type: <strong>{reportTypeFilter}</strong> | Year: <strong>{yearFilter}</strong></span>
-          <span>Source: <strong className="text-emerald-700">PostgreSQL cag_db_final (2,746 reports) + Local CMS</strong></span>
         </div>
       </div>
 
-      {/* 2. TABLE GRID PANEL */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
-          <h3 className="font-bold text-zinc-800 text-sm">
-            Audit Reports Management Registry [ Displaying {reports.length} of {totalCount.toLocaleString()} ]
-          </h3>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-zinc-600">
-              <span>Per page:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800"
-              >
-                <option value="15">15</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
+      {/* ── 2. CARD: TABLE DATA REGISTRY (Figma Container / Frame 2147227418) ── */}
+      <div 
+        className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden mb-12"
+        style={{
+          boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+          boxSizing: 'border-box'
+        }}
+      >
+        {/* Table Card Header */}
+        <div className="px-6 py-4 h-[75.8px] border-b border-[#F5F3F4] flex justify-between items-center">
+          <h2 
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              fontSize: '16px',
+              lineHeight: '20px',
+              color: '#0F172B'
+            }}
+          >
+            {isHindi ? 'लेखापरीक्षा रिपोर्ट रजिस्ट्री' : 'Audit Reports Management Registry'}
+          </h2>
 
-            <button
-              onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
-              <span>+ Add New Audit Report Card</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="w-[160px] h-[35px] rounded-[8px] text-white flex items-center justify-center gap-2 cursor-pointer transition-all shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95"
+            style={{
+              background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px'
+            }}
+          >
+            <span className="text-base font-bold">+</span>
+            <span>{t.addNew}</span>
+          </button>
         </div>
 
+        {/* Table Content */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+                className="h-[45px] text-[#90A1B9]"
+                style={{
+                  background: 'rgba(117, 22, 57, 0.04)',
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase'
+                }}
               >
-                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-3 py-3 border-r border-white/20 w-32 text-center">Photo / Preview</th>
-                <th className="px-4 py-3 border-r border-white/20">Audit Report Title & Summary</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36">Sector</th>
-                <th className="px-3 py-3 border-r border-white/20 w-28 text-center">Type</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Year</th>
-                <th className="px-3 py-3 border-r border-white/20 w-20 text-center">Level</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
-                <th className="px-3 py-3 text-center min-w-[240px] w-64">Actions</th>
+                <th className="px-6 py-3 w-20">{t.sNo}</th>
+                <th className="px-4 py-3 w-28">{t.image}</th>
+                <th className="px-6 py-3">{t.title}</th>
+                <th className="px-4 py-3 w-36">{t.sector}</th>
+                <th className="px-4 py-3 w-28 text-center">{t.reportType}</th>
+                <th className="px-4 py-3 w-20 text-center">{t.year}</th>
+                <th className="px-4 py-3 w-24 text-center">{t.level}</th>
+                <th className="px-4 py-3 w-32 text-center">{t.status}</th>
+                <th className="px-6 py-3 w-36 text-right">{t.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2e5e7]">
+            <tbody className="divide-y divide-[#F5F3F4]">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={9} className="px-8 py-12 text-center text-zinc-400 font-sans">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
-                      <span>Retrieving reports records...</span>
+                      <span>{t.loading}</span>
                     </div>
                   </td>
                 </tr>
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center text-zinc-400">
-                    No matching report records found. Try adjusting your filters.
+                  <td colSpan={9} className="px-8 py-12 text-center text-zinc-400 font-sans">
+                    {t.noData}
                   </td>
                 </tr>
               ) : (
                 reports.map((report) => (
-                  <tr key={report.rawId} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400 text-[11px]">{report.id}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                  <tr key={report.rawId} className="h-[64px] hover:bg-zinc-50/50 transition-colors">
+                    {/* ID */}
+                    <td 
+                      className="px-6 py-3 whitespace-nowrap font-bold"
+                      style={{ fontFamily: "'Inter', sans-serif", fontSize: '14px', color: '#751639' }}
+                    >
+                      #{report.id}
+                    </td>
+
+                    {/* Preview Thumbnail */}
+                    <td className="px-4 py-3">
                       <FilePreviewAction 
                         url={report.image || report.pdf_url || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'} 
                         type={report.image ? "image" : "file"} 
@@ -746,73 +971,106 @@ function AdminReportsContent() {
                         alt={report.title_en} 
                       />
                     </td>
-                    <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
-                      <div className="line-clamp-2 cursor-pointer hover:underline" onClick={() => handleOpenView(report)} title="Click to view details">
-                        {report.title_en}
-                      </div>
-                      {report.desc && <div className="text-[11px] text-zinc-500 font-normal mt-0.5 line-clamp-1">{report.desc}</div>}
-                    </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] font-medium text-zinc-700">
-                      <span className="truncate block max-w-[130px]" title={report.sector}>{report.sector}</span>
-                    </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center capitalize text-zinc-600">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100">
-                        {report.report_type}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-600 font-semibold">{report.year_of_report}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center text-zinc-500 font-medium">{report.level || 'Union'}</td>
-                    <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${
-                        report.is_active
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          : 'bg-rose-100 text-rose-800 border-rose-300'
-                      }`}>
-                        {report.is_active ? 'ACTIVE' : 'INACTIVE'}
-                      </span>
-                    </td>
-                    
-                    <td className="px-3 py-2 text-center whitespace-nowrap space-x-1">
-                      {/* View */}
-                      <button
+
+                    {/* Title & Summary */}
+                    <td className="px-6 py-3 max-w-md">
+                      <div 
+                        className="font-semibold text-[#1D293D] hover:text-[#751639] cursor-pointer line-clamp-2 transition-colors"
                         onClick={() => handleOpenView(report)}
-                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="View Full Report Details"
+                        title="Click to view full details"
+                        style={{ fontFamily: "'Inter', sans-serif", fontSize: '14px', lineHeight: '18px' }}
                       >
-                        <Eye className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>View</span>
-                      </button>
+                        {isHindi ? (report.title_hi || report.title_en) : report.title_en}
+                      </div>
+                      {report.desc && (
+                        <div className="text-xs text-zinc-500 line-clamp-1 mt-0.5">
+                          {report.desc}
+                        </div>
+                      )}
+                    </td>
 
-                      {/* Edit */}
-                      <button
-                        onClick={() => handleOpenEdit(report)}
-                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Edit Record"
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-amber-800" />
-                        <span>Edit</span>
-                      </button>
+                    {/* Sector */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm font-medium text-zinc-700 truncate block max-w-[130px]" title={report.sector}>
+                        {report.sector}
+                      </span>
+                    </td>
 
-                      {/* Delete */}
-                      <button
-                        onClick={() => handleDelete(report.rawId)}
-                        className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold text-[11px] inline-flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-                        title="Delete Record"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                        <span>Delete</span>
-                      </button>
+                    {/* Type */}
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <div className="inline-flex items-center px-2.5 py-1 bg-[#F1F5F9] rounded-[6px]">
+                        <span 
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontWeight: 600,
+                            fontSize: '12px',
+                            color: '#62748E'
+                          }}
+                        >
+                          {report.report_type}
+                        </span>
+                      </div>
+                    </td>
 
-                      {/* Live Link */}
-                      <Link
-                        href={`/Reports/${report.rawId}`}
-                        target="_blank"
-                        className="px-1.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-[11px] inline-flex items-center gap-0.5 shadow-2xs transition-colors"
-                        title="Preview Public Page ↗"
+                    {/* Year */}
+                    <td className="px-4 py-3 text-center whitespace-nowrap font-semibold text-zinc-700 text-sm">
+                      {report.year_of_report}
+                    </td>
+
+                    {/* Level */}
+                    <td className="px-4 py-3 text-center whitespace-nowrap text-sm text-zinc-600">
+                      {report.level || 'Union'}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <div 
+                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-[50px] ${
+                          report.is_active ? 'bg-[#F0FDF4] text-[#16A34A]' : 'bg-[#FDF4F0] text-[#E41818]'
+                        }`}
+                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px' }}
                       >
-                        <ExternalLink className="w-3 h-3 text-blue-600" />
-                        <span>Live</span>
-                      </Link>
+                        <span className={`w-1.5 h-1.5 rounded-full ${report.is_active ? 'bg-[#16A34A]' : 'bg-[#E41818]'}`} />
+                        <span>{report.is_active ? t.active : t.inactive}</span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => handleOpenView(report)}
+                          className="text-[#62748E] hover:text-[#751639] transition-colors cursor-pointer"
+                          title={t.view}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenEdit(report)}
+                          className="text-[#666666] hover:text-[#751639] transition-colors cursor-pointer"
+                          title={t.edit}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(report.rawId)}
+                          className="text-[#E41818] hover:text-[#B91C1C] transition-colors cursor-pointer"
+                          title={t.delete}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        <Link
+                          href={`/Reports/${report.rawId}`}
+                          target="_blank"
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          title="Live Preview"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -821,30 +1079,63 @@ function AdminReportsContent() {
           </table>
         </div>
 
-        {/* Pagination Bar */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-[#e2e5e7] bg-[#fafbfc] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-500">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} records)
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                ← Prev
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-[11px]"
-              >
-                Next →
-              </button>
-            </div>
+        {/* Table Footer Pagination matching Figma */}
+        <div className="px-8 py-4 border-t border-[#F5F3F4] flex flex-col sm:flex-row justify-between items-center gap-4">
+          <span 
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#90A1B9'
+            }}
+          >
+            {t.showing} {reports.length > 0 ? (page - 1) * pageSize + 1 : 0} {t.to} {Math.min(page * pageSize, totalCount)} {t.of} {totalCount.toLocaleString()} {t.entries}
+          </span>
+
+          {/* Page Buttons */}
+          <div className="flex items-center gap-1.5">
+            {/* Prev */}
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              title={t.previous}
+            >
+              ‹
+            </button>
+
+            {/* Page Numbers */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
+              const isActive = num === page;
+              return (
+                <button
+                  key={num}
+                  onClick={() => setPage(num)}
+                  className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-medium transition-colors cursor-pointer ${
+                    isActive
+                      ? 'bg-[rgba(117,22,57,0.1)] text-[#751639]'
+                      : 'text-[#64748B] hover:bg-zinc-100'
+                  }`}
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  {num}
+                </button>
+              );
+            })}
+
+            {/* Next */}
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              title={t.next}
+            >
+              ›
+            </button>
           </div>
-        )}
+        </div>
+
       </div>
 
       {/* 3. VIEW DETAILS FULL-PAGE VIEW PANEL */}

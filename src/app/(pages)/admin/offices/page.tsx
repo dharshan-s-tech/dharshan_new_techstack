@@ -63,10 +63,13 @@ interface DepartmentLookup {
   status?: number;
 }
 
+import { useAdminLanguage } from '@/lib/useAdminLanguage';
+
 function AdminPresenceContent() {
   const API_URL = getApiBaseUrl();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isHindi, t } = useAdminLanguage();
 
   // ── Master Data States ──
   const [offices, setOffices] = useState<WebsiteOfficeItem[]>([]);
@@ -74,11 +77,11 @@ function AdminPresenceContent() {
   const [departments, setDepartments] = useState<DepartmentLookup[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // ── Pagination States (Matching Reports Module) ──
+  // ── Pagination States ──
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(15);
 
-  // ── Filter States (Matching Reports Module Layout) ──
+  // ── Filter States ──
   const [searchFor, setSearchFor] = useState<string>('');
   const [appliedSearch, setAppliedSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -495,33 +498,33 @@ function AdminPresenceContent() {
   // ── Category Badge Helper ──
   const getDeptBadgeStyle = (deptId: number | null, deptName: string) => {
     if (deptId === 1) {
-      return { bg: 'bg-blue-50 text-blue-800 border-blue-200', label: 'State Audit' };
+      return { bg: 'bg-blue-50 text-blue-700 border-blue-200', label: 'State Audit' };
     }
     if (deptId === 7) {
-      return { bg: 'bg-amber-50 text-amber-800 border-amber-200', label: 'Accounts & Entitlement' };
+      return { bg: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Accounts & Entitlement' };
     }
     if (deptId === 9 || deptName.toLowerCase().includes('defen')) {
-      return { bg: 'bg-purple-50 text-purple-800 border-purple-200', label: 'Defence Audit' };
+      return { bg: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Defence Audit' };
     }
     if (deptId === 6 || deptName.toLowerCase().includes('railway')) {
-      return { bg: 'bg-cyan-50 text-cyan-800 border-cyan-200', label: 'Railway Audit' };
+      return { bg: 'bg-cyan-50 text-cyan-700 border-cyan-200', label: 'Railway Audit' };
     }
     if (deptId === 5 || deptName.toLowerCase().includes('training') || deptName.toLowerCase().includes('rti')) {
-      return { bg: 'bg-emerald-50 text-emerald-800 border-emerald-200', label: 'Training Institute' };
+      return { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Training Institute' };
     }
     if (deptName.toLowerCase().includes('overseas') || deptName.toLowerCase().includes('london')) {
-      return { bg: 'bg-indigo-50 text-indigo-800 border-indigo-200', label: 'Overseas Audit' };
+      return { bg: 'bg-indigo-50 text-indigo-700 border-indigo-200', label: 'Overseas Audit' };
     }
-    return { bg: 'bg-zinc-100 text-zinc-800 border-zinc-200', label: deptName || 'Central Audit' };
+    return { bg: 'bg-zinc-100 text-zinc-700 border-zinc-200', label: deptName || 'Central Audit' };
   };
 
   return (
-    <div className="space-y-4 text-xs text-zinc-700 font-sans">
+    <div className="space-y-6 font-sans pb-16">
       
       {/* ── TOAST NOTIFICATIONS ── */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-none shadow-lg border text-xs font-semibold ${
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-xs font-semibold ${
             toastMessage.type === 'success' 
               ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
               : 'bg-red-50 text-red-800 border-red-300'
@@ -542,262 +545,485 @@ function AdminPresenceContent() {
         </div>
       )}
 
-      {/* ── 1. TOP FILTERS PANEL (Exact Reports Module Layout) ── */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-5 shadow-xs space-y-4">
-        
-        {/* Row 1: Search, Status, Category Wing, Department, Subsite Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-          
-          {/* 1. Keyword / Title Search */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Search Keyword / Title:</label>
-            <input
-              type="text"
-              value={searchFor}
-              onChange={(e) => setSearchFor(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
-              placeholder="Search offices registry..."
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
-            />
-          </div>
-
-          {/* 2. Publish Status */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Publish Status:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-
-          {/* 3. Presence Wing / Category */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Presence Category / Wing:</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Categories</option>
-              <option value="State Level Offices">State Level Offices</option>
-              <option value="Central Audit Offices">Central Audit Offices</option>
-              <option value="Training Institutes">Training Institutes</option>
-            </select>
-          </div>
-
-          {/* 4. Department Category */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Department Category:</label>
-            <select
-              value={departmentFilter}
-              onChange={(e) => {
-                setDepartmentFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Departments</option>
-              {departments.map((d) => (
-                <option key={d.id} value={String(d.id)}>{d.title}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 5. Subsite Type / Classification */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Subsite Classification:</label>
-            <select
-              value={subsiteTypeFilter}
-              onChange={(e) => {
-                setSubsiteTypeFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Subsite Types</option>
-              <option value="State Audit">State Audit Offices (PAG/AG)</option>
-              <option value="A&E">Accounts &amp; Entitlement (A&amp;E)</option>
-              <option value="Defence">Defence Audit Directorates</option>
-              <option value="Railway">Railway Audit Offices</option>
-              <option value="Overseas Office">Overseas Audit (London/Washington/KL)</option>
-              <option value="RTI">Regional Training Institutes (RTI/RTC)</option>
-              <option value="ICED">iCED (Environment Audit - Jaipur)</option>
-              <option value="ICISA">iCISA (Information Systems - Noida)</option>
-              <option value="NAAA">NAAA (National Academy - Shimla)</option>
-            </select>
-          </div>
-
-        </div>
-
-        {/* Row 2: State / UT, Scope, Sort By, Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-1 border-t border-zinc-150">
-          
-          {/* State Select */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">State / Union Territory:</label>
-            <SearchableStateSelect
-              value={stateFilter}
-              onChange={(val) => {
-                setStateFilter(val);
-                setPage(1);
-              }}
-              states={states.map(s => ({ id: s.id, name: s.name }))}
-              placeholder="All States &amp; UTs"
-              allLabel="All States &amp; UTs"
-              allowAll={true}
-              size="sm"
-            />
-          </div>
-
-          {/* Administrative Scope */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Administrative Scope:</label>
-            <select
-              value={scopeFilter}
-              onChange={(e) => {
-                setScopeFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="All">All Administrative Scopes</option>
-              <option value="State Level">State Level Offices</option>
-              <option value="Central Government">Central Government Audit</option>
-              <option value="Overseas">Overseas / International</option>
-              <option value="Training Academy">Training Academy &amp; RTIs</option>
-            </select>
-          </div>
-
-          {/* Sort Order */}
-          <div>
-            <label className="block text-zinc-700 font-bold mb-1">Sort Order:</label>
-            <select
-              value={sortFilter}
-              onChange={(e) => {
-                setSortFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-            >
-              <option value="newest">Newly Added First (ID Desc)</option>
-              <option value="oldest">Oldest Added First (ID Asc)</option>
-              <option value="title_asc">Office Title (A to Z)</option>
-              <option value="title_desc">Office Title (Z to A)</option>
-              <option value="state_asc">State Name (A to Z)</option>
-              <option value="dept_asc">Department Category (A to Z)</option>
-            </select>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex items-end gap-2">
-            <button
-              onClick={handleSearchGo}
-              className="flex-1 border border-[#751639] text-[#751639] hover:bg-[#751639] hover:text-white px-4 py-1.5 rounded-none transition-colors font-bold bg-white cursor-pointer shadow-xs"
-            >
-              Apply Filter
-            </button>
-            <button
-              onClick={handleSearchReset}
-              className="px-4 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 py-1.5 rounded-none transition-colors font-medium bg-white cursor-pointer"
-            >
-              Reset
-            </button>
-          </div>
-
-        </div>
-
-        {/* Bottom Summary Strip */}
-        <div className="flex flex-wrap items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-100 gap-2">
-          <span>
-            Active Filter: <strong>{categoryFilter}</strong> | Department: <strong>{departmentFilter === 'All' ? 'All Departments' : `Dept #${departmentFilter}`}</strong> | Status: <strong>{statusFilter}</strong> | State: <strong>{stateFilter === 'All' ? 'All States' : stateFilter}</strong>
-          </span>
-          <span>
-            Source: <strong className="text-emerald-700">PostgreSQL cag_revamp.websites ({offices.length} live offices) + Field Subsites</strong>
-          </span>
-        </div>
-
+      {/* ── TOP PAGE TITLE ── */}
+      <div>
+        <h1 
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            fontSize: '20px',
+            lineHeight: '20px',
+            color: '#751639'
+          }}
+        >
+          {isHindi ? 'हमारी उपस्थिति एवं क्षेत्रीय कार्यालय' : 'Our Presence & Field Offices'}
+        </h1>
       </div>
 
-      {/* ── 2. TABLE GRID PANEL (Exact Reports Module Layout) ── */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden mb-12">
-        
-        {/* Table Top Header Bar */}
-        <div className="px-5 py-3.5 border-b border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3 bg-[#fafbfc]">
-          <h3 className="font-bold text-zinc-800 text-sm">
-            Our Presence &amp; Field Offices Management Registry [ Displaying {paginatedOffices.length} of {totalCount.toLocaleString()} ]
-          </h3>
-          
+      {/* ── 1. CARD: SEARCH & FILTER ── */}
+      <div 
+        className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+        style={{
+          boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+          boxSizing: 'border-box'
+        }}
+      >
+        <div className="px-5 py-4 h-[60px] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-zinc-600">
-              <span>Per page:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setPage(1);
+            <div className="w-[30px] h-[30px] rounded-[8px] bg-[#FDF2F5] flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 4H14M4 8H12M6 12H10" stroke="#751639" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <span 
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '20px',
+                color: '#0F172B'
+              }}
+            >
+              {t.searchAndFilter}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-5 border-t border-[#F5F3F4] space-y-4">
+          
+          {/* Row 1: Search, Status, Category, Department */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            
+            {/* Search Keyword */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
                 }}
-                className="border border-zinc-300 px-2 py-1 bg-white text-zinc-800 focus:outline-none"
               >
-                <option value="15">15</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
+                {t.searchFor}
+              </label>
+              <input
+                type="text"
+                value={searchFor}
+                onChange={(e) => setSearchFor(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchGo()}
+                placeholder={isHindi ? 'कार्यालय, यूआरएल, ईमेल खोजें...' : 'Search offices, URL, email...'}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
             </div>
 
-            <button
-              onClick={handleOpenCreate}
-              className="text-white px-4 py-2 font-bold transition-all shadow-xs rounded-none text-xs flex items-center gap-1.5 cursor-pointer"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-            >
-              <span>+ Add New Office / Subsite</span>
-            </button>
+            {/* Status */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.status}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.allStatus}</option>
+                  <option value="Active">{t.active}</option>
+                  <option value="Inactive">{t.inactive}</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Presence Wing / Category */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.category}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => {
+                    setCategoryFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  <option value="State Level Offices">{isHindi ? 'राज्य स्तरीय कार्यालय' : 'State Level Offices'}</option>
+                  <option value="Central Audit Offices">{isHindi ? 'केंद्रीय लेखापरीक्षा कार्यालय' : 'Central Audit Offices'}</option>
+                  <option value="Training Institutes">{isHindi ? 'प्रशिक्षण संस्थान' : 'Training Institutes'}</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Department Category */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {isHindi ? 'विभाग' : 'Department'}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={departmentFilter}
+                  onChange={(e) => {
+                    setDepartmentFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={String(d.id)}>{d.title}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
           </div>
+
+          {/* Row 2: Subsite Classification, State/UT, Scope, Sort */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-2 border-t border-[#F5F3F4]">
+            
+            {/* Subsite Classification */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {isHindi ? 'वर्गीकरण' : 'Classification'}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={subsiteTypeFilter}
+                  onChange={(e) => {
+                    setSubsiteTypeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  <option value="State Audit">{isHindi ? 'राज्य लेखापरीक्षा (PAG/AG)' : 'State Audit (PAG/AG)'}</option>
+                  <option value="A&E">{isHindi ? 'लेखा एवं हकदारी (A&E)' : 'Accounts & Entitlement (A&E)'}</option>
+                  <option value="Defence">{isHindi ? 'रक्षा लेखापरीक्षा निदेशालय' : 'Defence Audit Directorates'}</option>
+                  <option value="Railway">{isHindi ? 'रेलवे लेखापरीक्षा कार्यालय' : 'Railway Audit Offices'}</option>
+                  <option value="Overseas Office">{isHindi ? 'विदेशी लेखापरीक्षा' : 'Overseas Audit'}</option>
+                  <option value="RTI">{isHindi ? 'क्षेत्रीय प्रशिक्षण (RTI/RTC)' : 'Regional Training (RTI/RTC)'}</option>
+                  <option value="ICED">iCED</option>
+                  <option value="ICISA">iCISA</option>
+                  <option value="NAAA">NAAA</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* State Select */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {t.state}
+              </label>
+              <SearchableStateSelect
+                value={stateFilter}
+                onChange={(val) => {
+                  setStateFilter(val);
+                  setPage(1);
+                }}
+                states={states.map(s => ({ id: s.id, name: s.name }))}
+                placeholder={isHindi ? 'सभी राज्य और केंद्र शासित प्रदेश' : 'All States & UTs'}
+                allLabel={isHindi ? 'सभी राज्य और केंद्र शासित प्रदेश' : 'All States & UTs'}
+                allowAll={true}
+                size="sm"
+              />
+            </div>
+
+            {/* Administrative Scope */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {isHindi ? 'क्षेत्र / दायरा' : 'Scope'}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={scopeFilter}
+                  onChange={(e) => {
+                    setScopeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="All">{t.all}</option>
+                  <option value="State Level">{isHindi ? 'राज्य स्तर' : 'State Level'}</option>
+                  <option value="Central Government">{isHindi ? 'केंद्र सरकार' : 'Central Government'}</option>
+                  <option value="Overseas">{isHindi ? 'विदेश' : 'Overseas'}</option>
+                  <option value="Training Academy">{isHindi ? 'प्रशिक्षण अकादमी' : 'Training Academy'}</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Sort Order */}
+            <div className="flex flex-col gap-1.5">
+              <label 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#62748E'
+                }}
+              >
+                {isHindi ? 'क्रम' : 'Sort Order'}
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={sortFilter}
+                  onChange={(e) => {
+                    setSortFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="newest">{isHindi ? 'नवीनतम पहले' : 'Newly Added First'}</option>
+                  <option value="oldest">{isHindi ? 'पुरातन पहले' : 'Oldest Added First'}</option>
+                  <option value="title_asc">{isHindi ? 'कार्यालय नाम (A से Z)' : 'Office Title (A to Z)'}</option>
+                  <option value="title_desc">{isHindi ? 'कार्यालय नाम (Z से A)' : 'Office Title (Z to A)'}</option>
+                  <option value="state_asc">{isHindi ? 'राज्य नाम (A से Z)' : 'State Name (A to Z)'}</option>
+                  <option value="dept_asc">{isHindi ? 'विभाग (A से Z)' : 'Department (A to Z)'}</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Filter Controls: Rows per page & Action Buttons */}
+          <div className="border-t border-[#F5F3F4] pt-4 mt-2 flex flex-wrap items-center justify-between gap-4">
+            
+            <div className="flex items-center gap-2">
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  color: '#62748E'
+                }}
+              >
+                {t.rowsPerPage}
+              </span>
+              <div className="relative">
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[35px] px-3 pr-8 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="15">15</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={handleSearchReset}
+                className="w-[71px] h-[35px] rounded-[8px] bg-[rgba(108,20,54,0.05)] hover:bg-[rgba(108,20,54,0.1)] transition-colors flex items-center justify-center cursor-pointer font-medium text-[14px] text-[#701537]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                {t.reset}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSearchGo}
+                className="w-[132px] h-[35px] rounded-[8px] text-white flex items-center justify-center cursor-pointer transition-all shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 font-semibold text-[14px]"
+                style={{
+                  background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)',
+                  fontFamily: "'Inter', sans-serif"
+                }}
+              >
+                {t.search}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── 2. CARD: TABLE DATA REGISTRY ── */}
+      <div 
+        className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden mb-12"
+        style={{
+          boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+          boxSizing: 'border-box'
+        }}
+      >
+        <div className="px-6 py-4 h-[75.8px] border-b border-[#F5F3F4] flex justify-between items-center">
+          <h2 
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              fontSize: '16px',
+              lineHeight: '20px',
+              color: '#0F172B'
+            }}
+          >
+            {isHindi ? 'हमारी उपस्थिति एवं क्षेत्रीय कार्यालय' : 'Our Presence & Field Offices'}
+          </h2>
+
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="h-[36px] px-4 rounded-[8px] text-white text-[14px] font-medium shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)',
+              fontFamily: "'Inter', sans-serif"
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t.addNewOffice}</span>
+          </button>
         </div>
 
         {/* Table View */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr 
-                className="text-white border-b border-[#5c102c] font-bold"
-                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-              >
-                <th className="px-3 py-3 border-r border-white/20 w-12 text-center">#</th>
-                <th className="px-4 py-3 border-r border-white/20 min-w-[260px]">Office / Subsite Title &amp; Hindi Translation</th>
-                <th className="px-3 py-3 border-r border-white/20 w-44">Category / Department</th>
-                <th className="px-3 py-3 border-r border-white/20 w-36">State / Territory</th>
-                <th className="px-3 py-3 border-r border-white/20 w-48">Subsite Route / URL</th>
-                <th className="px-3 py-3 border-r border-white/20 w-44">Official Email</th>
-                <th className="px-3 py-3 border-r border-white/20 w-24 text-center">Status</th>
-                <th className="px-3 py-3 text-center min-w-[220px] w-60">Actions</th>
+              <tr className="bg-[rgba(117,22,57,0.04)] border-b border-[#F5F3F4]">
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider w-16" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  <div className="flex items-center gap-1.5 cursor-pointer">
+                    <span>{t.sNo}</span>
+                    <span className="text-[10px]">⇅</span>
+                  </div>
+                </th>
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider min-w-[280px]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  <div className="flex items-center gap-1.5 cursor-pointer">
+                    <span>{t.officeName}</span>
+                    <span className="text-[10px]">⇅</span>
+                  </div>
+                </th>
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {t.category}
+                </th>
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {t.state}
+                </th>
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {isHindi ? 'वेबसाइट / यूआरएल' : 'ROUTE / URL'}
+                </th>
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {t.status}
+                </th>
+                <th className="px-6 py-3.5 text-[12px] font-semibold text-[#90A1B9] uppercase tracking-wider text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {t.actions}
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e2e5e7]">
+            <tbody className="divide-y divide-[#F5F3F4]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
+                  <td colSpan={7} className="px-6 py-12 text-center text-[#90A1B9]">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></div>
-                      <span>Retrieving live presence offices &amp; websites records...</span>
+                      <span style={{ fontFamily: "'Inter', sans-serif" }}>{t.loading}</span>
                     </div>
                   </td>
                 </tr>
               ) : paginatedOffices.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center text-zinc-400">
-                    No matching office or subsite records found. Try adjusting your filters or search keywords.
+                  <td colSpan={7} className="px-6 py-12 text-center text-[#90A1B9]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    {t.noData}
                   </td>
                 </tr>
               ) : (
@@ -805,139 +1031,129 @@ function AdminPresenceContent() {
                   const badge = getDeptBadgeStyle(office.department_id, office.department_name);
 
                   return (
-                    <tr key={office.rawId || office.id} className="hover:bg-zinc-50/70 transition-colors text-zinc-800">
+                    <tr key={office.rawId || office.id} className="hover:bg-[#FDFBFC] transition-colors">
                       
                       {/* ID */}
-                      <td className="px-3 py-3 border-r border-[#e2e5e7] text-center font-mono text-zinc-400 text-[11px]">
-                        {office.id}
+                      <td className="px-6 py-4">
+                        <span 
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontWeight: 700,
+                            fontSize: '14px',
+                            color: '#751639'
+                          }}
+                        >
+                          #{office.id}
+                        </span>
                       </td>
 
-                      {/* Title & Hindi Translation */}
-                      <td className="px-4 py-3 border-r border-[#e2e5e7] font-bold text-[#751639] max-w-md">
+                      {/* Office Title */}
+                      <td className="px-6 py-4">
                         <div 
-                          className="line-clamp-2 cursor-pointer hover:underline text-[13px]" 
-                          onClick={() => handleOpenView(office)} 
+                          className="cursor-pointer hover:underline"
+                          onClick={() => handleOpenView(office)}
                           title="Click to view details"
                         >
-                          {office.title}
-                        </div>
-                        {office.title_hi && office.title_hi !== office.title && (
-                          <div className="text-[11px] font-normal text-zinc-500 line-clamp-1 mt-0.5">
-                            {office.title_hi}
+                          <div 
+                            style={{
+                              fontFamily: "'Inter', sans-serif",
+                              fontWeight: 500,
+                              fontSize: '14px',
+                              lineHeight: '20px',
+                              color: '#0F172B'
+                            }}
+                          >
+                            {isHindi ? (office.title_hi || office.title) : office.title}
                           </div>
-                        )}
-                        {office.is_system && (
-                          <span className="inline-block mt-1 text-[9px] font-bold uppercase px-1.5 py-0.2 bg-zinc-100 text-zinc-600 rounded-none border border-zinc-200">
-                            System Default Portal
-                          </span>
-                        )}
+                          {office.title_hi && office.title_hi !== office.title && !isHindi && (
+                            <div className="text-[12px] text-[#62748E] line-clamp-1 mt-0.5">
+                              {office.title_hi}
+                            </div>
+                          )}
+                        </div>
                       </td>
 
                       {/* Department / Category */}
-                      <td className="px-3 py-3 border-r border-[#e2e5e7]">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-none text-[11px] font-semibold border ${badge.bg}`}>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${badge.bg}`}>
                           {badge.label}
                         </span>
                       </td>
 
                       {/* State / Location */}
-                      <td className="px-3 py-3 border-r border-[#e2e5e7] text-zinc-700">
-                        <div className="flex items-center gap-1 font-medium">
-                          <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                          <span className="truncate">{office.state_name || office.state_title || 'National / Union'}</span>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5 text-[13px] text-[#314158]">
+                          <MapPin className="w-3.5 h-3.5 text-[#90A1B9] shrink-0" />
+                          <span className="truncate">{office.state_name || office.state_title || (isHindi ? 'केंद्रीय / राष्ट्रीय' : 'Union / National')}</span>
                         </div>
                       </td>
 
-                      {/* Subsite Route */}
-                      <td className="px-3 py-3 border-r border-[#e2e5e7]">
+                      {/* URL / Subsite Route */}
+                      <td className="px-6 py-4">
                         {office.url ? (
                           <a
                             href={office.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-700 hover:text-blue-900 hover:underline font-mono text-[11px] flex items-center gap-1 truncate max-w-[180px]"
+                            className="text-[#751639] hover:underline text-[13px] flex items-center gap-1 truncate max-w-[200px]"
                             title={office.url}
                           >
-                            <ExternalLink className="w-3 h-3 shrink-0 text-blue-500" />
                             <span className="truncate">{office.url}</span>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
                           </a>
                         ) : (
-                          <span className="text-zinc-400 italic text-[11px]">—</span>
+                          <span className="text-[#90A1B9] italic text-[13px]">—</span>
                         )}
                       </td>
 
-                      {/* Email */}
-                      <td className="px-3 py-3 border-r border-[#e2e5e7]">
-                        {office.email ? (
-                          <a
-                            href={`mailto:${office.email}`}
-                            className="text-zinc-700 hover:text-[#751639] flex items-center gap-1 text-[11px] truncate max-w-[160px]"
-                            title={office.email}
-                          >
-                            <Mail className="w-3 h-3 text-zinc-400 shrink-0" />
-                            <span className="truncate">{office.email}</span>
-                          </a>
-                        ) : (
-                          <span className="text-zinc-400 italic text-[11px]">—</span>
-                        )}
-                      </td>
-
-                      {/* Status Toggle */}
-                      <td className="px-3 py-3 border-r border-[#e2e5e7] text-center">
+                      {/* Status */}
+                      <td className="px-6 py-4 text-center">
                         <button
                           onClick={() => handleToggleStatus(office)}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                            office.is_active 
-                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
-                              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                          }`}
+                          className="cursor-pointer"
                           title="Click to toggle status"
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${office.is_active ? 'bg-emerald-600' : 'bg-zinc-400'}`} />
-                          <span>{office.is_active ? 'Active' : 'Inactive'}</span>
+                          {office.is_active ? (
+                            <span className="bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+                              {t.active}
+                            </span>
+                          ) : (
+                            <span className="bg-[#FDF4F0] text-[#E11D48] border border-[#FFE4E6] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
+                              {t.inactive}
+                            </span>
+                          )}
                         </button>
                       </td>
 
-                      {/* Action Links (Matching Reports Module actions layout) */}
-                      <td className="px-3 py-3 text-center">
-                        <div className="flex items-center justify-center gap-3 text-xs">
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button
+                            type="button"
                             onClick={() => handleOpenView(office)}
-                            className="text-blue-700 hover:text-blue-900 font-bold hover:underline cursor-pointer"
-                            title="View Office Details"
+                            className="text-[#64748B] hover:text-[#751639] transition-colors cursor-pointer"
+                            title={t.view}
                           >
-                            View
+                            <Eye className="w-4 h-4" />
                           </button>
-                          <span className="text-zinc-300">|</span>
                           <button
+                            type="button"
                             onClick={() => handleOpenEdit(office)}
-                            className="text-amber-700 hover:text-amber-900 font-bold hover:underline cursor-pointer"
-                            title="Edit Office"
+                            className="text-[#64748B] hover:text-[#751639] transition-colors cursor-pointer"
+                            title={t.edit}
                           >
-                            Edit
+                            <Pencil className="w-4 h-4" />
                           </button>
-                          <span className="text-zinc-300">|</span>
                           <button
+                            type="button"
                             onClick={() => handleDelete(office.id)}
-                            className="text-red-700 hover:text-red-900 font-bold hover:underline cursor-pointer"
-                            title="Delete Office"
+                            className="text-[#EF4444] hover:text-[#B91C1C] transition-colors cursor-pointer"
+                            title={t.delete}
                           >
-                            Delete
+                            <Trash2 className="w-4 h-4" />
                           </button>
-                          {office.url && (
-                            <>
-                              <span className="text-zinc-300">|</span>
-                              <a
-                                href={office.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#751639] hover:underline font-bold flex items-center gap-0.5"
-                                title="Open Subsite Portal"
-                              >
-                                Subsite ↗
-                              </a>
-                            </>
-                          )}
                         </div>
                       </td>
 
@@ -949,28 +1165,34 @@ function AdminPresenceContent() {
           </table>
         </div>
 
-        {/* ── 3. PAGINATION (Exact Reports Module Layout) ── */}
-        <div className="px-5 py-3.5 bg-white border-t border-[#e2e5e7] flex flex-wrap justify-between items-center gap-3">
-          <div className="text-zinc-500 text-xs">
-            Showing Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalCount.toLocaleString()} total registered offices)
+        {/* ── 3. PAGINATION FOOTER ── */}
+        <div className="px-6 py-4 border-t border-[#F5F3F4] flex flex-wrap items-center justify-between gap-4">
+          <div 
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '13px',
+              color: '#62748E'
+            }}
+          >
+            {t.showing} {paginatedOffices.length > 0 ? (page - 1) * pageSize + 1 : 0} {t.to} {Math.min(page * pageSize, totalCount)} {t.of} {totalCount} {t.entries}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs cursor-pointer"
+              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
-              Previous
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {Array.from({ length: Math.min(totalPages, 7) }, (_, idx) => {
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, idx) => {
               let pageNum = idx + 1;
-              if (totalPages > 7) {
-                if (page > 4 && page < totalPages - 3) {
-                  pageNum = page - 3 + idx;
-                } else if (page >= totalPages - 3) {
-                  pageNum = totalPages - 6 + idx;
+              if (totalPages > 5) {
+                if (page > 3 && page < totalPages - 2) {
+                  pageNum = page - 2 + idx;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + idx;
                 }
               }
 
@@ -978,11 +1200,12 @@ function AdminPresenceContent() {
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`px-3 py-1 border text-xs font-bold transition-colors cursor-pointer rounded-none ${
+                  className={`w-8 h-8 rounded-[6px] text-[13px] font-medium transition-all cursor-pointer flex items-center justify-center ${
                     page === pageNum
-                      ? 'bg-[#751639] text-white border-[#751639]'
-                      : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50'
+                      ? 'bg-[#751639] text-white shadow-xs'
+                      : 'text-[#62748E] hover:bg-[#F8F7F7]'
                   }`}
+                  style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                   {pageNum}
                 </button>
@@ -992,146 +1215,139 @@ function AdminPresenceContent() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1 border border-zinc-300 rounded-none bg-white text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs cursor-pointer"
+              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
-              Next
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
       </div>
 
-      {/* ── 4. VIEW DETAILS MODAL (Exact Reports Module Layout) ── */}
+      {/* ── 4. VIEW DETAILS MODAL ── */}
       {viewingOffice && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-none shadow-2xl border border-zinc-300 max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
             
             {/* Modal Header */}
             <div 
               className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
             >
               <div>
-                <h3 className="font-bold text-base flex items-center gap-2">
+                <h3 className="font-semibold text-[16px] flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
                   Office Profile Details
                 </h3>
-                <p className="text-[11px] text-white/80">Database Record ID: #{viewingOffice.id}</p>
+                <p className="text-[12px] text-white/80">Database Record ID: #{viewingOffice.id}</p>
               </div>
               <button
                 onClick={() => setViewingOffice(null)}
-                className="text-white/80 hover:text-white text-lg font-bold p-1 cursor-pointer"
+                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
               >
                 &times;
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-sm">
               
-              <div className="bg-zinc-50 p-4 border border-zinc-200 space-y-2">
-                <div>
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Office Title (English):</span>
-                  <p className="text-base font-bold text-[#751639]">{viewingOffice.title}</p>
-                </div>
+              <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">Office Title (English):</span>
+                <p className="text-[16px] font-bold text-[#751639]">{viewingOffice.title}</p>
                 {viewingOffice.title_hi && (
-                  <div>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Office Title (हिन्दी):</span>
-                    <p className="text-sm font-medium text-zinc-800">{viewingOffice.title_hi}</p>
+                  <div className="pt-2 border-t border-[#EDE9E9] mt-2">
+                    <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">Office Title (हिन्दी):</span>
+                    <p className="text-[14px] font-medium text-[#314158]">{viewingOffice.title_hi}</p>
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
-                <div className="p-3 border border-zinc-200 bg-white">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Department Category:</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-none font-semibold border ${getDeptBadgeStyle(viewingOffice.department_id, viewingOffice.department_name).bg}`}>
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Department Category:</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getDeptBadgeStyle(viewingOffice.department_id, viewingOffice.department_name).bg}`}>
                     {viewingOffice.department_name || `Dept #${viewingOffice.department_id}`}
                   </span>
                 </div>
 
-                <div className="p-3 border border-zinc-200 bg-white">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">State / Territory:</span>
-                  <div className="flex items-center gap-1 font-medium text-zinc-800">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-400" />
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">State / Location:</span>
+                  <div className="flex items-center gap-1.5 font-medium text-[#314158]">
+                    <MapPin className="w-4 h-4 text-[#90A1B9]" />
                     <span>{viewingOffice.state_name || viewingOffice.state_title || 'Union / National'}</span>
                   </div>
                 </div>
 
-                <div className="p-3 border border-zinc-200 bg-white">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Subsite Route / URL:</span>
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Subsite Route / URL:</span>
                   {viewingOffice.url ? (
                     <a
                       href={viewingOffice.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-700 hover:underline font-mono text-[11px] flex items-center gap-1 break-all"
+                      className="text-[#751639] hover:underline font-mono text-[12px] flex items-center gap-1 break-all"
                     >
-                      <ExternalLink className="w-3 h-3 shrink-0" />
+                      <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                       <span>{viewingOffice.url}</span>
                     </a>
                   ) : (
-                    <span className="text-zinc-400 italic">None</span>
+                    <span className="text-[#90A1B9] italic">None</span>
                   )}
                 </div>
 
-                <div className="p-3 border border-zinc-200 bg-white">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Official Email Address:</span>
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Official Email Address:</span>
                   {viewingOffice.email ? (
                     <a
                       href={`mailto:${viewingOffice.email}`}
-                      className="text-zinc-800 hover:text-[#751639] flex items-center gap-1.5 font-medium"
+                      className="text-[#314158] hover:text-[#751639] flex items-center gap-1.5 font-medium text-[13px]"
                     >
-                      <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                      <Mail className="w-3.5 h-3.5 text-[#90A1B9]" />
                       <span>{viewingOffice.email}</span>
                     </a>
                   ) : (
-                    <span className="text-zinc-400 italic">None</span>
+                    <span className="text-[#90A1B9] italic">None</span>
                   )}
                 </div>
 
-                <div className="p-3 border border-zinc-200 bg-white">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Publishing Status:</span>
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
-                    viewingOffice.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-700'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${viewingOffice.is_active ? 'bg-emerald-600' : 'bg-zinc-400'}`} />
-                    {viewingOffice.is_active ? 'Active & Live' : 'Inactive / Draft'}
-                  </span>
-                </div>
-
-                <div className="p-3 border border-zinc-200 bg-white">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Theme Configuration:</span>
-                  <span className="font-mono text-zinc-700">{viewingOffice.theme || 'Default Theme'}</span>
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Publishing Status:</span>
+                  {viewingOffice.is_active ? (
+                    <span className="bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+                      Active &amp; Live
+                    </span>
+                  ) : (
+                    <span className="bg-[#FDF4F0] text-[#E11D48] border border-[#FFE4E6] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
+                      Inactive / Draft
+                    </span>
+                  )}
                 </div>
 
               </div>
 
-              {(viewingOffice.created_at || viewingOffice.modified_at) && (
-                <div className="text-[11px] text-zinc-400 pt-2 border-t border-zinc-150 flex justify-between">
-                  {viewingOffice.created_at && <span>Created: {new Date(viewingOffice.created_at).toLocaleString()}</span>}
-                  {viewingOffice.modified_at && <span>Modified: {new Date(viewingOffice.modified_at).toLocaleString()}</span>}
-                </div>
-              )}
-
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 bg-zinc-50 border-t border-zinc-200 flex justify-end gap-2">
+            <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
               <button
+                type="button"
                 onClick={() => {
                   const target = viewingOffice;
                   setViewingOffice(null);
                   handleOpenEdit(target);
                 }}
-                className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-1.5 rounded-none text-xs transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
               >
-                Edit Office Record
+                Edit This Office
               </button>
               <button
+                type="button"
                 onClick={() => setViewingOffice(null)}
-                className="px-4 py-1.5 border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 rounded-none text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
               >
                 Close
               </button>
@@ -1141,195 +1357,170 @@ function AdminPresenceContent() {
         </div>
       )}
 
-      {/* ── 5. ADD / EDIT MODAL (Exact Reports Module Layout) ── */}
+      {/* ── 5. CREATE / EDIT OFFICE DRAWER MODAL ── */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-none shadow-2xl border border-zinc-300 max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
             
-            {/* Modal Header */}
+            {/* Drawer Header */}
             <div 
               className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
             >
               <div>
-                <h3 className="font-bold text-base flex items-center gap-2">
-                  {editingRawId ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                  {editingRawId ? `Edit Office / Subsite Record (#${editingRawId})` : 'Add New Office / Subsite Card'}
+                <h3 className="font-semibold text-[16px]">
+                  {editingRawId ? `Edit Office #${editingRawId}` : 'Add New Office / Subsite'}
                 </h3>
-                <p className="text-[11px] text-white/80">
-                  Target Database Table: <code className="bg-black/20 px-1 py-0.2 rounded-none font-mono">cag_revamp.websites</code>
-                </p>
+                <p className="text-[12px] text-white/80">Configure office registry record and subsite portal link</p>
               </div>
               <button
                 onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white text-lg font-bold p-1 cursor-pointer"
+                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
               >
                 &times;
               </button>
             </div>
 
-            {/* Modal Form */}
-            <form onSubmit={handleSubmitForm}>
-              <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
-                
-                {/* Title En */}
-                <div>
-                  <label className="block text-zinc-700 font-bold mb-1">
-                    Office / Subsite Title (English) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formTitleEn}
-                    onChange={(e) => setFormTitleEn(e.target.value)}
-                    placeholder="e.g. Principal Accountant General (Audit-I), Maharashtra"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 text-xs focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-
-                {/* Title Hi */}
-                <div>
-                  <label className="block text-zinc-700 font-bold mb-1">
-                    Office / Subsite Title (हिन्दी)
-                  </label>
-                  <input
-                    type="text"
-                    value={formTitleHi}
-                    onChange={(e) => setFormTitleHi(e.target.value)}
-                    placeholder="e.g. प्रधान महालेखाकार (लेखापरीक्षा-I), महाराष्ट्र"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 text-xs focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-
-                {/* Grid: Department & State */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  
-                  {/* Department */}
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">
-                      Department Category <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={formDeptId}
-                      onChange={(e) => setFormDeptId(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 text-xs focus:outline-none focus:border-[#751639]"
-                    >
-                      <option value="0">-- Select Department --</option>
-                      {departments.map((d) => (
-                        <option key={d.id} value={String(d.id)}>
-                          {d.title} (ID: #{d.id})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* State Select */}
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">
-                      Associated State / UT / Location
-                    </label>
-                    <select
-                      value={formStateId}
-                      onChange={(e) => setFormStateId(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 text-xs focus:outline-none focus:border-[#751639]"
-                    >
-                      <option value="0">-- National / Central / None --</option>
-                      {states.map((s) => (
-                        <option key={s.id} value={String(s.id)}>
-                          {s.name} (ID: #{s.id})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                </div>
-
-                {/* URL Route */}
-                <div>
-                  <label className="block text-zinc-700 font-bold mb-1">
-                    Subsite Route / Internal URL
-                  </label>
-                  <input
-                    type="text"
-                    value={formUrl}
-                    onChange={(e) => setFormUrl(e.target.value)}
-                    placeholder="e.g. /ae/andhra-pradesh or /defence/new-delhi or /rti/chennai"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 font-mono text-zinc-900 text-xs focus:outline-none focus:border-[#751639]"
-                  />
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Prefix with forward slash (e.g. <code className="bg-zinc-100 px-1">/ae/bihar</code>) or enter full external link.
-                  </p>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-zinc-700 font-bold mb-1">
-                    Official Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={formEmail}
-                    onChange={(e) => setFormEmail(e.target.value)}
-                    placeholder="e.g. agauditmaharashtra@cag.gov.in"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 text-xs focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-
-                {/* Status & Theme */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-zinc-150">
-                  
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">
-                      Publishing Status:
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer mt-1">
-                      <input
-                        type="checkbox"
-                        checked={formIsActive}
-                        onChange={(e) => setFormIsActive(e.target.checked)}
-                        className="w-4 h-4 text-[#751639] rounded-none focus:ring-[#751639]"
-                      />
-                      <span className="font-semibold text-zinc-800">
-                        {formIsActive ? 'Active & Published on Portal' : 'Inactive / Hidden'}
-                      </span>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">
-                      Theme Configuration:
-                    </label>
-                    <select
-                      value={formTheme}
-                      onChange={(e) => setFormTheme(e.target.value)}
-                      className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-900 text-xs focus:outline-none"
-                    >
-                      <option value="default">Default Theme</option>
-                      <option value="classic">Classic Government Portal</option>
-                      <option value="training">Training Institute Layout</option>
-                    </select>
-                  </div>
-
-                </div>
-
+            {/* Form Fields */}
+            <form onSubmit={handleSubmitForm} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              
+              {/* Title EN */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  Office Title (English) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formTitleEn}
+                  onChange={(e) => setFormTitleEn(e.target.value)}
+                  placeholder="e.g. Principal Accountant General (Audit-I), Maharashtra"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
               </div>
 
-              {/* Form Footer */}
-              <div className="px-6 py-3.5 bg-zinc-50 border-t border-zinc-200 flex justify-end gap-2">
+              {/* Title HI */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  Office Title (हिन्दी)
+                </label>
+                <input
+                  type="text"
+                  value={formTitleHi}
+                  onChange={(e) => setFormTitleHi(e.target.value)}
+                  placeholder="e.g. प्रधान महालेखाकार (लेखापरीक्षा-I), महाराष्ट्र"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              {/* Department */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  Department Category *
+                </label>
+                <div className="relative w-full">
+                  <select
+                    value={formDeptId}
+                    onChange={(e) => setFormDeptId(e.target.value)}
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                  >
+                    <option value="1">State Audit Offices</option>
+                    <option value="7">State Accounts &amp; Entitlement (A&amp;E) Offices</option>
+                    <option value="9">Defence Audit Offices</option>
+                    <option value="6">Railway Audit Offices</option>
+                    <option value="8">Other Ministries / Commercial Audit</option>
+                    <option value="5">Training Institutes (RTI / RTC)</option>
+                    {departments.filter(d => ![1, 7, 9, 6, 8, 5].includes(Number(d.id))).map((d) => (
+                      <option key={d.id} value={String(d.id)}>{d.title}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* State Select */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  State / Union Territory
+                </label>
+                <SearchableStateSelect
+                  value={formStateId}
+                  onChange={(val) => setFormStateId(val)}
+                  states={states.map(s => ({ id: s.id, name: s.name }))}
+                  placeholder="Select State / UT"
+                  allLabel="National / Central (No State)"
+                  allowAll={true}
+                  size="md"
+                />
+              </div>
+
+              {/* Subsite URL */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  Subsite Route / URL
+                </label>
+                <input
+                  type="text"
+                  value={formUrl}
+                  onChange={(e) => setFormUrl(e.target.value)}
+                  placeholder="e.g. /states/maharashtra/audit-1 or https://..."
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              {/* Email */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  Official Email Address
+                </label>
+                <input
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  placeholder="e.g. agaumaharashtra1@cag.gov.in"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              {/* Active Toggle */}
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="formIsActive"
+                  checked={formIsActive}
+                  onChange={(e) => setFormIsActive(e.target.checked)}
+                  className="w-4 h-4 accent-[#751639] cursor-pointer"
+                />
+                <label htmlFor="formIsActive" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
+                  Publish to Live Website Portal
+                </label>
+              </div>
+
+              {/* Form Actions */}
+              <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-1.5 border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 rounded-none text-xs font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="text-white px-5 py-1.5 rounded-none text-xs font-bold shadow-xs transition-all hover:opacity-95 cursor-pointer disabled:opacity-50"
-                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+                  className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
                 >
-                  {formSubmitting ? 'Saving...' : (editingRawId ? 'Update Office' : 'Save Office Record')}
+                  {formSubmitting ? 'Saving...' : (editingRawId ? 'Update Office' : 'Create Office')}
                 </button>
               </div>
 
@@ -1341,27 +1532,28 @@ function AdminPresenceContent() {
 
       {/* ── 6. DELETE CONFIRMATION MODAL ── */}
       {deleteCandidate && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-none shadow-2xl border border-zinc-300 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div className="p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-                <Trash2 className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-md w-full overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600" />
               </div>
-              <h3 className="font-bold text-base text-zinc-900">Delete Office Record?</h3>
-              <p className="text-xs text-zinc-600">
-                Are you sure you want to delete <strong className="text-zinc-900">"{deleteCandidate.title}"</strong> (ID: #{deleteCandidate.id}) from the database?
-              </p>
-              <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-none text-[11px] text-amber-800 text-left">
-                ⚠️ This action cannot be undone. Associated public subsite links may become inaccessible.
+              <div>
+                <h3 className="font-bold text-[16px] text-[#0F172B]">Delete Office Record?</h3>
+                <p className="text-[12px] text-[#62748E]">This action cannot be undone.</p>
               </div>
             </div>
 
-            <div className="px-6 py-3.5 bg-zinc-50 border-t border-zinc-200 flex justify-end gap-2">
+            <p className="text-[13px] text-[#314158]">
+              Are you sure you want to permanently delete <strong className="text-[#751639]">"{deleteCandidate.title}"</strong> (ID #{deleteCandidate.id})?
+            </p>
+
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeleteCandidate(null)}
                 disabled={deleting}
-                className="px-4 py-1.5 border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 rounded-none text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
               >
                 Cancel
               </button>
@@ -1369,7 +1561,7 @@ function AdminPresenceContent() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-1.5 rounded-none text-xs transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-[8px] bg-red-600 hover:bg-red-700 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {deleting ? 'Deleting...' : 'Confirm Delete'}
               </button>
@@ -1382,12 +1574,12 @@ function AdminPresenceContent() {
   );
 }
 
-export default function AdminOfficesPage() {
+export default function AdminPresencePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[400px] flex items-center justify-center text-xs text-zinc-500">
-        <div className="w-5 h-5 border-2 border-[#751639] border-t-transparent rounded-full animate-spin mr-2"></div>
-        Loading Our Presence Admin Module...
+      <div className="p-8 text-center text-zinc-400">
+        <div className="w-6 h-6 border-2 border-[#751639] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+        <span>Loading Our Presence module...</span>
       </div>
     }>
       <AdminPresenceContent />

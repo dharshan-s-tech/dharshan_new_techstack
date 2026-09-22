@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useAdminLanguage } from '@/lib/useAdminLanguage';
 
 export interface LeafItem {
   type: 'leaf';
   id: string;
   name: string;
+  name_hi?: string;
   path: string;
   isExternal?: boolean;
 }
@@ -16,27 +18,34 @@ export interface SubMenuItem {
   type: 'submenu';
   id: string;
   name: string;
+  name_hi?: string;
   children: (LeafItem | SubMenuItem)[];
 }
 
 export type MenuItem = LeafItem | SubMenuItem;
 
-// Minimalist thin-stroke Chevron matching the Figma UI (12x12) with depth-aware opacity
-const ChevronIcon = ({ isOpen, depth = 0 }: { isOpen: boolean; depth?: number }) => (
+export interface TopSectionGroup {
+  id: string;
+  title: string;
+  title_hi?: string;
+  items: MenuItem[];
+}
+
+// Minimalist thin-stroke Chevron matching the Figma design
+const ChevronIcon = ({ isOpen, color = 'rgba(255, 255, 255, 0.8)' }: { isOpen: boolean; color?: string }) => (
   <svg 
-    width="12" 
-    height="12" 
-    viewBox="0 0 14 14" 
+    width="18" 
+    height="18" 
+    viewBox="0 0 18 18" 
     fill="none" 
     xmlns="http://www.w3.org/2000/svg"
-    className={`shrink-0 transition-transform duration-200 ${
-      depth === 0 ? 'text-white' : depth === 1 ? 'text-white/80 group-hover:text-white' : 'text-white/70 group-hover:text-white'
-    } ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+    className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+    style={{ color }}
   >
     <path 
-      d="M3 5L7 9L11 5" 
+      d="M4.5 6.75L9 11.25L13.5 6.75" 
       stroke="currentColor" 
-      strokeWidth={depth === 0 ? "2" : "1.75"} 
+      strokeWidth="1.75" 
       strokeLinecap="round" 
       strokeLinejoin="round" 
     />
@@ -46,309 +55,427 @@ const ChevronIcon = ({ isOpen, depth = 0 }: { isOpen: boolean; depth?: number })
 export default function FigmaAdminSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { isHindi } = useAdminLanguage();
 
-  // Preserved original module tree structure
-  const menuItems: MenuItem[] = [
+  // Complete Navigation Structure matching Figma hierarchy with Hindi translations
+  const sectionGroups: TopSectionGroup[] = [
     {
-      type: 'leaf',
-      id: 'home-page',
-      name: 'Home Page',
-      path: '/admin/banners'
-    },
-    {
-      type: 'submenu',
-      id: 'reports',
-      name: 'Reports & Accounts',
-      children: [
+      id: 'main-cag-website',
+      title: 'Main CAG Website',
+      title_hi: 'मुख्य सीएजी वेबसाइट',
+      items: [
         {
-          type: 'leaf',
-          id: 'rep-audit',
-          name: 'Audit Reports',
-          path: '/admin/reports'
+          type: 'submenu',
+          id: 'home-page',
+          name: 'Home Page',
+          name_hi: 'मुख्य पृष्ठ',
+          children: [
+            {
+              type: 'leaf',
+              id: 'hp-hero-banner',
+              name: 'Banners',
+              name_hi: 'बैनर',
+              path: '/admin/banners?tab=hero'
+            },
+            {
+              type: 'leaf',
+              id: 'hp-quick-links',
+              name: 'Quick Link Cards',
+              name_hi: 'त्वरित लिंक कार्ड',
+              path: '/admin/banners?tab=quick-links'
+            },
+            {
+              type: 'leaf',
+              id: 'hp-who-we-are',
+              name: 'Who we are',
+              name_hi: 'हम कौन हैं',
+              path: '/admin/banners?tab=who-we-are'
+            },
+            {
+              type: 'leaf',
+              id: 'hp-statistics',
+              name: 'Statistics',
+              name_hi: 'सांख्यिकी',
+              path: '/admin/banners?tab=statistics'
+            },
+            {
+              type: 'leaf',
+              id: 'hp-cag-message',
+              name: 'CAG Message',
+              name_hi: 'सीएजी संदेश',
+              path: '/admin/banners?tab=cag-message'
+            }
+          ]
+        },
+        {
+          type: 'submenu',
+          id: 'reports',
+          name: 'Reports & Accounts',
+          name_hi: 'रिपोर्ट एवं लेखे',
+          children: [
+            {
+              type: 'leaf',
+              id: 'rep-reports',
+              name: 'Audit Reports',
+              name_hi: 'लेखापरीक्षा रिपोर्ट',
+              path: '/admin/reports'
+            },
+            {
+              type: 'leaf',
+              id: 'rep-accounts',
+              name: 'Accounts Hub',
+              name_hi: 'लेखे प्रबंधन (Hub)',
+              path: '/admin/accounts'
+            },
+            {
+              type: 'leaf',
+              id: 'rep-state-accounts',
+              name: 'State Accounts',
+              name_hi: 'राज्य के सरकारी लेखे',
+              path: '/admin/state-accounts'
+            },
+            {
+              type: 'leaf',
+              id: 'rep-combined-accounts',
+              name: 'Combined Finance & Revenue',
+              name_hi: 'संयुक्त वित्त एवं राजस्व लेखे',
+              path: '/admin/combined-accounts'
+            }
+          ]
+        },
+        {
+          type: 'submenu',
+          id: 'our-presence',
+          name: 'Our Presence',
+          name_hi: 'हमारी उपस्थिति',
+          children: [
+            {
+              type: 'submenu',
+              id: 'state-level-offices',
+              name: 'State Level Offices',
+              name_hi: 'राज्य स्तरीय कार्यालय',
+              children: [
+                {
+                  type: 'leaf',
+                  id: 'ae-offices',
+                  name: 'State A&E Offices',
+                  name_hi: 'राज्य लेखा एवं हकदारी कार्यालय',
+                  path: '/admin/offices?type=ae'
+                },
+                {
+                  type: 'leaf',
+                  id: 'state-audit-offices',
+                  name: 'State Audit Offices',
+                  name_hi: 'राज्य लेखापरीक्षा कार्यालय',
+                  path: '/admin/offices?type=audit'
+                }
+              ]
+            },
+            {
+              type: 'submenu',
+              id: 'central-audit-offices',
+              name: 'Central Audit Offices',
+              name_hi: 'केंद्रीय लेखापरीक्षा कार्यालय',
+              children: [
+                {
+                  type: 'leaf',
+                  id: 'cao-defence',
+                  name: 'Defence',
+                  name_hi: 'रक्षा',
+                  path: '/admin/offices?type=defence'
+                },
+                {
+                  type: 'leaf',
+                  id: 'cao-railway',
+                  name: 'Railway',
+                  name_hi: 'रेलवे',
+                  path: '/admin/offices?type=railway'
+                },
+                {
+                  type: 'leaf',
+                  id: 'cao-other-ministries',
+                  name: 'Other Ministries',
+                  name_hi: 'अन्य मंत्रालय',
+                  path: '/admin/offices?type=ministries'
+                },
+                {
+                  type: 'leaf',
+                  id: 'cao-overseas',
+                  name: 'Overseas',
+                  name_hi: 'विदेशी कार्यालय',
+                  path: '/admin/offices?type=overseas'
+                }
+              ]
+            },
+            {
+              type: 'submenu',
+              id: 'training-institutes',
+              name: 'Training Institutes',
+              name_hi: 'प्रशिक्षण संस्थान',
+              children: [
+                {
+                  type: 'leaf',
+                  id: 'ti-regional',
+                  name: 'Regional Training Institutes',
+                  name_hi: 'क्षेत्रीय प्रशिक्षण संस्थान (RTIs)',
+                  path: '/admin/offices?type=rti'
+                },
+                {
+                  type: 'leaf',
+                  id: 'ti-iced',
+                  name: 'iCED',
+                  name_hi: 'आईसीईडी (जयपुर)',
+                  path: '/admin/offices?type=iced'
+                },
+                {
+                  type: 'leaf',
+                  id: 'ti-icisa',
+                  name: 'iCISA',
+                  name_hi: 'आईसीआईएसए (नोएडा)',
+                  path: '/admin/offices?type=icisa'
+                },
+                {
+                  type: 'leaf',
+                  id: 'ti-naaa',
+                  name: 'NAAA',
+                  name_hi: 'एनएएए (शिमला)',
+                  path: '/admin/offices?type=naaa'
+                },
+                {
+                  type: 'leaf',
+                  id: 'ti-ical',
+                  name: 'iCAL',
+                  name_hi: 'आईसीएल (कोझिकोड)',
+                  path: '/admin/offices?type=ical'
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: 'submenu',
+          id: 'global-relations',
+          name: 'Global Relations',
+          name_hi: 'वैश्विक संबंध',
+          children: [
+            {
+              type: 'leaf',
+              id: 'gr-intl-bodies',
+              name: 'International Bodies',
+              name_hi: 'अंतर्राष्ट्रीय निकाय (INTOSAI/ASOSAI)',
+              path: '/admin/global-relations?tab=international-bodies'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-bilateral',
+              name: 'Bilateral Relations',
+              name_hi: 'द्विपक्षीय संबंध',
+              path: '/admin/global-relations?tab=bilateral-relations'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-audit-engagements',
+              name: 'Audit Engagements',
+              name_hi: 'लेखापरीक्षा सहभागिता',
+              path: '/admin/global-relations?tab=audit-engagements'
+            },
+            {
+              type: 'leaf',
+              id: 'gr-relations-wing',
+              name: 'Relations Wing',
+              name_hi: 'अंतर्राष्ट्रीय संबंध प्रभाग',
+              path: '/admin/global-relations?tab=relations-wing'
+            }
+          ]
         },
         {
           type: 'leaf',
-          id: 'rep-accounts',
-          name: 'Accounts Reports',
-          path: '/admin/accounts'
+          id: 'resources',
+          name: 'Resources',
+          name_hi: 'संसाधन एवं परिपत्र',
+          path: '/admin/circulars'
         },
         {
           type: 'leaf',
-          id: 'rep-state-acc',
-          name: 'State & UT Accounts',
-          path: '/admin/state-accounts'
+          id: 'careers-engagement',
+          name: 'Careers & Engagement',
+          name_hi: 'कैरियर एवं सहभागिता',
+          path: '/admin/about?tab=recruitment'
+        },
+        {
+          type: 'submenu',
+          id: 'about-us',
+          name: 'About Us',
+          name_hi: 'हमारे बारे में',
+          children: [
+            {
+              type: 'leaf',
+              id: 'abt-all',
+              name: 'All Sections Registry',
+              name_hi: 'सभी अनुभाग रजिस्ट्री',
+              path: '/admin/about'
+            },
+            {
+              type: 'leaf',
+              id: 'abt-who-we-are',
+              name: 'Who We Are',
+              name_hi: 'हम कौन हैं (प्रोफाइल/दृष्टिकोण/चार्ट)',
+              path: '/admin/about?category=Who+We+Are'
+            },
+            {
+              type: 'leaf',
+              id: 'abt-leadership',
+              name: 'Leadership & Legacy',
+              name_hi: 'नेतृत्व एवं विरासत (पूर्व सीएजी/इतिहास)',
+              path: '/admin/about?category=Leadership+%26+Legacy'
+            },
+            {
+              type: 'leaf',
+              id: 'abt-governance',
+              name: 'Governance & Mandate',
+              name_hi: 'शासन एवं अधिदेश (संविधान/अधिनियम/विनियम)',
+              path: '/admin/about?category=Governance+%26+Mandate'
+            }
+          ]
+        },
+        {
+          type: 'submenu',
+          id: 'news-media',
+          name: 'News & Media',
+          name_hi: 'समाचार एवं मीडिया',
+          children: [
+            {
+              type: 'leaf',
+              id: 'nm-news-events',
+              name: 'News & Events',
+              name_hi: 'समाचार एवं कार्यक्रम',
+              path: '/admin/news'
+            },
+            {
+              type: 'leaf',
+              id: 'nm-video-gallery',
+              name: 'Video Gallery',
+              name_hi: 'वीडियो गैलरी',
+              path: '/admin/news?tab=videos'
+            }
+          ]
         },
         {
           type: 'leaf',
-          id: 'rep-comb-acc',
-          name: 'Combined Accounts & Conf.',
-          path: '/admin/combined-accounts'
+          id: 'contact',
+          name: 'Contact',
+          name_hi: 'संपर्क सूत्र',
+          path: '/admin/site-settings?tab=contact'
         }
       ]
     },
     {
-      type: 'submenu',
-      id: 'our-presence',
-      name: 'Our Presence',
-      children: [
+      id: 'menu-management',
+      title: 'Menu Management',
+      title_hi: 'मेनू प्रबंधन',
+      items: [
         {
-          type: 'submenu',
-          id: 'state-level-offices',
-          name: 'State Level Offices',
-          children: [
-            {
-              type: 'leaf',
-              id: 'ae-offices',
-              name: 'Accounts & Entitlement Offices',
-              path: '/admin/offices?type=ae'
-            },
-            {
-              type: 'leaf',
-              id: 'state-audit-offices',
-              name: 'State Audit Offices',
-              path: '/admin/offices?type=audit'
-            }
-          ]
+          type: 'leaf',
+          id: 'mm-super-admin',
+          name: 'Super Admin',
+          name_hi: 'सुपर एडमिन मास्टर्स',
+          path: '/admin/masters?tab=super-admin'
         },
         {
-          type: 'submenu',
-          id: 'central-audit-offices',
-          name: 'Central Audit Offices',
-          children: [
-            {
-              type: 'leaf',
-              id: 'cao-defence',
-              name: 'Defence',
-              path: '/admin/offices?type=defence'
-            },
-            {
-              type: 'leaf',
-              id: 'cao-railway',
-              name: 'Railway',
-              path: '/admin/offices?type=railway'
-            },
-            {
-              type: 'leaf',
-              id: 'cao-other-ministries',
-              name: 'Other Ministries',
-              path: '/admin/offices?type=ministries'
-            },
-            {
-              type: 'leaf',
-              id: 'cao-overseas',
-              name: 'Overseas',
-              path: '/admin/offices?type=overseas'
-            }
-          ]
-        },
-        {
-          type: 'submenu',
-          id: 'training-institutes',
-          name: 'Training Institutes',
-          children: [
-            {
-              type: 'leaf',
-              id: 'ti-regional',
-              name: 'Regional Training Institutes',
-              path: '/admin/offices?type=rti'
-            },
-            {
-              type: 'leaf',
-              id: 'ti-iced',
-              name: 'iCED',
-              path: '/admin/offices?type=iced'
-            },
-            {
-              type: 'leaf',
-              id: 'ti-icisa',
-              name: 'iCISA',
-              path: '/admin/offices?type=icisa'
-            },
-            {
-              type: 'leaf',
-              id: 'ti-naaa',
-              name: 'NAAA',
-              path: '/admin/offices?type=naaa'
-            },
-            {
-              type: 'leaf',
-              id: 'ti-ical',
-              name: 'iCAL',
-              path: '/admin/offices?type=ical'
-            }
-          ]
+          type: 'leaf',
+          id: 'mm-website-menu',
+          name: 'Website Menu',
+          name_hi: 'वेबसाइट नेविगेशन मेनू',
+          path: '/admin/masters?tab=website-menu'
         }
       ]
     },
     {
-      type: 'submenu',
-      id: 'global-relations',
-      name: 'Global Relations',
-      children: [
-        {
-          type: 'submenu',
-          id: 'gr-intl-bodies',
-          name: 'International Bodies',
-          children: [
-            {
-              type: 'leaf',
-              id: 'gr-intosai',
-              name: 'Association with INTOSAI',
-              path: '/admin/global-relations?slug=page-involvement-with-intosai'
-            },
-            {
-              type: 'leaf',
-              id: 'gr-asosai',
-              name: 'Association with ASOSAI',
-              path: '/admin/global-relations?slug=page-involvement-with-asosai'
-            },
-            {
-              type: 'leaf',
-              id: 'gr-multilateral',
-              name: 'Multilateral Engagement',
-              path: '/admin/global-relations?slug=page-global-audit-leadership-forum-and-other-multilateral-bodies'
-            }
-          ]
-        },
-        {
-          type: 'submenu',
-          id: 'gr-bilateral',
-          name: 'Bilateral Relations',
-          children: [
-            {
-              type: 'leaf',
-              id: 'gr-bilateral-sai',
-              name: 'Bilateral Relations of SAI India',
-              path: '/admin/global-relations?slug=page-bilateral-relations-of-sai-india'
-            }
-          ]
-        },
-        {
-          type: 'submenu',
-          id: 'gr-audit-engagements',
-          name: 'Audit Engagements',
-          children: [
-            {
-              type: 'leaf',
-              id: 'gr-un-panel',
-              name: 'UN Panel of External Auditors',
-              path: '/admin/global-relations?slug=page-un-panel-of-external-auditors'
-            },
-            {
-              type: 'leaf',
-              id: 'gr-present-audits',
-              name: 'Present International Audits',
-              path: '/admin/global-relations?slug=page-present-international-audits'
-            },
-            {
-              type: 'leaf',
-              id: 'gr-past-audits',
-              name: 'Past International Audits',
-              path: '/admin/global-relations?slug=page-past-international-audits'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      type: 'leaf',
-      id: 'resources',
-      name: 'Resources',
-      path: '/admin/circulars'
-    },
-    {
-      type: 'leaf',
-      id: 'careers-engagement',
-      name: 'Careers & Engagement',
-      path: '/admin/about?tab=recruitment'
-    },
-    {
-      type: 'leaf',
-      id: 'about-us',
-      name: 'About Us',
-      path: '/admin/about'
-    },
-    {
-      type: 'leaf',
-      id: 'news-events',
-      name: 'News & Events',
-      path: '/admin/news'
-    },
-    {
-      type: 'submenu',
-      id: 'user-management',
-      name: 'User Management',
-      children: [
+      id: 'administration',
+      title: 'Administration',
+      title_hi: 'प्रशासन एवं उपयोगकर्ता',
+      items: [
         {
           type: 'leaf',
-          id: 'um-roles',
-          name: 'Roles',
-          path: '/admin/users?tab=roles'
+          id: 'adm-users',
+          name: 'Users',
+          name_hi: 'प्रशासनिक उपयोगकर्ता',
+          path: '/admin/users?tab=users'
         },
         {
           type: 'leaf',
-          id: 'um-wings',
+          id: 'adm-wings',
           name: 'Wings',
+          name_hi: 'लेखापरीक्षा विंग',
           path: '/admin/users?tab=wings'
         },
         {
           type: 'leaf',
-          id: 'um-users',
-          name: 'Users',
-          path: '/admin/users?tab=users'
+          id: 'adm-roles',
+          name: 'Roles',
+          name_hi: 'सुरक्षा भूमिकाएं (Roles)',
+          path: '/admin/users?tab=roles'
         }
       ]
-    },
-    {
-      type: 'leaf',
-      id: 'contact',
-      name: 'Contact',
-      path: '/admin/site-settings?tab=contact'
     }
   ];
 
-  // State to track expanded submenus
+  // Expanded state
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    'reports': true,
+    'main-cag-website': true,
+    'home-page': true,
+    'reports': false,
     'our-presence': false,
     'state-level-offices': false,
     'central-audit-offices': false,
     'training-institutes': false,
     'global-relations': false,
-    'gr-intl-bodies': true,
-    'gr-bilateral': true,
-    'gr-audit-engagements': true,
-    'user-management': true
+    'news-media': false,
+    'menu-management': false,
+    'administration': false
   });
 
-  // Auto-expand submenus based on active route
   useEffect(() => {
     const newExpanded = { ...expanded };
 
-    if (
+    if (pathname === '/admin/banners') {
+      newExpanded['main-cag-website'] = true;
+      newExpanded['home-page'] = true;
+    } else if (
       pathname === '/admin/reports' || 
       pathname === '/admin/accounts' || 
       pathname === '/admin/state-accounts' || 
       pathname === '/admin/combined-accounts'
     ) {
+      newExpanded['main-cag-website'] = true;
       newExpanded['reports'] = true;
     } else if (pathname === '/admin/offices') {
+      newExpanded['main-cag-website'] = true;
       newExpanded['our-presence'] = true;
-      const type = searchParams.get('type');
-      if (type === 'ae' || type === 'audit') {
-        newExpanded['state-level-offices'] = true;
-      } else if (['defence', 'railway', 'ministries', 'overseas'].includes(type || '')) {
-        newExpanded['central-audit-offices'] = true;
-      } else if (['rti', 'iced', 'icisa', 'naaa', 'ical'].includes(type || '')) {
+      const type = searchParams.get('type') || '';
+      if (['rti', 'iced', 'icisa', 'naaa', 'ical'].includes(type.toLowerCase())) {
         newExpanded['training-institutes'] = true;
+      } else if (type === 'ae' || type === 'audit') {
+        newExpanded['state-level-offices'] = true;
+      } else if (['defence', 'defense', 'railway', 'ministries', 'overseas'].includes(type.toLowerCase())) {
+        newExpanded['central-audit-offices'] = true;
       }
     } else if (pathname === '/admin/global' || pathname === '/admin/global-relations') {
+      newExpanded['main-cag-website'] = true;
       newExpanded['global-relations'] = true;
-      newExpanded['gr-intl-bodies'] = true;
-      newExpanded['gr-bilateral'] = true;
-      newExpanded['gr-audit-engagements'] = true;
+    } else if (pathname === '/admin/news') {
+      newExpanded['main-cag-website'] = true;
+      newExpanded['news-media'] = true;
+    } else if (pathname === '/admin/masters') {
+      newExpanded['menu-management'] = true;
     } else if (pathname === '/admin/users') {
-      newExpanded['user-management'] = true;
+      newExpanded['administration'] = true;
+    } else if (
+      pathname === '/admin/circulars' || 
+      pathname === '/admin/about' || 
+      pathname === '/admin/site-settings'
+    ) {
+      newExpanded['main-cag-website'] = true;
     }
 
     setExpanded(newExpanded);
@@ -361,7 +488,6 @@ export default function FigmaAdminSidebar() {
     }));
   };
 
-  // Check active state
   const checkIsActive = (targetPath: string) => {
     if (targetPath.includes('?')) {
       const [pathBase, queryString] = targetPath.split('?');
@@ -370,19 +496,26 @@ export default function FigmaAdminSidebar() {
       let matches = true;
       targetParams.forEach((val, key) => {
         const currentVal = searchParams.get(key);
-        // Default tab is 'users' when on /admin/users and tab param is omitted
-        if (pathname === '/admin/users' && key === 'tab' && !currentVal && val === 'users') {
-          return;
-        }
+        if (pathname === '/admin/users' && key === 'tab' && !currentVal && val === 'users') return;
+        if (pathname === '/admin/banners' && key === 'tab' && !currentVal && val === 'hero') return;
         if (currentVal !== val) matches = false;
       });
       return matches;
     }
 
+    if (targetPath === '/admin/banners') {
+      return pathname === '/admin/banners' && (!searchParams.get('tab') || searchParams.get('tab') === 'hero');
+    }
     if (targetPath === '/admin/accounts') {
       if (pathname !== '/admin/accounts') return false;
       const sub = searchParams.get('subtopic');
       return !sub || sub === 'all';
+    }
+    if (targetPath === '/admin/about') {
+      return pathname === '/admin/about' && !searchParams.get('tab');
+    }
+    if (targetPath === '/admin/news') {
+      return pathname === '/admin/news' && !searchParams.get('tab');
     }
 
     return pathname === targetPath;
@@ -391,82 +524,59 @@ export default function FigmaAdminSidebar() {
   // Render Leaf Navigation Item
   const renderLeaf = (leaf: LeafItem, depth: number = 0) => {
     const isActive = checkIsActive(leaf.path);
-
-    // Precise font colors based on depth
-    const inactiveColor = depth >= 2 ? '#E2CCD5' : '#E2CCD5'; // Soft rose-tinted white for nested leaf items
-    const fontSize = depth >= 2 ? '13px' : '13.5px';
+    const label = isHindi && leaf.name_hi ? leaf.name_hi : leaf.name;
 
     return (
       <div key={leaf.id} className="w-full">
         <Link
           href={leaf.path}
           target={leaf.isExternal ? '_blank' : '_self'}
-          className={`flex items-center justify-between w-full transition-all duration-150 text-left ${
+          className={`flex items-center justify-between w-full transition-all duration-150 text-left cursor-pointer ${
             isActive
-              ? 'bg-white/20 border border-white text-white font-semibold shadow-xs rounded-[10px] px-3.5 py-1.5'
-              : 'px-3.5 py-1.5 hover:text-white hover:bg-white/10 rounded-[8px] border border-transparent'
+              ? 'bg-[rgba(255,255,255,0.15)] text-white font-medium rounded-[12px] px-4 py-2.5 h-[43px]'
+              : 'px-4 py-2.5 h-[43px] text-[rgba(255,255,255,0.8)] hover:text-white hover:bg-[rgba(255,255,255,0.08)] rounded-[10px]'
           }`}
           style={{
-            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            fontSize: fontSize,
-            lineHeight: '1.4',
-            letterSpacing: '0.01em',
-            color: isActive ? '#FFFFFF' : inactiveColor,
-            fontWeight: isActive ? 600 : 400,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '16px',
+            lineHeight: '19px',
+            fontWeight: 500,
+            color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.8)',
           }}
         >
-          <span className="truncate">{leaf.name}</span>
+          <span className="truncate">{label}</span>
         </Link>
       </div>
     );
   };
 
-  // Render Submenu Header and its nested children with the exact Figma vertical line & dropdown styling
+  // Render Submenu Header and its nested children
   const renderSubMenu = (sub: SubMenuItem, depth: number = 0) => {
     const isOpen = !!expanded[sub.id];
-
-    // Typography & colors based on hierarchy level (Main Title vs Dropdown vs Sub-Dropdown)
-    const isMainTitle = depth === 0;
-    const isDropdown = depth === 1;
+    const label = isHindi && sub.name_hi ? sub.name_hi : sub.name;
     
-    const textColor = isMainTitle 
-      ? '#FFFFFF' 
-      : isDropdown 
-      ? '#F1E3E8' 
-      : '#E5D2DC'; // Sub-dropdown
-
-    const fontSize = isMainTitle 
-      ? '14.5px' 
-      : isDropdown 
-      ? '14px' 
-      : '13.5px';
-
-    const fontWeight = isMainTitle ? 600 : 500;
-
     return (
-      <div key={sub.id} className="w-full flex flex-col">
-        {/* Accordion Dropdown Trigger */}
+      <div key={sub.id} className="w-full flex flex-col gap-1">
+        {/* Accordion Trigger */}
         <button
           type="button"
           onClick={() => toggleExpand(sub.id)}
-          className={`flex items-center justify-between w-full rounded-[6px] text-left transition-colors cursor-pointer group select-none hover:bg-white/10 ${
-            isMainTitle ? 'py-2 px-3' : 'py-1.5 px-3'
-          }`}
+          className="flex items-center justify-between w-full h-[43px] px-4 rounded-[10px] text-left transition-colors cursor-pointer group select-none hover:bg-[rgba(255,255,255,0.08)]"
           style={{
-            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            fontSize: fontSize,
-            fontWeight: fontWeight,
-            letterSpacing: '0.01em',
-            color: textColor
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '16px',
+            lineHeight: '19px',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.8)'
           }}
         >
-          <span className="truncate">{sub.name}</span>
-          <ChevronIcon isOpen={isOpen} depth={depth} />
+          <span className="truncate">{label}</span>
+          <ChevronIcon isOpen={isOpen} color="rgba(255, 255, 255, 0.8)" />
         </button>
 
-        {/* Nested Dropdown Container with Vertical Guide Line */}
+        {/* Nested Children Container with Left Vertical Line */}
         {isOpen && (
-          <div className="border-l border-white/20 ml-3 pl-2.5 flex flex-col gap-1 w-full my-1">
+          <div className="border-l border-[rgba(255,255,255,0.5)] ml-4 pl-3 flex flex-col gap-1 w-full my-0.5">
             {sub.children.map(child => {
               if (child.type === 'leaf') {
                 return renderLeaf(child, depth + 1);
@@ -484,58 +594,55 @@ export default function FigmaAdminSidebar() {
       className="h-full max-h-full flex flex-col flex-shrink-0 select-none overflow-hidden"
       style={{
         boxSizing: 'border-box',
-        width: '280px',
-        minWidth: '280px',
-        maxWidth: '280px',
-        padding: '16px 12px',
-        background: 'rgba(117, 22, 57, 1)',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        width: '355px',
+        minWidth: '355px',
+        maxWidth: '355px',
+        padding: '24px',
+        background: '#751639',
+        fontFamily: "'Inter', sans-serif",
         color: '#FFFFFF'
       }}
     >
-      {/* Brand Header */}
-      <div className="flex items-center justify-between pb-3.5 mb-2 border-b border-white/15 w-full shrink-0 px-1">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-[6px] bg-white flex items-center justify-center text-xs text-[#751639] font-black shadow-xs tracking-tight">
-            CAG
-          </div>
-          <div>
-            <span 
-              className="text-[13px] uppercase tracking-wider font-bold block leading-none text-white"
-            >
-              SUPER ADMIN
-            </span>
-            <span 
-              className="text-[10px] block font-normal text-white/70 mt-0.5 leading-none"
-            >
-              Management Portal
-            </span>
-          </div>
-        </div>
-        <span 
-          className="px-2 py-0.5 text-[9.5px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full"
-        >
-          Live
-        </span>
-      </div>
+      {/* Scrollable Navigation Tree */}
+      <nav className="flex-1 overflow-y-auto overscroll-contain py-1 space-y-4 w-full pr-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+        {sectionGroups.map((group) => {
+          const isGroupOpen = !!expanded[group.id];
+          const groupTitle = isHindi && group.title_hi ? group.title_hi : group.title;
 
-      {/* Main Navigation Tree - Scrollable with Styled Themed Scrollbar */}
-      <nav className="flex-1 overflow-y-auto overscroll-contain py-1 space-y-0.5 w-full pr-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-        {menuItems.map(item => {
-          if (item.type === 'leaf') {
-            return renderLeaf(item, 0);
-          }
-          return renderSubMenu(item, 0);
+          return (
+            <div key={group.id} className="w-full flex flex-col gap-1">
+              {/* Top-Level Section Header */}
+              <button
+                type="button"
+                onClick={() => toggleExpand(group.id)}
+                className="flex items-center justify-between w-full h-[43px] px-2 rounded-[10px] text-left transition-colors cursor-pointer group select-none hover:bg-[rgba(255,255,255,0.08)]"
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '16px',
+                  lineHeight: '19px',
+                  fontWeight: 500,
+                  color: '#FFFFFF'
+                }}
+              >
+                <span className="truncate">{groupTitle}</span>
+                <ChevronIcon isOpen={isGroupOpen} color="#FFFFFF" />
+              </button>
+
+              {/* Children of Top-Level Section with continuous left line */}
+              {isGroupOpen && (
+                <div className="border-l border-[rgba(255,255,255,0.5)] ml-3 pl-3 flex flex-col gap-1 w-full my-0.5">
+                  {group.items.map((item) => {
+                    if (item.type === 'leaf') {
+                      return renderLeaf(item, 1);
+                    }
+                    return renderSubMenu(item, 0);
+                  })}
+                </div>
+              )}
+            </div>
+          );
         })}
       </nav>
-
-      {/* Bottom Info Footer */}
-      <div 
-        className="pt-2.5 border-t border-white/15 text-[10.5px] flex justify-between items-center w-full shrink-0 mt-auto px-1 text-white/70"
-      >
-        <span>Admin Suite v2.0</span>
-        <span>Article 148–151</span>
-      </div>
     </aside>
   );
 }

@@ -91,7 +91,7 @@ export interface AccountItem {
   [key: string]: any;
 }
 
-export interface StateAccountItem extends AccountItem {}
+export interface StateAccountItem extends AccountItem { }
 
 export interface TenderItem {
   id: number;
@@ -662,7 +662,7 @@ export const REPORT_CDN_ASSETS = {
   noImageFallback: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/noimage.jpg',
   extlinkIcon: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/extlink-icon.png',
   sectorWiseImages: SECTOR_WISE_IMAGES,
-  getStateCrestUrl: (stateName: string) => 
+  getStateCrestUrl: (stateName: string) =>
     `https://d7i5wg8xwe4hf.cloudfront.net/assets/images/states_images/${encodeURIComponent(stateName)}.png`,
   departments: {
     civil: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg',
@@ -1205,7 +1205,7 @@ const DEFAULT_OFFICES: Office[] = [
     lng: 72.8264,
     type: 'state'
   },
-  
+
   // Central Audit Offices
   {
     id: 'c-def',
@@ -1380,7 +1380,7 @@ export const dataManager = {
             localStorage.setItem('cag_banners', JSON.stringify(banners));
             window.dispatchEvent(new Event('bannersChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 2. Sync News
       fetch(`${baseUrl}/api/news`, { cache: 'no-store' })
@@ -1398,7 +1398,7 @@ export const dataManager = {
             localStorage.setItem('cag_news', JSON.stringify(formatted));
             window.dispatchEvent(new Event('newsChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 3. Sync Audit Reports
       fetch(`${baseUrl}/api/reports?limit=50`, { cache: 'no-store' })
@@ -1409,7 +1409,7 @@ export const dataManager = {
             localStorage.setItem('cag_reports', JSON.stringify(items));
             window.dispatchEvent(new Event('reportsChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 4. Sync State Accounts
       fetch(`${baseUrl}/api/state-accounts?limit=50`, { cache: 'no-store' })
@@ -1420,7 +1420,7 @@ export const dataManager = {
             localStorage.setItem('cag_state_accounts', JSON.stringify(items));
             window.dispatchEvent(new Event('stateAccountsChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 5. Sync Combined Accounts
       fetch(`${baseUrl}/api/combined-accounts?limit=50`, { cache: 'no-store' })
@@ -1431,7 +1431,7 @@ export const dataManager = {
             localStorage.setItem('cag_combined_accounts', JSON.stringify(items));
             window.dispatchEvent(new Event('combinedAccountsChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 6. Sync Tenders
       fetch(`${baseUrl}/api/tenders?limit=50`, { cache: 'no-store' })
@@ -1442,7 +1442,7 @@ export const dataManager = {
             localStorage.setItem('cag_tenders', JSON.stringify(items));
             window.dispatchEvent(new Event('tendersChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 7. Sync Circulars
       fetch(`${baseUrl}/api/circulars?limit=50`, { cache: 'no-store' })
@@ -1453,7 +1453,7 @@ export const dataManager = {
             localStorage.setItem('cag_circulars', JSON.stringify(items));
             window.dispatchEvent(new Event('circularsChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
 
       // 8. Sync Presence / State Offices
       fetch(`${baseUrl}/api/presence`, { cache: 'no-store' })
@@ -1475,7 +1475,7 @@ export const dataManager = {
             localStorage.setItem('cag_state_offices', JSON.stringify(merged));
             window.dispatchEvent(new Event('stateOfficesChange'));
           }
-        }).catch(() => {});
+        }).catch(() => { });
     } catch (e) {
       // Ignore background sync errors
     }
@@ -1579,7 +1579,7 @@ export const dataManager = {
         }
       }
       return list.map((item: any, idx: number) => {
-        const defMatch = DEFAULT_STATE_OFFICES.find(d => 
+        const defMatch = DEFAULT_STATE_OFFICES.find(d =>
           String(d.id).toLowerCase() === String(item.id).toLowerCase() ||
           d.name.toLowerCase() === (item.name || '').toLowerCase()
         );
@@ -1587,11 +1587,11 @@ export const dataManager = {
           id: String(item.id || defMatch?.id || `state-${idx + 1}`),
           name: item.name || defMatch?.name || 'State Office',
           nameHindi: item.nameHindi || defMatch?.nameHindi || '',
-          auditDetails: Array.isArray(item.auditDetails) && item.auditDetails.length > 0 
-            ? item.auditDetails 
+          auditDetails: Array.isArray(item.auditDetails) && item.auditDetails.length > 0
+            ? item.auditDetails
             : (defMatch?.auditDetails || [{ label: `Office of the Principal Accountant General (Audit), ${item.name || 'State'}`, url: '' }]),
-          aeDetails: Array.isArray(item.aeDetails) && item.aeDetails.length > 0 
-            ? item.aeDetails 
+          aeDetails: Array.isArray(item.aeDetails) && item.aeDetails.length > 0
+            ? item.aeDetails
             : (defMatch?.aeDetails || [{ label: `Office of the Principal Accountant General (A&E), ${item.name || 'State'}`, url: '' }])
         };
       });
@@ -1744,16 +1744,16 @@ export const dataManager = {
       // and map to authentic CloudFront sector images from http://d7i5wg8xwe4hf.cloudfront.net/en/home
       let hasLocalAssets = false;
       const sanitized = parsed.map((r: ReportItem) => {
-        const isLocalOrBroken = !r.image || 
-          r.image.startsWith('/assets') || 
-          r.image.includes('17a8a6edf') || 
-          r.image.includes('56272e2a') || 
-          r.image.includes('28f782be') || 
-          r.image.includes('d14889fd') || 
+        const isLocalOrBroken = !r.image ||
+          r.image.startsWith('/assets') ||
+          r.image.includes('17a8a6edf') ||
+          r.image.includes('56272e2a') ||
+          r.image.includes('28f782be') ||
+          r.image.includes('d14889fd') ||
           r.image.includes('e2c5a3b8') ||
           r.image.includes('c4913da1') ||
           !r.image.startsWith('http');
-        
+
         if (isLocalOrBroken) {
           hasLocalAssets = true;
           const defMatch = DEFAULT_REPORTS.find(d => d.id === r.id);

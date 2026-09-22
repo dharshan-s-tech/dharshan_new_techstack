@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useAdminLanguage } from '@/lib/useAdminLanguage';
 import {
   Users,
   Shield,
@@ -20,7 +21,9 @@ import {
   User as UserIcon,
   RefreshCw,
   Eye,
-  AlertCircle
+  AlertCircle,
+  SlidersHorizontal,
+  CheckCircle2
 } from 'lucide-react';
 
 interface UserItem {
@@ -73,6 +76,7 @@ interface OptionItem {
 }
 
 function UserManagementContent() {
+  const { isHindi, t, getText } = useAdminLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -372,7 +376,7 @@ function UserManagementContent() {
         throw new Error(resData.detail || 'Failed to save user.');
       }
 
-      setFormMsg({ type: 'success', text: viewMode === 'edit_user' ? 'User updated successfully!' : 'User created successfully!' });
+      setFormMsg({ type: 'success', text: viewMode === 'edit_user' ? 'User profile updated successfully!' : 'User account created successfully!' });
       await fetchUsers();
       setTimeout(() => {
         setViewMode('list');
@@ -616,66 +620,100 @@ function UserManagementContent() {
     setRoleFormWebsites(next);
   };
 
+  // Reset Filters Handler
+  const handleResetFilters = () => {
+    if (activeTab === 'users') {
+      setUserSearch('');
+      setUserWebsiteFilter('all');
+      setUserRoleFilter('all');
+      setUserWingFilter('all');
+      setUserStatusFilter('all');
+      setUserPage(1);
+    } else if (activeTab === 'roles') {
+      setRoleSearch('');
+      setRoleWebsiteFilter('all');
+      setRoleStatusFilter('all');
+    } else if (activeTab === 'wings') {
+      setWingSearch('');
+      setWingStatusFilter('all');
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER: ADD / EDIT ROLE VIEW
   // ─────────────────────────────────────────────────────────────────────────────
   if (viewMode === 'add_role' || viewMode === 'edit_role') {
     return (
-      <div className="w-full space-y-4 max-w-5xl mx-auto py-2">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          <span>Admin</span>
-          <span>/</span>
-          <button 
-            type="button" 
-            onClick={() => { setViewMode('list'); setFormMsg(null); }}
-            className="text-[#751639] hover:underline font-medium"
-          >
-            User Management
-          </button>
-          <span>/</span>
-          <span className="text-zinc-800 font-semibold">{viewMode === 'edit_role' ? 'Edit Role' : 'Add New Role'}</span>
+      <div className="w-full space-y-6 max-w-5xl mx-auto pb-16 font-sans">
+        {/* Top Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              type="button" 
+              onClick={() => { setViewMode('list'); setFormMsg(null); }}
+              className="w-8 h-8 rounded-[8px] bg-white border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:text-[#751639] hover:bg-[#FDF2F5] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <h1 
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '20px',
+                lineHeight: '20px',
+                color: '#751639'
+              }}
+            >
+              {viewMode === 'edit_role' ? 'Edit Security Role' : 'Create New System Role'}
+            </h1>
+          </div>
         </div>
 
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6">
-          {/* Card Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[#ced4da]">
-            <div className="flex items-center gap-2.5">
-              <Shield className="w-5 h-5 text-[#751639]" />
-              <h2 className="text-base font-bold text-zinc-900">
-                {viewMode === 'edit_role' ? 'Edit Role Details' : 'Create New System Role'}
-              </h2>
+        <div 
+          className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+          style={{
+            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="px-5 py-4 h-[60px] flex items-center justify-between border-b border-[#F5F3F4]">
+            <div className="flex items-center gap-3">
+              <div className="w-[30px] h-[30px] rounded-[8px] bg-[#FDF2F5] flex items-center justify-center shrink-0">
+                <Shield className="w-4 h-4 text-[#751639]" />
+              </div>
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#0F172B'
+                }}
+              >
+                Role Configuration &amp; Subsite Scope
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={() => { setViewMode('list'); setFormMsg(null); }}
-              className="px-3 py-1.5 border border-[#ced4da] bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded-none flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Roles</span>
-            </button>
           </div>
 
-          {/* Form Body */}
-          <form onSubmit={handleSaveRole} className="space-y-6 text-xs">
+          <form onSubmit={handleSaveRole} className="p-6 space-y-5 text-[14px]">
             {formMsg && (
-              <div className={`p-3 rounded-none text-xs font-semibold flex items-center gap-2 ${
-                formMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-red-50 text-red-800 border border-red-300'
+              <div className={`p-3 rounded-[8px] text-[13px] font-medium flex items-center gap-2 ${
+                formMsg.type === 'success' ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]' : 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
               }`}>
-                <AlertCircle className="w-4 h-4 shrink-0" />
+                {formMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                 <span>{formMsg.text}</span>
               </div>
             )}
 
             {/* Superior Role */}
-            <div className="space-y-1.5">
-              <label className="block text-zinc-700 font-bold">
-                Superior Role <span className="text-red-600">*</span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-[#62748E]">
+                Superior Role <span className="text-red-500">*</span>
               </label>
               <select
                 value={roleFormParentId}
                 onChange={(e) => setRoleFormParentId(e.target.value)}
-                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:border-[#751639] focus:bg-white outline-none transition-all"
               >
                 <option value="0">Select superior role (Top Level / None)</option>
                 {roleOptions.map((opt) => (
@@ -687,9 +725,9 @@ function UserManagementContent() {
             </div>
 
             {/* Role Name (EN) */}
-            <div className="space-y-1.5">
-              <label className="block text-zinc-700 font-bold">
-                Role Name (English) <span className="text-red-600">*</span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-[#62748E]">
+                Role Name (English) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -697,13 +735,13 @@ function UserManagementContent() {
                 onChange={(e) => setRoleFormNameEn(e.target.value)}
                 placeholder="e.g. Audit Officer / Subsite Admin"
                 required
-                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
               />
             </div>
 
             {/* Role Name (Hindi) */}
-            <div className="space-y-1.5">
-              <label className="block text-zinc-700 font-bold">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-[#62748E]">
                 Role Name in Hindi (हिंदी में)
               </label>
               <input
@@ -711,65 +749,57 @@ function UserManagementContent() {
                 value={roleFormNameHi}
                 onChange={(e) => setRoleFormNameHi(e.target.value)}
                 placeholder="रोल का नाम हिंदी में दर्ज करें"
-                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
               />
             </div>
 
-            {/* Permissions Section Header */}
-            <div className="pt-2 border-t border-zinc-200">
-              <div className="flex items-center gap-2 mb-3">
-                <Globe className="w-4 h-4 text-[#751639]" />
-                <h3 className="text-sm font-bold text-[#751639]">
-                  Subsite Access &amp; Permissions
-                </h3>
+            {/* Subsite Access & Permissions */}
+            <div className="pt-3 border-t border-[#F5F3F4] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[13px] font-medium text-[#62748E]">
+                  Applicable Subsite &amp; Office Permissions
+                </label>
+                <input
+                  type="text"
+                  value={roleFormWebsiteSearch}
+                  onChange={(e) => setRoleFormWebsiteSearch(e.target.value)}
+                  placeholder="Filter subsites..."
+                  className="bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[32px] px-3 text-[12px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] outline-none"
+                />
               </div>
 
-              {/* Website Multi-Select Box */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-600">Select applicable subsites / offices:</span>
-                  <input
-                    type="text"
-                    value={roleFormWebsiteSearch}
-                    onChange={(e) => setRoleFormWebsiteSearch(e.target.value)}
-                    placeholder="Filter websites..."
-                    className="px-2.5 py-1 text-xs border border-zinc-300 rounded-none w-56 focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-
-                <div className="w-full border border-[#ced4da] rounded-none max-h-60 overflow-y-auto p-2.5 bg-zinc-50/50 space-y-1 divide-y divide-zinc-200">
-                  {filteredWebsites.map((site) => {
-                    const isChecked = roleFormWebsites.includes(site.value) || (site.value !== '0' && roleFormWebsites.includes('0'));
-                    return (
-                      <label
-                        key={site.value}
-                        className={`flex items-start gap-2.5 px-2 py-1.5 text-xs rounded-none hover:bg-white cursor-pointer transition-colors ${
-                          roleFormWebsites.includes(site.value) ? 'bg-[#f7f0f3] font-semibold text-[#751639]' : 'text-zinc-700'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleWebsiteSelection(site.value)}
-                          className="mt-0.5 rounded-none border-zinc-300 text-[#751639] focus:ring-[#751639]"
-                        />
-                        <span className="leading-snug">{site.label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
+              <div className="w-full border border-[#EDE9E9] rounded-[8px] max-h-56 overflow-y-auto p-3 bg-[#F8F7F7] space-y-1.5 divide-y divide-[#EDE9E9]">
+                {filteredWebsites.map((site) => {
+                  const isChecked = roleFormWebsites.includes(site.value) || (site.value !== '0' && roleFormWebsites.includes('0'));
+                  return (
+                    <label
+                      key={site.value}
+                      className={`flex items-start gap-2.5 px-2 py-1.5 text-[13px] rounded-[6px] hover:bg-white cursor-pointer transition-colors ${
+                        roleFormWebsites.includes(site.value) ? 'bg-[#FDF2F5] font-semibold text-[#751639]' : 'text-[#314158]'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleWebsiteSelection(site.value)}
+                        className="mt-0.5 rounded text-[#751639] accent-[#751639]"
+                      />
+                      <span className="leading-snug">{site.label}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
             {/* Status */}
-            <div className="space-y-1.5">
-              <label className="block text-zinc-700 font-bold">
-                Publish Status <span className="text-red-600">*</span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-[#62748E]">
+                Publish Status <span className="text-red-500">*</span>
               </label>
               <select
                 value={roleFormStatus}
                 onChange={(e) => setRoleFormStatus(e.target.value)}
-                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:border-[#751639] focus:bg-white outline-none transition-all"
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
@@ -777,19 +807,22 @@ function UserManagementContent() {
             </div>
 
             {/* Submit / Cancel Buttons */}
-            <div className="flex items-center gap-3 pt-4 border-t border-[#ced4da]">
+            <div className="flex items-center gap-3 pt-4 border-t border-[#F5F3F4]">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-2 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                className="h-[38.6px] px-6 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:opacity-95 disabled:opacity-50"
+                style={{
+                  background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+                }}
               >
-                {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>{submitting ? 'Saving Role...' : 'Save Role'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setViewMode('list'); setFormMsg(null); }}
-                className="px-5 py-2 bg-white hover:bg-zinc-100 text-zinc-700 border border-[#ced4da] text-xs font-semibold rounded-none transition-colors cursor-pointer"
+                className="h-[38.6px] px-6 rounded-[8px] border border-[#EDE9E9] text-[#62748E] hover:bg-[#F8F7F7] cursor-pointer font-medium text-[14px]"
               >
                 Cancel
               </button>
@@ -805,63 +838,77 @@ function UserManagementContent() {
   // ─────────────────────────────────────────────────────────────────────────────
   if (viewMode === 'add_user' || viewMode === 'edit_user') {
     return (
-      <div className="w-full space-y-4 max-w-5xl mx-auto py-2">
-        {/* Breadcrumb Header */}
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          <span>Admin</span>
-          <span>/</span>
-          <button 
-            type="button" 
-            onClick={() => { setViewMode('list'); setFormMsg(null); }}
-            className="text-[#751639] hover:underline font-medium"
-          >
-            User Management
-          </button>
-          <span>/</span>
-          <span className="text-zinc-800 font-semibold">{viewMode === 'edit_user' ? 'Edit User Profile' : 'Add New User'}</span>
+      <div className="w-full space-y-6 max-w-5xl mx-auto pb-16 font-sans">
+        {/* Top Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              type="button" 
+              onClick={() => { setViewMode('list'); setFormMsg(null); }}
+              className="w-8 h-8 rounded-[8px] bg-white border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:text-[#751639] hover:bg-[#FDF2F5] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <h1 
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '20px',
+                lineHeight: '20px',
+                color: '#751639'
+              }}
+            >
+              {viewMode === 'edit_user' ? 'Edit User Profile' : 'Add New System User'}
+            </h1>
+          </div>
         </div>
 
-        {/* Main Card */}
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6">
-          {/* Card Top Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[#ced4da]">
-            <div className="flex items-center gap-2.5">
-              <UserIcon className="w-5 h-5 text-[#751639]" />
-              <h2 className="text-base font-bold text-zinc-900">
-                {viewMode === 'edit_user' ? 'Edit User Profile' : 'Add New System User'}
-              </h2>
+        <div 
+          className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+          style={{
+            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="px-5 py-4 h-[60px] flex items-center justify-between border-b border-[#F5F3F4]">
+            <div className="flex items-center gap-3">
+              <div className="w-[30px] h-[30px] rounded-[8px] bg-[#FDF2F5] flex items-center justify-center shrink-0">
+                <UserIcon className="w-4 h-4 text-[#751639]" />
+              </div>
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#0F172B'
+                }}
+              >
+                User Profile &amp; Login Credentials
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={() => { setViewMode('list'); setFormMsg(null); }}
-              className="px-3 py-1.5 border border-[#ced4da] bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded-none flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Users</span>
-            </button>
           </div>
 
-          {/* Form Body */}
-          <form onSubmit={handleSaveUser} className="space-y-6 text-xs">
+          <form onSubmit={handleSaveUser} className="p-6 space-y-6 text-[14px]">
             {formMsg && (
-              <div className={`p-3 rounded-none text-xs font-semibold flex items-center gap-2 ${
-                formMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-red-50 text-red-800 border border-red-300'
+              <div className={`p-3 rounded-[8px] text-[13px] font-medium flex items-center gap-2 ${
+                formMsg.type === 'success' ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]' : 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
               }`}>
-                <AlertCircle className="w-4 h-4 shrink-0" />
+                {formMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                 <span>{formMsg.text}</span>
               </div>
             )}
 
-            {/* SECTION 1: Full Name */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-[#751639] pb-1 border-b border-zinc-200">
+            {/* SECTION 1: Personal Details */}
+            <div className="space-y-4">
+              <h3 className="text-[14px] font-bold text-[#751639] pb-2 border-b border-[#F5F3F4]">
                 1. Personal Information
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
-                    First Name <span className="text-red-600">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -869,12 +916,12 @@ function UserManagementContent() {
                     onChange={(e) => setUserFormFirstName(e.target.value)}
                     required
                     placeholder="e.g. Ramesh"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
                     Middle Name
                   </label>
                   <input
@@ -882,12 +929,12 @@ function UserManagementContent() {
                     value={userFormMiddleName}
                     onChange={(e) => setUserFormMiddleName(e.target.value)}
                     placeholder="e.g. Kumar"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
                     Last Name
                   </label>
                   <input
@@ -895,26 +942,25 @@ function UserManagementContent() {
                     value={userFormLastName}
                     onChange={(e) => setUserFormLastName(e.target.value)}
                     placeholder="e.g. Sharma"
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
                   />
                 </div>
               </div>
 
-              {/* Mobile */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
-                    Mobile Number <span className="text-red-600">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
+                    Mobile Number <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                    <Phone className="w-4 h-4 text-[#90A1B9] absolute left-3.5 top-2.5" />
                     <input
                       type="tel"
                       value={userFormMobile}
                       onChange={(e) => setUserFormMobile(e.target.value)}
                       required
-                      placeholder="e.g. 9876543210"
-                      className="w-full bg-white border border-zinc-300 rounded-none pl-9 pr-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                      placeholder="9876543210"
+                      className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] pl-10 pr-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -922,22 +968,21 @@ function UserManagementContent() {
             </div>
 
             {/* SECTION 2: Role Assignment */}
-            <div className="space-y-3 pt-2">
-              <h3 className="text-sm font-bold text-[#751639] pb-1 border-b border-zinc-200">
-                2. Role Assignment
+            <div className="space-y-4 pt-2">
+              <h3 className="text-[14px] font-bold text-[#751639] pb-2 border-b border-[#F5F3F4]">
+                2. Role &amp; Access Assignment
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Role Dropdown */}
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
-                    Assigned Role <span className="text-red-600">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
+                    Assigned Role <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={userFormRoleId}
                     onChange={(e) => setUserFormRoleId(e.target.value)}
                     required
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:border-[#751639] focus:bg-white outline-none transition-all"
                   >
                     <option value="">Select Role</option>
                     {roleOptions.map((opt) => (
@@ -951,72 +996,71 @@ function UserManagementContent() {
             </div>
 
             {/* SECTION 3: Login Credentials */}
-            <div className="space-y-3 pt-2">
-              <h3 className="text-sm font-bold text-[#751639] pb-1 border-b border-zinc-200">
+            <div className="space-y-4 pt-2">
+              <h3 className="text-[14px] font-bold text-[#751639] pb-2 border-b border-[#F5F3F4]">
                 3. Login Credentials &amp; Status
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
-                    Login ID / Username <span className="text-red-600">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
+                    Login ID / Username <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <UserIcon className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                    <UserIcon className="w-4 h-4 text-[#90A1B9] absolute left-3.5 top-2.5" />
                     <input
                       type="text"
                       value={userFormLoginId}
                       onChange={(e) => setUserFormLoginId(e.target.value)}
                       required
                       placeholder="e.g. ramesh.sharma"
-                      className="w-full bg-[#fdf8f9] border border-[#d8a8b8] rounded-none pl-9 pr-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                      className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] pl-10 pr-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all font-mono font-medium"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
-                    Official Email <span className="text-red-600">*</span>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
+                    Official Email <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                    <Mail className="w-4 h-4 text-[#90A1B9] absolute left-3.5 top-2.5" />
                     <input
                       type="email"
                       value={userFormEmail}
                       onChange={(e) => setUserFormEmail(e.target.value)}
                       required
                       placeholder="user@cag.gov.in"
-                      className="w-full bg-white border border-zinc-300 rounded-none pl-9 pr-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                      className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] pl-10 pr-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-zinc-700 font-bold">
-                    Password {viewMode === 'add_user' && <span className="text-red-600">*</span>}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#62748E]">
+                    Password {viewMode === 'add_user' && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                    <Lock className="w-4 h-4 text-[#90A1B9] absolute left-3.5 top-2.5" />
                     <input
                       type="password"
                       value={userFormPassword}
                       onChange={(e) => setUserFormPassword(e.target.value)}
-                      placeholder={viewMode === 'edit_user' ? 'Leave blank to keep unchanged' : 'Min 8 chars (1 upper, 1 num, 1 special)'}
+                      placeholder={viewMode === 'edit_user' ? 'Leave blank to keep unchanged' : 'Min 8 chars'}
                       required={viewMode === 'add_user'}
-                      className="w-full bg-[#fdf8f9] border border-[#d8a8b8] rounded-none pl-9 pr-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                      className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] pl-10 pr-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Status (Active) Checkbox */}
               <div className="pt-2">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-800">
+                <label className="flex items-center gap-2.5 cursor-pointer font-medium text-[13px] text-[#0F172B]">
                   <input
                     type="checkbox"
                     checked={userFormIsActive}
                     onChange={(e) => setUserFormIsActive(e.target.checked)}
-                    className="w-4 h-4 rounded-none border-zinc-300 text-[#751639] focus:ring-[#751639]"
+                    className="w-4 h-4 rounded text-[#751639] accent-[#751639]"
                   />
                   <span>Active User Account</span>
                 </label>
@@ -1024,19 +1068,22 @@ function UserManagementContent() {
             </div>
 
             {/* Submit / Cancel Buttons */}
-            <div className="flex items-center gap-3 pt-4 border-t border-[#ced4da]">
+            <div className="flex items-center gap-3 pt-4 border-t border-[#F5F3F4]">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-2 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                className="h-[38.6px] px-6 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:opacity-95 disabled:opacity-50"
+                style={{
+                  background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+                }}
               >
-                {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>{submitting ? 'Saving User...' : 'Save User Profile'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setViewMode('list'); setFormMsg(null); }}
-                className="px-5 py-2 bg-white hover:bg-zinc-100 text-zinc-700 border border-[#ced4da] text-xs font-semibold rounded-none transition-colors cursor-pointer"
+                className="h-[38.6px] px-6 rounded-[8px] border border-[#EDE9E9] text-[#62748E] hover:bg-[#F8F7F7] cursor-pointer font-medium text-[14px]"
               >
                 Cancel
               </button>
@@ -1052,53 +1099,70 @@ function UserManagementContent() {
   // ─────────────────────────────────────────────────────────────────────────────
   if (viewMode === 'add_wing' || viewMode === 'edit_wing') {
     return (
-      <div className="w-full space-y-4 max-w-4xl mx-auto py-2">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          <span>Admin</span>
-          <span>/</span>
-          <button 
-            type="button" 
-            onClick={() => { setViewMode('list'); setFormMsg(null); }}
-            className="text-[#751639] hover:underline font-medium"
-          >
-            User Management
-          </button>
-          <span>/</span>
-          <span className="text-zinc-800 font-semibold">{viewMode === 'edit_wing' ? 'Edit CAG Wing' : 'Add New CAG Wing'}</span>
+      <div className="w-full space-y-6 max-w-4xl mx-auto pb-16 font-sans">
+        {/* Top Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              type="button" 
+              onClick={() => { setViewMode('list'); setFormMsg(null); }}
+              className="w-8 h-8 rounded-[8px] bg-white border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:text-[#751639] hover:bg-[#FDF2F5] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <h1 
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '20px',
+                lineHeight: '20px',
+                color: '#751639'
+              }}
+            >
+              {viewMode === 'edit_wing' ? 'Edit Audit Wing' : 'Add New CAG Audit Wing'}
+            </h1>
+          </div>
         </div>
 
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-[#ced4da]">
-            <div className="flex items-center gap-2.5">
-              <Building2 className="w-5 h-5 text-[#751639]" />
-              <h2 className="text-base font-bold text-zinc-900">
-                {viewMode === 'edit_wing' ? 'Edit CAG Wing' : 'Add New CAG Wing'}
-              </h2>
+        <div 
+          className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+          style={{
+            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="px-5 py-4 h-[60px] flex items-center justify-between border-b border-[#F5F3F4]">
+            <div className="flex items-center gap-3">
+              <div className="w-[30px] h-[30px] rounded-[8px] bg-[#FDF2F5] flex items-center justify-center shrink-0">
+                <Building2 className="w-4 h-4 text-[#751639]" />
+              </div>
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#0F172B'
+                }}
+              >
+                Audit Wing Configuration
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={() => { setViewMode('list'); setFormMsg(null); }}
-              className="px-3 py-1.5 border border-[#ced4da] bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded-none flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Wings</span>
-            </button>
           </div>
 
-          <form onSubmit={handleSaveWing} className="space-y-6 text-xs">
+          <form onSubmit={handleSaveWing} className="p-6 space-y-5 text-[14px]">
             {formMsg && (
-              <div className={`p-3 rounded-none text-xs font-semibold flex items-center gap-2 ${
-                formMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-red-50 text-red-800 border border-red-300'
+              <div className={`p-3 rounded-[8px] text-[13px] font-medium flex items-center gap-2 ${
+                formMsg.type === 'success' ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]' : 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
               }`}>
-                <AlertCircle className="w-4 h-4 shrink-0" />
+                {formMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
                 <span>{formMsg.text}</span>
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label className="block text-zinc-700 font-bold">
-                Wing Title <span className="text-red-600">*</span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-[#62748E]">
+                Wing Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -1106,37 +1170,40 @@ function UserManagementContent() {
                 onChange={(e) => setWingFormTitle(e.target.value)}
                 placeholder="e.g. Information Systems Wing (IS Wing)"
                 required
-                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:border-[#751639] focus:bg-white outline-none transition-all"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-zinc-700 font-bold">
-                Status <span className="text-red-600">*</span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-medium text-[#62748E]">
+                Status <span className="text-red-500">*</span>
               </label>
               <select
                 value={wingFormStatus}
                 onChange={(e) => setWingFormStatus(e.target.value)}
-                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-2 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:border-[#751639] focus:bg-white outline-none transition-all"
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
             </div>
 
-            <div className="flex items-center gap-3 pt-4 border-t border-[#ced4da]">
+            <div className="flex items-center gap-3 pt-4 border-t border-[#F5F3F4]">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-2 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                className="h-[38.6px] px-6 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:opacity-95 disabled:opacity-50"
+                style={{
+                  background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+                }}
               >
-                {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>{submitting ? 'Saving Wing...' : 'Save Wing'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setViewMode('list'); setFormMsg(null); }}
-                className="px-5 py-2 bg-white hover:bg-zinc-100 text-zinc-700 border border-[#ced4da] text-xs font-semibold rounded-none transition-colors cursor-pointer"
+                className="h-[38.6px] px-6 rounded-[8px] border border-[#EDE9E9] text-[#62748E] hover:bg-[#F8F7F7] cursor-pointer font-medium text-[14px]"
               >
                 Cancel
               </button>
@@ -1151,26 +1218,44 @@ function UserManagementContent() {
   // RENDER: MAIN LIST VIEW WITH SUBMODULE FILTER TABS
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4 text-xs text-zinc-700 font-sans">
+    <div className="space-y-6 font-sans pb-16">
       
-      {/* 1. TOP SUBMODULE TABS & ACTION HEADER */}
-      <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        
-        {/* Tab Badges */}
+      {/* ── TOP PAGE TITLE & SUBMODULE TABS ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              fontSize: '20px',
+              lineHeight: '20px',
+              color: '#751639'
+            }}
+          >
+            {isHindi ? 'प्रशासन और अभिगम नियंत्रण' : 'Administration & Access Control'}
+          </h1>
+          <p className="text-[13px] text-[#62748E] mt-1">
+            {isHindi 
+              ? 'प्रशासनिक उपयोगकर्ता खाते, भूमिकाएं और उप-साइट अनुमतियां, और क्षेत्र लेखापरीक्षा विंग संरचना प्रबंधित करें।' 
+              : 'Manage administrative user accounts, roles & subsite permissions, and field audit wing structures.'}
+          </p>
+        </div>
+
+        {/* Submodule Badges */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => switchTab('users')}
-            className={`px-4 py-2 text-xs font-bold rounded-none transition-all cursor-pointer flex items-center gap-2 border ${
+            className={`px-4 py-2 rounded-[8px] text-[13px] font-medium transition-all cursor-pointer flex items-center gap-2 border ${
               activeTab === 'users'
                 ? 'bg-[#751639] text-white border-[#751639] shadow-xs'
-                : 'bg-white text-zinc-700 border-[#ced4da] hover:bg-zinc-50'
+                : 'bg-white text-[#314158] border-[#EDE9E9] hover:bg-[#F8F7F7]'
             }`}
           >
-            <Users className="w-3.5 h-3.5" />
-            <span>Users</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
-              activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-zinc-200 text-zinc-800'
+            <Users className="w-4 h-4" />
+            <span>{isHindi ? 'उपयोगकर्ता' : 'Users'}</span>
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
+              activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-[#EDE9E9] text-[#314158]'
             }`}>
               {userTotalCount || users.length}
             </span>
@@ -1179,16 +1264,16 @@ function UserManagementContent() {
           <button
             type="button"
             onClick={() => switchTab('roles')}
-            className={`px-4 py-2 text-xs font-bold rounded-none transition-all cursor-pointer flex items-center gap-2 border ${
+            className={`px-4 py-2 rounded-[8px] text-[13px] font-medium transition-all cursor-pointer flex items-center gap-2 border ${
               activeTab === 'roles'
                 ? 'bg-[#751639] text-white border-[#751639] shadow-xs'
-                : 'bg-white text-zinc-700 border-[#ced4da] hover:bg-zinc-50'
+                : 'bg-white text-[#314158] border-[#EDE9E9] hover:bg-[#F8F7F7]'
             }`}
           >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Roles</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
-              activeTab === 'roles' ? 'bg-white/20 text-white' : 'bg-zinc-200 text-zinc-800'
+            <Shield className="w-4 h-4" />
+            <span>{isHindi ? 'भूमिकाएं (Roles)' : 'Roles'}</span>
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
+              activeTab === 'roles' ? 'bg-white/20 text-white' : 'bg-[#EDE9E9] text-[#314158]'
             }`}>
               {roles.length || roleOptions.length}
             </span>
@@ -1197,211 +1282,327 @@ function UserManagementContent() {
           <button
             type="button"
             onClick={() => switchTab('wings')}
-            className={`px-4 py-2 text-xs font-bold rounded-none transition-all cursor-pointer flex items-center gap-2 border ${
+            className={`px-4 py-2 rounded-[8px] text-[13px] font-medium transition-all cursor-pointer flex items-center gap-2 border ${
               activeTab === 'wings'
                 ? 'bg-[#751639] text-white border-[#751639] shadow-xs'
-                : 'bg-white text-zinc-700 border-[#ced4da] hover:bg-zinc-50'
+                : 'bg-white text-[#314158] border-[#EDE9E9] hover:bg-[#F8F7F7]'
             }`}
           >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Wings</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
-              activeTab === 'wings' ? 'bg-white/20 text-white' : 'bg-zinc-200 text-zinc-800'
+            <Building2 className="w-4 h-4" />
+            <span>{isHindi ? 'प्रभाग (Wings)' : 'Wings'}</span>
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
+              activeTab === 'wings' ? 'bg-white/20 text-white' : 'bg-[#EDE9E9] text-[#314158]'
             }`}>
               {wings.length || wingOptions.length}
             </span>
           </button>
         </div>
-
-        {/* Action Button */}
-        <div>
-          {activeTab === 'users' && (
-            <button
-              type="button"
-              onClick={handleOpenAddUser}
-              className="px-4 py-2 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add New User</span>
-            </button>
-          )}
-          {activeTab === 'roles' && (
-            <button
-              type="button"
-              onClick={handleOpenAddRole}
-              className="px-4 py-2 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add New Role</span>
-            </button>
-          )}
-          {activeTab === 'wings' && (
-            <button
-              type="button"
-              onClick={handleOpenAddWing}
-              className="px-4 py-2 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add New Wing</span>
-            </button>
-          )}
-        </div>
       </div>
 
-      {/* ═════════════════════════════════════════════════════════════════════════
-          TAB 1: USERS LIST
-          ═════════════════════════════════════════════════════════════════════════ */}
-      {activeTab === 'users' && (
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
-          
-          {/* Filters Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-            {/* Search */}
-            <div className="md:col-span-2">
-              <label className="block text-zinc-700 font-bold mb-1">Search Users:</label>
-              <div className="relative">
+      {/* ── 1. CARD: SEARCH & FILTER ── */}
+      <div 
+        className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+        style={{
+          boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+          boxSizing: 'border-box'
+        }}
+      >
+        <div className="px-5 py-4 h-[60px] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-[30px] h-[30px] rounded-[8px] bg-[#FDF2F5] flex items-center justify-center shrink-0">
+              <SlidersHorizontal className="w-4 h-4 text-[#751639]" />
+            </div>
+            <span 
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '20px',
+                color: '#0F172B'
+              }}
+            >
+              {t.searchAndFilter}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-5 border-t border-[#F5F3F4] space-y-4">
+          {/* TAB 1: USERS FILTERS */}
+          {activeTab === 'users' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{isHindi ? 'उपयोगकर्ता खोजें' : 'Search Users'}</label>
                 <input
                   type="text"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
-                  placeholder="Search login ID, name, email..."
-                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
+                  placeholder={isHindi ? 'उपयोगकर्ता नाम, नाम, ईमेल...' : 'Username, name, email...'}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
                 />
               </div>
-            </div>
 
-            {/* Subsite / Website Filter */}
-            <div>
-              <label className="block text-zinc-700 font-bold mb-1">Subsite / Office:</label>
-              <select
-                value={userWebsiteFilter}
-                onChange={(e) => { setUserWebsiteFilter(e.target.value); setUserPage(1); }}
-                className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639] truncate"
-              >
-                <option value="all">All Subsites ({websiteOptions.length})</option>
-                {websiteOptions.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Role Filter */}
-            <div>
-              <label className="block text-zinc-700 font-bold mb-1">Assigned Role:</label>
-              <select
-                value={userRoleFilter}
-                onChange={(e) => { setUserRoleFilter(e.target.value); setUserPage(1); }}
-                className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639] truncate"
-              >
-                <option value="all">All Roles ({roleOptions.length})</option>
-                {roleOptions.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status Filter & Filter Button */}
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="block text-zinc-700 font-bold mb-1">Status:</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{isHindi ? 'उप-साइट / कार्यालय' : 'Subsite / Office'}</label>
                 <select
-                  value={userStatusFilter}
-                  onChange={(e) => { setUserStatusFilter(e.target.value); setUserPage(1); }}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                  value={userWebsiteFilter}
+                  onChange={(e) => { setUserWebsiteFilter(e.target.value); setUserPage(1); }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer truncate"
                 >
-                  <option value="all">All Status</option>
-                  <option value="1">Active</option>
-                  <option value="0">Inactive</option>
+                  <option value="all">{isHindi ? `सभी उप-साइटें (${websiteOptions.length})` : `All Subsites (${websiteOptions.length})`}</option>
+                  {websiteOptions.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              <button
-                type="button"
-                onClick={fetchUsers}
-                className="px-3.5 py-1.5 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors cursor-pointer"
-              >
-                Filter
-              </button>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{isHindi ? 'सौंपी गई भूमिका' : 'Assigned Role'}</label>
+                <select
+                  value={userRoleFilter}
+                  onChange={(e) => { setUserRoleFilter(e.target.value); setUserPage(1); }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer truncate"
+                >
+                  <option value="all">{isHindi ? `सभी भूमिकाएं (${roleOptions.length})` : `All Roles (${roleOptions.length})`}</option>
+                  {roleOptions.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{t.status}</label>
+                <select
+                  value={userStatusFilter}
+                  onChange={(e) => { setUserStatusFilter(e.target.value); setUserPage(1); }}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                >
+                  <option value="all">{t.allStatus}</option>
+                  <option value="1">{t.active}</option>
+                  <option value="0">{t.inactive}</option>
+                </select>
+              </div>
             </div>
+          )}
+
+          {/* TAB 2: ROLES FILTERS */}
+          {activeTab === 'roles' && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{isHindi ? 'भूमिका खोजें' : 'Search Roles'}</label>
+                <input
+                  type="text"
+                  value={roleSearch}
+                  onChange={(e) => setRoleSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchRoles()}
+                  placeholder={isHindi ? 'भूमिका का नाम...' : 'Role name...'}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{isHindi ? 'उप-साइट दायरा' : 'Subsite Scope'}</label>
+                <select
+                  value={roleWebsiteFilter}
+                  onChange={(e) => setRoleWebsiteFilter(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer truncate"
+                >
+                  <option value="all">{isHindi ? `सभी उप-साइटें (${websiteOptions.length})` : `All Subsites (${websiteOptions.length})`}</option>
+                  {websiteOptions.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{t.status}</label>
+                <select
+                  value={roleStatusFilter}
+                  onChange={(e) => setRoleStatusFilter(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                >
+                  <option value="all">{t.allStatus}</option>
+                  <option value="1">{t.active}</option>
+                  <option value="0">{t.inactive}</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: WINGS FILTERS */}
+          {activeTab === 'wings' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{isHindi ? 'प्रभाग खोजें' : 'Search Wings'}</label>
+                <input
+                  type="text"
+                  value={wingSearch}
+                  onChange={(e) => setWingSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchWings()}
+                  placeholder={isHindi ? 'प्रभाग का नाम...' : 'Wing title...'}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#62748E]">{t.status}</label>
+                <select
+                  value={wingStatusFilter}
+                  onChange={(e) => setWingStatusFilter(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                >
+                  <option value="all">{t.allStatus}</option>
+                  <option value="1">{t.active}</option>
+                  <option value="0">{t.inactive}</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="h-[38.6px] px-6 rounded-[8px] text-[14px] font-medium text-[#751639] bg-[rgba(108,20,54,0.05)] hover:bg-[rgba(108,20,54,0.1)] transition-all cursor-pointer"
+            >
+              {t.reset}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (activeTab === 'users') fetchUsers();
+                else if (activeTab === 'roles') fetchRoles();
+                else if (activeTab === 'wings') fetchWings();
+              }}
+              className="h-[38.6px] px-6 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer hover:opacity-95"
+              style={{
+                background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+              }}
+            >
+              <Search className="w-4 h-4" />
+              <span>{t.search}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. CARD: DATA REGISTRY TABLE ── */}
+      
+      {/* TAB 1: USERS REGISTRY */}
+      {activeTab === 'users' && (
+        <div 
+          className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+          style={{
+            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="px-5 py-4 h-[60px] flex items-center justify-between border-b border-[#F5F3F4]">
+            <div className="flex items-center gap-3">
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#0F172B'
+                }}
+              >
+                {isHindi ? `पंजीकृत व्यवस्थापक उपयोगकर्ता (${userTotalCount || users.length})` : `Registered Admin Users (${userTotalCount || users.length})`}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenAddUser}
+              className="h-[38.6px] px-5 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:opacity-95"
+              style={{
+                background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>{isHindi ? '+ नया उपयोगकर्ता जोड़ें' : '+ Add New User'}</span>
+            </button>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto border border-[#ced4da]">
-            <table className="w-full text-left text-xs text-zinc-700 border-collapse">
-              <thead className="bg-[#751639] text-white uppercase text-[11px] font-bold tracking-wider">
-                <tr>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Login ID</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Full Name</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Email</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Mobile</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Role</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Status</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[rgba(117,22,57,0.04)] border-b border-[#EDE9E9]">
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'लॉगिन आईडी' : 'Login ID'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'पूरा नाम' : 'Full Name'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'ईमेल' : 'Email'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'मोबाइल' : 'Mobile'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'भूमिका' : 'Role'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-28 text-center">{t.status}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-24 text-right">{t.actions}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#ced4da]">
+              <tbody className="divide-y divide-[#F5F3F4]">
                 {usersLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-10 text-center text-zinc-500 font-medium">
+                    <td colSpan={7} className="px-5 py-8 text-center text-[13px] text-[#90A1B9]">
                       <div className="flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-[#751639]" />
-                        <span>Loading user accounts from PostgreSQL database...</span>
+                        <span>{t.loading}</span>
                       </div>
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-zinc-500 font-medium">
-                      No users match your criteria.
+                    <td colSpan={7} className="px-5 py-8 text-center text-[13px] text-[#90A1B9]">
+                      {t.noData}
                     </td>
                   </tr>
                 ) : (
                   users.map((u) => (
-                    <tr key={u.id} className="hover:bg-[#fcf8fa] transition-colors">
-                      <td className="py-2.5 px-3 font-mono font-bold text-zinc-900 border-r border-zinc-200">
+                    <tr key={u.id} className="hover:bg-[#FAFAFA] transition-colors">
+                      <td className="px-5 py-3.5 font-mono font-bold text-[14px] text-[#751639]">
                         {u.username}
                       </td>
-                      <td className="py-2.5 px-3 font-semibold text-zinc-800 border-r border-zinc-200">
+                      <td className="px-5 py-3.5 font-semibold text-[14px] text-[#0F172B]">
                         {u.name || '—'}
                       </td>
-                      <td className="py-2.5 px-3 text-zinc-600 border-r border-zinc-200">{u.email || '—'}</td>
-                      <td className="py-2.5 px-3 text-zinc-600 border-r border-zinc-200">{u.mobile || '—'}</td>
-                      <td className="py-2.5 px-3 border-r border-zinc-200">
-                        <span className="px-2 py-0.5 rounded-none text-[11px] font-semibold bg-[#f7f0f3] text-[#751639] border border-[#d8a8b8]">
+                      <td className="px-5 py-3.5 text-[13px] text-[#62748E]">{u.email || '—'}</td>
+                      <td className="px-5 py-3.5 text-[13px] font-mono text-[#62748E]">{u.mobile || '—'}</td>
+                      <td className="px-5 py-3.5">
+                        <span className="px-2.5 py-1 rounded-[6px] text-[12px] font-semibold bg-[#FDF2F5] text-[#751639] border border-[#F9D2DC]">
                           {u.role_name}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 border-r border-zinc-200">
-                        <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider ${
+                      <td className="px-5 py-3.5 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-[12px] font-medium inline-flex items-center gap-1.5 ${
                           u.is_active 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
-                            : 'bg-zinc-100 text-zinc-600 border border-zinc-300'
+                            ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]' 
+                            : 'bg-[#FDF4F0] text-[#EA580C] border border-[#FFEDD5]'
                         }`}>
-                          {u.is_active ? 'Active' : 'Inactive'}
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.is_active ? 'bg-[#16A34A]' : 'bg-[#EA580C]'}`}></span>
+                          {u.is_active ? t.active : t.inactive}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => handleOpenEditUser(u)}
-                            className="p-1 hover:bg-[#f7f0f3] text-[#751639] rounded-none transition-colors cursor-pointer"
-                            title="Edit User Profile"
+                            className="p-1.5 text-[#62748E] hover:text-[#751639] hover:bg-[#FDF2F5] rounded-[6px] transition-colors cursor-pointer"
+                            title={isHindi ? 'उपयोगकर्ता प्रोफ़ाइल संपादित करें' : 'Edit User Profile'}
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteUser(u.id, u.username)}
-                            className="p-1 hover:bg-red-50 text-red-600 rounded-none transition-colors cursor-pointer"
-                            title="Delete User"
+                            className="p-1.5 text-[#62748E] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-[6px] transition-colors cursor-pointer"
+                            title={isHindi ? 'उपयोगकर्ता हटाएँ' : 'Delete User'}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -1412,157 +1613,134 @@ function UserManagementContent() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="pt-2 flex items-center justify-between text-xs text-zinc-600">
+          {/* Pagination Footer */}
+          <div className="px-6 py-4 border-t border-[#EDE9E9] flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px] text-[#62748E]">
             <span>
-              Showing Page <strong>{userPage}</strong> of <strong>{userTotalPages}</strong> ({userTotalCount} total users registered in DB)
+              {isHindi ? `पृष्ठ ${userPage} / ${userTotalPages} (${userTotalCount} पंजीकृत उपयोगकर्ता)` : `Showing Page ${userPage} of ${userTotalPages} (${userTotalCount} registered admin users)`}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 disabled={userPage <= 1}
                 onClick={() => setUserPage(p => Math.max(1, p - 1))}
-                className="px-3 py-1 border border-[#ced4da] rounded-none bg-white hover:bg-zinc-100 disabled:opacity-40 cursor-pointer font-semibold"
+                className="px-3.5 py-1.5 border border-[#EDE9E9] rounded-[8px] bg-white hover:bg-[#F8F7F7] disabled:opacity-40 cursor-pointer font-medium text-[13px]"
               >
-                Previous
+                {t.previous}
               </button>
               <button
                 type="button"
                 disabled={userPage >= userTotalPages}
                 onClick={() => setUserPage(p => p + 1)}
-                className="px-3 py-1 border border-[#ced4da] rounded-none bg-white hover:bg-zinc-100 disabled:opacity-40 cursor-pointer font-semibold"
+                className="px-3.5 py-1.5 border border-[#EDE9E9] rounded-[8px] bg-white hover:bg-[#F8F7F7] disabled:opacity-40 cursor-pointer font-medium text-[13px]"
               >
-                Next
+                {t.next}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ═════════════════════════════════════════════════════════════════════════
-          TAB 2: ROLES LIST
-          ═════════════════════════════════════════════════════════════════════════ */}
+      {/* TAB 2: ROLES REGISTRY */}
       {activeTab === 'roles' && (
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
-          
-          {/* Filters Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3 flex-1">
-              <div className="relative min-w-[220px] max-w-sm">
-                <input
-                  type="text"
-                  value={roleSearch}
-                  onChange={(e) => setRoleSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && fetchRoles()}
-                  placeholder="Search role name..."
-                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
-                />
-              </div>
-
-              {/* Subsite Filter */}
-              <select
-                value={roleWebsiteFilter}
-                onChange={(e) => setRoleWebsiteFilter(e.target.value)}
-                className="bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639] max-w-[240px] truncate"
+        <div 
+          className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+          style={{
+            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="px-5 py-4 h-[60px] flex items-center justify-between border-b border-[#F5F3F4]">
+            <div className="flex items-center gap-3">
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#0F172B'
+                }}
               >
-                <option value="all">All Subsites ({websiteOptions.length})</option>
-                {websiteOptions.map((s) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* Status Filter */}
-              <select
-                value={roleStatusFilter}
-                onChange={(e) => setRoleStatusFilter(e.target.value)}
-                className="bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-              >
-                <option value="all">All Status</option>
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={fetchRoles}
-                className="px-3.5 py-1.5 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors cursor-pointer"
-              >
-                Filter
-              </button>
+                {isHindi ? `सुरक्षा भूमिका पदानुक्रम (${roles.length})` : `Security Roles Hierarchy (${roles.length})`}
+              </span>
             </div>
-
-            <div className="text-xs text-zinc-500">
-              Total Database Roles: <strong className="text-zinc-800">{roles.length}</strong>
-            </div>
+            <button
+              type="button"
+              onClick={handleOpenAddRole}
+              className="h-[38.6px] px-5 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:opacity-95"
+              style={{
+                background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>{isHindi ? '+ नई भूमिका जोड़ें' : '+ Add New Role'}</span>
+            </button>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto border border-[#ced4da]">
-            <table className="w-full text-left text-xs text-zinc-700 border-collapse">
-              <thead className="bg-[#751639] text-white uppercase text-[11px] font-bold tracking-wider">
-                <tr>
-                  <th className="py-2.5 px-3 w-16 border-r border-[#8c234a]">ID</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Role Name</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Superior / Parent Role</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Status</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[rgba(117,22,57,0.04)] border-b border-[#EDE9E9]">
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-16 text-center">{t.sNo}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'भूमिका का नाम' : 'Role Name'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'वरिष्ठ / मूल भूमिका' : 'Superior / Parent Role'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-28 text-center">{t.status}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-24 text-right">{t.actions}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#ced4da]">
+              <tbody className="divide-y divide-[#F5F3F4]">
                 {rolesLoading ? (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-zinc-500 font-medium">
+                    <td colSpan={5} className="px-5 py-8 text-center text-[13px] text-[#90A1B9]">
                       <div className="flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-[#751639]" />
-                        <span>Loading roles from database...</span>
+                        <span>{t.loading}</span>
                       </div>
                     </td>
                   </tr>
                 ) : roles.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-zinc-500 font-medium">
-                      No roles found.
+                    <td colSpan={5} className="px-5 py-8 text-center text-[13px] text-[#90A1B9]">
+                      {t.noData}
                     </td>
                   </tr>
                 ) : (
                   roles.map((r) => (
-                    <tr key={r.id} className="hover:bg-[#fcf8fa] transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-zinc-500 border-r border-zinc-200">{r.id}</td>
-                      <td className="py-2.5 px-3 font-bold text-zinc-900 border-r border-zinc-200">
-                        {r.name}
+                    <tr key={r.id} className="hover:bg-[#FAFAFA] transition-colors">
+                      <td className="px-5 py-3.5 text-center text-[13px] font-bold text-[#751639]">#{r.id}</td>
+                      <td className="px-5 py-3.5 font-bold text-[14px] text-[#0F172B]">
+                        {isHindi && r.name_hi ? r.name_hi : r.name}
                       </td>
-                      <td className="py-2.5 px-3 text-zinc-600 border-r border-zinc-200">
-                        {r.parent_name || 'Top Level'}
+                      <td className="px-5 py-3.5 text-[13px] text-[#62748E]">
+                        {r.parent_name || (isHindi ? 'शीर्ष स्तर' : 'Top Level')}
                       </td>
-                      <td className="py-2.5 px-3 border-r border-zinc-200">
-                        <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider ${
+                      <td className="px-5 py-3.5 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-[12px] font-medium inline-flex items-center gap-1.5 ${
                           r.is_active 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
-                            : 'bg-zinc-100 text-zinc-600 border border-zinc-300'
+                            ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]' 
+                            : 'bg-[#FDF4F0] text-[#EA580C] border border-[#FFEDD5]'
                         }`}>
-                          {r.is_active ? 'Active' : 'Inactive'}
+                          <span className={`w-1.5 h-1.5 rounded-full ${r.is_active ? 'bg-[#16A34A]' : 'bg-[#EA580C]'}`}></span>
+                          {r.is_active ? t.active : t.inactive}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => handleOpenEditRole(r)}
-                            className="p-1 hover:bg-[#f7f0f3] text-[#751639] rounded-none transition-colors cursor-pointer"
-                            title="Edit Role"
+                            className="p-1.5 text-[#62748E] hover:text-[#751639] hover:bg-[#FDF2F5] rounded-[6px] transition-colors cursor-pointer"
+                            title={isHindi ? 'संपादित करें' : 'Edit Role'}
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            <Pencil className="w-4 h-4" />
                           </button>
                           {!r.is_system && (
                             <button
                               type="button"
                               onClick={() => handleDeleteRole(r.id, r.name)}
-                              className="p-1 hover:bg-red-50 text-red-600 rounded-none transition-colors cursor-pointer"
-                              title="Delete Role"
+                              className="p-1.5 text-[#62748E] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-[6px] transition-colors cursor-pointer"
+                              title={isHindi ? 'हटाएँ' : 'Delete Role'}
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -1576,109 +1754,100 @@ function UserManagementContent() {
         </div>
       )}
 
-      {/* ═════════════════════════════════════════════════════════════════════════
-          TAB 3: WINGS LIST
-          ═════════════════════════════════════════════════════════════════════════ */}
+      {/* TAB 3: WINGS REGISTRY */}
       {activeTab === 'wings' && (
-        <div className="bg-white border-t-[3px] border-t-[#751639] border-l border-r border-b border-[#ced4da] rounded-none shadow-xs overflow-hidden flex flex-col space-y-4 p-4">
-          
-          {/* Filters Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3 flex-1">
-              <div className="relative min-w-[220px] max-w-sm">
-                <input
-                  type="text"
-                  value={wingSearch}
-                  onChange={(e) => setWingSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && fetchWings()}
-                  placeholder="Search wing title..."
-                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none placeholder-zinc-400 focus:border-[#751639]"
-                />
-              </div>
-
-              {/* Status Filter */}
-              <select
-                value={wingStatusFilter}
-                onChange={(e) => setWingStatusFilter(e.target.value)}
-                className="bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+        <div 
+          className="bg-white border border-[#EDE9E9] rounded-[8px] overflow-hidden"
+          style={{
+            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div className="px-5 py-4 h-[60px] flex items-center justify-between border-b border-[#F5F3F4]">
+            <div className="flex items-center gap-3">
+              <span 
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#0F172B'
+                }}
               >
-                <option value="all">All Status</option>
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={fetchWings}
-                className="px-3.5 py-1.5 bg-[#751639] hover:bg-[#5a0e28] text-white text-xs font-bold rounded-none transition-colors cursor-pointer"
-              >
-                Filter
-              </button>
+                {isHindi ? `क्षेत्रीय लेखापरीक्षा प्रभाग (${wings.length})` : `Field Audit Wings (${wings.length})`}
+              </span>
             </div>
-
-            <div className="text-xs text-zinc-500">
-              Total Database Wings: <strong className="text-zinc-800">{wings.length}</strong>
-            </div>
+            <button
+              type="button"
+              onClick={handleOpenAddWing}
+              className="h-[38.6px] px-5 rounded-[8px] text-[14px] font-medium text-white shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:opacity-95"
+              style={{
+                background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #5c1130 172%)'
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>{isHindi ? '+ नया प्रभाग जोड़ें' : '+ Add New Wing'}</span>
+            </button>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto border border-[#ced4da]">
-            <table className="w-full text-left text-xs text-zinc-700 border-collapse">
-              <thead className="bg-[#751639] text-white uppercase text-[11px] font-bold tracking-wider">
-                <tr>
-                  <th className="py-2.5 px-3 w-16 border-r border-[#8c234a]">ID</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Wing Title</th>
-                  <th className="py-2.5 px-3 border-r border-[#8c234a]">Status</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[rgba(117,22,57,0.04)] border-b border-[#EDE9E9]">
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-16 text-center">{t.sNo}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider">{isHindi ? 'प्रभाग का नाम' : 'Wing Title'}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-28 text-center">{t.status}</th>
+                  <th className="px-5 py-3.5 text-[12px] font-medium text-[#90A1B9] uppercase tracking-wider w-24 text-right">{t.actions}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#ced4da]">
+              <tbody className="divide-y divide-[#F5F3F4]">
                 {wingsLoading ? (
                   <tr>
-                    <td colSpan={4} className="py-10 text-center text-zinc-500 font-medium">
+                    <td colSpan={4} className="px-5 py-8 text-center text-[13px] text-[#90A1B9]">
                       <div className="flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-[#751639]" />
-                        <span>Loading wings from database...</span>
+                        <span>{t.loading}</span>
                       </div>
                     </td>
                   </tr>
                 ) : wings.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-zinc-500 font-medium">
-                      No wings found.
+                    <td colSpan={4} className="px-5 py-8 text-center text-[13px] text-[#90A1B9]">
+                      {t.noData}
                     </td>
                   </tr>
                 ) : (
                   wings.map((w) => (
-                    <tr key={w.id} className="hover:bg-[#fcf8fa] transition-colors">
-                      <td className="py-2.5 px-3 font-mono text-zinc-500 border-r border-zinc-200">{w.id}</td>
-                      <td className="py-2.5 px-3 font-bold text-zinc-900 border-r border-zinc-200">{w.title}</td>
-                      <td className="py-2.5 px-3 border-r border-zinc-200">
-                        <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider ${
+                    <tr key={w.id} className="hover:bg-[#FAFAFA] transition-colors">
+                      <td className="px-5 py-3.5 text-center text-[13px] font-bold text-[#751639]">#{w.id}</td>
+                      <td className="px-5 py-3.5 font-bold text-[14px] text-[#0F172B]">{w.title}</td>
+                      <td className="px-5 py-3.5 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-[12px] font-medium inline-flex items-center gap-1.5 ${
                           w.is_active 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
-                            : 'bg-zinc-100 text-zinc-600 border border-zinc-300'
+                            ? 'bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7]' 
+                            : 'bg-[#FDF4F0] text-[#EA580C] border border-[#FFEDD5]'
                         }`}>
-                          {w.is_active ? 'Active' : 'Inactive'}
+                          <span className={`w-1.5 h-1.5 rounded-full ${w.is_active ? 'bg-[#16A34A]' : 'bg-[#EA580C]'}`}></span>
+                          {w.is_active ? t.active : t.inactive}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => handleOpenEditWing(w)}
-                            className="p-1 hover:bg-[#f7f0f3] text-[#751639] rounded-none transition-colors cursor-pointer"
-                            title="Edit Wing"
+                            className="p-1.5 text-[#62748E] hover:text-[#751639] hover:bg-[#FDF2F5] rounded-[6px] transition-colors cursor-pointer"
+                            title={isHindi ? 'संपादित करें' : 'Edit Wing'}
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteWing(w.id, w.title)}
-                            className="p-1 hover:bg-red-50 text-red-600 rounded-none transition-colors cursor-pointer"
-                            title="Delete Wing"
+                            className="p-1.5 text-[#62748E] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-[6px] transition-colors cursor-pointer"
+                            title={isHindi ? 'हटाएँ' : 'Delete Wing'}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -1690,13 +1859,14 @@ function UserManagementContent() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
 
 export default function UserManagementPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-zinc-500 font-medium">Loading User Management Hub...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[13px] text-[#90A1B9]">Loading User Management Hub...</div>}>
       <UserManagementContent />
     </Suspense>
   );
