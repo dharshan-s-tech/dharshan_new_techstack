@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, ReportItem as DataReportItem } from '@/lib/dataManager';
 import SearchableStateSelect from '@/components/admin/SearchableStateSelect';
-import { Pencil, Eye, Trash2, ExternalLink } from 'lucide-react';
+import { Pencil, Eye, Trash2, ExternalLink, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
 import { useAdminLanguage } from '@/lib/useAdminLanguage';
 
@@ -503,6 +503,676 @@ function AdminReportsContent() {
   };
 
 
+  // ── 1. FULL CONTENT PAGE: VIEW DETAILS ──
+  if (viewingReport) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white flex flex-col rounded-[12px] shadow-sm border border-[#EDE9E9] overflow-hidden animate-fadeIn font-sans">
+        {/* Header */}
+        <div 
+          className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+          style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+        >
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setViewingReport(null)}
+              className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              title="Back to Reports Table"
+            >
+              <span>← Back</span>
+            </button>
+            <div>
+              <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
+                Audit Report Record Details [ID: {viewingReport.rawId}]
+              </div>
+              <h2 className="text-base sm:text-lg font-bold leading-tight">
+                {viewingReport.title_en}
+              </h2>
+              {viewingReport.title_hi && (
+                <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
+                  {viewingReport.title_hi}
+                </p>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setViewingReport(null)}
+            className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <span>Close</span>
+            <span className="text-sm leading-none">✕</span>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+          <div className="max-w-6xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
+            
+            {/* Badges Bar */}
+            <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
+              <span className="px-3 py-1 bg-[#751639] text-white font-bold text-xs rounded-xs">
+                {viewingReport.sector}
+              </span>
+              <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-xs rounded-xs">
+                Level: {viewingReport.level || 'Union'}
+              </span>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-xs rounded-xs">
+                Type: {viewingReport.report_type}
+              </span>
+              <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xs">
+                Year: {viewingReport.year_of_report}
+              </span>
+              {viewingReport.tabled_date && (
+                <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs rounded-xs">
+                  Tabled: {viewingReport.tabled_date}
+                </span>
+              )}
+              <span className="ml-auto px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs rounded-full">
+                ● ACTIVE
+              </span>
+            </div>
+
+            {/* Banner & Preview */}
+            <div className="flex flex-col md:flex-row gap-6 items-start bg-zinc-50 p-5 border border-zinc-200">
+              <img
+                src={viewingReport.image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
+                alt="Banner"
+                className="h-36 w-56 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
+                }}
+              />
+              <div className="space-y-2 flex-1">
+                <div className="font-bold text-zinc-900 text-sm">Banner Asset &amp; CloudFront Link</div>
+                <p className="text-xs text-zinc-500 break-all font-mono bg-white p-2.5 border border-zinc-200">
+                  {viewingReport.image || 'Default Civil Sector Banner'}
+                </p>
+                <div className="pt-2">
+                  <a
+                    href={viewingReport.pdf_url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
+                  >
+                    <span>📥 Download Full Report (PDF)</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Scope Overview Narrative */}
+            <div>
+              <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
+                Executive Summary &amp; Scope Overview
+              </h4>
+              <div className="bg-zinc-50 border border-zinc-200 p-5 text-zinc-700 leading-relaxed text-sm">
+                {viewingReport.desc ? (
+                  <p>{viewingReport.desc}</p>
+                ) : (
+                  <p className="italic text-zinc-400">No narrative overview available for this report.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Chapters List (If Available) */}
+            {viewingReport.chapters && viewingReport.chapters.length > 0 && (
+              <div>
+                <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
+                  Report Chapters &amp; Individual Files ({viewingReport.chapters.length})
+                </h4>
+                <div className="border border-zinc-200 max-h-72 overflow-y-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-zinc-100 text-zinc-700 border-b border-zinc-200 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2.5 w-12 text-center">#</th>
+                        <th className="px-4 py-2.5">Chapter Title</th>
+                        <th className="px-4 py-2.5 w-28 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200">
+                      {viewingReport.chapters.map((ch, cidx) => (
+                        <tr key={ch.id || cidx} className="hover:bg-zinc-50">
+                          <td className="px-4 py-2.5 text-center text-zinc-400 font-mono">{cidx + 1}</td>
+                          <td className="px-4 py-2.5 font-medium text-zinc-800 text-xs">{ch.title}</td>
+                          <td className="px-4 py-2.5 text-center">
+                            <a
+                              href={ch.file_url || '#'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#751639] hover:underline font-bold text-xs inline-flex items-center gap-1"
+                            >
+                              <span>PDF</span>
+                              <span>↗</span>
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
+          <Link
+            href={`/Reports/${viewingReport.rawId}`}
+            target="_blank"
+            className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Open Public Page ↗</span>
+          </Link>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                const r = viewingReport;
+                setViewingReport(null);
+                handleOpenEdit(r);
+              }}
+              className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit Record</span>
+            </button>
+            <button
+              onClick={() => {
+                const idToDelete = viewingReport.rawId;
+                setViewingReport(null);
+                handleDelete(idToDelete);
+              }}
+              className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete Record</span>
+            </button>
+            <button
+              onClick={() => setViewingReport(null)}
+              className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 2. FULL CONTENT PAGE: CREATE / EDIT AUDIT REPORT ──
+  if (isFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white flex flex-col rounded-[12px] shadow-sm border border-[#EDE9E9] overflow-hidden animate-fadeIn font-sans">
+        {/* Header */}
+        <div
+          className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
+          style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+        >
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
+            >
+              ← Back
+            </button>
+            <div>
+              <h3 className="font-serif text-lg font-bold">
+                {editingRawId ? 'Edit Audit Report' : 'Add New Audit Report'}
+              </h3>
+              <p className="text-[11px] text-white/70">
+                {editingRawId ? `Editing Record ID #${editingRawId}` : 'Register new audit publication to CAG registry'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsFormOpen(false)}
+            className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            title="Close panel"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body Content */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
+          <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1">Report Title (English) *</label>
+              <input
+                type="text"
+                required
+                value={titleEn}
+                onChange={(e) => setTitleEn(e.target.value)}
+                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                placeholder="Report of the Comptroller and Auditor General of India..."
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1">Report Title (Hindi)</label>
+              <input
+                type="text"
+                value={titleHi}
+                onChange={(e) => setTitleHi(e.target.value)}
+                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                placeholder="भारत के नियंत्रक एवं महालेखापरीक्षक का प्रतिवेदन..."
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1">Executive Summary / Description</label>
+              <textarea
+                rows={3}
+                value={overviewEn}
+                onChange={(e) => setOverviewEn(e.target.value)}
+                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                placeholder="Overview of audit findings and scope..."
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">Government Level</label>
+                <select
+                  value={govLevel}
+                  onChange={(e) => setGovLevel(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                >
+                  <option value="Union">Union (National)</option>
+                  <option value="State">State Government</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">Audit Type</label>
+                <select
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                >
+                  {reportTypes.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">Audit Sector</label>
+                <select
+                  value={sector}
+                  onChange={(e) => setSector(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                >
+                  {sectors.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">Publish Status</label>
+                <select
+                  value={isActive ? 'Active' : 'Inactive'}
+                  onChange={(e) => setIsActive(e.target.value === 'Active')}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">Report Year *</label>
+                <input
+                  type="number"
+                  required
+                  value={yearOfReport}
+                  onChange={(e) => setYearOfReport(parseInt(e.target.value) || 2026)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1">State (If State Level)</label>
+                <SearchableStateSelect
+                  value={selectedStateId}
+                  onChange={(val) => setSelectedStateId(val === 'All' ? '' : val)}
+                  states={states}
+                  placeholder="National / Not Applicable"
+                  allLabel="National / Not Applicable"
+                  allowAll={true}
+                  size="sm"
+                />
+              </div>
+            </div>
+
+            {/* CARD IMAGE FILE UPLOAD */}
+            <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-2">
+              <label className="block font-bold text-zinc-800 text-xs mb-1">
+                Card Banner Picture (File Upload or URL) *
+              </label>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <label className="cursor-pointer bg-[#751639] hover:bg-[#5f122d] text-white px-4 py-2 text-xs font-bold transition-colors shrink-0 shadow-xs flex items-center gap-1.5">
+                  <span>📁 Upload Image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageFileUpload}
+                    className="hidden"
+                  />
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={cardImage}
+                  onChange={(e) => setCardImage(e.target.value)}
+                  className="flex-grow w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                  placeholder="or enter image URL"
+                />
+              </div>
+
+              {/* 1-Click Sector & Department Asset Presets from live CloudFront CDN */}
+              <div className="pt-2">
+                <div className="text-[11px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
+                  Or select verified live CDN Asset (from /en/home):
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { name: 'Recent Report', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/01-recent-report-logo.jpg' },
+                    { name: 'Digital Report', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/digital_report.png' },
+                    { name: 'Health & Welfare', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/education_health_and_family_welfare.png' },
+                    { name: 'Defence & Security', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Defence_and_national_security.png' },
+                    { name: 'Transport & Infra', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Transport_and_Infrastructure.jfif' },
+                    { name: 'Taxes & Duties', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Taxes_and_duties.png' },
+                    { name: 'Local Bodies', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Local_Bodies.jpg' },
+                    { name: 'IT & Telecom', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/information_and_communication.jfif' },
+                    { name: 'Power & Energy', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/power_and_energy.jpg' },
+                    { name: 'Industry & Commerce', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Industry_and_commerce.png' },
+                    { name: 'Social Welfare', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/social_welfare.jpeg' },
+                    { name: 'Finance', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Finance.png' },
+                    { name: 'Environment', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Environment_and_Sustainable_Development.png' },
+                    { name: 'Agriculture & Rural', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Agriculture_and_Rural_Development.jfif' },
+                    { name: 'Civil Dept', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg' },
+                    { name: 'Railway Dept', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/railway.jpg' },
+                    { name: 'Commercial Dept', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/commercial.jpg' }
+                  ].map((dept) => (
+                    <button
+                      key={dept.name}
+                      type="button"
+                      onClick={() => setCardImage(dept.url)}
+                      className={`text-[10.5px] px-2 py-1 border transition-all cursor-pointer ${
+                        cardImage === dept.url
+                          ? 'bg-[#751639] text-white border-[#751639] font-bold'
+                          : 'bg-white text-zinc-700 border-zinc-300 hover:border-[#751639] hover:text-[#751639]'
+                      }`}
+                    >
+                      {dept.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {cardImage && (
+                <div className="pt-2 flex items-center gap-3">
+                  <span className="text-[11px] font-bold text-zinc-500">Live Preview:</span>
+                  <img
+                    src={cardImage}
+                    alt="Report Card preview"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
+                    }}
+                    className="h-14 w-24 object-cover border border-zinc-300 shadow-xs"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* MAIN REPORT PDF DOCUMENT UPLOAD */}
+            <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block font-bold text-zinc-800 text-xs uppercase tracking-wide text-[#751639]">
+                  Main Report PDF File &amp; Attachment *
+                </label>
+                {isUploadingPdf && (
+                  <span className="text-[11px] text-[#751639] font-bold flex items-center gap-1">
+                    <span className="w-3 h-3 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></span>
+                    Uploading PDF...
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <label className="cursor-pointer bg-[#751639] hover:bg-[#5f122d] text-white px-4 py-2 text-xs font-bold transition-colors shrink-0 shadow-xs flex items-center gap-1.5 rounded-none">
+                  <span>📁 Upload PDF Document</span>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={handlePdfFileUpload}
+                    className="hidden"
+                  />
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={mainReportFile}
+                  onChange={(e) => setMainReportFile(e.target.value)}
+                  className="flex-grow w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-mono"
+                  placeholder="or paste CloudFront PDF Link / URL"
+                />
+              </div>
+
+              {/* Attached File Preview Badge */}
+              {uploadedPdfName && (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="font-bold text-emerald-700">📄 Attached PDF:</span>
+                    <span className="font-mono truncate">{uploadedPdfName}</span>
+                    {uploadedPdfSize && <span className="text-[11px] text-emerald-600 font-semibold">({uploadedPdfSize})</span>}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {mainReportFile && mainReportFile !== '#' && (
+                      <a
+                        href={mainReportFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#751639] hover:underline font-bold text-[11px]"
+                      >
+                        Preview ↗
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadedPdfName('');
+                        setUploadedPdfSize('');
+                        setMainReportFile('#');
+                      }}
+                      className="text-zinc-500 hover:text-red-600 font-bold ml-2 cursor-pointer"
+                      title="Remove attached file"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 1-Click Sample CloudFront Document Presets */}
+              <div className="pt-1">
+                <div className="text-[11px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
+                  Or select verified CloudFront PDF Presets:
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { name: 'Full Union Audit Report (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '24.5 MB' },
+                    { name: 'State Compliance Report (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '12.8 MB' },
+                    { name: 'Performance Audit Report (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '15.2 MB' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.name}
+                      type="button"
+                      onClick={() => {
+                        setMainReportFile(preset.url);
+                        setUploadedPdfName(preset.name);
+                        setUploadedPdfSize(preset.size);
+                      }}
+                      className={`text-[10.5px] px-2.5 py-1 border transition-all cursor-pointer ${
+                        mainReportFile === preset.url
+                          ? 'bg-[#751639] text-white border-[#751639] font-bold'
+                          : 'bg-white text-zinc-700 border-zinc-300 hover:border-[#751639] hover:text-[#751639]'
+                      }`}
+                    >
+                      {preset.name} ({preset.size})
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1">YouTube / Media Stream URL (Optional)</label>
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
+                placeholder="https://youtube.com/..."
+              />
+            </div>
+
+            {/* DETAIL PAGE CUSTOMIZATIONS */}
+            <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
+              <div className="font-bold text-xs uppercase tracking-wide text-[#751639] border-b border-zinc-200 pb-1">
+                Detail Page Custom Text &amp; Portrait
+              </div>
+              
+              <div>
+                <label className="block font-bold text-zinc-700 text-xs mb-1">Highlight Callout Quote</label>
+                <textarea
+                  rows={2}
+                  value={highlightQuote}
+                  onChange={(e) => setHighlightQuote(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                  placeholder="Independent constitutional audit empowers democratic governance..."
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-zinc-700 text-xs mb-1">Key Recommendations &amp; Remedial Actions</label>
+                <textarea
+                  rows={2}
+                  value={recommendations}
+                  onChange={(e) => setRecommendations(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                  placeholder="The report underscores key corrective measures including automated ledger reconciliation..."
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-zinc-700 text-xs mb-1">Side Portrait Image (URL or CloudFront link)</label>
+                <input
+                  type="text"
+                  value={portraitImage}
+                  onChange={(e) => setPortraitImage(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
+                  placeholder="Leave empty for default heritage monument photo"
+                />
+              </div>
+            </div>
+
+            {/* REPORT VOLUMES / CHAPTERS MANAGER */}
+            <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-1">
+                <div className="font-bold text-xs uppercase tracking-wide text-[#751639]">
+                  Multi-Part Volumes &amp; Chapter PDFs ({formChapters.length})
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormChapters(prev => [
+                      ...prev,
+                      {
+                        id: `ch-${Date.now()}`,
+                        title: `Chapter ${prev.length + 1}: Detailed Volume`,
+                        pdf_url: mainReportFile !== '#' ? mainReportFile : 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf',
+                        size: '12.4 MB'
+                      }
+                    ]);
+                  }}
+                  className="px-2.5 py-1 text-xs font-bold bg-[#751639] text-white hover:bg-[#5f122d] transition-colors cursor-pointer"
+                >
+                  + Add Chapter / Annexure
+                </button>
+              </div>
+
+              {formChapters.length === 0 ? (
+                <p className="text-xs text-zinc-500 italic m-0">No separate chapter PDFs added. Main Report File will be used.</p>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {formChapters.map((ch, chIdx) => (
+                    <div key={ch.id || chIdx} className="bg-white border border-zinc-200 p-2.5 flex items-center gap-2">
+                      <span className="text-xs font-bold text-zinc-400 min-w-[20px]">#{chIdx + 1}</span>
+                      <input
+                        type="text"
+                        value={ch.title}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormChapters(prev => prev.map((item, i) => i === chIdx ? { ...item, title: val } : item));
+                        }}
+                        placeholder="Chapter Title"
+                        className="flex-1 px-2 py-1 text-xs border border-zinc-300 outline-none focus:border-[#751639]"
+                      />
+                      <input
+                        type="text"
+                        value={ch.pdf_url}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormChapters(prev => prev.map((item, i) => i === chIdx ? { ...item, pdf_url: val } : item));
+                        }}
+                        placeholder="PDF URL"
+                        className="flex-1 px-2 py-1 text-xs border border-zinc-300 outline-none focus:border-[#751639] font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormChapters(prev => prev.filter((_, i) => i !== chIdx))}
+                        className="text-zinc-400 hover:text-red-600 font-bold px-1.5 cursor-pointer"
+                        title="Remove Chapter"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">
+              <button
+                type="submit"
+                className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs cursor-pointer"
+                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              >
+                Save to Local CMS Registry
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-6 py-2.5 border border-zinc-350 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 3. LIST / TABLE VIEW ──
   return (
     <div className="space-y-6 font-sans pb-16">
       
@@ -904,8 +1574,8 @@ function AdminReportsContent() {
               lineHeight: '16px'
             }}
           >
-            <span className="text-base font-bold">+</span>
-            <span>{t.addNew}</span>
+            <Plus className="w-4 h-4" />
+            <span>{t.addNewReport}</span>
           </button>
         </div>
 
@@ -1079,7 +1749,7 @@ function AdminReportsContent() {
           </table>
         </div>
 
-        {/* Table Footer Pagination matching Figma */}
+        {/* Table Footer Pagination matching Image 2 */}
         <div className="px-8 py-4 border-t border-[#F5F3F4] flex flex-col sm:flex-row justify-between items-center gap-4">
           <span 
             style={{
@@ -1094,32 +1764,41 @@ function AdminReportsContent() {
           </span>
 
           {/* Page Buttons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {/* Prev */}
             <button
               disabled={page <= 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
-              className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
               title={t.previous}
             >
-              ‹
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {/* Page Numbers */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
-              const isActive = num === page;
+            {/* Page Numbers (Sliding window of max 5 pages) */}
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, idx) => {
+              let pageNum = idx + 1;
+              if (totalPages > 5) {
+                if (page > 3 && page < totalPages - 2) {
+                  pageNum = page - 2 + idx;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + idx;
+                }
+              }
+
+              const isActive = pageNum === page;
               return (
                 <button
-                  key={num}
-                  onClick={() => setPage(num)}
-                  className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-medium transition-colors cursor-pointer ${
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-9 h-9 rounded-[8px] text-[14px] font-medium transition-colors cursor-pointer flex items-center justify-center ${
                     isActive
-                      ? 'bg-[rgba(117,22,57,0.1)] text-[#751639]'
-                      : 'text-[#64748B] hover:bg-zinc-100'
+                      ? 'bg-[#751639] text-white font-semibold shadow-xs'
+                      : 'text-[#1D4ED8] hover:bg-zinc-100'
                   }`}
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
-                  {num}
+                  {pageNum}
                 </button>
               );
             })}
@@ -1128,680 +1807,16 @@ function AdminReportsContent() {
             <button
               disabled={page >= totalPages}
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
               title={t.next}
             >
-              ›
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
       </div>
 
-      {/* 3. VIEW DETAILS FULL-PAGE VIEW PANEL */}
-      {viewingReport && (
-        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
-          {/* Full Page Header */}
-          <div 
-            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
-            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-          >
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setViewingReport(null)}
-                className="p-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                title="Back to Reports Table"
-              >
-                <span>← Back</span>
-              </button>
-              <div>
-                <div className="text-[10px] uppercase font-bold tracking-wider text-pink-200">
-                  Audit Report Record Details [ID: {viewingReport.rawId}]
-                </div>
-                <h2 className="text-base sm:text-lg font-bold leading-tight">
-                  {viewingReport.title_en}
-                </h2>
-                {viewingReport.title_hi && (
-                  <p className="text-xs text-pink-100 font-medium mt-0.5 font-hindi">
-                    {viewingReport.title_hi}
-                  </p>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => setViewingReport(null)}
-              className="px-3 py-1.5 bg-white/15 hover:bg-white/30 text-white rounded text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <span>Close</span>
-              <span className="text-sm leading-none">✕</span>
-            </button>
-          </div>
-
-          {/* Full Page Body */}
-          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
-            <div className="max-w-6xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-6">
-              
-              {/* Badges Bar */}
-              <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-zinc-200">
-                <span className="px-3 py-1 bg-[#751639] text-white font-bold text-xs rounded-xs">
-                  {viewingReport.sector}
-                </span>
-                <span className="px-3 py-1 bg-blue-50 text-blue-800 border border-blue-200 font-semibold text-xs rounded-xs">
-                  Level: {viewingReport.level || 'Union'}
-                </span>
-                <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-xs rounded-xs">
-                  Type: {viewingReport.report_type}
-                </span>
-                <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-xs rounded-xs">
-                  Year: {viewingReport.year_of_report}
-                </span>
-                {viewingReport.tabled_date && (
-                  <span className="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs rounded-xs">
-                    Tabled: {viewingReport.tabled_date}
-                  </span>
-                )}
-                <span className="ml-auto px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold text-xs rounded-full">
-                  ● ACTIVE
-                </span>
-              </div>
-
-              {/* Banner & Preview */}
-              <div className="flex flex-col md:flex-row gap-6 items-start bg-zinc-50 p-5 border border-zinc-200">
-                <img
-                  src={viewingReport.image || 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg'}
-                  alt="Banner"
-                  className="h-36 w-56 object-cover border border-zinc-300 shadow-xs bg-white shrink-0"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
-                  }}
-                />
-                <div className="space-y-2 flex-1">
-                  <div className="font-bold text-zinc-900 text-sm">Banner Asset &amp; CloudFront Link</div>
-                  <p className="text-xs text-zinc-500 break-all font-mono bg-white p-2.5 border border-zinc-200">
-                    {viewingReport.image || 'Default Civil Sector Banner'}
-                  </p>
-                  <div className="pt-2">
-                    <a
-                      href={viewingReport.pdf_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#751639] hover:bg-[#5f122d] text-white font-bold text-xs shadow-xs transition-colors"
-                    >
-                      <span>📥 Download Full Report (PDF)</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Scope Overview Narrative */}
-              <div>
-                <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
-                  Executive Summary &amp; Scope Overview
-                </h4>
-                <div className="bg-zinc-50 border border-zinc-200 p-5 text-zinc-700 leading-relaxed text-sm">
-                  {viewingReport.desc ? (
-                    <p>{viewingReport.desc}</p>
-                  ) : (
-                    <p className="italic text-zinc-400">No narrative overview available for this report.</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Chapters List (If Available) */}
-              {viewingReport.chapters && viewingReport.chapters.length > 0 && (
-                <div>
-                  <h4 className="font-bold text-zinc-900 text-xs mb-2 uppercase tracking-wide text-[#751639]">
-                    Report Chapters &amp; Individual Files ({viewingReport.chapters.length})
-                  </h4>
-                  <div className="border border-zinc-200 max-h-72 overflow-y-auto">
-                    <table className="w-full text-left text-xs border-collapse">
-                      <thead className="bg-zinc-100 text-zinc-700 border-b border-zinc-200 sticky top-0">
-                        <tr>
-                          <th className="px-4 py-2.5 w-12 text-center">#</th>
-                          <th className="px-4 py-2.5">Chapter Title</th>
-                          <th className="px-4 py-2.5 w-28 text-center">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-200">
-                        {viewingReport.chapters.map((ch, cidx) => (
-                          <tr key={ch.id || cidx} className="hover:bg-zinc-50">
-                            <td className="px-4 py-2.5 text-center text-zinc-400 font-mono">{cidx + 1}</td>
-                            <td className="px-4 py-2.5 font-medium text-zinc-800 text-xs">{ch.title}</td>
-                            <td className="px-4 py-2.5 text-center">
-                              <a
-                                href={ch.file_url || '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#751639] hover:underline font-bold text-xs inline-flex items-center gap-1"
-                              >
-                                <span>PDF</span>
-                                <span>↗</span>
-                              </a>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </div>
-
-          {/* Full Page Footer Actions */}
-          <div className="px-6 py-4 bg-white border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-xs">
-            <Link
-              href={`/Reports/${viewingReport.rawId}`}
-              target="_blank"
-              className="px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-none transition-colors flex items-center gap-1.5"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open Public Page ↗</span>
-            </Link>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => {
-                  const r = viewingReport;
-                  setViewingReport(null);
-                  handleOpenEdit(r);
-                }}
-                className="px-5 py-2 bg-[#751639] hover:bg-[#5a102c] text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                <span>Edit Record</span>
-              </button>
-              <button
-                onClick={() => {
-                  const idToDelete = viewingReport.rawId;
-                  setViewingReport(null);
-                  handleDelete(idToDelete);
-                }}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-none flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Record</span>
-              </button>
-              <button
-                onClick={() => setViewingReport(null)}
-                className="px-5 py-2 border border-zinc-400 text-zinc-700 hover:bg-zinc-100 font-semibold text-xs rounded-none cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. CREATE / EDIT FULL-PAGE EDITOR PANEL */}
-      {isFormOpen && (
-        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
-          {/* Header */}
-          <div
-            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
-            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-          >
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
-              >
-                ← Back
-              </button>
-              <div>
-                <h3 className="font-serif text-lg font-bold">
-                  {editingRawId ? 'Edit Audit Report' : 'Add New Audit Report'}
-                </h3>
-                <p className="text-[11px] text-white/70">
-                  {editingRawId ? `Editing Record ID #${editingRawId}` : 'Register new audit publication to CAG registry'}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsFormOpen(false)}
-              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              title="Close panel"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* Body Content */}
-          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
-            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Report Title (English) *</label>
-                <input
-                  type="text"
-                  required
-                  value={titleEn}
-                  onChange={(e) => setTitleEn(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Report of the Comptroller and Auditor General of India..."
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Report Title (Hindi)</label>
-                <input
-                  type="text"
-                  value={titleHi}
-                  onChange={(e) => setTitleHi(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="भारत के नियंत्रक एवं महालेखापरीक्षक का प्रतिवेदन..."
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Executive Summary / Description</label>
-                <textarea
-                  rows={3}
-                  value={overviewEn}
-                  onChange={(e) => setOverviewEn(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Overview of audit findings and scope..."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Government Level</label>
-                  <select
-                    value={govLevel}
-                    onChange={(e) => setGovLevel(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    <option value="Union">Union (National)</option>
-                    <option value="State">State Government</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Audit Type</label>
-                  <select
-                    value={reportType}
-                    onChange={(e) => setReportType(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    {reportTypes.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Audit Sector</label>
-                  <select
-                    value={sector}
-                    onChange={(e) => setSector(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    {sectors.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Publish Status</label>
-                  <select
-                    value={isActive ? 'Active' : 'Inactive'}
-                    onChange={(e) => setIsActive(e.target.value === 'Active')}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-2.5 py-1.5 text-zinc-850 focus:outline-none focus:border-[#751639]"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Report Year *</label>
-                  <input
-                    type="number"
-                    required
-                    value={yearOfReport}
-                    onChange={(e) => setYearOfReport(parseInt(e.target.value) || 2026)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">State (If State Level)</label>
-                  <SearchableStateSelect
-                    value={selectedStateId}
-                    onChange={(val) => setSelectedStateId(val === 'All' ? '' : val)}
-                    states={states}
-                    placeholder="National / Not Applicable"
-                    allLabel="National / Not Applicable"
-                    allowAll={true}
-                    size="sm"
-                  />
-                </div>
-              </div>
-
-              {/* CARD IMAGE FILE UPLOAD */}
-              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-2">
-                <label className="block font-bold text-zinc-800 text-xs mb-1">
-                  Card Banner Picture (File Upload or URL) *
-                </label>
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <label className="cursor-pointer bg-[#751639] hover:bg-[#5f122d] text-white px-4 py-2 text-xs font-bold transition-colors shrink-0 shadow-xs flex items-center gap-1.5">
-                    <span>📁 Upload Image</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={cardImage}
-                    onChange={(e) => setCardImage(e.target.value)}
-                    className="flex-grow w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                    placeholder="or enter image URL"
-                  />
-                </div>
-
-                {/* 1-Click Sector & Department Asset Presets from live CloudFront CDN */}
-                <div className="pt-2">
-                  <div className="text-[11px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
-                    Or select verified live CDN Asset (from /en/home):
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { name: 'Recent Report', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/01-recent-report-logo.jpg' },
-                      { name: 'Digital Report', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/digital_report.png' },
-                      { name: 'Health & Welfare', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/education_health_and_family_welfare.png' },
-                      { name: 'Defence & Security', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Defence_and_national_security.png' },
-                      { name: 'Transport & Infra', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Transport_and_Infrastructure.jfif' },
-                      { name: 'Taxes & Duties', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Taxes_and_duties.png' },
-                      { name: 'Local Bodies', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Local_Bodies.jpg' },
-                      { name: 'IT & Telecom', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/information_and_communication.jfif' },
-                      { name: 'Power & Energy', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/power_and_energy.jpg' },
-                      { name: 'Industry & Commerce', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Industry_and_commerce.png' },
-                      { name: 'Social Welfare', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/social_welfare.jpeg' },
-                      { name: 'Finance', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Finance.png' },
-                      { name: 'Environment', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Environment_and_Sustainable_Development.png' },
-                      { name: 'Agriculture & Rural', url: 'https://d7i5wg8xwe4hf.cloudfront.net/assets/images/sector_wise_images/Agriculture_and_Rural_Development.jfif' },
-                      { name: 'Civil Dept', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg' },
-                      { name: 'Railway Dept', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/railway.jpg' },
-                      { name: 'Commercial Dept', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/commercial.jpg' }
-                    ].map((dept) => (
-                      <button
-                        key={dept.name}
-                        type="button"
-                        onClick={() => setCardImage(dept.url)}
-                        className={`text-[10.5px] px-2 py-1 border transition-all cursor-pointer ${
-                          cardImage === dept.url
-                            ? 'bg-[#751639] text-white border-[#751639] font-bold'
-                            : 'bg-white text-zinc-700 border-zinc-300 hover:border-[#751639] hover:text-[#751639]'
-                        }`}
-                      >
-                        {dept.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {cardImage && (
-                  <div className="pt-2 flex items-center gap-3">
-                    <span className="text-[11px] font-bold text-zinc-500">Live Preview:</span>
-                    <img
-                      src={cardImage}
-                      alt="Report Card preview"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/union_department/civil.jpg';
-                      }}
-                      className="h-14 w-24 object-cover border border-zinc-300 shadow-xs"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* MAIN REPORT PDF DOCUMENT UPLOAD */}
-              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="block font-bold text-zinc-800 text-xs uppercase tracking-wide text-[#751639]">
-                    Main Report PDF File &amp; Attachment *
-                  </label>
-                  {isUploadingPdf && (
-                    <span className="text-[11px] text-[#751639] font-bold flex items-center gap-1">
-                      <span className="w-3 h-3 border-2 border-[#751639] border-t-transparent rounded-full animate-spin"></span>
-                      Uploading PDF...
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <label className="cursor-pointer bg-[#751639] hover:bg-[#5f122d] text-white px-4 py-2 text-xs font-bold transition-colors shrink-0 shadow-xs flex items-center gap-1.5 rounded-none">
-                    <span>📁 Upload PDF Document</span>
-                    <input
-                      type="file"
-                      accept=".pdf,application/pdf"
-                      onChange={handlePdfFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={mainReportFile}
-                    onChange={(e) => setMainReportFile(e.target.value)}
-                    className="flex-grow w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs font-mono"
-                    placeholder="or paste CloudFront PDF Link / URL"
-                  />
-                </div>
-
-                {/* Attached File Preview Badge */}
-                {uploadedPdfName && (
-                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="font-bold text-emerald-700">📄 Attached PDF:</span>
-                      <span className="font-mono truncate">{uploadedPdfName}</span>
-                      {uploadedPdfSize && <span className="text-[11px] text-emerald-600 font-semibold">({uploadedPdfSize})</span>}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {mainReportFile && mainReportFile !== '#' && (
-                        <a
-                          href={mainReportFile}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#751639] hover:underline font-bold text-[11px]"
-                        >
-                          Preview ↗
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUploadedPdfName('');
-                          setUploadedPdfSize('');
-                          setMainReportFile('#');
-                        }}
-                        className="text-zinc-500 hover:text-red-600 font-bold ml-2 cursor-pointer"
-                        title="Remove attached file"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* 1-Click Sample CloudFront Document Presets */}
-                <div className="pt-1">
-                  <div className="text-[11px] font-bold text-zinc-500 mb-1.5 uppercase tracking-wide">
-                    Or select verified CloudFront PDF Presets:
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { name: 'Full Union Audit Report (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '24.5 MB' },
-                      { name: 'State Compliance Report (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '12.8 MB' },
-                      { name: 'Performance Audit Report (PDF)', url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf', size: '15.2 MB' },
-                    ].map((preset) => (
-                      <button
-                        key={preset.name}
-                        type="button"
-                        onClick={() => {
-                          setMainReportFile(preset.url);
-                          setUploadedPdfName(preset.name);
-                          setUploadedPdfSize(preset.size);
-                        }}
-                        className={`text-[10.5px] px-2.5 py-1 border transition-all cursor-pointer ${
-                          mainReportFile === preset.url
-                            ? 'bg-[#751639] text-white border-[#751639] font-bold'
-                            : 'bg-white text-zinc-700 border-zinc-300 hover:border-[#751639] hover:text-[#751639]'
-                        }`}
-                      >
-                        {preset.name} ({preset.size})
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">YouTube / Media Stream URL (Optional)</label>
-                <input
-                  type="text"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="https://youtube.com/..."
-                />
-              </div>
-
-              {/* DETAIL PAGE CUSTOMIZATIONS */}
-              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
-                <div className="font-bold text-xs uppercase tracking-wide text-[#751639] border-b border-zinc-200 pb-1">
-                  Detail Page Custom Text &amp; Portrait
-                </div>
-                
-                <div>
-                  <label className="block font-bold text-zinc-700 text-xs mb-1">Highlight Callout Quote</label>
-                  <textarea
-                    rows={2}
-                    value={highlightQuote}
-                    onChange={(e) => setHighlightQuote(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
-                    placeholder="Independent constitutional audit empowers democratic governance..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 text-xs mb-1">Key Recommendations &amp; Remedial Actions</label>
-                  <textarea
-                    rows={2}
-                    value={recommendations}
-                    onChange={(e) => setRecommendations(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
-                    placeholder="The report underscores key corrective measures including automated ledger reconciliation..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-zinc-700 text-xs mb-1">Side Portrait Image (URL or CloudFront link)</label>
-                  <input
-                    type="text"
-                    value={portraitImage}
-                    onChange={(e) => setPortraitImage(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639] text-xs"
-                    placeholder="Leave empty for default heritage monument photo"
-                  />
-                </div>
-              </div>
-
-              {/* REPORT VOLUMES / CHAPTERS MANAGER */}
-              <div className="bg-[#fafbfc] border border-zinc-200 p-4 space-y-3">
-                <div className="flex items-center justify-between border-b border-zinc-200 pb-1">
-                  <div className="font-bold text-xs uppercase tracking-wide text-[#751639]">
-                    Multi-Part Volumes &amp; Chapter PDFs ({formChapters.length})
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormChapters(prev => [
-                        ...prev,
-                        {
-                          id: `ch-${Date.now()}`,
-                          title: `Chapter ${prev.length + 1}: Detailed Volume`,
-                          pdf_url: mainReportFile !== '#' ? mainReportFile : 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/download_audit_report/2026/CA-Report_23-24_Full-Book-06a6733a1bb3691.97966215.pdf',
-                          size: '12.4 MB'
-                        }
-                      ]);
-                    }}
-                    className="px-2.5 py-1 text-xs font-bold bg-[#751639] text-white hover:bg-[#5f122d] transition-colors cursor-pointer"
-                  >
-                    + Add Chapter / Annexure
-                  </button>
-                </div>
-
-                {formChapters.length === 0 ? (
-                  <p className="text-xs text-zinc-500 italic m-0">No separate chapter PDFs added. Main Report File will be used.</p>
-                ) : (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {formChapters.map((ch, chIdx) => (
-                      <div key={ch.id || chIdx} className="bg-white border border-zinc-200 p-2.5 flex items-center gap-2">
-                        <span className="text-xs font-bold text-zinc-400 min-w-[20px]">#{chIdx + 1}</span>
-                        <input
-                          type="text"
-                          value={ch.title}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFormChapters(prev => prev.map((item, i) => i === chIdx ? { ...item, title: val } : item));
-                          }}
-                          placeholder="Chapter Title"
-                          className="flex-1 px-2 py-1 text-xs border border-zinc-300 outline-none focus:border-[#751639]"
-                        />
-                        <input
-                          type="text"
-                          value={ch.pdf_url}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFormChapters(prev => prev.map((item, i) => i === chIdx ? { ...item, pdf_url: val } : item));
-                          }}
-                          placeholder="PDF URL"
-                          className="flex-1 px-2 py-1 text-xs border border-zinc-300 outline-none focus:border-[#751639] font-mono"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setFormChapters(prev => prev.filter((_, i) => i !== chIdx))}
-                          className="text-zinc-400 hover:text-red-600 font-bold px-1.5 cursor-pointer"
-                          title="Remove Chapter"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">
-                <button
-                  type="submit"
-                  className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs cursor-pointer"
-                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-                >
-                  Save to Local CMS Registry
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-6 py-2.5 border border-zinc-350 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

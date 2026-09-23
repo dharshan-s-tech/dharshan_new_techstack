@@ -78,6 +78,120 @@ export default function AdminGlobalPage() {
     loadData();
   };
 
+  if (isFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-2.5 py-1 bg-white/15 hover:bg-white/25 rounded-md text-xs font-semibold text-white transition-all flex items-center gap-1 cursor-pointer"
+              >
+                ← {isHindi ? 'वापस' : 'Back'}
+              </button>
+              <div>
+                <h3 className="font-semibold text-[16px]">
+                  {editingId ? (isHindi ? 'रिकॉर्ड संपादित करें' : 'Edit International Audit Record') : (isHindi ? 'नया रिकॉर्ड जोड़ें' : 'Add New Record')}
+                </h3>
+                <p className="text-[12px] text-white/80">
+                  {isHindi ? 'अंतर्राष्ट्रीय सहभागिता कॉन्फ़िगर करें' : 'Configure international engagement'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsFormOpen(false)}
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'संगठन / शीर्षक *' : 'Organization / Title *'}
+              </label>
+              <input
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. INTOSAI Governing Board"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'श्रेणी *' : 'Category *'}
+              </label>
+              <input
+                type="text"
+                required
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g. Multilateral or Bilateral"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'विवरण सारांश' : 'Description Summary'}
+              </label>
+              <textarea
+                rows={3}
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                placeholder="Summary of engagement..."
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] p-3 text-[13px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'बाहरी लिंक यूआरएल' : 'External Link URL'}
+              </label>
+              <input
+                type="text"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                {editingId ? (isHindi ? 'अद्यतन करें' : 'Update Record') : (isHindi ? 'सहेजें' : 'Create Record')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 font-sans pb-16">
       
@@ -127,7 +241,7 @@ export default function AdminGlobalPage() {
             }}
           >
             <Plus className="w-4 h-4" />
-            <span>{isHindi ? '+ नया रिकॉर्ड जोड़ें' : '+ Add Global Relation'}</span>
+            <span>{isHindi ? 'नया रिकॉर्ड जोड़ें' : 'Add Global Relation'}</span>
           </button>
         </div>
 
@@ -258,22 +372,24 @@ export default function AdminGlobalPage() {
             {t.showing} 1 {t.to} {relations.length} {t.of} {relations.length} {t.entries}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               disabled
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] opacity-40 cursor-not-allowed"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] opacity-40 cursor-not-allowed shadow-xs"
+              title={t.previous}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
-              className="w-8 h-8 rounded-[6px] text-[13px] font-medium bg-[#751639] text-white flex items-center justify-center shadow-xs"
+              className="w-9 h-9 rounded-[8px] text-[14px] font-medium bg-[#751639] text-white flex items-center justify-center shadow-xs"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               1
             </button>
             <button
               disabled
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] opacity-40 cursor-not-allowed"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] opacity-40 cursor-not-allowed shadow-xs"
+              title={t.next}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -282,111 +398,6 @@ export default function AdminGlobalPage() {
 
       </div>
 
-      {/* ── 4. CREATE / EDIT MODAL ── */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px]">
-                  {editingId ? (isHindi ? 'रिकॉर्ड संपादित करें' : 'Edit International Audit Record') : (isHindi ? 'नया रिकॉर्ड जोड़ें' : 'Add New Record')}
-                </h3>
-                <p className="text-[12px] text-white/80">
-                  {isHindi ? 'अंतर्राष्ट्रीय सहभागिता कॉन्फ़िगर करें' : 'Configure international engagement'}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'संगठन / शीर्षक *' : 'Organization / Title *'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. INTOSAI Governing Board"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'श्रेणी *' : 'Category *'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="e.g. Multilateral or Bilateral"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'विवरण सारांश' : 'Description Summary'}
-                </label>
-                <textarea
-                  rows={3}
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)}
-                  placeholder="Summary of engagement..."
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] p-3 text-[13px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'बाहरी लिंक यूआरएल' : 'External Link URL'}
-                </label>
-                <input
-                  type="text"
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
-                >
-                  {t.cancel}
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  {editingId ? (isHindi ? 'अद्यतन करें' : 'Update Record') : (isHindi ? 'सहेजें' : 'Create Record')}
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
-
-    </div>
   );
 }
-

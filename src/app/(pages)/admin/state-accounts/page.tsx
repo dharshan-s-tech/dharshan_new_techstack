@@ -370,6 +370,285 @@ function AdminStateAccountsContent() {
     loadData();
   };
 
+  // ── 1. FULL CONTENT PAGE: VIEW DETAILS ──
+  if (viewingAccount) {
+    return (
+<div className="absolute inset-0 z-20 bg-[#F8F7F7] flex flex-col p-1 overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] w-full max-w-[1526.2px] overflow-hidden">
+            <div 
+              className="px-6 py-4 text-white flex items-center justify-between"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+            >
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setViewingAccount(null)}
+                  className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>← {isHindi ? 'पीछे' : 'Back'}</span>
+                </button>
+                <div>
+                  <h3 className="font-semibold text-[16px] flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    {isHindi ? 'राज्य लेखा विवरण' : 'State Account Details'}
+                  </h3>
+                  <p className="text-[12px] text-white/80">ID: #{viewingAccount.rawId}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setViewingAccount(null)}
+                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-sm">
+              <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
+                  {isHindi ? 'शीर्षक (अंग्रेज़ी):' : 'Title (English):'}
+                </span>
+                <p className="text-[16px] font-bold text-[#751639]">{viewingAccount.title_en}</p>
+                {viewingAccount.title_hi && (
+                  <div className="pt-2 border-t border-[#EDE9E9] mt-2">
+                    <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
+                      {isHindi ? 'शीर्षक (हिन्दी):' : 'Title (हिन्दी):'}
+                    </span>
+                    <p className="text-[14px] font-medium text-[#314158]">{viewingAccount.title_hi}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                    {isHindi ? 'राज्य / क्षेत्र:' : 'State / Territory:'}
+                  </span>
+                  <span className="text-[14px] font-medium text-[#314158]">{viewingAccount.state_name}</span>
+                </div>
+
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                    {isHindi ? 'श्रेणी:' : 'Category:'}
+                  </span>
+                  <span className="text-[14px] font-medium text-[#314158]">{viewingAccount.category_name}</span>
+                </div>
+
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                    {isHindi ? 'वर्ष एवं खंड:' : 'Year & Volume:'}
+                  </span>
+                  <span className="text-[14px] font-medium text-[#314158]">{viewingAccount.account_year} - {viewingAccount.volume} ({viewingAccount.month})</span>
+                </div>
+
+                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                    {isHindi ? 'दस्तावेज़ लिंक:' : 'Document Link:'}
+                  </span>
+                  {viewingAccount.file_url ? (
+                    <a
+                      href={viewingAccount.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#751639] hover:underline text-[13px] flex items-center gap-1"
+                    >
+                      <span>{t.download}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-[#90A1B9] italic">{isHindi ? 'उपलब्ध नहीं' : 'None'}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const target = viewingAccount;
+                  setViewingAccount(null);
+                  handleOpenEdit(target);
+                }}
+                className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
+              >
+                {isHindi ? 'खाता संपादित करें' : 'Edit Account'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewingAccount(null)}
+                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
+              >
+                {t.close}
+              </button>
+            </div>
+          </div>
+        </div>
+    );
+  }
+
+  // ── 2. FULL CONTENT PAGE: CREATE / EDIT ──
+  if (isFormOpen) {
+    return (
+<div className="absolute inset-0 z-20 bg-[#F8F7F7] flex flex-col p-1 overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] w-full max-w-[1526.2px] overflow-hidden">
+            <div 
+              className="px-6 py-4 text-white flex items-center justify-between"
+              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+            >
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>← {isHindi ? 'पीछे' : 'Back'}</span>
+                </button>
+                <div>
+                  <h3 className="font-semibold text-[16px]">
+                    {editingId ? (isHindi ? `राज्य लेखा #${editingId} संपादित करें` : `Edit State Account #${editingId}`) : (isHindi ? 'नया राज्य लेखा जोड़ें' : 'Add State Account')}
+                  </h3>
+                  <p className="text-[12px] text-white/80">
+                    {isHindi ? 'राज्य लेखा रिकॉर्ड कॉन्फ़िगर करें' : 'Configure state account record'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'विवरण शीर्षक (अंग्रेज़ी) *' : 'Statement Title (English) *'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                  placeholder="e.g. Accounts at a Glance of Maharashtra 2026-27"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'विवरण शीर्षक (हिन्दी)' : 'Statement Title (हिन्दी)'}
+                </label>
+                <input
+                  type="text"
+                  value={titleHi}
+                  onChange={(e) => setTitleHi(e.target.value)}
+                  placeholder="उदा. महाराष्ट्र का एक नजर में लेखा"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'राज्य / केंद्र शासित प्रदेश *' : 'State / Union Territory *'}
+                </label>
+                <SearchableStateSelect
+                  value={stateId}
+                  onChange={(val) => {
+                    setStateId(val);
+                    const st = states.find(s => s.id.toString() === val);
+                    if (st) setStateName(st.name);
+                  }}
+                  states={states}
+                  placeholder={isHindi ? 'राज्य / केंद्र शासित प्रदेश चुनें' : 'Select State / UT'}
+                  allowAll={false}
+                  size="md"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-semibold text-[#314158]">
+                    {isHindi ? 'श्रेणी *' : 'Category *'}
+                  </label>
+                  <select
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] cursor-pointer"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-semibold text-[#314158]">
+                    {isHindi ? 'वित्तीय वर्ष *' : 'Financial Year *'}
+                  </label>
+                  <input
+                    type="number"
+                    value={accountYear}
+                    onChange={(e) => setAccountYear(parseInt(e.target.value) || 2026)}
+                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'पीडीएफ / दस्तावेज़ डाउनलोड यूआरएल' : 'PDF / Document Download URL'}
+                </label>
+                <input
+                  type="text"
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="isActiveStateAccount"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 accent-[#751639] cursor-pointer"
+                />
+                <label htmlFor="isActiveStateAccount" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
+                  {isHindi ? 'लाइव राज्य लेखा पंजिका में प्रकाशित करें' : 'Publish to Live State Accounts Registry'}
+                </label>
+              </div>
+
+              <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer"
+                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+                >
+                  {editingId ? (isHindi ? 'अद्यतन करें' : 'Update Account') : (isHindi ? 'सहेजें' : 'Save Account')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+    );
+  }
+
   return (
     <div className="space-y-6 font-sans pb-16">
       
@@ -756,7 +1035,7 @@ function AdminStateAccountsContent() {
             }}
           >
             <Plus className="w-4 h-4" />
-            <span>{isHindi ? '+ नया राज्य लेखा जोड़ें' : '+ Add State Account'}</span>
+            <span>{isHindi ? 'नया राज्य लेखा जोड़ें' : 'Add State Account'}</span>
           </button>
         </div>
 
@@ -951,11 +1230,12 @@ function AdminStateAccountsContent() {
             {t.showing} {accounts.length > 0 ? (page - 1) * pageSize + 1 : 0} {t.to} {Math.min(page * pageSize, totalCount)} {t.of} {totalCount} {t.entries}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+              title={t.previous}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -970,14 +1250,15 @@ function AdminStateAccountsContent() {
                 }
               }
 
+              const isActive = page === pageNum;
               return (
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`w-8 h-8 rounded-[6px] text-[13px] font-medium transition-all cursor-pointer flex items-center justify-center ${
-                    page === pageNum
-                      ? 'bg-[#751639] text-white shadow-xs'
-                      : 'text-[#62748E] hover:bg-[#F8F7F7]'
+                  className={`w-9 h-9 rounded-[8px] text-[14px] font-medium transition-all cursor-pointer flex items-center justify-center ${
+                    isActive
+                      ? 'bg-[#751639] text-white font-semibold shadow-xs'
+                      : 'text-[#1D4ED8] hover:bg-zinc-100'
                   }`}
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
@@ -989,7 +1270,8 @@ function AdminStateAccountsContent() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+              title={t.next}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -997,264 +1279,6 @@ function AdminStateAccountsContent() {
         </div>
 
       </div>
-
-      {/* ── 4. VIEW DETAILS MODAL ── */}
-      {viewingAccount && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px] flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  {isHindi ? 'राज्य लेखा विवरण' : 'State Account Details'}
-                </h3>
-                <p className="text-[12px] text-white/80">ID: #{viewingAccount.rawId}</p>
-              </div>
-              <button
-                onClick={() => setViewingAccount(null)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-sm">
-              <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
-                <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
-                  {isHindi ? 'शीर्षक (अंग्रेज़ी):' : 'Title (English):'}
-                </span>
-                <p className="text-[16px] font-bold text-[#751639]">{viewingAccount.title_en}</p>
-                {viewingAccount.title_hi && (
-                  <div className="pt-2 border-t border-[#EDE9E9] mt-2">
-                    <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
-                      {isHindi ? 'शीर्षक (हिन्दी):' : 'Title (हिन्दी):'}
-                    </span>
-                    <p className="text-[14px] font-medium text-[#314158]">{viewingAccount.title_hi}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'राज्य / क्षेत्र:' : 'State / Territory:'}
-                  </span>
-                  <span className="text-[14px] font-medium text-[#314158]">{viewingAccount.state_name}</span>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'श्रेणी:' : 'Category:'}
-                  </span>
-                  <span className="text-[14px] font-medium text-[#314158]">{viewingAccount.category_name}</span>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'वर्ष एवं खंड:' : 'Year & Volume:'}
-                  </span>
-                  <span className="text-[14px] font-medium text-[#314158]">{viewingAccount.account_year} - {viewingAccount.volume} ({viewingAccount.month})</span>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'दस्तावेज़ लिंक:' : 'Document Link:'}
-                  </span>
-                  {viewingAccount.file_url ? (
-                    <a
-                      href={viewingAccount.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#751639] hover:underline text-[13px] flex items-center gap-1"
-                    >
-                      <span>{t.download}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ) : (
-                    <span className="text-[#90A1B9] italic">{isHindi ? 'उपलब्ध नहीं' : 'None'}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const target = viewingAccount;
-                  setViewingAccount(null);
-                  handleOpenEdit(target);
-                }}
-                className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
-              >
-                {isHindi ? 'खाता संपादित करें' : 'Edit Account'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewingAccount(null)}
-                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
-              >
-                {t.close}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── 5. CREATE / EDIT DRAWER MODAL ── */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px]">
-                  {editingId ? (isHindi ? `राज्य लेखा #${editingId} संपादित करें` : `Edit State Account #${editingId}`) : (isHindi ? 'नया राज्य लेखा जोड़ें' : 'Add State Account')}
-                </h3>
-                <p className="text-[12px] text-white/80">
-                  {isHindi ? 'राज्य लेखा रिकॉर्ड कॉन्फ़िगर करें' : 'Configure state account record'}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'विवरण शीर्षक (अंग्रेज़ी) *' : 'Statement Title (English) *'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={titleEn}
-                  onChange={(e) => setTitleEn(e.target.value)}
-                  placeholder="e.g. Accounts at a Glance of Maharashtra 2026-27"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'विवरण शीर्षक (हिन्दी)' : 'Statement Title (हिन्दी)'}
-                </label>
-                <input
-                  type="text"
-                  value={titleHi}
-                  onChange={(e) => setTitleHi(e.target.value)}
-                  placeholder="उदा. महाराष्ट्र का एक नजर में लेखा"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'राज्य / केंद्र शासित प्रदेश *' : 'State / Union Territory *'}
-                </label>
-                <SearchableStateSelect
-                  value={stateId}
-                  onChange={(val) => {
-                    setStateId(val);
-                    const st = states.find(s => s.id.toString() === val);
-                    if (st) setStateName(st.name);
-                  }}
-                  states={states}
-                  placeholder={isHindi ? 'राज्य / केंद्र शासित प्रदेश चुनें' : 'Select State / UT'}
-                  allowAll={false}
-                  size="md"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-[#314158]">
-                    {isHindi ? 'श्रेणी *' : 'Category *'}
-                  </label>
-                  <select
-                    value={categoryName}
-                    onChange={(e) => setCategoryName(e.target.value)}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] cursor-pointer"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-[#314158]">
-                    {isHindi ? 'वित्तीय वर्ष *' : 'Financial Year *'}
-                  </label>
-                  <input
-                    type="number"
-                    value={accountYear}
-                    onChange={(e) => setAccountYear(parseInt(e.target.value) || 2026)}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'पीडीएफ / दस्तावेज़ डाउनलोड यूआरएल' : 'PDF / Document Download URL'}
-                </label>
-                <input
-                  type="text"
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="isActiveStateAccount"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-4 h-4 accent-[#751639] cursor-pointer"
-                />
-                <label htmlFor="isActiveStateAccount" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
-                  {isHindi ? 'लाइव राज्य लेखा पंजिका में प्रकाशित करें' : 'Publish to Live State Accounts Registry'}
-                </label>
-              </div>
-
-              <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
-                >
-                  {t.cancel}
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  {editingId ? (isHindi ? 'अद्यतन करें' : 'Update Account') : (isHindi ? 'सहेजें' : 'Save Account')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
@@ -1271,3 +1295,6 @@ export default function AdminStateAccountsPage() {
     </Suspense>
   );
 }
+
+
+

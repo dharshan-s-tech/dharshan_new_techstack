@@ -499,9 +499,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* 355px Sidebar matching Figma */}
         <FigmaAdminSidebar />
 
-        {/* Right Main Content Panel with #F8F7F7 background */}
-        <main className="flex-1 h-full overflow-y-auto p-8 bg-[#F8F7F7]">
-          <div className="w-full">
+        {/* Right Main Content Panel with #F8F7F7 background (Exact Figma: left 375px, top 110px, width 1526.2px) */}
+        <main className="flex-1 h-full overflow-y-auto px-5 pt-[30px] pb-10 bg-[#F8F7F7] relative">
+          <div className="w-full max-w-[1526.2px] min-h-full">
             {children}
           </div>
         </main>

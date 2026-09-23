@@ -174,7 +174,7 @@ export default function VisualDocumentEditor({ record, onClose, onSaved, onDelet
   };
 
   return (
-    <div className="fixed inset-0 bg-[#1e2329] z-50 flex flex-col overflow-hidden">
+    <div className="absolute inset-0 bg-[#1e2329] z-30 flex flex-col overflow-hidden">
       
       {/* ─── 1. TOP LIVE EDITOR WORKSPACE TOOLBAR ─── */}
       <div className="sticky top-0 z-50 bg-[#1e2329] border-b border-zinc-700 shadow-xl px-4 sm:px-6 py-2.5 text-white flex flex-wrap items-center justify-between gap-3 shrink-0">

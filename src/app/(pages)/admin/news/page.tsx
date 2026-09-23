@@ -17,7 +17,9 @@ import {
   PlayCircle,
   Eye,
   Check,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { FilePreviewAction } from '@/components/admin/ListClientHelpers';
 import { useAdminLanguage } from '@/lib/useAdminLanguage';
@@ -359,6 +361,277 @@ function AdminNewsInner() {
     setIsVideoFormOpen(false);
     setToast({ type: 'success', text: editingVideoId ? 'Video updated successfully.' : 'New video added to gallery.' });
   };
+
+  if (isNewsFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsNewsFormOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <h3 className="text-base font-bold">
+                {editingNewsId ? 'Edit News / Notice Record' : 'Add New Announcement'}
+              </h3>
+            </div>
+            <button 
+              onClick={() => setIsNewsFormOpen(false)} 
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+          <form onSubmit={handleSubmitNews} className="p-6 space-y-4">
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Headline Title *</label>
+              <input
+                type="text"
+                required
+                value={newsTitleEn}
+                onChange={(e) => setNewsTitleEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                placeholder="Enter notice title"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Description / Summary</label>
+              <textarea
+                rows={3}
+                value={newsDescEn}
+                onChange={(e) => setNewsDescEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                placeholder="Enter details"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1 text-sm">Notice Type</label>
+                <select
+                  value={newsType}
+                  onChange={(e) => setNewsType(e.target.value as any)}
+                  className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                >
+                  <option value="trending">Trending News Ticker</option>
+                  <option value="featured">Featured News Headline</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1 text-sm">Category Tag</label>
+                <input
+                  type="text"
+                  value={newsTag}
+                  onChange={(e) => setNewsTag(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                  placeholder="e.g. Audit / General"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Photo / Thumbnail URL</label>
+              <input
+                type="text"
+                value={newsImageUrl}
+                onChange={(e) => setNewsImageUrl(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                placeholder="e.g. /assets/news-1.jpg"
+              />
+            </div>
+
+            {/* Checkboxes */}
+            <div className="flex items-center gap-6 pt-2 border-t border-zinc-200">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700 text-sm">
+                <input
+                  type="checkbox"
+                  checked={newsIsPrimarySite}
+                  onChange={(e) => setNewsIsPrimarySite(e.target.checked)}
+                  className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
+                />
+                <span>Display on Primary CAG Site</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700 text-sm">
+                <input
+                  type="checkbox"
+                  checked={newsIsActive}
+                  onChange={(e) => setNewsIsActive(e.target.checked)}
+                  className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
+                />
+                <span>Active &amp; Published</span>
+              </label>
+            </div>
+
+            <div className="pt-4 flex gap-3 border-t border-zinc-200 justify-end">
+              <button
+                type="button"
+                onClick={() => setIsNewsFormOpen(false)}
+                className="px-5 py-2 border border-zinc-300 text-zinc-700 rounded-[6px] hover:bg-zinc-100 cursor-pointer text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 text-white font-bold rounded-[6px] cursor-pointer text-sm shadow-md"
+                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              >
+                Save Notice Record
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (isVideoFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsVideoFormOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <h3 className="text-base font-bold">
+                {editingVideoId ? 'Edit Video Feature' : 'Add New Video to Gallery'}
+              </h3>
+            </div>
+            <button 
+              onClick={() => setIsVideoFormOpen(false)} 
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+          <form onSubmit={handleSubmitVideo} className="p-6 space-y-4">
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Video Title (English) *</label>
+              <input
+                type="text"
+                required
+                value={videoTitleEn}
+                onChange={(e) => setVideoTitleEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                placeholder="Enter documentary or seminar title"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Video Title (हिन्दी)</label>
+              <input
+                type="text"
+                value={videoTitleHi}
+                onChange={(e) => setVideoTitleHi(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                placeholder="वीडियो शीर्षक दर्ज करें"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1 text-sm">Duration (mm:ss)</label>
+                <input
+                  type="text"
+                  value={videoDuration}
+                  onChange={(e) => setVideoDuration(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none font-mono"
+                  placeholder="e.g. 18:45"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1 text-sm">Publish Date Label</label>
+                <input
+                  type="text"
+                  value={videoDate}
+                  onChange={(e) => setVideoDate(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none font-mono"
+                  placeholder="e.g. 16 Nov 2023"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Video Embed URL (YouTube or MP4) *</label>
+              <input
+                type="text"
+                required
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none font-mono text-blue-700"
+                placeholder="https://www.youtube.com/embed/..."
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Thumbnail Cover Image URL</label>
+              <input
+                type="text"
+                value={videoThumbnailUrl}
+                onChange={(e) => setVideoThumbnailUrl(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none"
+                placeholder="/assets/..."
+              />
+            </div>
+
+            {/* Checkboxes */}
+            <div className="flex items-center gap-6 pt-2 border-t border-zinc-200">
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700 text-sm">
+                <input
+                  type="checkbox"
+                  checked={videoShowWhatsNew}
+                  onChange={(e) => setVideoShowWhatsNew(e.target.checked)}
+                  className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
+                />
+                <span>Show in "What's New" Section</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700 text-sm">
+                <input
+                  type="checkbox"
+                  checked={videoIsActive}
+                  onChange={(e) => setVideoIsActive(e.target.checked)}
+                  className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
+                />
+                <span>Active &amp; Visible</span>
+              </label>
+            </div>
+
+            <div className="pt-4 flex gap-3 border-t border-zinc-200 justify-end">
+              <button
+                type="button"
+                onClick={() => setIsVideoFormOpen(false)}
+                className="px-5 py-2 border border-zinc-300 text-zinc-700 rounded-[6px] hover:bg-zinc-100 cursor-pointer text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 text-white font-bold rounded-[6px] cursor-pointer text-sm shadow-md"
+                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              >
+                Save Video Record
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 font-sans pb-16">
@@ -704,30 +977,56 @@ function AdminNewsInner() {
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination matching Image 2 */}
             <div className="px-8 py-4 border-t border-[#F5F3F4] flex flex-col sm:flex-row justify-between items-center gap-4">
               <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '14px', color: '#90A1B9' }}>
                 {t.showing} {news.length > 0 ? (page - 1) * pageSize + 1 : 0} {t.to} {Math.min(page * pageSize, news.length)} {t.of} {news.length} {t.entries}
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage(p => Math.max(1, p - 1))}
-                  className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
                   title={t.previous}
                 >
-                  ‹
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="px-3 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-medium bg-[rgba(117,22,57,0.1)] text-[#751639]">
-                  {isHindi ? `पृष्ठ ${page} / ${Math.ceil(news.length / pageSize) || 1}` : `Page ${page} of ${Math.ceil(news.length / pageSize) || 1}`}
-                </span>
+
+                {Array.from({ length: Math.min(Math.ceil(news.length / pageSize) || 1, 5) }, (_, idx) => {
+                  const totalNewsPages = Math.ceil(news.length / pageSize) || 1;
+                  let pageNum = idx + 1;
+                  if (totalNewsPages > 5) {
+                    if (page > 3 && page < totalNewsPages - 2) {
+                      pageNum = page - 2 + idx;
+                    } else if (page >= totalNewsPages - 2) {
+                      pageNum = totalNewsPages - 4 + idx;
+                    }
+                  }
+
+                  const isActive = page === pageNum;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`w-9 h-9 rounded-[8px] text-[14px] font-medium transition-colors cursor-pointer flex items-center justify-center ${
+                        isActive
+                          ? 'bg-[#751639] text-white font-semibold shadow-xs'
+                          : 'text-[#1D4ED8] hover:bg-zinc-100'
+                      }`}
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
                 <button
                   disabled={page >= Math.ceil(news.length / pageSize)}
                   onClick={() => setPage(p => Math.min(Math.ceil(news.length / pageSize), p + 1))}
-                  className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
                   title={t.next}
                 >
-                  ›
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -849,238 +1148,7 @@ function AdminNewsInner() {
         </div>
       )}
 
-      {/* ── MODAL: NEWS EDIT / CREATE ── */}
-      {isNewsFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border border-[#ced4da] max-w-2xl w-full p-6 shadow-2xl relative">
-            <button onClick={() => setIsNewsFormOpen(false)} className="absolute top-4 right-4 text-zinc-400 text-base font-bold cursor-pointer">✕</button>
-            <h3 className="text-sm font-bold text-zinc-900 border-b pb-3 mb-4">
-              {editingNewsId ? 'Edit News / Notice Record' : 'Add New Announcement'}
-            </h3>
-            <form onSubmit={handleSubmitNews} className="space-y-4">
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Headline Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={newsTitleEn}
-                  onChange={(e) => setNewsTitleEn(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                  placeholder="Enter notice title"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Description / Summary</label>
-                <textarea
-                  rows={3}
-                  value={newsDescEn}
-                  onChange={(e) => setNewsDescEn(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                  placeholder="Enter details"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Notice Type</label>
-                  <select
-                    value={newsType}
-                    onChange={(e) => setNewsType(e.target.value as any)}
-                    className="w-full border border-zinc-300 px-2.5 py-1.5 focus:border-[#751639] outline-none"
-                  >
-                    <option value="trending">Trending News Ticker</option>
-                    <option value="featured">Featured News Headline</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Category Tag</label>
-                  <input
-                    type="text"
-                    value={newsTag}
-                    onChange={(e) => setNewsTag(e.target.value)}
-                    className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                    placeholder="e.g. Audit / General"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Photo / Thumbnail URL</label>
-                <input
-                  type="text"
-                  value={newsImageUrl}
-                  onChange={(e) => setNewsImageUrl(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                  placeholder="e.g. /assets/news-1.jpg"
-                />
-              </div>
-
-              {/* Checkboxes */}
-              <div className="flex items-center gap-6 pt-2 border-t border-zinc-200">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700">
-                  <input
-                    type="checkbox"
-                    checked={newsIsPrimarySite}
-                    onChange={(e) => setNewsIsPrimarySite(e.target.checked)}
-                    className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
-                  />
-                  <span>Display on Primary CAG Site</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700">
-                  <input
-                    type="checkbox"
-                    checked={newsIsActive}
-                    onChange={(e) => setNewsIsActive(e.target.checked)}
-                    className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
-                  />
-                  <span>Active &amp; Published</span>
-                </label>
-              </div>
-
-              <div className="pt-4 flex gap-3 border-t border-zinc-200">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 text-white font-bold cursor-pointer"
-                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-                >
-                  Save Notice Record
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsNewsFormOpen(false)}
-                  className="px-5 py-2 border border-zinc-300 text-zinc-700 hover:bg-zinc-100 cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
-
-      {/* ── MODAL: VIDEO GALLERY EDIT / CREATE ── */}
-      {isVideoFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border-t-[3px] border-t-[#751639] border border-[#ced4da] max-w-2xl w-full p-6 shadow-2xl relative">
-            <button onClick={() => setIsVideoFormOpen(false)} className="absolute top-4 right-4 text-zinc-400 text-base font-bold cursor-pointer">✕</button>
-            <h3 className="text-sm font-bold text-zinc-900 border-b pb-3 mb-4">
-              {editingVideoId ? 'Edit Video Feature' : 'Add New Video to Gallery'}
-            </h3>
-            <form onSubmit={handleSubmitVideo} className="space-y-4">
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Video Title (English) *</label>
-                <input
-                  type="text"
-                  required
-                  value={videoTitleEn}
-                  onChange={(e) => setVideoTitleEn(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                  placeholder="Enter documentary or seminar title"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Video Title (हिन्दी)</label>
-                <input
-                  type="text"
-                  value={videoTitleHi}
-                  onChange={(e) => setVideoTitleHi(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                  placeholder="वीडियो शीर्षक दर्ज करें"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Duration (mm:ss)</label>
-                  <input
-                    type="text"
-                    value={videoDuration}
-                    onChange={(e) => setVideoDuration(e.target.value)}
-                    className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none font-mono"
-                    placeholder="e.g. 18:45"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Publish Date Label</label>
-                  <input
-                    type="text"
-                    value={videoDate}
-                    onChange={(e) => setVideoDate(e.target.value)}
-                    className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none font-mono"
-                    placeholder="e.g. 16 Nov 2023"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Video Embed URL (YouTube or MP4) *</label>
-                <input
-                  type="text"
-                  required
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none font-mono text-blue-700"
-                  placeholder="https://www.youtube.com/embed/..."
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Thumbnail Cover Image URL</label>
-                <input
-                  type="text"
-                  value={videoThumbnailUrl}
-                  onChange={(e) => setVideoThumbnailUrl(e.target.value)}
-                  className="w-full border border-zinc-300 px-3 py-1.5 focus:border-[#751639] outline-none"
-                  placeholder="/assets/..."
-                />
-              </div>
-
-              {/* Checkboxes */}
-              <div className="flex items-center gap-6 pt-2 border-t border-zinc-200">
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700">
-                  <input
-                    type="checkbox"
-                    checked={videoShowWhatsNew}
-                    onChange={(e) => setVideoShowWhatsNew(e.target.checked)}
-                    className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
-                  />
-                  <span>Show in "What's New" Section</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-bold text-zinc-700">
-                  <input
-                    type="checkbox"
-                    checked={videoIsActive}
-                    onChange={(e) => setVideoIsActive(e.target.checked)}
-                    className="w-4 h-4 text-[#751639] focus:ring-[#751639] border-zinc-300"
-                  />
-                  <span>Active &amp; Visible</span>
-                </label>
-              </div>
-
-              <div className="pt-4 flex gap-3 border-t border-zinc-200">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 text-white font-bold cursor-pointer"
-                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-                >
-                  Save Video Record
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsVideoFormOpen(false)}
-                  className="px-5 py-2 border border-zinc-300 text-zinc-700 hover:bg-zinc-100 cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-    </div>
   );
 }
 

@@ -33,21 +33,21 @@ export interface TopSectionGroup {
 
 // Minimalist thin-stroke Chevron matching the Figma design
 const ChevronIcon = ({ isOpen, color = 'rgba(255, 255, 255, 0.8)' }: { isOpen: boolean; color?: string }) => (
-  <svg 
-    width="18" 
-    height="18" 
-    viewBox="0 0 18 18" 
-    fill="none" 
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 18 18"
+    fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
     style={{ color }}
   >
-    <path 
-      d="M4.5 6.75L9 11.25L13.5 6.75" 
-      stroke="currentColor" 
-      strokeWidth="1.75" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
+    <path
+      d="M4.5 6.75L9 11.25L13.5 6.75"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -110,36 +110,22 @@ export default function FigmaAdminSidebar() {
         {
           type: 'submenu',
           id: 'reports',
-          name: 'Reports & Accounts',
-          name_hi: 'रिपोर्ट एवं लेखे',
+          name: 'Reports',
+          name_hi: 'रिपोर्ट',
           children: [
             {
               type: 'leaf',
               id: 'rep-reports',
-              name: 'Audit Reports',
-              name_hi: 'लेखापरीक्षा रिपोर्ट',
+              name: 'Reports',
+              name_hi: 'रिपोर्ट',
               path: '/admin/reports'
             },
             {
               type: 'leaf',
               id: 'rep-accounts',
-              name: 'Accounts Hub',
-              name_hi: 'लेखे प्रबंधन (Hub)',
+              name: 'Accounts',
+              name_hi: 'लेखे',
               path: '/admin/accounts'
-            },
-            {
-              type: 'leaf',
-              id: 'rep-state-accounts',
-              name: 'State Accounts',
-              name_hi: 'राज्य के सरकारी लेखे',
-              path: '/admin/state-accounts'
-            },
-            {
-              type: 'leaf',
-              id: 'rep-combined-accounts',
-              name: 'Combined Finance & Revenue',
-              name_hi: 'संयुक्त वित्त एवं राजस्व लेखे',
-              path: '/admin/combined-accounts'
             }
           ]
         },
@@ -442,9 +428,9 @@ export default function FigmaAdminSidebar() {
       newExpanded['main-cag-website'] = true;
       newExpanded['home-page'] = true;
     } else if (
-      pathname === '/admin/reports' || 
-      pathname === '/admin/accounts' || 
-      pathname === '/admin/state-accounts' || 
+      pathname === '/admin/reports' ||
+      pathname === '/admin/accounts' ||
+      pathname === '/admin/state-accounts' ||
       pathname === '/admin/combined-accounts'
     ) {
       newExpanded['main-cag-website'] = true;
@@ -471,8 +457,8 @@ export default function FigmaAdminSidebar() {
     } else if (pathname === '/admin/users') {
       newExpanded['administration'] = true;
     } else if (
-      pathname === '/admin/circulars' || 
-      pathname === '/admin/about' || 
+      pathname === '/admin/circulars' ||
+      pathname === '/admin/about' ||
       pathname === '/admin/site-settings'
     ) {
       newExpanded['main-cag-website'] = true;
@@ -507,9 +493,10 @@ export default function FigmaAdminSidebar() {
       return pathname === '/admin/banners' && (!searchParams.get('tab') || searchParams.get('tab') === 'hero');
     }
     if (targetPath === '/admin/accounts') {
-      if (pathname !== '/admin/accounts') return false;
-      const sub = searchParams.get('subtopic');
-      return !sub || sub === 'all';
+      return pathname === '/admin/accounts' || pathname === '/admin/state-accounts' || pathname === '/admin/combined-accounts';
+    }
+    if (targetPath === '/admin/reports') {
+      return pathname === '/admin/reports';
     }
     if (targetPath === '/admin/about') {
       return pathname === '/admin/about' && !searchParams.get('tab');
@@ -531,11 +518,10 @@ export default function FigmaAdminSidebar() {
         <Link
           href={leaf.path}
           target={leaf.isExternal ? '_blank' : '_self'}
-          className={`flex items-center justify-between w-full transition-all duration-150 text-left cursor-pointer ${
-            isActive
+          className={`flex items-center justify-between w-full transition-all duration-150 text-left cursor-pointer ${isActive
               ? 'bg-[rgba(255,255,255,0.15)] text-white font-medium rounded-[12px] px-4 py-2.5 h-[43px]'
               : 'px-4 py-2.5 h-[43px] text-[rgba(255,255,255,0.8)] hover:text-white hover:bg-[rgba(255,255,255,0.08)] rounded-[10px]'
-          }`}
+            }`}
           style={{
             fontFamily: "'Inter', sans-serif",
             fontSize: '16px',
@@ -554,7 +540,7 @@ export default function FigmaAdminSidebar() {
   const renderSubMenu = (sub: SubMenuItem, depth: number = 0) => {
     const isOpen = !!expanded[sub.id];
     const label = isHindi && sub.name_hi ? sub.name_hi : sub.name;
-    
+
     return (
       <div key={sub.id} className="w-full flex flex-col gap-1">
         {/* Accordion Trigger */}

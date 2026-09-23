@@ -16,6 +16,10 @@ interface OfficerData {
   phone: string;
   reportingEn: string;
   reportingHi: string;
+  photo_url?: string;
+  level?: number;
+  position?: 'center' | 'left' | 'right';
+  display_order?: number;
 }
 
 const OFFICERS_DATA: {
@@ -34,7 +38,11 @@ const OFFICERS_DATA: {
     email: 'cagindia@cag.gov.in',
     phone: '011-23235790',
     reportingEn: 'All departments, state audit offices, and central audit divisions within the Indian Audit and Accounts Department.',
-    reportingHi: 'भारतीय लेखापरीक्षा और लेखा विभाग के भीतर सभी विभाग, राज्य लेखापरीक्षा कार्यालय और केंद्रीय लेखापरीक्षा प्रभाग।'
+    reportingHi: 'भारतीय लेखापरीक्षा और लेखा विभाग के भीतर सभी विभाग, राज्य लेखापरीक्षा कार्यालय और केंद्रीय लेखापरीक्षा प्रभाग।',
+    photo_url: 'https://d7i5wg8xwe4hf.cloudfront.net/uploads/cag_emp_profile_pic/CAG211124-0673edaa7bcac26-89444769.jpg',
+    level: 0,
+    position: 'center',
+    display_order: 1
   },
   secretary: {
     id: 'sec-1',
@@ -47,7 +55,11 @@ const OFFICERS_DATA: {
     email: 'sec-cag@cag.gov.in',
     phone: '011-23239843',
     reportingEn: 'Administrative secretariat, public relations, executive coordination, and direct support to the CAG.',
-    reportingHi: 'प्रशासनिक सचिवालय, जनसंपर्क, समन्वय और सीएजी को प्रत्यक्ष सहायता।'
+    reportingHi: 'प्रशासनिक सचिवालय, जनसंपर्क, समन्वय और सीएजी को प्रत्यक्ष सहायता।',
+    photo_url: '',
+    level: 1,
+    position: 'right',
+    display_order: 2
   },
   rows: [
     {
@@ -62,7 +74,10 @@ const OFFICERS_DATA: {
         email: 'mallicks@cag.gov.in',
         phone: '011-23239821',
         reportingEn: 'Defence procurement audits, logistics support, ordnances factories audits, and armed forces commands audits.',
-        reportingHi: 'रक्षा खरीद लेखापरीक्षा, रसद सहायता, आयुध निर्माणियों की लेखापरीक्षा, और सशस्त्र बलों के कमांडों की लेखापरीक्षा।'
+        reportingHi: 'रक्षा खरीद लेखापरीक्षा, रसद सहायता, आयुध निर्माणियों की लेखापरीक्षा, और सशस्त्र बलों के कमांडों की लेखापरीक्षा।',
+        level: 2,
+        position: 'left',
+        display_order: 3
       },
       right: {
         id: 'r-1',
@@ -75,7 +90,10 @@ const OFFICERS_DATA: {
         email: 'subramanianks@cag.gov.in',
         phone: '011-23234091',
         reportingEn: 'Personnel management, legal cells, coordination with central ministries, and international audit arrangements.',
-        reportingHi: 'कार्मिक प्रबंधन, कानूनी सेल, केंद्रीय मंत्रालयों के साथ समन्वय, और अंतर्राष्ट्रीय लेखापरीक्षा व्यवस्था।'
+        reportingHi: 'कार्मिक प्रबंधन, कानूनी सेल, केंद्रीय मंत्रालयों के साथ समन्वय, और अंतर्राष्ट्रीय लेखापरीक्षा व्यवस्था।',
+        level: 2,
+        position: 'right',
+        display_order: 4
       }
     },
     {
@@ -90,7 +108,10 @@ const OFFICERS_DATA: {
         email: 'bajajam@cag.gov.in',
         phone: '011-23216504',
         reportingEn: 'ADAI (State Commercial), ADAI (Parliamentary Committees), DG (Power), DG-I (Comm), DG-II (Comm), PDA (Industry & Corporate Affairs) Delhi, DGA (Infrastructure) Delhi, DGA (Mines and Coal) Kolkata, DGA (Financial Services) Mumbai, PDA (Steel) Ranchi, DGA (Oil and Gas) Mumbai, PDA (MSME) Hyderabad, PDA Shipping Chennai, DG (RC), PD(AB), PDA (Health, Welfare and Rural Development) Delhi, PDA (Home, Education Skill Development) Delhi, PDA (Environment & Scientific Departments) Delhi, PDA (Agriculture, Food and Water Resources) Delhi, PD (Parliamentary Committees), Overseas offices of PDA at London, Washington and Kuala Lumpur.',
-        reportingHi: 'एडीएआई (राज्य वाणिज्यिक), एडीएआई (संसदीय समितियां), डीजी (बिजली), डीजी-I (वाणिज्य), डीजी-II (वाणिज्य), पीडीए (उद्योग और कॉर्पोरेट मामले) दिल्ली, डीजीए (बुनियादी ढांचा) दिल्ली, डीजीए (खान और कोयला) कोलकाता, डीजीए (वित्तीय सेवाएं) मुंबई, पीडीए (स्टील) रांची, डीजीए (तेल और गैस) मुंबई, पीडीए (एमएसएमई) हैदराबाद, पीडीए शिपिंग चेन्नई, डीजी (आरसी), पीडी (एबी), पीडीए (स्वास्थ्य, कल्याण और ग्रामीण विकास) दिल्ली, पीडीए (गृह, शिक्षा कौशल विकास) दिल्ली, पीडीए (पर्यावरण और वैज्ञानिक विभाग) दिल्ली, पीडीए (कृषि, खाद्य और जल संसाधन) दिल्ली, पीडी (संसदीय समितियां), लंदन, वाशिंगटन और कुआलालंपुर में पीडीए के विदेशी कार्यालय।'
+        reportingHi: 'एडीएआई (राज्य वाणिज्यिक), एडीएआई (संसदीय समितियां), डीजी (बिजली), डीजी-I (वाणिज्य), डीजी-II (वाणिज्य), पीडीए (उद्योग और कॉर्पोरेट मामले) दिल्ली, डीजीए (बुनियादी ढांचा) दिल्ली, डीजीए (खान और कोयला) कोलकाता, डीजीए (वित्तीय सेवाएं) मुंबई, पीडीए (स्टील) रांची, डीजीए (तेल और गैस) मुंबई, पीडीए (एमएसएमई) हैदराबाद, पीडीए शिपिंग चेन्नई, डीजी (आरसी), पीडी (एबी), पीडीए (स्वास्थ्य, कल्याण और ग्रामीण विकास) दिल्ली, पीडीए (गृह, शिक्षा कौशल विकास) दिल्ली, पीडीए (पर्यावरण और वैज्ञानिक विभाग) दिल्ली, पीडीए (कृषि, खाद्य और जल संसाधन) दिल्ली, पीडी (संसदीय समितियां), लंदन, वाशिंगटन और कुआलालंपुर में पीडीए के विदेशी कार्यालय।',
+        level: 2,
+        position: 'left',
+        display_order: 5
       },
       right: {
         id: 'r-2',
@@ -103,7 +124,10 @@ const OFFICERS_DATA: {
         email: 'shuklas@cag.gov.in',
         phone: '011-23231234',
         reportingEn: 'Direct tax audit (Income Tax, Corporate Tax) and Indirect tax audit (GST, Customs and Excise duties).',
-        reportingHi: 'प्रत्यक्ष कर लेखापरीक्षा (आयकर, कॉर्पोरेट कर) और अप्रत्यक्ष कर लेखापरीक्षा (जीएसटी, सीमा शुल्क और उत्पाद शुल्क)।'
+        reportingHi: 'प्रत्यक्ष कर लेखापरीक्षा (आयकर, कॉर्पोरेट कर) और अप्रत्यक्ष कर लेखापरीक्षा (जीएसटी, सीमा शुल्क और उत्पाद शुल्क)।',
+        level: 2,
+        position: 'right',
+        display_order: 6
       }
     },
     {
@@ -118,7 +142,10 @@ const OFFICERS_DATA: {
         email: 'manishk@cag.gov.in',
         phone: '011-23235541',
         reportingEn: 'Panchayati Raj institutions, local municipal corporations, urban development bodies, and rural welfare scheme audits.',
-        reportingHi: 'पंचायती राज संस्थाएं, स्थानीय नगर निगम, शहरी विकास निकाय, और ग्रामीण कल्याण योजना लेखापरीक्षा।'
+        reportingHi: 'पंचायती राज संस्थाएं, स्थानीय नगर निगम, शहरी विकास निकाय, और ग्रामीण कल्याण योजना लेखापरीक्षा।',
+        level: 2,
+        position: 'left',
+        display_order: 7
       },
       right: {
         id: 'r-3',
@@ -131,7 +158,10 @@ const OFFICERS_DATA: {
         email: 'menong@cag.gov.in',
         phone: '011-23238910',
         reportingEn: 'State financial reporting compliance, Union account reviews, and GASAB standards formulation.',
-        reportingHi: 'राज्य वित्तीय रिपोर्टिंग अनुपालन, संघ खाता समीक्षा, और गैसेब मानकों का निर्माण।'
+        reportingHi: 'राज्य वित्तीय रिपोर्टिंग अनुपालन, संघ खाता समीक्षा, और गैसेब मानकों का निर्माण।',
+        level: 2,
+        position: 'right',
+        display_order: 8
       }
     },
     {
@@ -146,7 +176,10 @@ const OFFICERS_DATA: {
         email: 'tewarik@cag.gov.in',
         phone: '011-23239401',
         reportingEn: 'State Audit offices in Eastern States including West Bengal, Bihar, Jharkhand, and Odisha.',
-        reportingHi: 'पश्चिम बंगाल, बिहार, झारखंड और ओडिशा सहित पूर्वी राज्यों में राज्य लेखापरीक्षा कार्यालय।'
+        reportingHi: 'पश्चिम बंगाल, बिहार, झारखंड और ओडिशा सहित पूर्वी राज्यों में राज्य लेखापरीक्षा कार्यालय।',
+        level: 2,
+        position: 'left',
+        display_order: 9
       },
       right: {
         id: 'r-4',
@@ -159,7 +192,10 @@ const OFFICERS_DATA: {
         email: 'kharshiingch@cag.gov.in',
         phone: '011-23237722',
         reportingEn: 'State audit directorates in North Eastern States (Assam, Meghalaya, Tripura, Mizoram, Nagaland, Manipur, Arunachal Pradesh).',
-        reportingHi: 'उत्तर पूर्वी राज्यों (असम, मेघालय, त्रिपुरा, मिजोरम, नागालैंड, मणिपुर, अरुणाचल प्रदेश) में राज्य लेखापरीक्षा निदेशालय।'
+        reportingHi: 'उत्तर पूर्वी राज्यों (असम, मेघालय, त्रिपुरा, मिजोरम, नागालैंड, मणिपुर, अरुणाचल प्रदेश) में राज्य लेखापरीक्षा निदेशालय।',
+        level: 3,
+        position: 'right',
+        display_order: 10
       }
     },
     {
@@ -174,7 +210,10 @@ const OFFICERS_DATA: {
         email: 'tareg@cag.gov.in',
         phone: '011-23236712',
         reportingEn: 'State Audit offices in Western States including Maharashtra, Gujarat, Goa, and Madhya Pradesh.',
-        reportingHi: 'महाराष्ट्र, गुजरात, गोवा और मध्य प्रदेश सहित पश्चिमी राज्यों में राज्य लेखापरीक्षा कार्यालय।'
+        reportingHi: 'महाराष्ट्र, गुजरात, गोवा और मध्य प्रदेश सहित पश्चिमी राज्यों में राज्य लेखापरीक्षा कार्यालय।',
+        level: 2,
+        position: 'left',
+        display_order: 11
       },
       right: {
         id: 'r-5',
@@ -187,7 +226,10 @@ const OFFICERS_DATA: {
         email: 'guptaa@cag.gov.in',
         phone: '011-23236021',
         reportingEn: 'Central ministries audits, direct tax audits, and compliance audits in the Central Zone.',
-        reportingHi: 'केंद्रीय क्षेत्र में केंद्रीय मंत्रालयों की लेखापरीक्षा, प्रत्यक्ष कर लेखापरीक्षा, और अनुपालन लेखापरीक्षा।'
+        reportingHi: 'केंद्रीय क्षेत्र में केंद्रीय मंत्रालयों की लेखापरीक्षा, प्रत्यक्ष कर लेखापरीक्षा, और अनुपालन लेखापरीक्षा।',
+        level: 2,
+        position: 'right',
+        display_order: 12
       }
     },
     {
@@ -202,7 +244,10 @@ const OFFICERS_DATA: {
         email: 'pramodk@cag.gov.in',
         phone: '011-23237121',
         reportingEn: 'Regional training centers, state audit liaison operations, and regional administrative structures.',
-        reportingHi: 'क्षेत्रीय प्रशिक्षण केंद्र, राज्य लेखापरीक्षा संपर्क संचालन, और क्षेत्रीय प्रशासनिक संरचनाएं।'
+        reportingHi: 'क्षेत्रीय प्रशिक्षण केंद्र, राज्य लेखापरीक्षा संपर्क संचालन, और क्षेत्रीय प्रशासनिक संरचनाएं।',
+        level: 2,
+        position: 'left',
+        display_order: 13
       },
       right: {
         id: 'r-6',
@@ -215,7 +260,10 @@ const OFFICERS_DATA: {
         email: 'mallikarjunal@cag.gov.in',
         phone: '011-23233145',
         reportingEn: 'Internal inspections of all IAAD offices, quality assurance, peer review coordination.',
-        reportingHi: 'सभी आईएएडी कार्यालयों का आंतरिक निरीक्षण, गुणवत्ता आश्वासन, सहकर्मी समीक्षा समन्वय।'
+        reportingHi: 'सभी आईएएडी कार्यालयों का आंतरिक निरीक्षण, गुणवत्ता आश्वासन, सहकर्मी समीक्षा समन्वय।',
+        level: 3,
+        position: 'right',
+        display_order: 14
       }
     },
     {
@@ -230,7 +278,10 @@ const OFFICERS_DATA: {
         email: 'guljaril@cag.gov.in',
         phone: '011-23234509',
         reportingEn: 'State public sector undertakings (PSUs), state electricity boards, and commercial tax revenue audits.',
-        reportingHi: 'राज्य सार्वजनिक क्षेत्र के उपक्रम (पीएसयू), राज्य बिजली बोर्ड, और वाणिज्यिक कर राजस्व लेखापरीक्षा।'
+        reportingHi: 'राज्य सार्वजनिक क्षेत्र के उपक्रम (पीएसयू), राज्य बिजली बोर्ड, और वाणिज्यिक कर राजस्व लेखापरीक्षा।',
+        level: 3,
+        position: 'left',
+        display_order: 15
       },
       right: {
         id: 'r-7',
@@ -243,7 +294,10 @@ const OFFICERS_DATA: {
         email: 'chathaad@cag.gov.in',
         phone: '011-23235678',
         reportingEn: 'Director General of Audit, Central Receipt, New Delhi (ADAI Level) operations.',
-        reportingHi: 'महानिदेशक लेखापरीक्षा, केंद्रीय प्राप्ति, नई दिल्ली (एडीएआई स्तर) संचालन।'
+        reportingHi: 'महानिदेशक लेखापरीक्षा, केंद्रीय प्राप्ति, नई दिल्ली (एडीएआई स्तर) संचालन।',
+        level: 3,
+        position: 'right',
+        display_order: 16
       }
     },
     {
@@ -258,7 +312,10 @@ const OFFICERS_DATA: {
         email: 'goswamin@cag.gov.in',
         phone: '011-23239012',
         reportingEn: 'Official language policy implementation, translation cells, and department publications in Hindi.',
-        reportingHi: 'आधिकारिक भाषा नीति कार्यान्वयन, अनुवाद सेल, और हिंदी में विभाग प्रकाशन।'
+        reportingHi: 'आधिकारिक भाषा नीति कार्यान्वयन, अनुवाद सेल, और हिंदी में विभाग प्रकाशन।',
+        level: 3,
+        position: 'left',
+        display_order: 17
       },
       right: {
         id: 'r-8',
@@ -271,7 +328,10 @@ const OFFICERS_DATA: {
         email: 'jaipuriyarsk@cag.gov.in',
         phone: '011-23234901',
         reportingEn: 'Director General of Audit, Central Expenditure, New Delhi (ADAI Level) operations.',
-        reportingHi: 'महानिदेशक लेखापरीक्षा, केंद्रीय व्यय, नई दिल्ली (एडीएआई स्तर) संचालन।'
+        reportingHi: 'महानिदेशक लेखापरीक्षा, केंद्रीय व्यय, नई दिल्ली (एडीएआई स्तर) संचालन।',
+        level: 3,
+        position: 'right',
+        display_order: 18
       }
     },
     {
@@ -286,7 +346,10 @@ const OFFICERS_DATA: {
         email: 'pandeyp@cag.gov.in',
         phone: '011-23238876',
         reportingEn: 'Railway zones audit offices, production units audits, and urban metro transport corporation audits.',
-        reportingHi: 'रेलवे जोन लेखापरीक्षा कार्यालय, उत्पादन इकाइयों की लेखापरीक्षा, और शहरी मेट्रो परिवहन निगम लेखापरीक्षा।'
+        reportingHi: 'रेलवे जोन लेखापरीक्षा कार्यालय, उत्पादन इकाइयों की लेखापरीक्षा, और शहरी मेट्रो परिवहन निगम लेखापरीक्षा।',
+        level: 3,
+        position: 'left',
+        display_order: 19
       },
       right: {
         id: 'r-9',
@@ -299,7 +362,10 @@ const OFFICERS_DATA: {
         email: 'dhariwalids@cag.gov.in',
         phone: '011-23238812',
         reportingEn: 'Monitoring accountability rules, audit report presentations, and public finance review cells.',
-        reportingHi: 'निगरानी जवाबदेही नियम, लेखापरीक्षा रिपोर्ट प्रस्तुतियाँ, और सार्वजनिक वित्त समीक्षा सेल।'
+        reportingHi: 'निगरानी जवाबदेही नियम, लेखापरीक्षा रिपोर्ट प्रस्तुतियाँ, और सार्वजनिक वित्त समीक्षा सेल।',
+        level: 3,
+        position: 'right',
+        display_order: 20
       }
     },
     {
@@ -314,7 +380,10 @@ const OFFICERS_DATA: {
         email: 'bhardwajal@cag.gov.in',
         phone: '011-23231145',
         reportingEn: 'Government Accounting Standards Advisory Board (GASAB) affairs, central accounts coordination, and state accounts compilation reviews.',
-        reportingHi: 'सरकारी लेखा मानक सलाहकार बोर्ड (गैसेब) के मामले, केंद्रीय खातों का समन्वय, और राज्य खातों के संकलन की समीक्षा।'
+        reportingHi: 'सरकारी लेखा मानक सलाहकार बोर्ड (गैसेब) के मामले, केंद्रीय खातों का समन्वय, और राज्य खातों के संकलन की समीक्षा।',
+        level: 3,
+        position: 'left',
+        display_order: 21
       },
       right: {
         id: 'r-10',
@@ -327,7 +396,10 @@ const OFFICERS_DATA: {
         email: 'bansalv@cag.gov.in',
         phone: '011-23234056',
         reportingEn: 'Auditing standards cell, professional practice development, Sustainable Development Goals (SDG) coordination.',
-        reportingHi: 'लेखापरीक्षा मानक सेल, व्यावसायिक अभ्यास विकास, सतत विकास लक्ष्य (एसडीजी) समन्वय।'
+        reportingHi: 'लेखापरीक्षा मानक सेल, व्यावसायिक अभ्यास विकास, सतत विकास लक्ष्य (एसडीजी) समन्वय।',
+        level: 3,
+        position: 'right',
+        display_order: 22
       }
     },
     {
@@ -342,7 +414,10 @@ const OFFICERS_DATA: {
         email: 'pattarr@cag.gov.in',
         phone: '011-23235612',
         reportingEn: 'State audit offices in Northern and Southern states, overseeing performance and compliance reviews.',
-        reportingHi: 'उत्तरी और दक्षिणी राज्यों में राज्य लेखापरीक्षा कार्यालय, प्रदर्शन और अनुपालन समीक्षाओं की देखरेख।'
+        reportingHi: 'उत्तरी और दक्षिणी राज्यों में राज्य लेखापरीक्षा कार्यालय, प्रदर्शन और अनुपालन समीक्षाओं की देखरेख।',
+        level: 3,
+        position: 'left',
+        display_order: 23
       },
       right: {
         id: 'r-11',
@@ -355,7 +430,10 @@ const OFFICERS_DATA: {
         email: 'parmarbd@cag.gov.in',
         phone: '011-23237190',
         reportingEn: 'Mines and minerals audit, public coal sector companies audits, based in Kolkata (ADAI Level).',
-        reportingHi: 'खान और खनिज लेखापरीक्षा, सार्वजनिक कोयला क्षेत्र की कंपनियों की लेखापरीक्षा, कोलकाता में स्थित (एडीएआई स्तर)।'
+        reportingHi: 'खान और खनिज लेखापरीक्षा, सार्वजनिक कोयला क्षेत्र की कंपनियों की लेखापरीक्षा, कोलकाता में स्थित (एडीएआई स्तर)।',
+        level: 3,
+        position: 'right',
+        display_order: 24
       }
     },
     {
@@ -370,7 +448,10 @@ const OFFICERS_DATA: {
         email: 'thakursk@cag.gov.in',
         phone: '011-23237890',
         reportingEn: 'Liaison with Public Accounts Committee (PAC), Committee on Public Undertakings (COPU), and parliament question responses.',
-        reportingHi: 'लोक लेखा समिति (पीएसी), सार्वजनिक उपक्रमों संबंधी समिति (कोपू) के साथ संपर्क, और संसद के प्रश्नों के उत्तर।'
+        reportingHi: 'लोक लेखा समिति (पीएसी), सार्वजनिक उपक्रमों संबंधी समिति (कोपू) के साथ संपर्क, और संसद के प्रश्नों के उत्तर।',
+        level: 3,
+        position: 'left',
+        display_order: 25
       },
       right: null
     },
@@ -418,43 +499,94 @@ export default function OrganisationChartPage() {
     const currentLang = dataManager.getLanguage();
     setLang(currentLang);
 
-    const loadData = (selectedLang: 'English' | 'हिन्दी') => {
-      const culture = selectedLang === 'हिन्दी' ? 'hi' : 'en';
-      dataManager.fetchOrganisationChart(culture).then((data) => {
-        if (!isMounted || !data || !Array.isArray(data.officers) || data.officers.length === 0) return;
-        const raw = data.officers;
-        const cagOfficer = raw.find((o: any) => o.level === 0 || String(o.id) === '1') || raw[0];
-        const secOfficer = raw.find((o: any) => o.level === 1 || String(o.id) === '2') || raw[1];
-        const otherOfficers = raw.filter((o: any) => String(o.id) !== String(cagOfficer?.id) && String(o.id) !== String(secOfficer?.id));
+    const processOfficerList = (raw: any[]) => {
+      if (!isMounted || !Array.isArray(raw) || raw.length === 0) return;
 
-        const mapOfficer = (o: any): OfficerData => ({
-          id: String(o.id),
-          nameEn: o.name_en || o.name || '',
-          nameHi: o.name_hi || o.name || o.name_en || '',
-          desigEn: o.designation_en || o.designation || 'Deputy Comptroller & Auditor General',
-          desigHi: o.designation_hi || o.designation || 'उप नियंत्रक एवं महालेखापरीक्षक',
-          subEn: o.charge_en || o.charge || '',
-          subHi: o.charge_hi || o.charge || o.charge_en || '',
-          email: o.email || '',
-          phone: o.phone || '',
-          reportingEn: o.reporting_en || o.reporting || '',
-          reportingHi: o.reporting_hi || o.reporting || o.reporting_en || ''
-        });
+      const activeOfficers = raw.filter((o: any) => o.is_active !== false);
 
-        const rows: { left: OfficerData | null; right: OfficerData | null }[] = [];
-        for (let i = 0; i < otherOfficers.length; i += 2) {
+      const mapOfficer = (o: any): OfficerData => ({
+        id: String(o.id),
+        nameEn: o.nameEn || o.name_en || o.name || '',
+        nameHi: o.nameHi || o.name_hi || o.name || o.name_en || o.nameEn || '',
+        desigEn: o.desigEn || o.designation_en || o.designation || 'Deputy Comptroller & Auditor General',
+        desigHi: o.desigHi || o.designation_hi || o.designation || 'उप नियंत्रक एवं महालेखापरीक्षक',
+        subEn: o.subEn || o.charge_en || o.charge || '',
+        subHi: o.subHi || o.charge_hi || o.charge || o.charge_en || o.subEn || '',
+        email: o.email || '',
+        phone: o.phone || '',
+        reportingEn: o.reportingEn || o.reporting_en || o.reporting || '',
+        reportingHi: o.reportingHi || o.reporting_hi || o.reporting || o.reporting_en || o.reportingEn || '',
+        photo_url: o.photo_url || o.thumb_image || '',
+        level: typeof o.level === 'number' ? o.level : (String(o.id).includes('cag') ? 0 : (String(o.id).includes('sec') ? 1 : 2)),
+        position: o.position || (String(o.id).includes('cag') ? 'center' : (String(o.id).includes('sec') ? 'right' : 'left')),
+        display_order: o.display_order || 1
+      });
+
+      // Find CAG (Level 0 or Center)
+      const cagOfficer = activeOfficers.find((o: any) => o.level === 0 || o.position === 'center' || String(o.id) === '1' || String(o.id) === 'cag-1') || activeOfficers[0];
+      
+      // Find Secretary to CAG (Level 1 or id sec-1)
+      const secOfficer = activeOfficers.find((o: any) => o.level === 1 || String(o.id) === '2' || String(o.id) === 'sec-1' || o.desigEn?.toLowerCase().includes('secretary to cag')) || activeOfficers[1];
+      
+      // Other executive reportees
+      const reportees = activeOfficers.filter((o: any) => String(o.id) !== String(cagOfficer?.id) && String(o.id) !== String(secOfficer?.id));
+      
+      // Sort reportees by level ascending, then display order ascending
+      reportees.sort((a: any, b: any) => (a.level - b.level) || (a.display_order - b.display_order));
+
+      // Separate into left column and right column
+      const leftOfficers = reportees.filter((o: any) => o.position === 'left');
+      const rightOfficers = reportees.filter((o: any) => o.position === 'right');
+      const unassigned = reportees.filter((o: any) => o.position !== 'left' && o.position !== 'right');
+
+      // Distribute unassigned officers to keep tree balanced
+      unassigned.forEach((o: any) => {
+        if (leftOfficers.length <= rightOfficers.length) {
+          leftOfficers.push(o);
+        } else {
+          rightOfficers.push(o);
+        }
+      });
+
+      const maxRows = Math.max(leftOfficers.length, rightOfficers.length, Math.ceil(reportees.length / 2));
+      const rows: { left: OfficerData | null; right: OfficerData | null }[] = [];
+
+      if (leftOfficers.length > 0 || rightOfficers.length > 0) {
+        for (let i = 0; i < maxRows; i++) {
           rows.push({
-            left: otherOfficers[i] ? mapOfficer(otherOfficers[i]) : null,
-            right: otherOfficers[i + 1] ? mapOfficer(otherOfficers[i + 1]) : null
+            left: leftOfficers[i] ? mapOfficer(leftOfficers[i]) : null,
+            right: rightOfficers[i] ? mapOfficer(rightOfficers[i]) : null
           });
         }
+      } else {
+        for (let i = 0; i < reportees.length; i += 2) {
+          rows.push({
+            left: reportees[i] ? mapOfficer(reportees[i]) : null,
+            right: reportees[i + 1] ? mapOfficer(reportees[i + 1]) : null
+          });
+        }
+      }
 
-        setChartData({
-          cag: cagOfficer ? mapOfficer(cagOfficer) : OFFICERS_DATA.cag,
-          secretary: secOfficer ? mapOfficer(secOfficer) : OFFICERS_DATA.secretary,
-          rows: rows.length > 0 ? rows : OFFICERS_DATA.rows
-        });
+      setChartData({
+        cag: cagOfficer ? mapOfficer(cagOfficer) : OFFICERS_DATA.cag,
+        secretary: secOfficer ? mapOfficer(secOfficer) : OFFICERS_DATA.secretary,
+        rows: rows.length > 0 ? rows : OFFICERS_DATA.rows
       });
+    };
+
+    const loadData = (selectedLang: 'English' | 'हिन्दी') => {
+      const culture = selectedLang === 'हिन्दी' ? 'hi' : 'en';
+      
+      // Load from dataManager
+      const localOfficers = dataManager.getOrgChartOfficers();
+      if (Array.isArray(localOfficers) && localOfficers.length > 0) {
+        processOfficerList(localOfficers);
+      } else {
+        dataManager.fetchOrganisationChart(culture).then((data) => {
+          if (!isMounted || !data || !Array.isArray(data.officers) || data.officers.length === 0) return;
+          processOfficerList(data.officers);
+        });
+      }
     };
 
     loadData(currentLang);
@@ -470,10 +602,12 @@ export default function OrganisationChartPage() {
     };
 
     window.addEventListener('languageChange', handleLangChange);
+    window.addEventListener('orgChartOfficersChange', handleOrgChange);
     window.addEventListener('organisationOfficersChange', handleOrgChange);
     return () => {
       isMounted = false;
       window.removeEventListener('languageChange', handleLangChange);
+      window.removeEventListener('orgChartOfficersChange', handleOrgChange);
       window.removeEventListener('organisationOfficersChange', handleOrgChange);
     };
   }, []);
@@ -500,14 +634,22 @@ export default function OrganisationChartPage() {
             background: 'linear-gradient(85.72deg, #FFFFFF 1.04%, #FFFFFF 99.26%)',
           }}
         >
-          {/* Clean Vector Face Icon matching user design */}
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="16" cy="16" r="14.5" stroke="#565656" strokeWidth="1.3" />
-              <circle cx="16" cy="11.5" r="4.5" stroke="#565656" strokeWidth="1.3" />
-              <path d="M8 25C9.2 20.8 12.2 19 16 19C19.8 19 22.8 20.8 24 25" stroke="#565656" strokeWidth="1.3" strokeLinecap="round" />
-            </svg>
-          </div>
+          {/* Officer Photo (or Clean Vector Avatar Fallback) */}
+          {officer.photo_url ? (
+            <img
+              src={officer.photo_url}
+              alt={name}
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-[#D7D7D7] shadow-xs"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center flex-shrink-0" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="14.5" stroke="#565656" strokeWidth="1.3" />
+                <circle cx="16" cy="11.5" r="4.5" stroke="#565656" strokeWidth="1.3" />
+                <path d="M8 25C9.2 20.8 12.2 19 16 19C19.8 19 22.8 20.8 24 25" stroke="#565656" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+            </div>
+          )}
           
           {/* Name and titles */}
           <div className="flex flex-col gap-1 flex-grow">
@@ -549,8 +691,32 @@ export default function OrganisationChartPage() {
             </div>
           )}
 
+          {/* Popover Header with Photo & Titles */}
+          <div className="flex items-center gap-3 pb-3 border-b border-[#EDE9E9]">
+            {officer.photo_url ? (
+              <img
+                src={officer.photo_url}
+                alt={name}
+                className="w-12 h-12 rounded-full object-cover border-2 border-[#751639] shadow-xs shrink-0"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-[#FDF2F5] border border-[#EDE9E9] flex items-center justify-center shrink-0">
+                <svg width="34" height="34" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="16" cy="16" r="14.5" stroke="#751639" strokeWidth="1.3" />
+                  <circle cx="16" cy="11.5" r="4.5" stroke="#751639" strokeWidth="1.3" />
+                  <path d="M8 25C9.2 20.8 12.2 19 16 19C19.8 19 22.8 20.8 24 25" stroke="#751639" strokeWidth="1.3" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
+            <div>
+              <div className="text-[15px] font-bold text-[#751639] leading-tight">{name}</div>
+              <div className="text-[13px] font-semibold text-[#686868] mt-0.5">{desig}</div>
+              {sub && <div className="text-[11px] text-[#7A7A7A] mt-0.5">{sub}</div>}
+            </div>
+          </div>
+
           {/* Contact Details */}
-          <div className="flex flex-col gap-2 text-left text-sm">
+          <div className="flex flex-col gap-2 text-left text-sm pt-3">
             <div className="flex flex-row items-center gap-2">
               <strong 
                 className="font-semibold" 
@@ -559,7 +725,7 @@ export default function OrganisationChartPage() {
                 {isHindi ? 'ईमेल:' : 'Email:'}
               </strong>
               <span className="break-all select-all" style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '14px', lineHeight: '19px' }}>
-                {officer.email}
+                {officer.email || 'N/A'}
               </span>
             </div>
             <div className="flex flex-row items-center gap-2">
@@ -570,16 +736,16 @@ export default function OrganisationChartPage() {
                 {isHindi ? 'संपर्क नंबर:' : 'Contact No.:'}
               </strong>
               <span className="select-all" style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '14px', lineHeight: '19px' }}>
-                {officer.phone}
+                {officer.phone || 'N/A'}
               </span>
             </div>
           </div>
 
           {/* Divider line 1592 */}
-          <div className="w-full h-[1px] bg-[#D7D7D7] my-4" aria-hidden="true" />
+          <div className="w-full h-[1px] bg-[#D7D7D7] my-3" aria-hidden="true" />
 
           {/* Reporting Offices (Scrollable) */}
-          <div className="flex flex-col gap-1 text-left flex-grow overflow-y-auto pr-1">
+          <div className="flex flex-col gap-1 text-left flex-grow overflow-y-auto pr-1 max-h-[160px]">
             <span 
               className="font-semibold block mb-1" 
               style={{ color: '#565656', fontFamily: 'Noto Sans, sans-serif', fontSize: '12px', lineHeight: '16px' }}
@@ -590,7 +756,7 @@ export default function OrganisationChartPage() {
               className="m-0 whitespace-pre-line leading-relaxed" 
               style={{ color: '#7A7A7A', fontFamily: 'Noto Sans, sans-serif', fontSize: '12px', lineHeight: '16px' }}
             >
-              {isHindi ? officer.reportingHi : officer.reportingEn}
+              {(isHindi ? officer.reportingHi : officer.reportingEn) || (isHindi ? 'कोई अतिरिक्त रिपोर्टिंग कार्यालय निर्दिष्ट नहीं है।' : 'No additional reporting offices specified.')}
             </p>
           </div>
 

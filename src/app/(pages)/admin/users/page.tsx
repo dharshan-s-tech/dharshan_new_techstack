@@ -1527,7 +1527,7 @@ function UserManagementContent() {
               }}
             >
               <Plus className="w-4 h-4" />
-              <span>{isHindi ? '+ नया उपयोगकर्ता जोड़ें' : '+ Add New User'}</span>
+              <span>{isHindi ? 'नया उपयोगकर्ता जोड़ें' : 'Add New User'}</span>
             </button>
           </div>
 
@@ -1672,7 +1672,7 @@ function UserManagementContent() {
               }}
             >
               <Plus className="w-4 h-4" />
-              <span>{isHindi ? '+ नई भूमिका जोड़ें' : '+ Add New Role'}</span>
+              <span>{isHindi ? 'नई भूमिका जोड़ें' : 'Add New Role'}</span>
             </button>
           </div>
 
@@ -1786,7 +1786,7 @@ function UserManagementContent() {
               }}
             >
               <Plus className="w-4 h-4" />
-              <span>{isHindi ? '+ नया प्रभाग जोड़ें' : '+ Add New Wing'}</span>
+              <span>{isHindi ? 'नया प्रभाग जोड़ें' : 'Add New Wing'}</span>
             </button>
           </div>
 

@@ -1366,6 +1366,67 @@ const DEFAULT_NEWS: NewsItem[] = [
 ];
 
 export const dataManager = {
+  // ── Organisation Chart Hierarchy Management ──
+  getOrgChartOfficers(): OrgChartOfficer[] {
+    if (typeof window === 'undefined') return DEFAULT_ORG_CHART_OFFICERS;
+    try {
+      const stored = localStorage.getItem('cag_org_chart_officers');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to read cag_org_chart_officers from localStorage', e);
+    }
+    return DEFAULT_ORG_CHART_OFFICERS;
+  },
+
+  saveOrgChartOfficer(officer: OrgChartOfficer) {
+    const list = this.getOrgChartOfficers();
+    const existingIndex = list.findIndex(o => o.id === officer.id);
+    let updated: OrgChartOfficer[];
+    if (existingIndex >= 0) {
+      updated = [...list];
+      updated[existingIndex] = { ...officer };
+    } else {
+      updated = [...list, { ...officer }];
+    }
+    updated.sort((a, b) => a.display_order - b.display_order);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('cag_org_chart_officers', JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('orgChartOfficersChange', { detail: updated }));
+      } catch (e) {
+        console.warn('Failed to save cag_org_chart_officers to localStorage', e);
+      }
+    }
+  },
+
+  deleteOrgChartOfficer(id: string) {
+    const list = this.getOrgChartOfficers();
+    const updated = list.filter(o => o.id !== id);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('cag_org_chart_officers', JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('orgChartOfficersChange', { detail: updated }));
+      } catch (e) {
+        console.warn('Failed to update cag_org_chart_officers after deletion', e);
+      }
+    }
+  },
+
+  reorderOrgChartOfficers(officers: OrgChartOfficer[]) {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('cag_org_chart_officers', JSON.stringify(officers));
+        window.dispatchEvent(new CustomEvent('orgChartOfficersChange', { detail: officers }));
+      } catch (e) {
+        console.warn('Failed to reorder cag_org_chart_officers', e);
+      }
+    }
+  },
+
+
   // --- Live Backend API Synchronization ---
   async syncAllFromBackend() {
     if (typeof window === 'undefined') return;
@@ -1497,11 +1558,38 @@ export const dataManager = {
     try {
       const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:8000');
       const res = await fetch(`${baseUrl}/api/organisation-chart?culture=${culture}`, { cache: 'no-store' });
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.officers) && data.officers.length > 0) return data;
+      }
     } catch (e) {
       // Graceful fallback
     }
-    return { officers: [] };
+    const officers = this.getOrgChartOfficers().filter(o => o.is_active);
+    return {
+      status: 'success',
+      officers: officers.map(o => ({
+        id: o.id,
+        level: o.level,
+        position: o.position,
+        display_order: o.display_order,
+        name: culture === 'hi' ? (o.nameHi || o.nameEn) : o.nameEn,
+        name_en: o.nameEn,
+        name_hi: o.nameHi,
+        designation: culture === 'hi' ? (o.desigHi || o.desigEn) : o.desigEn,
+        designation_en: o.desigEn,
+        designation_hi: o.desigHi,
+        charge: culture === 'hi' ? (o.subHi || o.subEn) : o.subEn,
+        charge_en: o.subEn,
+        charge_hi: o.subHi,
+        email: o.email,
+        phone: o.phone,
+        reporting: culture === 'hi' ? (o.reportingHi || o.reportingEn) : o.reportingEn,
+        reporting_en: o.reportingEn,
+        reporting_hi: o.reportingHi,
+        photo_url: o.photo_url || ''
+      }))
+    };
   },
 
   async fetchFormerCags(culture: string = 'en'): Promise<FormerCAGItem[]> {
@@ -2315,6 +2403,515 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   contactPhone: '+91-11-23235790',
   copyrightText: 'Copyright © 2026 Comptroller and Auditor General of India. All Rights Reserved.'
 };
+
+
+export interface OrgChartOfficer {
+  id: string;
+  nameEn: string;
+  nameHi: string;
+  desigEn: string;
+  desigHi: string;
+  subEn: string;
+  subHi: string;
+  email: string;
+  phone: string;
+  reportingEn: string;
+  reportingHi: string;
+  level: number; // 0: CAG, 1: Secretary, 2: Dy CAG, 3: ADAI, 4: DG/PD, 5: Director/DD
+  position: 'center' | 'left' | 'right';
+  display_order: number;
+  photo_url?: string;
+  is_active: boolean;
+}
+
+export const DEFAULT_ORG_CHART_OFFICERS: OrgChartOfficer[] = [
+  {
+    "id": "cag-1",
+    "nameEn": "Shri K. Sanjay Murthy",
+    "nameHi": "श्री के. संजय मूर्ति",
+    "desigEn": "Comptroller and Auditor General of India",
+    "desigHi": "भारत के नियंत्रक और महालेखापरीक्षक",
+    "subEn": "Comptroller and Auditor General of India",
+    "subHi": "भारत के नियंत्रक और महालेखापरीक्षक",
+    "email": "cagindia@cag.gov.in",
+    "phone": "011-23235790",
+    "reportingEn": "All departments, state audit offices, and central audit divisions within the Indian Audit and Accounts Department.",
+    "reportingHi": "भारतीय लेखापरीक्षा और लेखा विभाग के भीतर सभी विभाग, राज्य लेखापरीक्षा कार्यालय और केंद्रीय लेखापरीक्षा प्रभाग।",
+    "level": 0,
+    "position": "center",
+    "display_order": 1,
+    "photo_url": "https://d7i5wg8xwe4hf.cloudfront.net/uploads/cag_emp_profile_pic/CAG211124-0673edaa7bcac26-89444769.jpg",
+    "is_active": true
+  },
+  {
+    "id": "sec-1",
+    "nameEn": "Shri Vishwanath Singh Jadon",
+    "nameHi": "श्री विश्वनाथ सिंह जादौन",
+    "desigEn": "Secretary to CAG",
+    "desigHi": "नियंत्रक एवं महालेखापरीक्षक के सचिव",
+    "subEn": "Comptroller and Auditor General of India Office",
+    "subHi": "भारत के नियंत्रक और महालेखापरीक्षक कार्यालय",
+    "email": "sec-cag@cag.gov.in",
+    "phone": "011-23239843",
+    "reportingEn": "Administrative secretariat, public relations, executive coordination, and direct support to the CAG.",
+    "reportingHi": "प्रशासनिक सचिवालय, जनसंपर्क, समन्वय और सीएजी को प्रत्यक्ष सहायता।",
+    "level": 1,
+    "position": "right",
+    "display_order": 2,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-1",
+    "nameEn": "Shri Subir Mallick",
+    "nameHi": "श्री सुबीर मल्लिक",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Defence",
+    "subHi": "रक्षा",
+    "email": "mallicks@cag.gov.in",
+    "phone": "011-23239821",
+    "reportingEn": "Defence procurement audits, logistics support, ordnances factories audits, and armed forces commands audits.",
+    "reportingHi": "रक्षा खरीद लेखापरीक्षा, रसद सहायता, आयुध निर्माणियों की लेखापरीक्षा, और सशस्त्र बलों के कमांडों की लेखापरीक्षा।",
+    "level": 2,
+    "position": "left",
+    "display_order": 3,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-1",
+    "nameEn": "Shri Krishnan Sangaran Subramanian",
+    "nameHi": "श्री कृष्णन संगरण सुब्रमण्यन",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Human Resources, International Relations, Coordination & Legal",
+    "subHi": "मानव संसाधन, अंतर्राष्ट्रीय संबंध, समन्वय और कानूनी",
+    "email": "subramanianks@cag.gov.in",
+    "phone": "011-23234091",
+    "reportingEn": "Personnel management, legal cells, coordination with central ministries, and international audit arrangements.",
+    "reportingHi": "कार्मिक प्रबंधन, कानूनी सेल, केंद्रीय मंत्रालयों के साथ समन्वय, और अंतर्राष्ट्रीय लेखापरीक्षा व्यवस्था।",
+    "level": 2,
+    "position": "right",
+    "display_order": 4,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-2",
+    "nameEn": "Shri Anand Mohan Bajaj",
+    "nameHi": "श्री आनंद मोहन बजाज",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Commercial & Report Central",
+    "subHi": "वाणिज्यिक और केंद्रीय रिपोर्ट",
+    "email": "bajajam@cag.gov.in",
+    "phone": "011-23216504",
+    "reportingEn": "ADAI (State Commercial), ADAI (Parliamentary Committees), DG (Power), DG-I (Comm), DG-II (Comm), PDA (Industry & Corporate Affairs) Delhi, DGA (Infrastructure) Delhi, DGA (Mines and Coal) Kolkata, DGA (Financial Services) Mumbai, PDA (Steel) Ranchi, DGA (Oil and Gas) Mumbai, PDA (MSME) Hyderabad, PDA Shipping Chennai, DG (RC), PD(AB), PDA (Health, Welfare and Rural Development) Delhi, PDA (Home, Education Skill Development) Delhi, PDA (Environment & Scientific Departments) Delhi, PDA (Agriculture, Food and Water Resources) Delhi, PD (Parliamentary Committees), Overseas offices of PDA at London, Washington and Kuala Lumpur.",
+    "reportingHi": "एडीएआई (राज्य वाणिज्यिक), एडीएआई (संसदीय समितियां), डीजी (बिजली), डीजी-I (वाणिज्य), डीजी-II (वाणिज्य), पीडीए (उद्योग और कॉर्पोरेट मामले) दिल्ली, डीजीए (बुनियादी ढांचा) दिल्ली, डीजीए (खान और कोयला) कोलकाता, डीजीए (वित्तीय सेवाएं) मुंबई, पीडीए (स्टील) रांची, डीजीए (तेल और गैस) मुंबई, पीडीए (एमएसएमई) हैदराबाद, पीडीए शिपिंग चेन्नई, डीजी (आरसी), पीडी (एबी), पीडीए (स्वास्थ्य, कल्याण और ग्रामीण विकास) दिल्ली, पीडीए (गृह, शिक्षा कौशल विकास) दिल्ली, पीडीए (पर्यावरण और वैज्ञानिक विभाग) दिल्ली, पीडीए (कृषि, खाद्य और जल संसाधन) दिल्ली, पीडी (संसदीय समितियां), लंदन, वाशिंगटन और कुआलालंपुर में पीडीए के विदेशी कार्यालय।",
+    "level": 2,
+    "position": "left",
+    "display_order": 5,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-2",
+    "nameEn": "Ms. Sandhya Shukla",
+    "nameHi": "श्रीमती संध्या शुक्ला",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Central Revenue Audit",
+    "subHi": "केंद्रीय राजस्व लेखापरीक्षा",
+    "email": "shuklas@cag.gov.in",
+    "phone": "011-23231234",
+    "reportingEn": "Direct tax audit (Income Tax, Corporate Tax) and Indirect tax audit (GST, Customs and Excise duties).",
+    "reportingHi": "प्रत्यक्ष कर लेखापरीक्षा (आयकर, कॉर्पोरेट कर) और अप्रत्यक्ष कर लेखापरीक्षा (जीएसटी, सीमा शुल्क और उत्पाद शुल्क)।",
+    "level": 2,
+    "position": "right",
+    "display_order": 6,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-3",
+    "nameEn": "Shri Manish Kumar (1)",
+    "nameHi": "श्री मनीष कुमार (१)",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Local Governance Audit",
+    "subHi": "स्थानीय शासन लेखापरीक्षा",
+    "email": "manishk@cag.gov.in",
+    "phone": "011-23235541",
+    "reportingEn": "Panchayati Raj institutions, local municipal corporations, urban development bodies, and rural welfare scheme audits.",
+    "reportingHi": "पंचायती राज संस्थाएं, स्थानीय नगर निगम, शहरी विकास निकाय, और ग्रामीण कल्याण योजना लेखापरीक्षा।",
+    "level": 2,
+    "position": "left",
+    "display_order": 7,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-3",
+    "nameEn": "Ms. Geeta Menon",
+    "nameHi": "श्रीमती गीता मेनन",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Government Accounts & Chairperson (GASAB)",
+    "subHi": "सरकारी खाते और अध्यक्ष (गैसेब)",
+    "email": "menong@cag.gov.in",
+    "phone": "011-23238910",
+    "reportingEn": "State financial reporting compliance, Union account reviews, and GASAB standards formulation.",
+    "reportingHi": "राज्य वित्तीय रिपोर्टिंग अनुपालन, संघ खाता समीक्षा, और गैसेब मानकों का निर्माण।",
+    "level": 2,
+    "position": "right",
+    "display_order": 8,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-4",
+    "nameEn": "Ms. Keerti Tewari",
+    "nameHi": "श्रीमती कीर्ति तिवारी",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Eastern Region",
+    "subHi": "पूर्वी क्षेत्र",
+    "email": "tewarik@cag.gov.in",
+    "phone": "011-23239401",
+    "reportingEn": "State Audit offices in Eastern States including West Bengal, Bihar, Jharkhand, and Odisha.",
+    "reportingHi": "पश्चिम बंगाल, बिहार, झारखंड और ओडिशा सहित पूर्वी राज्यों में राज्य लेखापरीक्षा कार्यालय।",
+    "level": 2,
+    "position": "left",
+    "display_order": 9,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-4",
+    "nameEn": "Shri Calvin Harris Kharshiing",
+    "nameHi": "श्री केल्विन हैरिस खार्शींग",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "ADAI (NER) O/o CAG, Guwahati",
+    "subHi": "एडीएआई (एनईआर) सीएजी कार्यालय, गुवाहाटी",
+    "email": "kharshiingch@cag.gov.in",
+    "phone": "011-23237722",
+    "reportingEn": "State audit directorates in North Eastern States (Assam, Meghalaya, Tripura, Mizoram, Nagaland, Manipur, Arunachal Pradesh).",
+    "reportingHi": "उत्तर पूर्वी राज्यों (असम, मेघालय, त्रिपुरा, मिजोरम, नागालैंड, मणिपुर, अरुणाचल प्रदेश) में राज्य लेखापरीक्षा निदेशालय।",
+    "level": 3,
+    "position": "right",
+    "display_order": 10,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-5",
+    "nameEn": "Ms. Geetali Tare",
+    "nameHi": "श्रीमती गीताली तारे",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Western Region",
+    "subHi": "पश्चिमी क्षेत्र",
+    "email": "tareg@cag.gov.in",
+    "phone": "011-23236712",
+    "reportingEn": "State Audit offices in Western States including Maharashtra, Gujarat, Goa, and Madhya Pradesh.",
+    "reportingHi": "महाराष्ट्र, गुजरात, गोवा और मध्य प्रदेश सहित पश्चिमी राज्यों में राज्य लेखापरीक्षा कार्यालय।",
+    "level": 2,
+    "position": "left",
+    "display_order": 11,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-5",
+    "nameEn": "Shri Abhishek Gupta",
+    "nameHi": "श्री अभिषेक गुप्ता",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Central Region",
+    "subHi": "केंद्रीय क्षेत्र",
+    "email": "guptaa@cag.gov.in",
+    "phone": "011-23236021",
+    "reportingEn": "Central ministries audits, direct tax audits, and compliance audits in the Central Zone.",
+    "reportingHi": "केंद्रीय क्षेत्र में केंद्रीय मंत्रालयों की लेखापरीक्षा, प्रत्यक्ष कर लेखापरीक्षा, और अनुपालन लेखापरीक्षा।",
+    "level": 2,
+    "position": "right",
+    "display_order": 12,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-6",
+    "nameEn": "Shri Pramod Kumar",
+    "nameHi": "श्री प्रमोद कुमार",
+    "desigEn": "Deputy Comptroller & Auditor General",
+    "desigHi": "उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Eastern Region",
+    "subHi": "पूर्वी क्षेत्र",
+    "email": "pramodk@cag.gov.in",
+    "phone": "011-23237121",
+    "reportingEn": "Regional training centers, state audit liaison operations, and regional administrative structures.",
+    "reportingHi": "क्षेत्रीय प्रशिक्षण केंद्र, राज्य लेखापरीक्षा संपर्क संचालन, और क्षेत्रीय प्रशासनिक संरचनाएं।",
+    "level": 2,
+    "position": "left",
+    "display_order": 13,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-6",
+    "nameEn": "Ms. Lata Mallikarjuna",
+    "nameHi": "श्रीमती लता मल्लिकार्जुन",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Inspection",
+    "subHi": "निरीक्षण",
+    "email": "mallikarjunal@cag.gov.in",
+    "phone": "011-23233145",
+    "reportingEn": "Internal inspections of all IAAD offices, quality assurance, peer review coordination.",
+    "reportingHi": "सभी आईएएडी कार्यालयों का आंतरिक निरीक्षण, गुणवत्ता आश्वासन, सहकर्मी समीक्षा समन्वय।",
+    "level": 3,
+    "position": "right",
+    "display_order": 14,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-7",
+    "nameEn": "Shri Guljari Lal",
+    "nameHi": "श्री गुलजारी लाल",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "State Commercial",
+    "subHi": "राज्य वाणिज्यिक",
+    "email": "guljaril@cag.gov.in",
+    "phone": "011-23234509",
+    "reportingEn": "State public sector undertakings (PSUs), state electricity boards, and commercial tax revenue audits.",
+    "reportingHi": "राज्य सार्वजनिक क्षेत्र के उपक्रम (पीएसयू), राज्य बिजली बोर्ड, और वाणिज्यिक कर राजस्व लेखापरीक्षा।",
+    "level": 3,
+    "position": "left",
+    "display_order": 15,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-7",
+    "nameEn": "Ms. Aman Deep Chatha",
+    "nameHi": "श्रीमती अमन दीप चड्ढा",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Central Receipt, New Delhi",
+    "subHi": "केंद्रीय प्राप्ति, नई दिल्ली",
+    "email": "chathaad@cag.gov.in",
+    "phone": "011-23235678",
+    "reportingEn": "Director General of Audit, Central Receipt, New Delhi (ADAI Level) operations.",
+    "reportingHi": "महानिदेशक लेखापरीक्षा, केंद्रीय प्राप्ति, नई दिल्ली (एडीएआई स्तर) संचालन।",
+    "level": 3,
+    "position": "right",
+    "display_order": 16,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-8",
+    "nameEn": "Shri Nilotpal Goswami",
+    "nameHi": "श्री नीलोत्पल गोस्वामी",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Rajbhasha",
+    "subHi": "राजभाषा",
+    "email": "goswamin@cag.gov.in",
+    "phone": "011-23239012",
+    "reportingEn": "Official language policy implementation, translation cells, and department publications in Hindi.",
+    "reportingHi": "आधिकारिक भाषा नीति कार्यान्वयन, अनुवाद सेल, और हिंदी में विभाग प्रकाशन।",
+    "level": 3,
+    "position": "left",
+    "display_order": 17,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-8",
+    "nameEn": "Shri Saurav Kumar Jaipuriyar",
+    "nameHi": "श्री सौरव कुमार जयपुरियार",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Central Expenditure, New Delhi",
+    "subHi": "केंद्रीय व्यय, नई दिल्ली",
+    "email": "jaipuriyarsk@cag.gov.in",
+    "phone": "011-23234901",
+    "reportingEn": "Director General of Audit, Central Expenditure, New Delhi (ADAI Level) operations.",
+    "reportingHi": "महानिदेशक लेखापरीक्षा, केंद्रीय व्यय, नई दिल्ली (एडीएआई स्तर) संचालन।",
+    "level": 3,
+    "position": "right",
+    "display_order": 18,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-9",
+    "nameEn": "Shri Pravir Pandey",
+    "nameHi": "श्री प्रवीर पांडे",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Railways",
+    "subHi": "रेलवे",
+    "email": "pandeyp@cag.gov.in",
+    "phone": "011-23238876",
+    "reportingEn": "Railway zones audit offices, production units audits, and urban metro transport corporation audits.",
+    "reportingHi": "रेलवे जोन लेखापरीक्षा कार्यालय, उत्पादन इकाइयों की लेखापरीक्षा, और शहरी मेट्रो परिवहन निगम लेखापरीक्षा।",
+    "level": 3,
+    "position": "left",
+    "display_order": 19,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-9",
+    "nameEn": "Shri Inder Deep Singh Dhariwal",
+    "nameHi": "श्री इंदर दीप सिंह धारीवाल",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Accountability",
+    "subHi": "जवाबदेही",
+    "email": "dhariwalids@cag.gov.in",
+    "phone": "011-23238812",
+    "reportingEn": "Monitoring accountability rules, audit report presentations, and public finance review cells.",
+    "reportingHi": "निगरानी जवाबदेही नियम, लेखापरीक्षा रिपोर्ट प्रस्तुतियाँ, और सार्वजनिक वित्त समीक्षा सेल।",
+    "level": 3,
+    "position": "right",
+    "display_order": 20,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-10",
+    "nameEn": "Ms. Alka Rehani Bhardwaj",
+    "nameHi": "श्रीमती अलका रेहानी भारद्वाज",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Government Accounts & GASAB",
+    "subHi": "सरकारी खाते और गैसेब",
+    "email": "bhardwajal@cag.gov.in",
+    "phone": "011-23231145",
+    "reportingEn": "Government Accounting Standards Advisory Board (GASAB) affairs, central accounts coordination, and state accounts compilation reviews.",
+    "reportingHi": "सरकारी लेखा मानक सलाहकार बोर्ड (गैसेब) के मामले, केंद्रीय खातों का समन्वय, और राज्य खातों के संकलन की समीक्षा।",
+    "level": 3,
+    "position": "left",
+    "display_order": 21,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-10",
+    "nameEn": "Shri Vishal Bansal",
+    "nameHi": "श्री विशाल बंसल",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Professional Practice",
+    "subHi": "व्यावसायिक अभ्यास",
+    "email": "bansalv@cag.gov.in",
+    "phone": "011-23234056",
+    "reportingEn": "Auditing standards cell, professional practice development, Sustainable Development Goals (SDG) coordination.",
+    "reportingHi": "लेखापरीक्षा मानक सेल, व्यावसायिक अभ्यास विकास, सतत विकास लक्ष्य (एसडीजी) समन्वय।",
+    "level": 3,
+    "position": "right",
+    "display_order": 22,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-11",
+    "nameEn": "Shri Ravindra Pattar",
+    "nameHi": "श्री रवीन्द्र पत्तार",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Northern Region & Southern Region",
+    "subHi": "उत्तरी क्षेत्र और दक्षिणी क्षेत्र",
+    "email": "pattarr@cag.gov.in",
+    "phone": "011-23235612",
+    "reportingEn": "State audit offices in Northern and Southern states, overseeing performance and compliance reviews.",
+    "reportingHi": "उत्तरी और दक्षिणी राज्यों में राज्य लेखापरीक्षा कार्यालय, प्रदर्शन और अनुपालन समीक्षाओं की देखरेख।",
+    "level": 3,
+    "position": "left",
+    "display_order": 23,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "r-11",
+    "nameEn": "Shri Biren Dineshchandra Parmar",
+    "nameHi": "श्री बिरेन दिनेशचंद्र परमार",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Director General Audit, Mines & Coal, Kolkata",
+    "subHi": "महानिदेशक लेखापरीक्षा, खान और कोयला, कोलकाता",
+    "email": "parmarbd@cag.gov.in",
+    "phone": "011-23237190",
+    "reportingEn": "Mines and minerals audit, public coal sector companies audits, based in Kolkata (ADAI Level).",
+    "reportingHi": "खान और खनिज लेखापरीक्षा, सार्वजनिक कोयला क्षेत्र की कंपनियों की लेखापरीक्षा, कोलकाता में स्थित (एडीएआई स्तर)।",
+    "level": 3,
+    "position": "right",
+    "display_order": 24,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-12",
+    "nameEn": "Shri Samar Kant Thakur",
+    "nameHi": "श्री समर कांत ठाकुर",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Parliamentary Committees",
+    "subHi": "संसदीय समितियां",
+    "email": "thakursk@cag.gov.in",
+    "phone": "011-23237890",
+    "reportingEn": "Liaison with Public Accounts Committee (PAC), Committee on Public Undertakings (COPU), and parliament question responses.",
+    "reportingHi": "लोक लेखा समिति (पीएसी), सार्वजनिक उपक्रमों संबंधी समिति (कोपू) के साथ संपर्क, और संसद के प्रश्नों के उत्तर।",
+    "level": 3,
+    "position": "left",
+    "display_order": 25,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-13",
+    "nameEn": "Shri Bijay Kumar Mohanty",
+    "nameHi": "श्री बिजय कुमार मोहंती",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Director General (IDSA), Noida",
+    "subHi": "महानिदेशक (आईडीएसए), नोएडा",
+    "email": "mohantybk@cag.gov.in",
+    "phone": "011-23230987",
+    "reportingEn": "International auditing standards, training academies coordination, and foreign audit relations.",
+    "reportingHi": "अंतरराष्ट्रीय लेखापरीक्षा मानक, प्रशिक्षण अकादमियों का समन्वय, और विदेशी लेखापरीक्षा संबंध।",
+    "level": 3,
+    "position": "left",
+    "display_order": 26,
+    "photo_url": "",
+    "is_active": true
+  },
+  {
+    "id": "l-14",
+    "nameEn": "Shri Rajiv Kumar Pandey",
+    "nameHi": "श्री राजीव कुमार पांडे",
+    "desigEn": "Additional Deputy Comptroller & Auditor General",
+    "desigHi": "अपर उप नियंत्रक एवं महालेखापरीक्षक",
+    "subEn": "Capacity Building & Urban Development",
+    "subHi": "क्षमता निर्माण और शहरी विकास",
+    "email": "pandeyrk@cag.gov.in",
+    "phone": "011-23234561",
+    "reportingEn": "Capacity building initiatives, urban development, housing & procurement audits, DG-iCD Jaipur (ADAI Level/Addl. Charge).",
+    "reportingHi": "क्षमता निर्माण पहल, शहरी विकास, आवास और खरीद लेखापरीक्षा, डीजी-आईसीडी जयपुर (एडीएआई स्तर/अतिरिक्त प्रभार)।",
+    "level": 3,
+    "position": "left",
+    "display_order": 27,
+    "photo_url": "",
+    "is_active": true
+  }
+];
 
 export interface FormerCAGItem {
   id: string;

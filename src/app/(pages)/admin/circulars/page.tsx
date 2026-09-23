@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api';
 import { dataManager, CircularItem as DataCircularItem } from '@/lib/dataManager';
 import { useAdminLanguage } from '@/lib/useAdminLanguage';
@@ -150,6 +151,134 @@ export default function AdminCirculars() {
     setIsFormOpen(false);
     loadData();
   };
+
+  if (isFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          {/* Header */}
+          <div
+            className="px-6 py-4 text-white flex justify-between items-center shrink-0"
+            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded transition-colors cursor-pointer"
+              >
+                <span>← Back</span>
+              </button>
+              <div>
+                <h3 className="font-serif text-lg font-bold">
+                  {editingId ? 'Edit Circular Notice' : 'Register New Circular Notice'}
+                </h3>
+                <p className="text-[11px] text-white/70">
+                  {editingId ? `Editing Record ID #${editingId}` : 'Publish new internal circular notice to CAG registry'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
+              title="Close panel"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Body Content */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1 text-sm">Circular Number *</label>
+                <input
+                  type="text"
+                  required
+                  value={circularNo}
+                  onChange={(e) => setCircularNo(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none text-zinc-900"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-zinc-700 mb-1 text-sm">Issue Date</label>
+                <input
+                  type="date"
+                  value={issueDate}
+                  onChange={(e) => setIssueDate(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none text-zinc-900"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Circular Title (English) *</label>
+              <input
+                type="text"
+                required
+                value={titleEn}
+                onChange={(e) => setTitleEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none text-zinc-900"
+                placeholder="Enter circular title"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">Circular Title (हिन्दी)</label>
+              <input
+                type="text"
+                value={titleHi}
+                onChange={(e) => setTitleHi(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none text-zinc-900"
+                placeholder="परिपत्र शीर्षक दर्ज करें"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-zinc-700 mb-1 text-sm">PDF File Link URL</label>
+              <input
+                type="text"
+                value={fileUrl}
+                onChange={(e) => setFileUrl(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-zinc-300 rounded-[6px] px-3.5 py-2 text-sm focus:bg-white focus:border-[#751639] outline-none text-zinc-900"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <input
+                type="checkbox"
+                id="isActiveCircular"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="w-4 h-4 accent-[#751639] cursor-pointer"
+              />
+              <label htmlFor="isActiveCircular" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
+                Publish to Live Circulars Archive
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 mt-6">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-5 py-2 border border-zinc-300 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white rounded-[6px] cursor-pointer text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 text-white font-bold rounded-[6px] transition-all shadow-md cursor-pointer text-sm"
+                style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
+              >
+                Save Circular Record
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 font-sans pb-16">
@@ -314,8 +443,8 @@ export default function AdminCirculars() {
               lineHeight: '16px'
             }}
           >
-            <span className="text-base font-bold">+</span>
-            <span>{t.addNew}</span>
+            <Plus className="w-4 h-4" />
+            <span>{t.addNewCircular}</span>
           </button>
         </div>
 
@@ -415,108 +544,6 @@ export default function AdminCirculars() {
         </div>
       </div>
 
-      {/* CREATE / EDIT FULL-PAGE EDITOR PANEL */}
-      {isFormOpen && (
-        <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden animate-fadeIn">
-          {/* Header */}
-          <div
-            className="px-6 py-4 text-white flex justify-between items-center shrink-0 shadow-md"
-            style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-          >
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white flex items-center gap-1 text-xs font-semibold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-2.5 py-1 transition-colors cursor-pointer"
-              >
-                ← Back
-              </button>
-              <div>
-                <h3 className="font-serif text-lg font-bold">
-                  {editingId ? 'Edit Circular Notice' : 'Register New Circular Notice'}
-                </h3>
-                <p className="text-[11px] text-white/70">
-                  {editingId ? `Editing Record ID #${editingId}` : 'Publish new internal circular notice to CAG registry'}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsFormOpen(false)}
-              className="text-white/70 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              title="Close panel"
-            >
-              ✕
-            </button>
           </div>
-
-          {/* Body Content */}
-          <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#f8f9fa]">
-            <form onSubmit={handleSubmit} className="max-w-5xl mx-auto bg-white border border-[#ced4da] shadow-xs p-6 md:p-8 space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Circular Number *</label>
-                  <input
-                    type="text"
-                    required
-                    value={circularNo}
-                    onChange={(e) => setCircularNo(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-zinc-700 mb-1">Issue Date</label>
-                  <input
-                    type="date"
-                    value={issueDate}
-                    onChange={(e) => setIssueDate(e.target.value)}
-                    className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">Circular Title (English) *</label>
-                <input
-                  type="text"
-                  required
-                  value={titleEn}
-                  onChange={(e) => setTitleEn(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter circular title"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-700 mb-1">PDF File Link URL</label>
-                <input
-                  type="text"
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  className="w-full bg-white border border-zinc-300 rounded-none px-3 py-1.5 text-zinc-900 focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-
-              <div className="flex gap-4 pt-4 border-t border-zinc-200 mt-6">
-                <button
-                  type="submit"
-                  className="flex-grow py-2.5 text-white font-bold transition-all shadow-xs cursor-pointer"
-                  style={{ background: 'linear-gradient(232deg, #9f385e 1.4%, #751639 59.7%, #000 172%)' }}
-                >
-                  Save Circular Record
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-6 py-2.5 border border-zinc-350 text-zinc-700 font-medium hover:bg-zinc-100 transition-colors bg-white cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
   );
 }

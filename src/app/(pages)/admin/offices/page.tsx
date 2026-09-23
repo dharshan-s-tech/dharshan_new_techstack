@@ -518,6 +518,332 @@ function AdminPresenceContent() {
     return { bg: 'bg-zinc-100 text-zinc-700 border-zinc-200', label: deptName || 'Central Audit' };
   };
 
+  if (viewingOffice) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          
+          {/* Header */}
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setViewingOffice(null)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <div>
+                <h3 className="font-semibold text-[16px] flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Office Profile Details
+                </h3>
+                <p className="text-[12px] text-white/80">Database Record ID: #{viewingOffice.id}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setViewingOffice(null)}
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4 text-sm">
+            
+            <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
+              <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">Office Title (English):</span>
+              <p className="text-[16px] font-bold text-[#751639]">{viewingOffice.title}</p>
+              {viewingOffice.title_hi && (
+                <div className="pt-2 border-t border-[#EDE9E9] mt-2">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">Office Title (हिन्दी):</span>
+                  <p className="text-[14px] font-medium text-[#314158]">{viewingOffice.title_hi}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Department Category:</span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getDeptBadgeStyle(viewingOffice.department_id, viewingOffice.department_name).bg}`}>
+                  {viewingOffice.department_name || `Dept #${viewingOffice.department_id}`}
+                </span>
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">State / Location:</span>
+                <div className="flex items-center gap-1.5 font-medium text-[#314158]">
+                  <MapPin className="w-4 h-4 text-[#90A1B9]" />
+                  <span>{viewingOffice.state_name || viewingOffice.state_title || 'Union / National'}</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Subsite Route / URL:</span>
+                {viewingOffice.url ? (
+                  <a
+                    href={viewingOffice.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#751639] hover:underline font-mono text-[12px] flex items-center gap-1 break-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                    <span>{viewingOffice.url}</span>
+                  </a>
+                ) : (
+                  <span className="text-[#90A1B9] italic">None</span>
+                )}
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Official Email Address:</span>
+                {viewingOffice.email ? (
+                  <a
+                    href={`mailto:${viewingOffice.email}`}
+                    className="text-[#314158] hover:text-[#751639] flex items-center gap-1.5 font-medium text-[13px]"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#90A1B9]" />
+                    <span>{viewingOffice.email}</span>
+                  </a>
+                ) : (
+                  <span className="text-[#90A1B9] italic">None</span>
+                )}
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Publishing Status:</span>
+                {viewingOffice.is_active ? (
+                  <span className="bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+                    Active &amp; Live
+                  </span>
+                ) : (
+                  <span className="bg-[#FDF4F0] text-[#E11D48] border border-[#FFE4E6] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
+                    Inactive / Draft
+                  </span>
+                )}
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const target = viewingOffice;
+                setViewingOffice(null);
+                handleOpenEdit(target);
+              }}
+              className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
+            >
+              Edit This Office
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewingOffice(null)}
+              className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  if (isFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          
+          {/* Header */}
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <div>
+                <h3 className="font-semibold text-[16px]">
+                  {editingRawId ? `Edit Office #${editingRawId}` : 'Add New Office / Subsite'}
+                </h3>
+                <p className="text-[12px] text-white/80">Configure office registry record and subsite portal link</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsFormOpen(false)}
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
+
+          {/* Form Fields */}
+          <form onSubmit={handleSubmitForm} className="p-6 space-y-4">
+            
+            {/* Title EN */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                Office Title (English) *
+              </label>
+              <input
+                type="text"
+                required
+                value={formTitleEn}
+                onChange={(e) => setFormTitleEn(e.target.value)}
+                placeholder="e.g. Principal Accountant General (Audit-I), Maharashtra"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            {/* Title HI */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                Office Title (हिन्दी)
+              </label>
+              <input
+                type="text"
+                value={formTitleHi}
+                onChange={(e) => setFormTitleHi(e.target.value)}
+                placeholder="e.g. प्रधान महालेखाकार (लेखापरीक्षा-I), महाराष्ट्र"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            {/* Department */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                Department Category *
+              </label>
+              <div className="relative w-full">
+                <select
+                  value={formDeptId}
+                  onChange={(e) => setFormDeptId(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="1">State Audit Offices</option>
+                  <option value="7">State Accounts &amp; Entitlement (A&amp;E) Offices</option>
+                  <option value="9">Defence Audit Offices</option>
+                  <option value="6">Railway Audit Offices</option>
+                  <option value="8">Other Ministries / Commercial Audit</option>
+                  <option value="5">Training Institutes (RTI / RTC)</option>
+                  {departments.filter(d => ![1, 7, 9, 6, 8, 5].includes(Number(d.id))).map((d) => (
+                    <option key={d.id} value={String(d.id)}>{d.title}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* State Select */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                State / Union Territory
+              </label>
+              <SearchableStateSelect
+                value={formStateId}
+                onChange={(val) => setFormStateId(val)}
+                states={states.map(s => ({ id: s.id, name: s.name }))}
+                placeholder="Select State / UT"
+                allLabel="National / Central (No State)"
+                allowAll={true}
+                size="md"
+              />
+            </div>
+
+            {/* Subsite URL */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                Subsite Route / URL
+              </label>
+              <input
+                type="text"
+                value={formUrl}
+                onChange={(e) => setFormUrl(e.target.value)}
+                placeholder="e.g. /states/maharashtra/audit-1 or https://..."
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                Official Email Address
+              </label>
+              <input
+                type="email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                placeholder="e.g. agaumaharashtra1@cag.gov.in"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            {/* Active Toggle */}
+            <div className="flex items-center gap-3 pt-2">
+              <input
+                type="checkbox"
+                id="formIsActive"
+                checked={formIsActive}
+                onChange={(e) => setFormIsActive(e.target.checked)}
+                className="w-4 h-4 accent-[#751639] cursor-pointer"
+              />
+              <label htmlFor="formIsActive" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
+                Publish to Live Website Portal
+              </label>
+            </div>
+
+            {/* Form Actions */}
+            <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={formSubmitting}
+                className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                {formSubmitting ? 'Saving...' : (editingRawId ? 'Update Office' : 'Create Office')}
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 font-sans pb-16">
       
@@ -1177,11 +1503,12 @@ function AdminPresenceContent() {
             {t.showing} {paginatedOffices.length > 0 ? (page - 1) * pageSize + 1 : 0} {t.to} {Math.min(page * pageSize, totalCount)} {t.of} {totalCount} {t.entries}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+              title={t.previous}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -1196,14 +1523,15 @@ function AdminPresenceContent() {
                 }
               }
 
+              const isActive = page === pageNum;
               return (
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`w-8 h-8 rounded-[6px] text-[13px] font-medium transition-all cursor-pointer flex items-center justify-center ${
-                    page === pageNum
-                      ? 'bg-[#751639] text-white shadow-xs'
-                      : 'text-[#62748E] hover:bg-[#F8F7F7]'
+                  className={`w-9 h-9 rounded-[8px] text-[14px] font-medium transition-all cursor-pointer flex items-center justify-center ${
+                    isActive
+                      ? 'bg-[#751639] text-white font-semibold shadow-xs'
+                      : 'text-[#1D4ED8] hover:bg-zinc-100'
                   }`}
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
@@ -1215,7 +1543,8 @@ function AdminPresenceContent() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+              title={t.next}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -1224,316 +1553,10 @@ function AdminPresenceContent() {
 
       </div>
 
-      {/* ── 4. VIEW DETAILS MODAL ── */}
-      {viewingOffice && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            
-            {/* Modal Header */}
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px] flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Office Profile Details
-                </h3>
-                <p className="text-[12px] text-white/80">Database Record ID: #{viewingOffice.id}</p>
-              </div>
-              <button
-                onClick={() => setViewingOffice(null)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-sm">
-              
-              <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
-                <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">Office Title (English):</span>
-                <p className="text-[16px] font-bold text-[#751639]">{viewingOffice.title}</p>
-                {viewingOffice.title_hi && (
-                  <div className="pt-2 border-t border-[#EDE9E9] mt-2">
-                    <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">Office Title (हिन्दी):</span>
-                    <p className="text-[14px] font-medium text-[#314158]">{viewingOffice.title_hi}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Department Category:</span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getDeptBadgeStyle(viewingOffice.department_id, viewingOffice.department_name).bg}`}>
-                    {viewingOffice.department_name || `Dept #${viewingOffice.department_id}`}
-                  </span>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">State / Location:</span>
-                  <div className="flex items-center gap-1.5 font-medium text-[#314158]">
-                    <MapPin className="w-4 h-4 text-[#90A1B9]" />
-                    <span>{viewingOffice.state_name || viewingOffice.state_title || 'Union / National'}</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Subsite Route / URL:</span>
-                  {viewingOffice.url ? (
-                    <a
-                      href={viewingOffice.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#751639] hover:underline font-mono text-[12px] flex items-center gap-1 break-all"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                      <span>{viewingOffice.url}</span>
-                    </a>
-                  ) : (
-                    <span className="text-[#90A1B9] italic">None</span>
-                  )}
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Official Email Address:</span>
-                  {viewingOffice.email ? (
-                    <a
-                      href={`mailto:${viewingOffice.email}`}
-                      className="text-[#314158] hover:text-[#751639] flex items-center gap-1.5 font-medium text-[13px]"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-[#90A1B9]" />
-                      <span>{viewingOffice.email}</span>
-                    </a>
-                  ) : (
-                    <span className="text-[#90A1B9] italic">None</span>
-                  )}
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">Publishing Status:</span>
-                  {viewingOffice.is_active ? (
-                    <span className="bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      Active &amp; Live
-                    </span>
-                  ) : (
-                    <span className="bg-[#FDF4F0] text-[#E11D48] border border-[#FFE4E6] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
-                      Inactive / Draft
-                    </span>
-                  )}
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const target = viewingOffice;
-                  setViewingOffice(null);
-                  handleOpenEdit(target);
-                }}
-                className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
-              >
-                Edit This Office
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewingOffice(null)}
-                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* ── 5. CREATE / EDIT OFFICE DRAWER MODAL ── */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            
-            {/* Drawer Header */}
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px]">
-                  {editingRawId ? `Edit Office #${editingRawId}` : 'Add New Office / Subsite'}
-                </h3>
-                <p className="text-[12px] text-white/80">Configure office registry record and subsite portal link</p>
-              </div>
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* Form Fields */}
-            <form onSubmit={handleSubmitForm} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              
-              {/* Title EN */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  Office Title (English) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formTitleEn}
-                  onChange={(e) => setFormTitleEn(e.target.value)}
-                  placeholder="e.g. Principal Accountant General (Audit-I), Maharashtra"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              {/* Title HI */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  Office Title (हिन्दी)
-                </label>
-                <input
-                  type="text"
-                  value={formTitleHi}
-                  onChange={(e) => setFormTitleHi(e.target.value)}
-                  placeholder="e.g. प्रधान महालेखाकार (लेखापरीक्षा-I), महाराष्ट्र"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              {/* Department */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  Department Category *
-                </label>
-                <div className="relative w-full">
-                  <select
-                    value={formDeptId}
-                    onChange={(e) => setFormDeptId(e.target.value)}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] focus:bg-white transition-all cursor-pointer"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    <option value="1">State Audit Offices</option>
-                    <option value="7">State Accounts &amp; Entitlement (A&amp;E) Offices</option>
-                    <option value="9">Defence Audit Offices</option>
-                    <option value="6">Railway Audit Offices</option>
-                    <option value="8">Other Ministries / Commercial Audit</option>
-                    <option value="5">Training Institutes (RTI / RTC)</option>
-                    {departments.filter(d => ![1, 7, 9, 6, 8, 5].includes(Number(d.id))).map((d) => (
-                      <option key={d.id} value={String(d.id)}>{d.title}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#314158]">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="#314158" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* State Select */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  State / Union Territory
-                </label>
-                <SearchableStateSelect
-                  value={formStateId}
-                  onChange={(val) => setFormStateId(val)}
-                  states={states.map(s => ({ id: s.id, name: s.name }))}
-                  placeholder="Select State / UT"
-                  allLabel="National / Central (No State)"
-                  allowAll={true}
-                  size="md"
-                />
-              </div>
-
-              {/* Subsite URL */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  Subsite Route / URL
-                </label>
-                <input
-                  type="text"
-                  value={formUrl}
-                  onChange={(e) => setFormUrl(e.target.value)}
-                  placeholder="e.g. /states/maharashtra/audit-1 or https://..."
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              {/* Email */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  Official Email Address
-                </label>
-                <input
-                  type="email"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  placeholder="e.g. agaumaharashtra1@cag.gov.in"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              {/* Active Toggle */}
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="formIsActive"
-                  checked={formIsActive}
-                  onChange={(e) => setFormIsActive(e.target.checked)}
-                  className="w-4 h-4 accent-[#751639] cursor-pointer"
-                />
-                <label htmlFor="formIsActive" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
-                  Publish to Live Website Portal
-                </label>
-              </div>
-
-              {/* Form Actions */}
-              <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={formSubmitting}
-                  className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  {formSubmitting ? 'Saving...' : (editingRawId ? 'Update Office' : 'Create Office')}
-                </button>
-              </div>
-
-            </form>
-
-          </div>
-        </div>
-      )}
-
-      {/* ── 6. DELETE CONFIRMATION MODAL ── */}
+      {/* ── 6. DELETE CONFIRMATION MODAL (Confined to content pane) ── */}
       {deleteCandidate && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-md w-full overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-150">
+        <div className="absolute inset-0 z-30 bg-black/20 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-[12px] shadow-2xl border border-[#EDE9E9] max-w-md w-full overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 text-red-600">
               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5 text-red-600" />

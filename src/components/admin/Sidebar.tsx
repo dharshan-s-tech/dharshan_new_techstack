@@ -44,11 +44,9 @@ const NAV: NavGroup[] = [
     ]
   },
   {
-    group: 'Audit Reports & Accounts', icon: FileBarChart, items: [
-      { label: 'Audit Reports', href: '/admin/reports', icon: FileBarChart },
-      { label: 'State Finance Accounts', href: '/admin/state-accounts', icon: Receipt },
-      { label: 'Combined Accounts', href: '/admin/combined-accounts', icon: Layers },
-      { label: 'Audit Report Files', href: '/admin/audit-report-files', icon: Archive },
+    group: 'Reports', icon: FileBarChart, items: [
+      { label: 'Reports', href: '/admin/reports', icon: FileBarChart },
+      { label: 'Accounts', href: '/admin/accounts', icon: Receipt },
     ]
   },
   {
@@ -76,7 +74,7 @@ export default function Sidebar() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'About Us': true,
     'Dashboard': true,
-    'Audit Reports & Accounts': false
+    'Reports': false
   });
   const [collapsed, setCollapsed] = useState(false);
 

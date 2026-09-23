@@ -340,6 +340,337 @@ function AdminCombinedAccountsContent() {
     loadData();
   };
 
+  if (viewingItem) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setViewingItem(null)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← {isHindi ? 'पीछे' : 'Back'}</span>
+              </button>
+              <div>
+                <h3 className="font-semibold text-[16px] flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  {isHindi ? 'विवरण प्रोफ़ाइल जानकारी' : 'Statement Profile Details'}
+                </h3>
+                <p className="text-[12px] text-white/80">ID: #{viewingItem.rawId}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setViewingItem(null)}
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
+
+          <div className="p-6 space-y-4 text-sm">
+            <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
+              <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
+                {isHindi ? 'शीर्षक (अंग्रेज़ी):' : 'Title (English):'}
+              </span>
+              <p className="text-[16px] font-bold text-[#751639]">{viewingItem.title_en}</p>
+              {viewingItem.title_hi && (
+                <div className="pt-2 border-t border-[#EDE9E9] mt-2">
+                  <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
+                    {isHindi ? 'शीर्षक (हिन्दी):' : 'Title (हिन्दी):'}
+                  </span>
+                  <p className="text-[14px] font-medium text-[#314158]">{viewingItem.title_hi}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                  {isHindi ? 'श्रेणी:' : 'Category:'}
+                </span>
+                <span className="text-[14px] font-medium text-[#314158]">
+                  {viewingItem.category === 'conference' 
+                    ? (isHindi ? 'राज्य वित्त सचिव सम्मेलन' : 'State Finance Secretaries Conference') 
+                    : (isHindi ? 'संयुक्त वित्त एवं राजस्व लेखे' : 'Combined Finance and Revenue Accounts')}
+                </span>
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                  {isHindi ? 'वित्तीय वर्ष:' : 'Financial Year:'}
+                </span>
+                <span className="text-[14px] font-medium text-[#314158]">{viewingItem.account_year}</span>
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                  {isHindi ? 'दस्तावेज़ लिंक:' : 'Document Link:'}
+                </span>
+                {viewingItem.file_url ? (
+                  <a
+                    href={viewingItem.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#751639] hover:underline text-[13px] flex items-center gap-1"
+                  >
+                    <span>{t.download}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ) : (
+                  <span className="text-[#90A1B9] italic">{isHindi ? 'उपलब्ध नहीं' : 'None'}</span>
+                )}
+              </div>
+
+              <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
+                <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
+                  {t.status}:
+                </span>
+                {viewingItem.is_active ? (
+                  <span className="bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+                    {t.active}
+                  </span>
+                ) : (
+                  <span className="bg-[#FDF4F0] text-[#E11D48] border border-[#FFE4E6] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
+                    {t.inactive}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const target = viewingItem;
+                setViewingItem(null);
+                handleOpenEdit(target);
+              }}
+              className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
+            >
+              {isHindi ? 'विवरण संपादित करें' : 'Edit Statement'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewingItem(null)}
+              className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
+            >
+              {t.close}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isDrawerOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← {isHindi ? 'पीछे' : 'Back'}</span>
+              </button>
+              <div>
+                <h3 className="font-semibold text-[16px]">
+                  {editingId ? (isHindi ? `विवरण #${editingId} संपादित करें` : `Edit Statement #${editingId}`) : (isHindi ? 'नया विवरण जोड़ें' : 'Add New Statement')}
+                </h3>
+                <p className="text-[12px] text-white/80">
+                  {isHindi ? 'संयुक्त वित्त खाते / सम्मेलन रिकॉर्ड कॉन्फ़िगर करें' : 'Configure Combined Accounts / Conference record'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsDrawerOpen(false)}
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              &times;
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'विवरण शीर्षक (अंग्रेज़ी) *' : 'Statement Title (English) *'}
+              </label>
+              <input
+                type="text"
+                required
+                value={titleEn}
+                onChange={(e) => setTitleEn(e.target.value)}
+                placeholder="e.g. Combined Finance and Revenue Accounts of Union and State Governments 2024-25"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'विवरण शीर्षक (हिन्दी)' : 'Statement Title (हिन्दी)'}
+              </label>
+              <input
+                type="text"
+                value={titleHi}
+                onChange={(e) => setTitleHi(e.target.value)}
+                placeholder="उदा. संघ और राज्य सरकारों के संयुक्त वित्त और राजस्व खाते"
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'श्रेणी *' : 'Category *'}
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as any)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] cursor-pointer"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <option value="combined">{isHindi ? 'संयुक्त वित्त एवं राजस्व लेखे' : 'Combined Finance & Revenue'}</option>
+                  <option value="conference">{isHindi ? 'राज्य वित्त सचिव सम्मेलन' : 'State Finance Secretaries Conference'}</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'वित्तीय वर्ष *' : 'Financial Year *'}
+                </label>
+                <input
+                  type="text"
+                  value={accountYear}
+                  onChange={(e) => setAccountYear(e.target.value)}
+                  placeholder="2024 - 25"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'खंड विनिर्देश' : 'Volume Specification'}
+                </label>
+                <input
+                  type="text"
+                  value={volume}
+                  onChange={(e) => setVolume(e.target.value)}
+                  placeholder="e.g. Vol I or Full Book"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-semibold text-[#314158]">
+                  {isHindi ? 'फ़ाइल का आकार' : 'File Size'}
+                </label>
+                <input
+                  type="text"
+                  value={size}
+                  onChange={(e) => setSize(e.target.value)}
+                  placeholder="e.g. 18.5 MB"
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'दस्तावेज़ अपलोड / पीडीएफ' : 'Document Upload / PDF'}
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept=".pdf"
+                  id="pdfUploadInput"
+                  onChange={handlePdfFileUpload}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="pdfUploadInput"
+                  className="px-4 py-2 bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] text-[13px] font-medium text-[#314158] hover:bg-[#EDE9E9] transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4 text-[#751639]" />
+                  <span>{isHindi ? 'पीडीएफ चुनें' : 'Choose PDF File'}</span>
+                </label>
+                {uploadedFileName && (
+                  <span className="text-xs text-[#62748E] flex items-center gap-1">
+                    <Paperclip className="w-3.5 h-3.5" />
+                    {uploadedFileName} ({uploadedFileSize})
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[13px] font-semibold text-[#314158]">
+                {isHindi ? 'पीडीएफ / दस्तावेज़ डाउनलोड यूआरएल' : 'PDF / Document Download URL'}
+              </label>
+              <input
+                type="text"
+                value={fileUrl}
+                onChange={(e) => setFileUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <input
+                type="checkbox"
+                id="isActiveCombinedAccount"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="w-4 h-4 accent-[#751639] cursor-pointer"
+              />
+              <label htmlFor="isActiveCombinedAccount" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
+                {isHindi ? 'लाइव पंजिका में प्रकाशित करें' : 'Publish to Live Registry'}
+              </label>
+            </div>
+
+            <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                {editingId ? (isHindi ? 'अद्यतन करें' : 'Update Statement') : (isHindi ? 'सहेजें' : 'Save Statement')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 font-sans pb-16">
       
@@ -621,7 +952,7 @@ function AdminCombinedAccountsContent() {
             }}
           >
             <Plus className="w-4 h-4" />
-            <span>{isHindi ? '+ नया विवरण जोड़ें' : '+ Add Statement'}</span>
+            <span>{isHindi ? 'नया विवरण जोड़ें' : 'Add Statement'}</span>
           </button>
         </div>
 
@@ -816,11 +1147,12 @@ function AdminCombinedAccountsContent() {
             {t.showing} {accounts.length > 0 ? (page - 1) * pageSize + 1 : 0} {t.to} {Math.min(page * pageSize, totalCount)} {t.of} {totalCount} {t.entries}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+              title={t.previous}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -835,14 +1167,15 @@ function AdminCombinedAccountsContent() {
                 }
               }
 
+              const isActive = page === pageNum;
               return (
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`w-8 h-8 rounded-[6px] text-[13px] font-medium transition-all cursor-pointer flex items-center justify-center ${
-                    page === pageNum
-                      ? 'bg-[#751639] text-white shadow-xs'
-                      : 'text-[#62748E] hover:bg-[#F8F7F7]'
+                  className={`w-9 h-9 rounded-[8px] text-[14px] font-medium transition-all cursor-pointer flex items-center justify-center ${
+                    isActive
+                      ? 'bg-[#751639] text-white font-semibold shadow-xs'
+                      : 'text-[#1D4ED8] hover:bg-zinc-100'
                   }`}
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
@@ -854,7 +1187,8 @@ function AdminCombinedAccountsContent() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="w-8 h-8 rounded-[6px] border border-[#EDE9E9] flex items-center justify-center text-[#62748E] hover:bg-[#F8F7F7] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
+              title={t.next}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -863,290 +1197,7 @@ function AdminCombinedAccountsContent() {
 
       </div>
 
-      {/* ── 4. VIEW DETAILS MODAL ── */}
-      {viewingItem && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px] flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  {isHindi ? 'विवरण प्रोफ़ाइल जानकारी' : 'Statement Profile Details'}
-                </h3>
-                <p className="text-[12px] text-white/80">ID: #{viewingItem.rawId}</p>
-              </div>
-              <button
-                onClick={() => setViewingItem(null)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-sm">
-              <div className="bg-[#F8F7F7] p-4 rounded-lg border border-[#EDE9E9] space-y-1.5">
-                <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
-                  {isHindi ? 'शीर्षक (अंग्रेज़ी):' : 'Title (English):'}
-                </span>
-                <p className="text-[16px] font-bold text-[#751639]">{viewingItem.title_en}</p>
-                {viewingItem.title_hi && (
-                  <div className="pt-2 border-t border-[#EDE9E9] mt-2">
-                    <span className="text-[11px] font-semibold text-[#62748E] uppercase tracking-wider block">
-                      {isHindi ? 'शीर्षक (हिन्दी):' : 'Title (हिन्दी):'}
-                    </span>
-                    <p className="text-[14px] font-medium text-[#314158]">{viewingItem.title_hi}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'श्रेणी:' : 'Category:'}
-                  </span>
-                  <span className="text-[14px] font-medium text-[#314158]">
-                    {viewingItem.category === 'conference' 
-                      ? (isHindi ? 'राज्य वित्त सचिव सम्मेलन' : 'State Finance Secretaries Conference') 
-                      : (isHindi ? 'संयुक्त वित्त एवं राजस्व लेखे' : 'Combined Finance and Revenue Accounts')}
-                  </span>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'वित्तीय वर्ष:' : 'Financial Year:'}
-                  </span>
-                  <span className="text-[14px] font-medium text-[#314158]">{viewingItem.account_year}</span>
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {isHindi ? 'दस्तावेज़ लिंक:' : 'Document Link:'}
-                  </span>
-                  {viewingItem.file_url ? (
-                    <a
-                      href={viewingItem.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#751639] hover:underline text-[13px] flex items-center gap-1"
-                    >
-                      <span>{t.download}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ) : (
-                    <span className="text-[#90A1B9] italic">{isHindi ? 'उपलब्ध नहीं' : 'None'}</span>
-                  )}
-                </div>
-
-                <div className="p-3.5 border border-[#EDE9E9] rounded-lg bg-white">
-                  <span className="text-[11px] font-semibold text-[#62748E] uppercase block mb-1">
-                    {t.status}:
-                  </span>
-                  {viewingItem.is_active ? (
-                    <span className="bg-[#F0FDF4] text-[#16A34A] border border-[#DCFCE7] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      {t.active}
-                    </span>
-                  ) : (
-                    <span className="bg-[#FDF4F0] text-[#E11D48] border border-[#FFE4E6] rounded-full px-2.5 py-0.5 text-[12px] font-medium inline-flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]"></span>
-                      {t.inactive}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 bg-[#F8F7F7] border-t border-[#EDE9E9] flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const target = viewingItem;
-                  setViewingItem(null);
-                  handleOpenEdit(target);
-                }}
-                className="px-4 py-2 rounded-[8px] bg-[#751639] text-white font-medium text-xs hover:opacity-90 cursor-pointer"
-              >
-                {isHindi ? 'विवरण संपादित करें' : 'Edit Statement'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewingItem(null)}
-                className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-white cursor-pointer"
-              >
-                {t.close}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
-
-      {/* ── 5. CREATE / EDIT DRAWER MODAL ── */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-xl shadow-2xl border border-[#EDE9E9] max-w-xl w-full overflow-hidden animate-in zoom-in-95 duration-150">
-            <div 
-              className="px-6 py-4 text-white flex items-center justify-between"
-              style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-            >
-              <div>
-                <h3 className="font-semibold text-[16px]">
-                  {editingId ? (isHindi ? `विवरण #${editingId} संपादित करें` : `Edit Statement #${editingId}`) : (isHindi ? 'नया विवरण जोड़ें' : 'Add New Statement')}
-                </h3>
-                <p className="text-[12px] text-white/80">
-                  {isHindi ? 'संयुक्त वित्त खाते / सम्मेलन रिकॉर्ड कॉन्फ़िगर करें' : 'Configure Combined Accounts / Conference record'}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsDrawerOpen(false)}
-                className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'विवरण शीर्षक (अंग्रेज़ी) *' : 'Statement Title (English) *'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={titleEn}
-                  onChange={(e) => setTitleEn(e.target.value)}
-                  placeholder="e.g. Combined Finance and Revenue Accounts of Union and State Governments 2024-25"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'विवरण शीर्षक (हिन्दी)' : 'Statement Title (हिन्दी)'}
-                </label>
-                <input
-                  type="text"
-                  value={titleHi}
-                  onChange={(e) => setTitleHi(e.target.value)}
-                  placeholder="उदा. संघ और राज्य सरकारों के संयुक्त वित्त और राजस्व खाते"
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] placeholder-[#90A1B9] focus:outline-none focus:border-[#751639] focus:bg-white transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-[#314158]">
-                    {isHindi ? 'श्रेणी *' : 'Category *'}
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] appearance-none focus:outline-none focus:border-[#751639] cursor-pointer"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    <option value="combined">{isHindi ? 'संयुक्त वित्त एवं राजस्व लेखे' : 'Combined Finance & Revenue'}</option>
-                    <option value="conference">{isHindi ? 'राज्य वित्त सचिव सम्मेलन' : 'State Finance Secretaries Conference'}</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-[#314158]">
-                    {isHindi ? 'वित्तीय वर्ष *' : 'Financial Year *'}
-                  </label>
-                  <input
-                    type="text"
-                    value={accountYear}
-                    onChange={(e) => setAccountYear(e.target.value)}
-                    placeholder="2024 - 25"
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-[#314158]">
-                    {isHindi ? 'खंड विनिर्देश' : 'Volume Specification'}
-                  </label>
-                  <input
-                    type="text"
-                    value={volume}
-                    onChange={(e) => setVolume(e.target.value)}
-                    placeholder="e.g. Vol I or Full Book"
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-semibold text-[#314158]">
-                    {isHindi ? 'फ़ाइल का आकार' : 'File Size'}
-                  </label>
-                  <input
-                    type="text"
-                    value={size}
-                    onChange={(e) => setSize(e.target.value)}
-                    placeholder="e.g. 18.5 MB"
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-semibold text-[#314158]">
-                  {isHindi ? 'पीडीएफ / दस्तावेज़ डाउनलोड यूआरएल' : 'PDF / Document Download URL'}
-                </label>
-                <input
-                  type="text"
-                  value={fileUrl}
-                  onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] h-[38.6px] px-4 text-[14px] text-[#314158] focus:outline-none focus:border-[#751639]"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="isActiveCombinedAccount"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-4 h-4 accent-[#751639] cursor-pointer"
-                />
-                <label htmlFor="isActiveCombinedAccount" className="text-[13px] font-semibold text-[#314158] cursor-pointer">
-                  {isHindi ? 'लाइव पंजिका में प्रकाशित करें' : 'Publish to Live Registry'}
-                </label>
-              </div>
-
-              <div className="border-t border-[#EDE9E9] pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="px-4 py-2 rounded-[8px] border border-[#EDE9E9] text-[#62748E] font-medium text-xs hover:bg-[#F8F7F7] cursor-pointer"
-                >
-                  {t.cancel}
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 rounded-[8px] text-white font-semibold text-xs shadow-[0px_4px_12px_rgba(117,22,57,0.28)] hover:opacity-95 transition-all cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  {editingId ? (isHindi ? 'अद्यतन करें' : 'Update Statement') : (isHindi ? 'सहेजें' : 'Save Statement')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-    </div>
   );
 }
 

@@ -7,7 +7,9 @@ import { useAdminLanguage } from '@/lib/useAdminLanguage';
 import { 
   Plus, 
   CheckCircle2, 
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface QuickLinkItem {
@@ -411,6 +413,328 @@ function AdminBannersContent() {
       default: return 'Banners';
     }
   };
+
+  if (isBannerFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsBannerFormOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <h3 className="text-base font-bold text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {editingBannerId ? 'Edit Hero Banner' : 'Create New Hero Banner'}
+              </h3>
+            </div>
+            <button 
+              onClick={() => setIsBannerFormOpen(false)} 
+              className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmitBanner} className="p-6 space-y-4">
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
+                Headline Title (English) *
+              </label>
+              <input
+                type="text"
+                required
+                value={bannerTitleEn}
+                onChange={(e) => setBannerTitleEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                placeholder="Enter banner headline"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
+                Headline Title (हिन्दी)
+              </label>
+              <input
+                type="text"
+                value={bannerTitleHi}
+                onChange={(e) => setBannerTitleHi(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                placeholder="बैनर शीर्षक हिंदी में दर्ज करें"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
+                Subtitle / Description
+              </label>
+              <textarea
+                rows={2}
+                value={bannerSubtitleEn}
+                onChange={(e) => setBannerSubtitleEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                placeholder="Enter supporting subtitle text"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
+                  Banner Image Asset URL *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={bannerImageUrl}
+                  onChange={(e) => setBannerImageUrl(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
+                  Redirect Destination Link
+                </label>
+                <input
+                  type="text"
+                  value={bannerLinkUrl}
+                  onChange={(e) => setBannerLinkUrl(e.target.value)}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6 pt-3 border-t border-zinc-100">
+              <label className="flex items-center gap-2 cursor-pointer font-semibold text-zinc-700 text-[13px]">
+                <input
+                  type="checkbox"
+                  checked={bannerIsActive}
+                  onChange={(e) => setBannerIsActive(e.target.checked)}
+                  className="w-4 h-4 text-[#751639] border-zinc-300 rounded"
+                />
+                <span>Active &amp; Published in Carousel</span>
+              </label>
+            </div>
+
+            <div className="pt-4 flex gap-3 border-t border-zinc-100 justify-end">
+              <button
+                type="button"
+                onClick={() => setIsBannerFormOpen(false)}
+                className="px-5 py-2.5 border border-zinc-300 text-zinc-700 font-medium text-[14px] rounded-[8px] hover:bg-zinc-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 text-white font-semibold text-[14px] rounded-[8px] transition-all shadow-md cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                Save Banner
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (isQlFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsQlFormOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <h3 className="text-base font-bold text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {editingQlId ? 'Edit Quick Link Card' : 'Create Quick Link Card'}
+              </h3>
+            </div>
+            <button onClick={() => setIsQlFormOpen(false)} className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer">✕</button>
+          </div>
+          <form onSubmit={handleSaveQl} className="p-6 space-y-4">
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Title (English) *</label>
+              <input
+                type="text"
+                required
+                value={qlTitleEn}
+                onChange={(e) => setQlTitleEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+              />
+            </div>
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Title (हिन्दी)</label>
+              <input
+                type="text"
+                value={qlTitleHi}
+                onChange={(e) => setQlTitleHi(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+              />
+            </div>
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Destination URL *</label>
+              <input
+                type="text"
+                required
+                value={qlUrl}
+                onChange={(e) => setQlUrl(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Display Order</label>
+                <input
+                  type="number"
+                  value={qlOrder}
+                  onChange={(e) => setQlOrder(Number(e.target.value))}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+              <div className="flex items-center pt-6">
+                <label className="flex items-center gap-2 cursor-pointer font-semibold text-zinc-700 text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={qlIsActive}
+                    onChange={(e) => setQlIsActive(e.target.checked)}
+                    className="w-4 h-4 text-[#751639] rounded"
+                  />
+                  <span>Active Status</span>
+                </label>
+              </div>
+            </div>
+            <div className="pt-4 flex gap-3 border-t border-zinc-100 justify-end">
+              <button
+                type="button"
+                onClick={() => setIsQlFormOpen(false)}
+                className="px-5 py-2 border border-zinc-300 text-zinc-700 rounded-[8px] hover:bg-zinc-100 cursor-pointer text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 text-white font-semibold text-[14px] rounded-[8px] shadow-md cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                Save Quick Link
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (isStatFormOpen) {
+    return (
+      <div className="w-full min-h-[calc(100vh-140px)] bg-white rounded-[10px] border border-[#EDE9E9] p-6 flex flex-col justify-start animate-fadeIn">
+        <div className="w-full max-w-[1526.2px] bg-white rounded-[8px] shadow-sm border border-[#EDE9E9] overflow-hidden">
+          <div 
+            className="px-6 py-4 text-white flex items-center justify-between"
+            style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+          >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsStatFormOpen(false)}
+                className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>← Back</span>
+              </button>
+              <h3 className="text-base font-bold text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {editingStatId ? 'Edit Statistic' : 'Create Statistic'}
+              </h3>
+            </div>
+            <button onClick={() => setIsStatFormOpen(false)} className="text-white/80 hover:text-white text-xl font-bold p-1 cursor-pointer">✕</button>
+          </div>
+          <form onSubmit={handleSaveStat} className="p-6 space-y-4">
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Statistic Value (e.g. 150+, 700+) *</label>
+              <input
+                type="text"
+                required
+                value={statValue}
+                onChange={(e) => setStatValue(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+              />
+            </div>
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Label (English) *</label>
+              <input
+                type="text"
+                required
+                value={statLabelEn}
+                onChange={(e) => setStatLabelEn(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+              />
+            </div>
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Label (हिन्दी)</label>
+              <input
+                type="text"
+                value={statLabelHi}
+                onChange={(e) => setStatLabelHi(e.target.value)}
+                className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Display Order</label>
+                <input
+                  type="number"
+                  value={statOrder}
+                  onChange={(e) => setStatOrder(Number(e.target.value))}
+                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
+                />
+              </div>
+              <div className="flex items-center pt-6">
+                <label className="flex items-center gap-2 cursor-pointer font-semibold text-zinc-700 text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={statIsActive}
+                    onChange={(e) => setStatIsActive(e.target.checked)}
+                    className="w-4 h-4 text-[#751639] rounded"
+                  />
+                  <span>Active Status</span>
+                </label>
+              </div>
+            </div>
+            <div className="pt-4 flex gap-3 border-t border-zinc-100 justify-end">
+              <button
+                type="button"
+                onClick={() => setIsStatFormOpen(false)}
+                className="px-5 py-2 border border-zinc-300 text-zinc-700 rounded-[8px] hover:bg-zinc-100 cursor-pointer text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2 text-white font-semibold text-[14px] rounded-[8px] shadow-md cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
+              >
+                Save Statistic
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 font-sans pb-16">
@@ -903,32 +1227,41 @@ function AdminBannersContent() {
               </span>
 
               {/* Page Buttons */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 {/* Prev */}
                 <button
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#94A3B8] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
                   title={t.previous}
                 >
-                  ‹
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                {/* Page Numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
-                  const isActive = num === currentPage;
+                {/* Page Numbers (Sliding window of max 5 pages) */}
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, idx) => {
+                  let pageNum = idx + 1;
+                  if (totalPages > 5) {
+                    if (currentPage > 3 && currentPage < totalPages - 2) {
+                      pageNum = currentPage - 2 + idx;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + idx;
+                    }
+                  }
+
+                  const isActive = pageNum === currentPage;
                   return (
                     <button
-                      key={num}
-                      onClick={() => setCurrentPage(num)}
-                      className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-[13px] font-medium transition-colors cursor-pointer ${
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-9 h-9 rounded-[8px] text-[14px] font-medium transition-colors cursor-pointer flex items-center justify-center ${
                         isActive
-                          ? 'bg-[rgba(117,22,57,0.1)] text-[#751639]'
-                          : 'text-[#64748B] hover:bg-zinc-100'
+                          ? 'bg-[#751639] text-white font-semibold shadow-xs'
+                          : 'text-[#1D4ED8] hover:bg-zinc-100'
                       }`}
                       style={{ fontFamily: "'Inter', sans-serif" }}
                     >
-                      {num}
+                      {pageNum}
                     </button>
                   );
                 })}
@@ -937,10 +1270,10 @@ function AdminBannersContent() {
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[#90A1B9] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-9 h-9 rounded-[8px] border border-[#E2E8F0] bg-white flex items-center justify-center text-[#475569] hover:bg-zinc-50 hover:border-[#CBD5E1] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-xs"
                   title={t.next}
                 >
-                  ›
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -1425,287 +1758,7 @@ function AdminBannersContent() {
         </div>
       )}
 
-      {/* ── CREATE / EDIT BANNER MODAL ── */}
-      {isBannerFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border border-[#EDE9E9] rounded-[12px] max-w-2xl w-full p-6 shadow-2xl relative">
-            <button 
-              onClick={() => setIsBannerFormOpen(false)} 
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700 text-base font-bold cursor-pointer"
-            >
-              ✕
-            </button>
-            <h3 
-              className="text-base font-bold text-[#751639] border-b pb-3 mb-5"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
-              {editingBannerId ? 'Edit Hero Banner' : 'Create New Hero Banner'}
-            </h3>
-
-            <form onSubmit={handleSubmitBanner} className="space-y-4">
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
-                  Headline Title (English) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={bannerTitleEn}
-                  onChange={(e) => setBannerTitleEn(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter banner headline"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
-                  Headline Title (हिन्दी)
-                </label>
-                <input
-                  type="text"
-                  value={bannerTitleHi}
-                  onChange={(e) => setBannerTitleHi(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  placeholder="बैनर शीर्षक हिंदी में दर्ज करें"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
-                  Subtitle / Description
-                </label>
-                <textarea
-                  rows={2}
-                  value={bannerSubtitleEn}
-                  onChange={(e) => setBannerSubtitleEn(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  placeholder="Enter supporting subtitle text"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
-                    Banner Image Asset URL *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={bannerImageUrl}
-                    onChange={(e) => setBannerImageUrl(e.target.value)}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">
-                    Redirect Destination Link
-                  </label>
-                  <input
-                    type="text"
-                    value={bannerLinkUrl}
-                    onChange={(e) => setBannerLinkUrl(e.target.value)}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 pt-3 border-t border-zinc-100">
-                <label className="flex items-center gap-2 cursor-pointer font-semibold text-zinc-700 text-[13px]">
-                  <input
-                    type="checkbox"
-                    checked={bannerIsActive}
-                    onChange={(e) => setBannerIsActive(e.target.checked)}
-                    className="w-4 h-4 text-[#751639] border-zinc-300 rounded"
-                  />
-                  <span>Active &amp; Published in Carousel</span>
-                </label>
-              </div>
-
-              <div className="pt-4 flex gap-3 border-t border-zinc-100">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 text-white font-semibold text-[14px] rounded-[8px] transition-all shadow-md cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  Save Banner
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsBannerFormOpen(false)}
-                  className="px-5 py-2.5 border border-zinc-300 text-zinc-700 font-medium text-[14px] rounded-[8px] hover:bg-zinc-100 cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
-
-      {/* ── CREATE / EDIT QUICK LINK MODAL ── */}
-      {isQlFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border border-[#EDE9E9] rounded-[12px] max-w-lg w-full p-6 shadow-2xl relative">
-            <button onClick={() => setIsQlFormOpen(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700 text-base font-bold cursor-pointer">✕</button>
-            <h3 className="text-base font-bold text-[#751639] border-b pb-3 mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
-              {editingQlId ? 'Edit Quick Link Card' : 'Create Quick Link Card'}
-            </h3>
-            <form onSubmit={handleSaveQl} className="space-y-4">
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Title (English) *</label>
-                <input
-                  type="text"
-                  required
-                  value={qlTitleEn}
-                  onChange={(e) => setQlTitleEn(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Title (हिन्दी)</label>
-                <input
-                  type="text"
-                  value={qlTitleHi}
-                  onChange={(e) => setQlTitleHi(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Destination URL *</label>
-                <input
-                  type="text"
-                  required
-                  value={qlUrl}
-                  onChange={(e) => setQlUrl(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Display Order</label>
-                  <input
-                    type="number"
-                    value={qlOrder}
-                    onChange={(e) => setQlOrder(Number(e.target.value))}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-                <div className="flex items-center pt-6">
-                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-zinc-700 text-[13px]">
-                    <input
-                      type="checkbox"
-                      checked={qlIsActive}
-                      onChange={(e) => setQlIsActive(e.target.checked)}
-                      className="w-4 h-4 text-[#751639] rounded"
-                    />
-                    <span>Active Status</span>
-                  </label>
-                </div>
-              </div>
-              <div className="pt-4 flex gap-3 border-t border-zinc-100">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 text-white font-semibold text-[14px] rounded-[8px] shadow-md cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  Save Quick Link
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsQlFormOpen(false)}
-                  className="px-4 py-2 border border-zinc-300 text-zinc-700 rounded-[8px] hover:bg-zinc-100 cursor-pointer text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── CREATE / EDIT STAT MODAL ── */}
-      {isStatFormOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white border border-[#EDE9E9] rounded-[12px] max-w-lg w-full p-6 shadow-2xl relative">
-            <button onClick={() => setIsStatFormOpen(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700 text-base font-bold cursor-pointer">✕</button>
-            <h3 className="text-base font-bold text-[#751639] border-b pb-3 mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
-              {editingStatId ? 'Edit Statistic' : 'Create Statistic'}
-            </h3>
-            <form onSubmit={handleSaveStat} className="space-y-4">
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Statistic Value (e.g. 150+, 700+) *</label>
-                <input
-                  type="text"
-                  required
-                  value={statValue}
-                  onChange={(e) => setStatValue(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Label (English) *</label>
-                <input
-                  type="text"
-                  required
-                  value={statLabelEn}
-                  onChange={(e) => setStatLabelEn(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-              <div>
-                <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Label (हिन्दी)</label>
-                <input
-                  type="text"
-                  value={statLabelHi}
-                  onChange={(e) => setStatLabelHi(e.target.value)}
-                  className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-zinc-700 font-semibold mb-1 text-[13px]">Display Order</label>
-                  <input
-                    type="number"
-                    value={statOrder}
-                    onChange={(e) => setStatOrder(Number(e.target.value))}
-                    className="w-full bg-[#F8F7F7] border border-[#EDE9E9] rounded-[8px] px-3.5 py-2 text-[14px] text-zinc-900 focus:bg-white focus:outline-none focus:border-[#751639]"
-                  />
-                </div>
-                <div className="flex items-center pt-6">
-                  <label className="flex items-center gap-2 cursor-pointer font-semibold text-zinc-700 text-[13px]">
-                    <input
-                      type="checkbox"
-                      checked={statIsActive}
-                      onChange={(e) => setStatIsActive(e.target.checked)}
-                      className="w-4 h-4 text-[#751639] rounded"
-                    />
-                    <span>Active Status</span>
-                  </label>
-                </div>
-              </div>
-              <div className="pt-4 flex gap-3 border-t border-zinc-100">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 text-white font-semibold text-[14px] rounded-[8px] shadow-md cursor-pointer"
-                  style={{ background: 'linear-gradient(135deg, #751639 0%, #5C1130 100%)' }}
-                >
-                  Save Statistic
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsStatFormOpen(false)}
-                  className="px-4 py-2 border border-zinc-300 text-zinc-700 rounded-[8px] hover:bg-zinc-100 cursor-pointer text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-    </div>
   );
 }
 
