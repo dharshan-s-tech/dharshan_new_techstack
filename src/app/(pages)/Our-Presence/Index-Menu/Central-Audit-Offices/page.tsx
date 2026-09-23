@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import OurPresenceLayout from '../../OurPresenceLayout';
 import NamesDetailsCard from '@/Reusable components/Cards/Names & Details Cards/NamesDetailsCard';
 import { Office } from '@/types';
@@ -12,7 +13,8 @@ interface OverseasOffice {
   id: string;
   name: string;
   nameHi: string;
-  url: string;
+  localUrl: string;
+  externalUrl: string;
 }
 
 const OVERSEAS_OFFICES: OverseasOffice[] = [
@@ -20,31 +22,36 @@ const OVERSEAS_OFFICES: OverseasOffice[] = [
     id: 'overseas-wdc',
     name: 'Principal Director of Audit, Washington DC',
     nameHi: 'प्रधान निदेशक लेखा परीक्षा, वाशिंगटन डीसी',
-    url: 'https://cag.gov.in/pda-washington/en'
+    localUrl: '/states/overseas-washington',
+    externalUrl: 'https://cag.gov.in/pda-washington/en'
   },
   {
     id: 'overseas-ldn',
     name: 'Principal Director of Audit, London',
     nameHi: 'प्रधान निदेशक लेखा परीक्षा, लंदन',
-    url: 'https://cag.gov.in/pda-london/en'
+    localUrl: '/states/overseas-london',
+    externalUrl: 'https://cag.gov.in/pda-london/en'
   },
   {
     id: 'overseas-kul',
     name: 'Principal Director of Audit, Kuala Lumpur',
     nameHi: 'प्रधान निदेशक लेखा परीक्षा, कुआलालंपुर',
-    url: 'https://cag.gov.in/pda-kualalumpur/en'
+    localUrl: '/states/overseas-kualalumpur',
+    externalUrl: 'https://cag.gov.in/pda-kualalumpur/en'
   },
   {
     id: 'overseas-rom',
     name: 'Director of External Audit, Rome',
     nameHi: 'बाह्य लेखा परीक्षा निदेशक, रोम',
-    url: 'https://cag.gov.in/en/external-audit-rome'
+    localUrl: '/states/overseas-rome',
+    externalUrl: 'https://cag.gov.in/en/external-audit-rome'
   },
   {
     id: 'overseas-gva',
     name: 'Director of External Audit, Geneva',
     nameHi: 'बाह्य लेखा परीक्षा निदेशक, जिनेवा',
-    url: 'https://cag.gov.in/en/external-audit-geneva'
+    localUrl: '/states/overseas-geneva',
+    externalUrl: 'https://cag.gov.in/en/external-audit-geneva'
   }
 ];
 
@@ -123,9 +130,9 @@ function CentralOfficesPageContent() {
         /* Overseas Audit Offices Cards List matching Figma design */
         <div className="flex flex-col gap-4 w-full max-w-[240px]">
           {OVERSEAS_OFFICES.map((item) => (
-            <a
+            <Link
               key={item.id}
-              href={item.url}
+              href={item.localUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-[240px] min-h-[62px] bg-[#FAFAFA] rounded-[4px] px-4 py-2 flex flex-row items-center justify-between gap-2 hover:bg-[#F2F2F2] hover:border-[#D7D7D7] transition-all cursor-pointer group shadow-none"
@@ -140,7 +147,7 @@ function CentralOfficesPageContent() {
                   <path d="M6.66666 9.33333L14 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </span>
-            </a>
+            </Link>
           ))}
         </div>
       ) : loading ? (

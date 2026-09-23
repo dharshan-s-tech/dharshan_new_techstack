@@ -89,29 +89,25 @@ function StateOfficesPageContent() {
                     {detailsList.map((sub, idx) => {
                       const targetUrl = (sub.url && sub.url.startsWith('/states/')) 
                         ? sub.url 
-                        : '/states/andhra-pradesh';
+                        : `/states/${item.id || 'andhra-pradesh'}`;
 
                       return (
-                        <a
+                        <Link
                           key={idx}
                           href={targetUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            window.open(targetUrl, '_blank');
-                          }}
                           className="flex flex-row items-center justify-between gap-3 w-full group text-decoration-none cursor-pointer"
                         >
-                          <span className="font-normal text-[14px] leading-[19px] text-[#565656] group-hover:text-[#751639] transition-colors text-left flex-1 min-w-0">
+                          <span className="font-normal text-[14px] leading-[19px] text-[#565656] group-hover:text-[#0A3D30] transition-colors text-left flex-1 min-w-0">
                             {sub.label}
                           </span>
-                          <svg className="w-3.5 h-3.5 text-[#565656] group-hover:text-[#751639] shrink-0 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg className="w-3.5 h-3.5 text-[#565656] group-hover:text-[#0A3D30] shrink-0 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                             <polyline points="15 3 21 3 21 9" />
                             <line x1="10" y1="14" x2="21" y2="3" />
                           </svg>
-                        </a>
+                        </Link>
                       );
                     })}
                   </div>
