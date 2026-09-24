@@ -6,6 +6,7 @@ import OfficePortalTemplate from '@/components/office/OfficePortalTemplate';
 export default function AndhraPradeshSubsitePage() {
   return (
     <OfficePortalTemplate
+      slug="andhra-pradesh"
       officeNameEn="Principal Accountant General (A&E)"
       officeNameHi="प्रधान महालेखाकार (लेखा एवं हकदारी)"
       locationEn="Andhra Pradesh, Vijayawada"

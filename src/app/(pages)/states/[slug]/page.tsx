@@ -117,6 +117,7 @@ export default function DynamicOfficePortalPage() {
 
   return (
     <OfficePortalTemplate
+      slug={slug}
       officeNameEn={metadata.officeNameEn}
       officeNameHi={metadata.officeNameHi}
       locationEn={metadata.locationEn}

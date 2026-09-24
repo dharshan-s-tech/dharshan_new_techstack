@@ -149,6 +149,12 @@ export const api = {
   getStateSubsite: async (slug: string) => {
     return fetchJson<any>(`/api/states/${slug}`);
   },
+  getSubsites: async () => {
+    return fetchJson<{ status: string; total: number; data: any[] }>('/api/subsites');
+  },
+  getSubsite: async (slug: string) => {
+    return fetchJson<{ status: string; data: any }>(`/api/subsites/${slug}`);
+  },
   getResources: async (slug: string, params?: Record<string, any>) => {
     const query = new URLSearchParams(params as any).toString();
     return fetchJson<{ items: any[]; total: number; page?: number; page_size?: number }>(

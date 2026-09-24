@@ -20,6 +20,69 @@ const DEFAULT_BIO_HI = [
   'श्री मूर्ति अपने खाली समय में पढ़ना, संगीत सुनना, फोटोग्राफी के माध्यम से क्षणों को कैद करना और प्रकृति के साथ समय बिताना पसंद करते हैं।'
 ];
 
+const decodeHtmlEntities = (str: string): string => {
+  return str
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, '"')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&ndash;/g, '-')
+    .replace(/&mdash;/g, '--');
+};
+
+const extractDetailsFromContent = (html: string) => {
+  if (!html || typeof html !== 'string') return null;
+  const cleaned = html.trim();
+
+  // 1. Extract Photo if present
+  let photo = '';
+  const imgMatch = cleaned.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (imgMatch && imgMatch[1]) {
+    const src = imgMatch[1];
+    if (!src.includes('CAG_India.jpg') && (src.startsWith('http') || src.startsWith('/'))) {
+      photo = src;
+    }
+  }
+
+  // 2. Extract Name if h2 exists
+  let name = '';
+  const h2Match = cleaned.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+  if (h2Match && h2Match[1]) {
+    name = decodeHtmlEntities(h2Match[1].replace(/<[^>]+>/g, '').trim());
+  }
+
+  // 3. Extract Paragraphs
+  const matches = cleaned.match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+  const paras: string[] = [];
+  let designation = '';
+
+  if (matches && matches.length > 0) {
+    for (const m of matches) {
+      const plain = decodeHtmlEntities(m.replace(/<\/?p[^>]*>/gi, '').replace(/<[^>]+>/g, '').trim());
+      if (!plain || plain.includes('rightFunctionality') || plain.includes('holderIndiaImg')) continue;
+      
+      const lower = plain.toLowerCase();
+      if (
+        lower.includes('comptroller and auditor general') ||
+        lower.includes('comptroller and audit general') ||
+        plain.includes('नियंत्रक और महालेखापरीक्षक') ||
+        plain.includes('नियंत्रक एवं महालेखा परीक्षक') ||
+        plain.includes('नियंत्रक-महालेखापरीक्षक')
+      ) {
+        if (!designation) designation = plain;
+        continue;
+      }
+      paras.push(plain);
+    }
+  } else if (!cleaned.startsWith('<')) {
+    paras.push(...cleaned.split('\n\n').map(p => decodeHtmlEntities(p.trim())).filter(Boolean));
+  }
+
+  return { photo, name, designation, paras };
+};
+
 function cleanBioContent(html: string): string {
   if (!html) return '';
   return html
@@ -76,46 +139,66 @@ function CagOfIndiaContent() {
     const initialLang = langParam === 'HI' ? 'हिन्दी' : dataManager.getLanguage();
     setLang(initialLang);
 
-    const parseBioParagraphs = (html: string): string[] => {
-      if (!html || typeof html !== 'string') return [];
-      const cleaned = html.trim();
-      const matches = cleaned.match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
-      if (matches && matches.length > 0) {
-        return matches
-          .map(m => m.replace(/<\/?p[^>]*>/gi, '').trim())
-          .filter(p => p.length > 0 && !p.includes('rightFunctionality') && !p.includes('holderIndiaImg'));
-      }
-      if (!cleaned.startsWith('<')) {
-        return cleaned.split('\n\n').map(p => p.trim()).filter(Boolean);
-      }
-      return [];
-    };
-
     const fetchAll = async () => {
       const activeLang = dataManager.getLanguage();
       setLang(activeLang);
 
-      // Fetch EN
-      const resEn = await dataManager.fetchPageData('page-cag-of-india', 'en');
-      if (isMounted && resEn) {
-        setPageData(resEn);
-        if (resEn.title) setCagNameEn(resEn.title);
-        if (resEn.excerpt) setCagDesigEn(resEn.excerpt);
-        if (resEn.upload_file) {
-          const f = resEn.upload_file;
-          setCagPhoto(f.startsWith('http') || f.startsWith('/') ? f : `/assets/${f}`);
-        }
-        const parasEn = parseBioParagraphs(resEn.content);
-        if (parasEn.length > 0) setBioParagraphsEn(parasEn);
-      }
+      try {
+        // Fetch EN
+        const resEn = await dataManager.fetchPageData('page-cag-of-india', 'en');
+        if (isMounted && resEn) {
+          setPageData(resEn);
+          const detailsEn = extractDetailsFromContent(resEn.content);
+          if (detailsEn?.name) {
+            setCagNameEn(detailsEn.name);
+          } else if (resEn.title && !resEn.title.toLowerCase().includes('profile') && !resEn.title.toLowerCase().includes('cag of india')) {
+            setCagNameEn(resEn.title);
+          }
 
-      // Fetch HI
-      const resHi = await dataManager.fetchPageData('page-cag-of-india', 'hi');
-      if (isMounted && resHi) {
-        if (resHi.title && resHi.title !== resEn?.title) setCagNameHi(resHi.title);
-        if (resHi.excerpt) setCagDesigHi(resHi.excerpt);
-        const parasHi = parseBioParagraphs(resHi.content);
-        if (parasHi.length > 0) setBioParagraphsHi(parasHi);
+          if (detailsEn?.designation) {
+            setCagDesigEn(detailsEn.designation);
+          } else if (resEn.excerpt) {
+            setCagDesigEn(resEn.excerpt);
+          }
+
+          if (detailsEn?.photo) {
+            setCagPhoto(detailsEn.photo);
+          } else if (resEn.upload_file) {
+            const f = resEn.upload_file;
+            setCagPhoto(f.startsWith('http') || f.startsWith('/') ? f : `/assets/${f}`);
+          }
+
+          if (detailsEn?.paras && detailsEn.paras.length >= 2) {
+            setBioParagraphsEn(detailsEn.paras);
+          } else if (detailsEn?.paras && detailsEn.paras.length === 1 && detailsEn.paras[0].length > 180) {
+            setBioParagraphsEn(detailsEn.paras);
+          }
+        }
+
+        // Fetch HI
+        const resHi = await dataManager.fetchPageData('page-cag-of-india', 'hi');
+        if (isMounted && resHi) {
+          const detailsHi = extractDetailsFromContent(resHi.content);
+          if (detailsHi?.name) {
+            setCagNameHi(detailsHi.name);
+          } else if (resHi.title && !resHi.title.includes('प्रोफाइल') && !resHi.title.includes('महालेखापरीक्षक')) {
+            setCagNameHi(resHi.title);
+          }
+
+          if (detailsHi?.designation) {
+            setCagDesigHi(detailsHi.designation);
+          } else if (resHi.excerpt) {
+            setCagDesigHi(resHi.excerpt);
+          }
+
+          if (detailsHi?.paras && detailsHi.paras.length >= 2) {
+            setBioParagraphsHi(detailsHi.paras);
+          } else if (detailsHi?.paras && detailsHi.paras.length === 1 && detailsHi.paras[0].length > 180) {
+            setBioParagraphsHi(detailsHi.paras);
+          }
+        }
+      } catch (e) {
+        console.warn('Error fetching CAG of India page data:', e);
       }
     };
 
@@ -174,6 +257,7 @@ function CagOfIndiaContent() {
       window.removeEventListener('message', handleMessage);
     };
   }, []);
+
 
   const isHindi = lang === 'हिन्दी';
   const pageTitle = pageData?.title || (isHindi ? 'भारत के नियंत्रक और महालेखापरीक्षक' : 'CAG of India');

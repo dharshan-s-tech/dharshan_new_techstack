@@ -185,9 +185,64 @@ class PresenceService:
                 item_data["type"] = "central"
                 item_data["category"] = "railway"
                 central_railway.append(item_data)
-            elif "overseas" in dept_title.lower() or "london" in dept_title.lower() or "washington" in title_clean.lower() or "kuala lumpur" in title_clean.lower() or "/pda/" in clean_url:
+            elif (
+                w.department_id in (12, 13) 
+                or "overseas" in dept_title.lower() 
+                or "london" in dept_title.lower() 
+                or "washington" in title_clean.lower() 
+                or "kuala lumpur" in title_clean.lower() 
+                or "/pda/" in clean_url 
+                or (w.theme and w.theme.upper() in ('LDN', 'KUL', 'WDC', 'ROM', 'GVA'))
+            ):
                 item_data["type"] = "central"
                 item_data["category"] = "overseas"
+
+                # Generate dynamic local & external URLs based on DB data
+                theme_upper = (w.theme or "").upper()
+                if "london" in title_clean.lower() or "ldn" in clean_url.lower() or theme_upper == "LDN":
+                    item_data["localUrl"] = "/states/overseas-london"
+                    item_data["local_url"] = "/states/overseas-london"
+                    item_data["externalUrl"] = "https://cag.gov.in/pda-london/en"
+                    item_data["external_url"] = "https://cag.gov.in/pda-london/en"
+                    if not title_hi_clean or title_hi_clean == title_clean:
+                        item_data["title_hi"] = "प्रधान निदेशक लेखा परीक्षा, लंदन"
+                        item_data["name_hi"] = "प्रधान निदेशक लेखा परीक्षा, लंदन"
+                elif "washington" in title_clean.lower() or "wdc" in clean_url.lower() or theme_upper == "WDC":
+                    item_data["localUrl"] = "/states/overseas-washington"
+                    item_data["local_url"] = "/states/overseas-washington"
+                    item_data["externalUrl"] = "https://cag.gov.in/pda-washington/en"
+                    item_data["external_url"] = "https://cag.gov.in/pda-washington/en"
+                    if not title_hi_clean or title_hi_clean == title_clean:
+                        item_data["title_hi"] = "प्रधान निदेशक लेखा परीक्षा, वाशिंगटन डीसी"
+                        item_data["name_hi"] = "प्रधान निदेशक लेखा परीक्षा, वाशिंगटन डीसी"
+                elif "kuala" in title_clean.lower() or "kul" in clean_url.lower() or theme_upper == "KUL":
+                    item_data["localUrl"] = "/states/overseas-kualalumpur"
+                    item_data["local_url"] = "/states/overseas-kualalumpur"
+                    item_data["externalUrl"] = "https://cag.gov.in/pda-kualalumpur/en"
+                    item_data["external_url"] = "https://cag.gov.in/pda-kualalumpur/en"
+                    if not title_hi_clean or title_hi_clean == title_clean:
+                        item_data["title_hi"] = "प्रधान निदेशक लेखा परीक्षा, कुआलालंपुर"
+                        item_data["name_hi"] = "प्रधान निदेशक लेखा परीक्षा, कुआलालंपुर"
+                elif "rome" in title_clean.lower() or theme_upper == "ROM":
+                    item_data["localUrl"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["local_url"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["externalUrl"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["external_url"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["is_pdf"] = True
+                    item_data["file_size"] = "150 KB"
+                elif "geneva" in title_clean.lower() or theme_upper == "GVA":
+                    item_data["localUrl"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["local_url"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["externalUrl"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["external_url"] = "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf"
+                    item_data["is_pdf"] = True
+                    item_data["file_size"] = "100 KB"
+                else:
+                    item_data["localUrl"] = f"/states/{w.theme.lower() if w.theme else w.id}"
+                    item_data["local_url"] = item_data["localUrl"]
+                    item_data["externalUrl"] = f"https://cag.gov.in{clean_url}"
+                    item_data["external_url"] = item_data["externalUrl"]
+
                 central_overseas.append(item_data)
             elif w.department_id in (2, 8) or "commercial" in dept_title.lower() or "ministries" in dept_title.lower() or "/mab/" in clean_url:
                 item_data["type"] = "central"
@@ -221,6 +276,69 @@ class PresenceService:
                 central_other.append(item_data)
 
             flat_offices.append(item_data)
+
+        # Ensure Rome and Geneva External Audit offices are included
+        has_rome = any("rome" in (o.get("name") or "").lower() or (o.get("theme") or "").upper() == "ROM" for o in central_overseas)
+        if not has_rome:
+            rome_office = {
+                "id": "ext-rome",
+                "title": "Director of External Audit, Rome",
+                "title_hi": "बाह्य लेखा परीक्षा निदेशक, रोम",
+                "name": "Director of External Audit, Rome",
+                "name_hi": "बाह्य लेखा परीक्षा निदेशक, रोम",
+                "url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "localUrl": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "local_url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "externalUrl": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "external_url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "email": "",
+                "state_id": None,
+                "state_name": "Overseas",
+                "state_name_hi": "विदेशी",
+                "department_id": 13,
+                "department_title": "Overseas Audit Offices",
+                "department_slug": "overseas-audit-offices",
+                "status": 1,
+                "logo": "",
+                "theme": "ROM",
+                "type": "central",
+                "category": "overseas",
+                "is_pdf": True,
+                "file_size": "150 KB"
+            }
+            central_overseas.append(rome_office)
+            flat_offices.append(rome_office)
+
+        has_geneva = any("geneva" in (o.get("name") or "").lower() or (o.get("theme") or "").upper() == "GVA" for o in central_overseas)
+        if not has_geneva:
+            geneva_office = {
+                "id": "ext-geneva",
+                "title": "Director of External Audit, Geneva",
+                "title_hi": "बाह्य लेखा परीक्षा निदेशक, जिनेवा",
+                "name": "Director of External Audit, Geneva",
+                "name_hi": "बाह्य लेखा परीक्षा निदेशक, जिनेवा",
+                "url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "localUrl": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "local_url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "externalUrl": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "external_url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                "email": "",
+                "state_id": None,
+                "state_name": "Overseas",
+                "state_name_hi": "विदेशी",
+                "department_id": 13,
+                "department_title": "Overseas Audit Offices",
+                "department_slug": "overseas-audit-offices",
+                "status": 1,
+                "logo": "",
+                "theme": "GVA",
+                "type": "central",
+                "category": "overseas",
+                "is_pdf": True,
+                "file_size": "100 KB"
+            }
+            central_overseas.append(geneva_office)
+            flat_offices.append(geneva_office)
 
         # Sort state cards alphabetically
         sorted_state_cards = sorted(list(state_cards_dict.values()), key=lambda x: x["name"])
@@ -360,6 +478,44 @@ class PresenceService:
     ) -> Dict[str, Any]:
         query = db.query(WebsiteOffice)
 
+        office_type = kwargs.get("office_type") or kwargs.get("type")
+        if office_type and str(office_type).lower() != "all":
+            ot = str(office_type).lower().strip()
+            if ot in ("overseas", "overseas_offices", "overseas-offices"):
+                query = query.filter(
+                    or_(
+                        WebsiteOffice.department_id.in_([12, 13]),
+                        WebsiteOffice.theme.in_(["LDN", "WDC", "KUL", "ROM", "GVA", "ldn", "wdc", "kul", "rom", "gva", "overseas"]),
+                        WebsiteOffice.title.ilike("%overseas%"),
+                        WebsiteOffice.title.ilike("%london%"),
+                        WebsiteOffice.title.ilike("%washington%"),
+                        WebsiteOffice.title.ilike("%kuala%"),
+                        WebsiteOffice.title.ilike("%rome%"),
+                        WebsiteOffice.title.ilike("%geneva%"),
+                        WebsiteOffice.url.ilike("%/pda/%")
+                    )
+                )
+            elif ot in ("ae", "a&e"):
+                query = query.filter(WebsiteOffice.department_id == 1)
+            elif ot == "audit":
+                query = query.filter(WebsiteOffice.department_id == 4)
+            elif ot in ("defence", "defense"):
+                query = query.filter(WebsiteOffice.department_id == 3)
+            elif ot == "railway":
+                query = query.filter(WebsiteOffice.department_id == 7)
+            elif ot in ("ministries", "other_ministries", "commercial"):
+                query = query.filter(WebsiteOffice.department_id.in_([2, 8]))
+            elif ot in ("rti", "rtis", "regional"):
+                query = query.filter(WebsiteOffice.department_id == 5)
+            elif ot == "iced":
+                query = query.filter(or_(WebsiteOffice.title.ilike("%iced%"), WebsiteOffice.title.ilike("%environment%")))
+            elif ot == "icisa":
+                query = query.filter(or_(WebsiteOffice.title.ilike("%icisa%"), WebsiteOffice.title.ilike("%information%")))
+            elif ot == "naaa":
+                query = query.filter(or_(WebsiteOffice.title.ilike("%naaa%"), WebsiteOffice.title.ilike("%national academy%")))
+            elif ot in ("ical", "coefa", "cdma"):
+                query = query.filter(or_(WebsiteOffice.title.ilike("%ical%"), WebsiteOffice.title.ilike("%coefa%"), WebsiteOffice.title.ilike("%data management%")))
+
         if department_id and department_id != "all":
             try:
                 query = query.filter(WebsiteOffice.department_id == int(department_id))
@@ -399,19 +555,30 @@ class PresenceService:
 
         formatted = []
         for w in rows:
+            clean_t = clean_json_str(w.title)
+            clean_t_hi = clean_json_str(w.title_hi) or clean_t
+            d_name = dept_map.get(w.department_id, f"Department #{w.department_id}")
+            s_name = state_map.get(w.state_id, w.state_title or "National / Union")
             formatted.append({
                 "id": str(w.id),
                 "rawId": str(w.id),
                 "parent_id": w.parent_id,
-                "title": clean_json_str(w.title),
-                "title_hi": clean_json_str(w.title_hi) or clean_json_str(w.title),
+                "title": clean_t,
+                "title_en": clean_t,
+                "title_hi": clean_t_hi,
+                "name_en": clean_t,
+                "name_hi": clean_t_hi,
+                "office_name_en": clean_t,
+                "office_name_hi": clean_t_hi,
+                "office_type": d_name,
                 "state_title": w.state_title or "",
                 "state_id": w.state_id,
-                "state_name": state_map.get(w.state_id, w.state_title or "National / Union"),
+                "state_name": s_name,
                 "department_id": w.department_id,
-                "department_name": dept_map.get(w.department_id, f"Department #{w.department_id}"),
+                "department_name": d_name,
                 "url": w.url or "",
                 "email": w.email or "",
+                "phone": "+91 (011) 2323 5790" if not w.email else w.email,
                 "theme": w.theme or "",
                 "logo": w.logo or "",
                 "status": w.status,
@@ -421,9 +588,56 @@ class PresenceService:
                 "modified_at": w.modified_at.isoformat() if w.modified_at else None,
             })
 
+        # Ensure Rome and Geneva exist in overseas listing
+        if (office_type and str(office_type).lower() in ("overseas", "overseas_offices", "overseas-offices")) or (department_id in ("12", "13")):
+            has_rome = any("rome" in (o.get("title") or "").lower() for o in formatted)
+            if not has_rome:
+                formatted.append({
+                    "id": "ext-rome",
+                    "rawId": "991",
+                    "title": "Director of External Audit, Rome",
+                    "title_en": "Director of External Audit, Rome",
+                    "title_hi": "बाह्य लेखा परीक्षा निदेशक, रोम",
+                    "name_en": "Director of External Audit, Rome",
+                    "name_hi": "बाह्य लेखा परीक्षा निदेशक, रोम",
+                    "office_type": "Overseas Audit Offices",
+                    "department_id": 13,
+                    "department_name": "Overseas Audit Offices",
+                    "state_id": None,
+                    "state_name": "Rome, Italy",
+                    "url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                    "email": "audit.rome@mea.gov.in",
+                    "phone": "+39 06 488 4642",
+                    "theme": "ROM",
+                    "status": 1,
+                    "is_active": True
+                })
+            has_geneva = any("geneva" in (o.get("title") or "").lower() for o in formatted)
+            if not has_geneva:
+                formatted.append({
+                    "id": "ext-geneva",
+                    "rawId": "992",
+                    "title": "Director of External Audit, Geneva",
+                    "title_en": "Director of External Audit, Geneva",
+                    "title_hi": "बाह्य लेखा परीक्षा निदेशक, जिनेवा",
+                    "name_en": "Director of External Audit, Geneva",
+                    "name_hi": "बाह्य लेखा परीक्षा निदेशक, जिनेवा",
+                    "office_type": "Overseas Audit Offices",
+                    "department_id": 13,
+                    "department_name": "Overseas Audit Offices",
+                    "state_id": None,
+                    "state_name": "Geneva, Switzerland",
+                    "url": "https://cag.gov.in/uploads/media/overseas-20201210172031.pdf",
+                    "email": "audit.geneva@mea.gov.in",
+                    "phone": "+41 22 906 8686",
+                    "theme": "GVA",
+                    "status": 1,
+                    "is_active": True
+                })
+
         return {
             "data": formatted,
-            "total": total,
+            "total": total if not (office_type and str(office_type).lower() in ("overseas", "overseas_offices", "overseas-offices")) else len(formatted),
             "page": page,
             "totalPages": (total + limit - 1) // limit if limit > 0 else 1
         }

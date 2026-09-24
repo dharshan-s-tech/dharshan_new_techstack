@@ -63,6 +63,7 @@ const NAV: NavGroup[] = [
   {
     group: 'Settings & Master', icon: Settings, items: [
       { label: 'Offices Directory', href: '/admin/offices', icon: Building2 },
+      { label: 'Subsites & Overseas Portals', href: '/admin/subsites', icon: Globe },
       { label: 'States & UTs', href: '/admin/states', icon: Map },
       { label: 'Government Types', href: '/admin/government-types', icon: Tag },
     ]

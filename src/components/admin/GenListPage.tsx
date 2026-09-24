@@ -46,11 +46,12 @@ interface GenListPageProps {
   title: string; table: string; addHref: string; editBase: string; viewBase?: string;
   searchCol: string; cols: Col[]; page: number; search: string;
   lang?: string; status?: string; sort?: string;
-  extraQuery?: string; extraParams?: any[];
+  type?: string; category?: string; subtopic?: string;
+  extraQuery?: string; extraParams?: any;
 }
 
 export async function GenListPage({
-  title, table, addHref, editBase, viewBase, searchCol, cols, page, search, lang = 'all', status = 'all', sort = 'newest', extraQuery, extraParams
+  title, table, addHref, editBase, viewBase, searchCol, cols, page, search, lang = 'all', status = 'all', sort = 'newest', type, category, subtopic, extraQuery, extraParams
 }: GenListPageProps) {
   let rows: any[] = [];
   let total = 0;
@@ -67,6 +68,9 @@ export async function GenListPage({
     if (lang && lang !== 'all') params.set('language', lang);
     if (status && status !== 'all') params.set('status', status);
     if (sort) params.set('sort', sort);
+    if (type) params.set('type', type);
+    if (category) params.set('category', category);
+    if (subtopic) params.set('subtopic', subtopic);
 
     const res = await fetch(`http://127.0.0.1:8000/api/admin/crud?${params.toString()}`, {
       headers: { 'Content-Type': 'application/json' },

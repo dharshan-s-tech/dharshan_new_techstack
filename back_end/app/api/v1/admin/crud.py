@@ -81,6 +81,7 @@ async def list_or_get_crud(
     search: Optional[str] = Query(None),
     searchCol: Optional[str] = Query(None),
     sort: Optional[str] = Query("newest"),
+    type: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
     subtopic: Optional[str] = Query(None),
     db_table: Optional[str] = Query(None),
@@ -391,7 +392,7 @@ async def list_or_get_crud(
             return {"data": found}
         return UserManagementService.get_wings(db, page=page, limit=limit, search=search, status=status)
 
-    if table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+    if table in ("websites", "offices", "state_offices", "our_presence", "presence", "subsites", "overseas_offices", "overseas-offices", "overseas"):
         from app.services.presence_service import PresenceService
         if id:
             office = PresenceService.get_office_by_id(db, id)
@@ -403,7 +404,8 @@ async def list_or_get_crud(
             search=search,
             department_id=category or wings_id,
             state_id=role_id,
-            status=status
+            status=status,
+            office_type=type or subtopic or category or ("overseas" if table in ("overseas", "overseas_offices", "overseas-offices") else None)
         )
 
     if table in ("states", "states_list"):
@@ -527,7 +529,7 @@ async def create_crud(
             from app.services.user_management_service import UserManagementService
             res = UserManagementService.create_user_office(db, data, actor_id=1)
             record_id = str(res.get("id"))
-        elif table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+        elif table in ("websites", "offices", "state_offices", "our_presence", "presence", "subsites", "overseas_offices", "overseas-offices", "overseas"):
             from app.services.presence_service import PresenceService
             res = PresenceService.create_office(db, data, actor_id=1)
             record_id = str(res.get("id"))
@@ -639,7 +641,7 @@ async def update_crud(
         elif table in ("user_offices", "user-offices"):
             from app.services.user_management_service import UserManagementService
             UserManagementService.update_user_office(db, id, data, actor_id=1)
-        elif table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+        elif table in ("websites", "offices", "state_offices", "our_presence", "presence", "subsites", "overseas_offices", "overseas-offices", "overseas"):
             from app.services.presence_service import PresenceService
             PresenceService.update_office(db, id, data, actor_id=1)
         else:
@@ -741,7 +743,7 @@ async def delete_crud(
         elif table in ("user_offices", "user-offices"):
             from app.services.user_management_service import UserManagementService
             UserManagementService.delete_user_office(db, id)
-        elif table in ("websites", "offices", "state_offices", "our_presence", "presence"):
+        elif table in ("websites", "offices", "state_offices", "our_presence", "presence", "subsites", "overseas_offices", "overseas-offices", "overseas"):
             from app.services.presence_service import PresenceService
             PresenceService.delete_office(db, id)
         else:
