@@ -24,6 +24,12 @@ __pycache__/
 # scratch and system logs
 scratch/
 .system_generated/
+*.cjs
+*.txt
+
+# static uploads and local asset cache
+/public/uploads/
+/public/webroot/
 
 # misc
 .DS_Store

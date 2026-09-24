@@ -321,97 +321,97 @@ export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
     id: 'andhra-pradesh',
     name: 'Andhra Pradesh',
     nameHindi: 'आंध्र प्रदेश',
-    auditDetails: [{ label: 'PAG (Audit), Vijayawada', url: '/states/andhra-pradesh' }],
-    aeDetails: [{ label: 'PAG (A&E), Vijayawada', url: '/states/andhra-pradesh' }]
+    auditDetails: [{ label: 'PAG (Audit), Vijayawada', url: '/ag/andhra-pradesh' }],
+    aeDetails: [{ label: 'PAG (A&E), Vijayawada', url: '/ae/andhra-pradesh' }]
   },
   {
     id: 'arunachal-pradesh',
     name: 'Arunachal Pradesh',
     nameHindi: 'अरुणाचल प्रदेश',
-    auditDetails: [{ label: 'AG (Audit), Itanagar', url: '/states/andhra-pradesh' }],
-    aeDetails: [{ label: 'AG (A&E), Itanagar', url: '/states/andhra-pradesh' }]
+    auditDetails: [{ label: 'AG (Audit), Itanagar', url: '/ag/arunachal-pradesh' }],
+    aeDetails: [{ label: 'AG (A&E), Itanagar', url: '/ae/arunachal-pradesh' }]
   },
   {
     id: 'assam',
     name: 'Assam',
     nameHindi: 'असम',
-    auditDetails: [{ label: 'PAG (Audit), Guwahati', url: 'https://cag.gov.in/ag/assam/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Guwahati', url: 'https://cag.gov.in/ag/assam/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Guwahati', url: '/ag/assam' }],
+    aeDetails: [{ label: 'PAG (A&E), Guwahati', url: '/ae/assam' }]
   },
   {
     id: 'bihar',
     name: 'Bihar',
     nameHindi: 'बिहार',
-    auditDetails: [{ label: 'PAG (Audit), Patna', url: 'https://cag.gov.in/ag/bihar/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Patna', url: 'https://cag.gov.in/ag/bihar/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Patna', url: '/ag/bihar' }],
+    aeDetails: [{ label: 'PAG (A&E), Patna', url: '/ae/bihar' }]
   },
   {
-    id: 'chattisgarh',
-    name: 'Chattisgarh',
+    id: 'chhattisgarh',
+    name: 'Chhattisgarh',
     nameHindi: 'छत्तीसगढ़',
-    auditDetails: [{ label: 'PAG (Audit), Raipur', url: 'https://cag.gov.in/ag/chhattisgarh/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Raipur', url: 'https://cag.gov.in/ag/chhattisgarh/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Raipur', url: '/ag/chhattisgarh' }],
+    aeDetails: [{ label: 'PAG (A&E), Raipur', url: '/ae/chhattisgarh' }]
   },
   {
     id: 'gujarat',
     name: 'Gujarat',
     nameHindi: 'गुजरात',
-    auditDetails: [{ label: 'PAG (Audit), Rajkot', url: 'https://cag.gov.in/ag2/gujarat/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Rajkot', url: 'https://cag.gov.in/ag1/gujarat/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Rajkot', url: '/ag/gujarat' }],
+    aeDetails: [{ label: 'PAG (A&E), Rajkot', url: '/ae/gujarat' }]
   },
   {
     id: 'haryana',
     name: 'Haryana',
     nameHindi: 'हरियाणा',
-    auditDetails: [{ label: 'PAG (Audit), Chandigarh', url: 'https://cag.gov.in/ag/haryana/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Chandigarh', url: 'https://cag.gov.in/ag/haryana/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Chandigarh', url: '/ag/haryana' }],
+    aeDetails: [{ label: 'PAG (A&E), Chandigarh', url: '/ae/haryana' }]
   },
   {
     id: 'himachal-pradesh',
     name: 'Himachal Pradesh',
     nameHindi: 'हिमाचल प्रदेश',
-    auditDetails: [{ label: 'PAG (Audit), Shimla', url: 'https://cag.gov.in/ag/himachal-pradesh/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Shimla', url: 'https://cag.gov.in/ag/himachal-pradesh/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Shimla', url: '/ag/himachal-pradesh' }],
+    aeDetails: [{ label: 'PAG (A&E), Shimla', url: '/ae/himachal-pradesh' }]
   },
   {
-    id: 'jammu-kashmir',
-    name: 'Jammu & Kashmir State (...)',
+    id: 'jammu-and-kashmir',
+    name: 'Jammu & Kashmir State (Upto 30-Oct-2019)',
     nameHindi: 'जम्मू एवं कश्मीर राज्य',
-    auditDetails: [{ label: 'PAG (Audit), Jammu & Kashmir', url: 'https://cag.gov.in/ag/jammu-and-kashmir/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Srinagar & Jammu', url: 'https://cag.gov.in/ag/jammu-and-kashmir/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Jammu & Kashmir', url: '/ag/jammu-and-kashmir' }],
+    aeDetails: [{ label: 'PAG (A&E), Srinagar & Jammu', url: '/ae/jammu-and-kashmir' }]
   },
   {
     id: 'jharkhand',
     name: 'Jharkhand',
     nameHindi: 'झारखंड',
-    auditDetails: [{ label: 'PAG (Audit), Ranchi', url: 'https://cag.gov.in/ag/jharkhand/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Ranchi', url: 'https://cag.gov.in/ag/jharkhand/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Ranchi', url: '/ag/jharkhand' }],
+    aeDetails: [{ label: 'PAG (A&E), Ranchi', url: '/ae/jharkhand' }]
   },
   {
     id: 'karnataka',
     name: 'Karnataka',
     nameHindi: 'कर्नाटक',
-    auditDetails: [{ label: 'PAG (Audit), Bengaluru', url: 'https://cag.gov.in/ag/karnataka/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Bengaluru', url: 'https://cag.gov.in/ag/karnataka/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Bengaluru', url: '/ag/karnataka' }],
+    aeDetails: [{ label: 'PAG (A&E), Bengaluru', url: '/ae/karnataka' }]
   },
   {
     id: 'kerala',
     name: 'Kerala',
     nameHindi: 'केरल',
-    auditDetails: [{ label: 'PAG (Audit), Thiruvananthapuram', url: 'https://cag.gov.in/ag/kerala/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Thiruvananthapuram', url: 'https://cag.gov.in/ag/kerala/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Thiruvananthapuram', url: '/ag/kerala' }],
+    aeDetails: [{ label: 'PAG (A&E), Thiruvananthapuram', url: '/ae/kerala' }]
   },
   {
     id: 'madhya-pradesh',
     name: 'Madhya Pradesh',
     nameHindi: 'मध्य प्रदेश',
     auditDetails: [
-      { label: 'PAG (Audit), Gwalior', url: 'https://cag.gov.in/ag1/madhya-pradesh/en' },
-      { label: 'PAG (Audit) - II, Gwalior', url: 'https://cag.gov.in/ag2/madhya-pradesh/en' }
+      { label: 'PAG (Audit), Gwalior', url: '/ag/madhya-pradesh' },
+      { label: 'PAG (Audit) - II, Gwalior', url: '/ag/madhya-pradesh' }
     ],
     aeDetails: [
-      { label: 'PAG (A&E) - I, Gwalior', url: 'https://cag.gov.in/ag1/madhya-pradesh/en' },
-      { label: 'PAG (A&E) - II, Bhopal', url: 'https://cag.gov.in/ag2/madhya-pradesh/en' }
+      { label: 'PAG (A&E) - I, Gwalior', url: '/ae/gwalior-i' },
+      { label: 'PAG (A&E) - II, Bhopal', url: '/ae/gwalior-ii' }
     ]
   },
   {
@@ -419,117 +419,117 @@ export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
     name: 'Maharashtra',
     nameHindi: 'महाराष्ट्र',
     auditDetails: [
-      { label: 'AG (Audit) - II, Nagpur', url: 'https://cag.gov.in/ag2/maharashtra/en' },
-      { label: 'PAG (Audit) - I, Mumbai', url: 'https://cag.gov.in/ag1/maharashtra/en' }
+      { label: 'AG (Audit) - II, Nagpur', url: '/ag/maharashtra' },
+      { label: 'PAG (Audit) - I, Mumbai', url: '/ag/maharashtra' }
     ],
     aeDetails: [
-      { label: 'AG (A&E) - II, Nagpur', url: 'https://cag.gov.in/ag2/maharashtra/en' },
-      { label: 'PAG (A&E) - I, Mumbai', url: 'https://cag.gov.in/ag1/maharashtra/en' }
+      { label: 'AG (A&E) - II, Nagpur', url: '/ae/nagpur' },
+      { label: 'PAG (A&E) - I, Mumbai', url: '/ae/mumbai' }
     ]
   },
   {
     id: 'manipur',
     name: 'Manipur',
     nameHindi: 'मणिपुर',
-    auditDetails: [{ label: 'PAG (Audit), Imphal', url: 'https://cag.gov.in/ag/manipur/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Imphal', url: 'https://cag.gov.in/ag/manipur/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Imphal', url: '/ag/manipur' }],
+    aeDetails: [{ label: 'PAG (A&E), Imphal', url: '/ae/manipur' }]
   },
   {
     id: 'meghalaya',
     name: 'Meghalaya',
     nameHindi: 'मेघालय',
-    auditDetails: [{ label: 'PAG (Audit), Shillong', url: 'https://cag.gov.in/ag/meghalaya/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Shillong', url: 'https://cag.gov.in/ag/meghalaya/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Shillong', url: '/ag/meghalaya' }],
+    aeDetails: [{ label: 'PAG (A&E), Shillong', url: '/ae/meghalaya' }]
   },
   {
     id: 'mizoram',
     name: 'Mizoram',
     nameHindi: 'मिजोरम',
-    auditDetails: [{ label: 'PAG (Audit), Shillong', url: 'https://cag.gov.in/ag/mizoram/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Aizawl', url: 'https://cag.gov.in/ag/mizoram/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Shillong', url: '/ag/mizoram' }],
+    aeDetails: [{ label: 'PAG (A&E), Aizawl', url: '/ae/mizoram' }]
   },
   {
     id: 'nagaland',
     name: 'Nagaland',
     nameHindi: 'नागालैंड',
-    auditDetails: [{ label: 'PAG (Audit), Kohima', url: 'https://cag.gov.in/ag/nagaland/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Kohima', url: 'https://cag.gov.in/ag/nagaland/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Kohima', url: '/ag/nagaland' }],
+    aeDetails: [{ label: 'PAG (A&E), Kohima', url: '/ae/nagaland' }]
   },
   {
     id: 'odisha',
     name: 'Odisha',
     nameHindi: 'ओडिशा',
-    auditDetails: [{ label: 'PAG (Audit), Bhubaneswar', url: 'https://cag.gov.in/ag/odisha/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Bhubaneswar', url: 'https://cag.gov.in/ag/odisha/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Bhubaneswar', url: '/ag/odisha' }],
+    aeDetails: [{ label: 'PAG (A&E), Bhubaneswar', url: '/ae/odisha' }]
   },
   {
     id: 'punjab',
     name: 'Punjab',
     nameHindi: 'पंजाब',
-    auditDetails: [{ label: 'AG (Audit) & U.T., Chandigarh', url: 'https://cag.gov.in/ag/punjab/en' }],
-    aeDetails: [{ label: 'AG (A&E) & U.T., Chandigarh', url: 'https://cag.gov.in/ag/punjab/en' }]
+    auditDetails: [{ label: 'AG (Audit) & U.T., Chandigarh', url: '/ag/punjab' }],
+    aeDetails: [{ label: 'AG (A&E) & U.T., Chandigarh', url: '/ae/punjab' }]
   },
   {
     id: 'rajasthan',
     name: 'Rajasthan',
     nameHindi: 'राजस्थान',
-    auditDetails: [{ label: 'PAG (Audit), Jaipur', url: 'https://cag.gov.in/ag/rajasthan/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Jaipur', url: 'https://cag.gov.in/ag/rajasthan/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Jaipur', url: '/ag/rajasthan' }],
+    aeDetails: [{ label: 'PAG (A&E), Jaipur', url: '/ae/rajasthan' }]
   },
   {
     id: 'sikkim',
     name: 'Sikkim',
     nameHindi: 'सिक्किम',
-    auditDetails: [{ label: 'Sr. DAG (Audit), Gangtok', url: 'https://cag.gov.in/ag/sikkim/en' }],
-    aeDetails: [{ label: 'Sr. DAG (A&E), Gangtok', url: 'https://cag.gov.in/ag/sikkim/en' }]
+    auditDetails: [{ label: 'Sr. DAG (Audit), Gangtok', url: '/ag/sikkim' }],
+    aeDetails: [{ label: 'Sr. DAG (A&E), Gangtok', url: '/ae/sikkim' }]
   },
   {
     id: 'tamil-nadu',
     name: 'Tamil Nadu',
     nameHindi: 'तमिलनाडु',
-    auditDetails: [{ label: 'PAG (Audit), Chennai', url: 'https://cag.gov.in/ag/tamil-nadu/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Chennai', url: 'https://cag.gov.in/ag/tamil-nadu/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Chennai', url: '/ag/tamil-nadu' }],
+    aeDetails: [{ label: 'PAG (A&E), Chennai', url: '/ae/tamil-nadu' }]
   },
   {
     id: 'telangana',
     name: 'Telangana',
     nameHindi: 'तेलंगाना',
-    auditDetails: [{ label: 'PAG (Audit), Hyderabad', url: 'https://cag.gov.in/ag/telangana/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Hyderabad', url: 'https://cag.gov.in/ag/telangana/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Hyderabad', url: '/ag/telangana' }],
+    aeDetails: [{ label: 'PAG (A&E), Hyderabad', url: '/ae/telangana' }]
   },
   {
     id: 'tripura',
     name: 'Tripura',
     nameHindi: 'त्रिपुरा',
-    auditDetails: [{ label: 'AG (Audit), Agartala', url: 'https://cag.gov.in/ag/tripura/en' }],
-    aeDetails: [{ label: 'AG (A&E), Agartala', url: 'https://cag.gov.in/ag/tripura/en' }]
+    auditDetails: [{ label: 'AG (Audit), Agartala', url: '/ag/tripura' }],
+    aeDetails: [{ label: 'AG (A&E), Agartala', url: '/ae/tripura' }]
   },
   {
     id: 'uttar-pradesh',
     name: 'Uttar Pradesh',
     nameHindi: 'उत्तर प्रदेश',
     auditDetails: [
-      { label: 'AG (Audit) - II, Prayagraj', url: 'https://cag.gov.in/ag2/uttar-pradesh/en' },
-      { label: 'PAG (Audit) - I, Prayagraj', url: 'https://cag.gov.in/ag1/uttar-pradesh/en' }
+      { label: 'AG (Audit) - II, Prayagraj', url: '/ag/uttar-pradesh' },
+      { label: 'PAG (Audit) - I, Prayagraj', url: '/ag/uttar-pradesh' }
     ],
     aeDetails: [
-      { label: 'AG (A&E) - II, Prayagraj', url: 'https://cag.gov.in/ag2/uttar-pradesh/en' },
-      { label: 'PAG (A&E) - I, Prayagraj', url: 'https://cag.gov.in/ag1/uttar-pradesh/en' }
+      { label: 'AG (A&E) - II, Prayagraj', url: '/ae/allahabad-ii' },
+      { label: 'PAG (A&E) - I, Prayagraj', url: '/ae/allahabad' }
     ]
   },
   {
     id: 'uttarakhand',
     name: 'Uttarakhand',
     nameHindi: 'उत्तराखंड',
-    auditDetails: [{ label: 'AG (Audit), Dehradun', url: 'https://cag.gov.in/ag/uttarakhand/en' }],
-    aeDetails: [{ label: 'AG (A&E), Dehradun', url: 'https://cag.gov.in/ag/uttarakhand/en' }]
+    auditDetails: [{ label: 'AG (Audit), Dehradun', url: '/ag/uttarakhand' }],
+    aeDetails: [{ label: 'AG (A&E), Dehradun', url: '/ae/uttarakhand' }]
   },
   {
     id: 'west-bengal',
     name: 'West Bengal',
     nameHindi: 'पश्चिम बंगाल',
-    auditDetails: [{ label: 'PAG (Audit), Kolkata', url: 'https://cag.gov.in/ag/west-bengal/en' }],
-    aeDetails: [{ label: 'PAG (A&E), Kolkata', url: 'https://cag.gov.in/ag/west-bengal/en' }]
+    auditDetails: [{ label: 'PAG (Audit), Kolkata', url: '/ag/west-bengal' }],
+    aeDetails: [{ label: 'PAG (A&E), Kolkata', url: '/ae/west-bengal' }]
   }
 ];
 
@@ -1573,6 +1573,26 @@ export const dataManager = {
     return this.getFormerCags();
   },
 
+  async fetchBanners(): Promise<BannerItem[]> {
+    try {
+      const baseUrl = typeof window !== 'undefined' ? '' : (process.env.API_INTERNAL_URL || 'http://127.0.0.1:3333');
+      const res = await fetch(`${baseUrl}/api/banners`, { cache: 'no-store' });
+      if (res.ok) {
+        const banners = await res.json();
+        if (Array.isArray(banners) && banners.length > 0) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('cag_banners', JSON.stringify(banners));
+            window.dispatchEvent(new Event('bannersChange'));
+          }
+          return banners;
+        }
+      }
+    } catch (e) {
+      console.warn('[dataManager] fetchBanners failed:', e);
+    }
+    return this.getBanners();
+  },
+
   getLanguage(): 'English' | 'हिन्दी' {
     if (typeof window === 'undefined') return 'English';
     return (localStorage.getItem('cag_language') as any) || 'English';
@@ -1590,28 +1610,63 @@ export const dataManager = {
       const stored = localStorage.getItem('cag_state_offices');
       let list: any[] = DEFAULT_STATE_OFFICES;
       if (stored && stored !== 'undefined' && stored !== 'null') {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          list = parsed;
-        }
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            list = parsed;
+          }
+        } catch {}
       }
-      return list.map((item: any, idx: number) => {
-        const defMatch = DEFAULT_STATE_OFFICES.find(d => 
-          String(d.id).toLowerCase() === String(item.id).toLowerCase() ||
-          d.name.toLowerCase() === (item.name || '').toLowerCase()
-        );
+
+      const migrated = list.map((item: any, idx: number) => {
+        const itemId = String(item.id || '').toLowerCase().trim();
+        const itemName = String(item.name || '').toLowerCase().trim();
+        const defMatch = DEFAULT_STATE_OFFICES.find(d => {
+          const dId = d.id.toLowerCase();
+          const dName = d.name.toLowerCase();
+          return (
+            dId === itemId ||
+            dName === itemName ||
+            (itemId === 'chattisgarh' && dId === 'chhattisgarh') ||
+            (itemName === 'chattisgarh' && dName === 'chhattisgarh') ||
+            (itemId === 'jammu-kashmir' && dId === 'jammu-and-kashmir') ||
+            (itemId === 'sikkin' && dId === 'sikkim') ||
+            (itemId === 'maharastra' && dId === 'maharashtra')
+          );
+        });
+
+        // Always sanitize aeDetails to point to /ae/[state-slug]
+        const cleanAeDetails = (defMatch?.aeDetails && defMatch.aeDetails.length > 0)
+          ? defMatch.aeDetails
+          : (Array.isArray(item.aeDetails) && item.aeDetails.length > 0
+              ? item.aeDetails.map((sub: any) => ({
+                  ...sub,
+                  url: sub.url && sub.url.startsWith('/ae/') ? sub.url : `/ae/${defMatch?.id || item.id || 'andhra-pradesh'}`
+                }))
+              : [{ label: `Office of the Principal Accountant General (A&E), ${defMatch?.name || item.name || 'State'}`, url: `/ae/${defMatch?.id || item.id || 'andhra-pradesh'}` }]);
+
+        // Always sanitize auditDetails to point to /ag/[state-slug]
+        const cleanAuditDetails = (defMatch?.auditDetails && defMatch.auditDetails.length > 0)
+          ? defMatch.auditDetails
+          : (Array.isArray(item.auditDetails) && item.auditDetails.length > 0
+              ? item.auditDetails.map((sub: any) => ({
+                  ...sub,
+                  url: sub.url && sub.url.startsWith('/ag/') ? sub.url : `/ag/${defMatch?.id || item.id || 'andhra-pradesh'}`
+                }))
+              : [{ label: `Office of the Principal Accountant General (Audit), ${defMatch?.name || item.name || 'State'}`, url: `/ag/${defMatch?.id || item.id || 'andhra-pradesh'}` }]);
+
         return {
-          id: String(item.id || defMatch?.id || `state-${idx + 1}`),
-          name: item.name || defMatch?.name || 'State Office',
-          nameHindi: item.nameHindi || defMatch?.nameHindi || '',
-          auditDetails: Array.isArray(item.auditDetails) && item.auditDetails.length > 0 
-            ? item.auditDetails 
-            : (defMatch?.auditDetails || [{ label: `Office of the Principal Accountant General (Audit), ${item.name || 'State'}`, url: '' }]),
-          aeDetails: Array.isArray(item.aeDetails) && item.aeDetails.length > 0 
-            ? item.aeDetails 
-            : (defMatch?.aeDetails || [{ label: `Office of the Principal Accountant General (A&E), ${item.name || 'State'}`, url: '' }])
+          id: defMatch?.id || String(item.id || `state-${idx + 1}`),
+          name: defMatch?.name || item.name || 'State Office',
+          nameHindi: defMatch?.nameHindi || item.nameHindi || '',
+          auditDetails: cleanAuditDetails,
+          aeDetails: cleanAeDetails
         };
       });
+
+      // Update localStorage with migrated data
+      localStorage.setItem('cag_state_offices', JSON.stringify(migrated));
+      return migrated;
     } catch (e) {
       console.error('Error reading state offices from localStorage:', e);
       return DEFAULT_STATE_OFFICES;

@@ -18,7 +18,7 @@ export function getApiBaseUrl(): string {
 
   return (
     process.env.API_INTERNAL_URL ||
-    'http://127.0.0.1:8000'
+    'http://127.0.0.1:3333'
   ).replace(/\/$/, '');
 }
 
@@ -149,6 +149,31 @@ export const api = {
   getStateSubsite: async (slug: string) => {
     return fetchJson<any>(`/api/states/${slug}`);
   },
+  getStateAccountsByState: async (slug: string, type?: number) => {
+    return fetchJson<{ state_slug: string; state_id: number; total: number; items: any[] }>(
+      `/api/states/${slug}/accounts${type ? `?type=${type}` : ''}`
+    );
+  },
+  getStateCirculars: async (slug: string, limit?: number) => {
+    return fetchJson<{ state_slug: string; total: number; items: any[] }>(
+      `/api/states/${slug}/circulars${limit ? `?limit=${limit}` : ''}`
+    );
+  },
+  submitGrievance: async (slug: string, payload: any) => {
+    return fetchJson<{ success: boolean; ticket_id?: string; message?: string }>(
+      `/api/states/${slug}/grievance`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }
+    );
+  },
+  queryPensionStatus: async (slug: string, ppo: string, phase?: string) => {
+    return fetchJson<{ count: number; records: any[] }>(
+      `/api/states/${slug}/pension?ppo=${encodeURIComponent(ppo)}${phase ? `&phase=${encodeURIComponent(phase)}` : ''}`
+    );
+  },
   getResources: async (slug: string, params?: Record<string, any>) => {
     const query = new URLSearchParams(params as any).toString();
     return fetchJson<{ items: any[]; total: number; page?: number; page_size?: number }>(
@@ -156,4 +181,5 @@ export const api = {
     );
   }
 };
+
 

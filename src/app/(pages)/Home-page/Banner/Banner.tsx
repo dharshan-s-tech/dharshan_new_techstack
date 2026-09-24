@@ -84,6 +84,12 @@ export default function Banner() {
     };
 
     loadBanners();
+    dataManager.fetchBanners().then((b) => {
+      if (Array.isArray(b) && b.length > 0) {
+        setCustomBanners(b);
+      }
+    });
+
     setLang(dataManager.getLanguage());
 
     const handleLangChange = () => setLang(dataManager.getLanguage());

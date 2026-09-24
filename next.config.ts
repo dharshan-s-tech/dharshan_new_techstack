@@ -33,12 +33,16 @@ const nextConfig: NextConfig = {
     "0.0.0.0",
   ],
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiRewriteTarget}/api/:path*`,
-      },
-    ];
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: [
+        {
+          source: "/api/:path*",
+          destination: `${apiRewriteTarget}/api/:path*`,
+        },
+      ],
+    };
   },
 };
 
