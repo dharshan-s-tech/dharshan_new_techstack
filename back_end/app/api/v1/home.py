@@ -223,9 +223,16 @@ async def get_presence(db: Session = Depends(get_db)):
     states_data = []
     if db and engine.dialect.name == "postgresql":
         try:
-            q_states = text("SELECT id, name FROM cag_revamp.states ORDER BY name;")
+            q_states = text("SELECT id, name, slug FROM cag_revamp.states WHERE parent_id = 0 OR parent_id IS NULL ORDER BY name;")
             rows_st = db.execute(q_states).mappings().fetchall()
-            states_data = [{"id": r["id"], "name": r["name"]} for r in rows_st]
+            states_data = [
+                {
+                    "id": r["slug"] if r.get("slug") else str(r["name"]).lower().replace(" ", "-"),
+                    "name": r["name"],
+                    "state_id": r["id"]
+                }
+                for r in rows_st
+            ]
         except Exception as e:
             logger.warning(f"Error fetching states: {e}")
 

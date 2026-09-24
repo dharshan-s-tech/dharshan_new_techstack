@@ -6,6 +6,7 @@ import { ANDHRA_PRADESH_PAGES, SubsitePageData, getSidebarForPath } from '@/data
 import { STATE_CITIZEN_CHARTER_PDFS } from '@/data/stateSubsites/andhraPradeshNav';
 import { aeService } from '@/lib/services/aeService';
 import { cdn } from '@/lib/cdn';
+import BiharPensionsSearchEngine from '@/components/states/BiharPensionsSearchEngine';
 
 interface DynamicViewProps {
   state: string;
@@ -204,7 +205,7 @@ export default async function GenericStateSubsiteDynamicView({
   }
 
   // 4. Resolve Contextual Category Sidebar
-  const rawCategorySidebar = getSidebarForPath(slugPath);
+  const rawCategorySidebar = getSidebarForPath(slugPath, stateSlug, prefix);
   const categorySidebar = rawCategorySidebar
     ? {
         ...rawCategorySidebar,
@@ -684,6 +685,13 @@ export default async function GenericStateSubsiteDynamicView({
     };
   }
 
+  const isBiharPension = stateSlug === 'bihar' && (
+    normalizedPath.includes('bihar-pension') ||
+    normalizedPath.includes('pension-search') ||
+    normalizedPath === 'biharpensions' ||
+    normalizedPath === 'pension/pensioners-corner/pension-tracking'
+  );
+
   return (
     <StateSubsiteLayout
       pageData={pageData}
@@ -692,7 +700,9 @@ export default async function GenericStateSubsiteDynamicView({
       officeLocation={stateDisplayName}
       officeLocationHi={siteInfo?.website_title_hi}
       logoUrl={siteInfo?.logo ? cdn.logo(siteInfo.logo) : undefined}
-    />
+    >
+      {isBiharPension ? <BiharPensionsSearchEngine /> : undefined}
+    </StateSubsiteLayout>
   );
 }
 

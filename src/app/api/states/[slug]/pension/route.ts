@@ -8,19 +8,28 @@ export async function GET(
   try {
     const { slug } = await params;
     const { searchParams } = new URL(request.url);
-    const ppo = searchParams.get('ppo');
+    const ppo = searchParams.get('ppo') || undefined;
+    const cname = searchParams.get('cname') || undefined;
+    const treasury = searchParams.get('treasury') || undefined;
     const phase = searchParams.get('phase') || undefined;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-    if (!ppo) {
-      return NextResponse.json({ error: 'PPO number is required' }, { status: 400 });
-    }
+    const result = await aeService.getBiharPensions({
+      ppo,
+      cname,
+      treasury,
+      phase,
+      page,
+      limit
+    });
 
-    const records = await aeService.queryPension(ppo, undefined, phase);
     return NextResponse.json({
       state_slug: slug,
-      ppo,
-      count: records.length,
-      records
+      page,
+      limit,
+      total: result.total,
+      items: result.items
     });
   } catch (error: any) {
     console.error('[API /api/states/[slug]/pension] error:', error);

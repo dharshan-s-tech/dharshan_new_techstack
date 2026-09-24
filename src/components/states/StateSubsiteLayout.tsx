@@ -18,6 +18,7 @@ interface StateSubsiteLayoutProps {
   officeLocation?: string;
   officeLocationHi?: string;
   logoUrl?: string;
+  children?: React.ReactNode;
 }
 
 export default function StateSubsiteLayout({
@@ -26,7 +27,8 @@ export default function StateSubsiteLayout({
   prefix = 'ae',
   officeLocation,
   officeLocationHi,
-  logoUrl
+  logoUrl,
+  children
 }: StateSubsiteLayoutProps) {
   const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
 
@@ -37,6 +39,7 @@ export default function StateSubsiteLayout({
   };
 
   const renderTemplate = () => {
+    if (children) return children;
     switch (pageData.templateType) {
       case 'photo-content':
         return <PhotoContentTemplate page={pageData} isHindi={isHindi} />;

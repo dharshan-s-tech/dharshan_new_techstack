@@ -13,23 +13,44 @@ const STATE_ICONS: Record<string, string> = {
   'bihar': '/assets/Images/statelogo/bihar.svg',
   'chhattisgarh': '/assets/Images/statelogo/chattisgarh.svg',
   'chattisgarh': '/assets/Images/statelogo/chattisgarh.svg',
+  'delhi': '/assets/Images/statelogo/delhi.svg',
+  'new-delhi': '/assets/Images/statelogo/delhi.svg',
+  'new-delhi-i': '/assets/Images/statelogo/delhi.svg',
+  'new-delhi-ii': '/assets/Images/statelogo/delhi.svg',
+  'air-force-new-delhi': '/assets/Images/statelogo/delhi.svg',
+  'defence-services-new-delhi': '/assets/Images/statelogo/delhi.svg',
+  'goa': '/assets/Images/statelogo/goa.svg',
   'gujarat': '/assets/Images/statelogo/gujarat.svg',
   'haryana': '/assets/Images/statelogo/haryana.svg',
   'himachal-pradesh': '/assets/Images/statelogo/himachalpradesh.svg',
   'jammu-and-kashmir': '/assets/Images/statelogo/jammuankashmir.svg',
   'jammu-kashmir': '/assets/Images/statelogo/jammuankashmir.svg',
+  'jammu-kashmir-ut': '/assets/Images/statelogo/jammuankashmir.svg',
+  'ladakh': '/assets/Images/statelogo/ladakh.svg',
+  'ladakh-ut': '/assets/Images/statelogo/ladakh.svg',
   'jharkhand': '/assets/Images/statelogo/jharkhand.svg',
   'karnataka': '/assets/Images/statelogo/karnataka.svg',
   'kerala': '/assets/Images/statelogo/kerala.svg',
   'madhya-pradesh': '/assets/Images/statelogo/madhyapradesh.svg',
+  'gwalior': '/assets/Images/statelogo/madhyapradesh.svg',
+  'gwalior-i': '/assets/Images/statelogo/madhyapradesh.svg',
+  'gwalior-ii': '/assets/Images/statelogo/madhyapradesh.svg',
   'maharashtra': '/assets/Images/statelogo/maharastra.svg',
   'maharastra': '/assets/Images/statelogo/maharastra.svg',
+  'mumbai': '/assets/Images/statelogo/maharastra.svg',
+  'mumbai-ii': '/assets/Images/statelogo/maharastra.svg',
+  'nagpur': '/assets/Images/statelogo/maharastra.svg',
+  'pune': '/assets/Images/statelogo/maharastra.svg',
   'manipur': '/assets/Images/statelogo/manipur.svg',
   'meghalaya': '/assets/Images/statelogo/meghalaya.svg',
   'mizoram': '/assets/Images/statelogo/mizoram.svg',
   'nagaland': '/assets/Images/statelogo/nagaland.svg',
   'odisha': '/assets/Images/statelogo/odisha.svg',
+  'orissa': '/assets/Images/statelogo/odisha.svg',
+  'pondicherry': '/assets/Images/statelogo/pondicherry.svg',
+  'puducherry': '/assets/Images/statelogo/pondicherry.svg',
   'punjab': '/assets/Images/statelogo/punjab.svg',
+  'chandigarh': '/assets/Images/statelogo/punjab.svg',
   'rajasthan': '/assets/Images/statelogo/rajasthan.svg',
   'sikkim': '/assets/Images/statelogo/sikkin.svg',
   'sikkin': '/assets/Images/statelogo/sikkin.svg',
@@ -37,8 +58,12 @@ const STATE_ICONS: Record<string, string> = {
   'telangana': '/assets/Images/statelogo/telangana.svg',
   'tripura': '/assets/Images/statelogo/tripura.svg',
   'uttar-pradesh': '/assets/Images/statelogo/uttarpradesh.svg',
+  'allahabad': '/assets/Images/statelogo/uttarpradesh.svg',
+  'allahabad-ii': '/assets/Images/statelogo/uttarpradesh.svg',
+  'prayagraj': '/assets/Images/statelogo/uttarpradesh.svg',
   'uttarakhand': '/assets/Images/statelogo/uttarakhand.svg',
   'west-bengal': '/assets/Images/statelogo/westbengal.svg',
+  'kolkata': '/assets/Images/statelogo/westbengal.svg',
 };
 
 function StateOfficesPageContent() {
@@ -105,6 +130,9 @@ function StateOfficesPageContent() {
                       src={iconSrc} 
                       alt={`${item.name} Logo`} 
                       className="w-6 h-6 object-contain" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/assets/Images/statelogo/Icons.svg';
+                      }}
                     />
                   </div>
 

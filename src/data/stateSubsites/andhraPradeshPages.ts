@@ -1,4 +1,4 @@
-import { ANDHRA_PRADESH_NAV_ITEMS } from './andhraPradeshNav';
+import { ANDHRA_PRADESH_NAV_ITEMS, getStateNavItems } from './andhraPradeshNav';
 
 export interface SubsiteBreadcrumb {
   label: string;
@@ -6,12 +6,18 @@ export interface SubsiteBreadcrumb {
   href?: string;
 }
 
-export function getSidebarForPath(pathnameOrSlug: string): { heading: string; headingHi?: string; items: SubsiteSidebarItem[] } | null {
+export function getSidebarForPath(
+  pathnameOrSlug: string,
+  stateSlug: string = 'andhra-pradesh',
+  prefix: 'ae' | 'ag' = 'ae'
+): { heading: string; headingHi?: string; items: SubsiteSidebarItem[] } | null {
   const normalized = pathnameOrSlug
     .replace(/^\/(?:states|ae|ag)\/[^/]+\//, '')
     .replace(/^\/states\/andhra-pradesh\//, '')
     .replace(/\/$/, '');
   const decoded = decodeURIComponent(normalized).toLowerCase();
+
+  const navItems = getStateNavItems(stateSlug, prefix);
 
   // Section-scoped priority
   const topSegment = decoded.split('/')[0];
@@ -22,8 +28,11 @@ export function getSidebarForPath(pathnameOrSlug: string): { heading: string; he
     'state-accounts': 'state-accounts',
     'gpf': 'gpf',
     'pension': 'pension',
-    'employee-corner': 'employee',
-    'employee': 'employee',
+    'das-&-daos-cadre': 'da-cadre',
+    'da-cadre': 'da-cadre',
+    'online-services': 'online-services',
+    'employee-corner': 'employee-corner',
+    'employee': 'employee-corner',
     'rti': 'rti',
     'contact-us': 'contact',
     'contact': 'contact'
@@ -32,10 +41,10 @@ export function getSidebarForPath(pathnameOrSlug: string): { heading: string; he
 
   const prioritizedNavItems = targetNavId
     ? [
-        ...ANDHRA_PRADESH_NAV_ITEMS.filter((n) => n.id === targetNavId),
-        ...ANDHRA_PRADESH_NAV_ITEMS.filter((n) => n.id !== targetNavId)
+        ...navItems.filter((n) => n.id === targetNavId),
+        ...navItems.filter((n) => n.id !== targetNavId)
       ]
-    : ANDHRA_PRADESH_NAV_ITEMS;
+    : navItems;
 
   // PASS 1: Exact Match (Highest Priority)
   for (const navItem of prioritizedNavItems) {

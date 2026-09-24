@@ -353,6 +353,23 @@ export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
     aeDetails: [{ label: 'PAG (A&E), Raipur', url: '/ae/chhattisgarh' }]
   },
   {
+    id: 'delhi',
+    name: 'Delhi',
+    nameHindi: 'दिल्ली',
+    auditDetails: [{ label: 'PAG (Audit), Delhi', url: '/ag/delhi' }],
+    aeDetails: [
+      { label: 'Pr. AG (A&E), Air Force, New Delhi', url: '/ae/delhi' },
+      { label: 'AG (A&E), Defence Services, New Delhi', url: '/ae/delhi' }
+    ]
+  },
+  {
+    id: 'goa',
+    name: 'Goa',
+    nameHindi: 'गोवा',
+    auditDetails: [{ label: 'Office of the Principal Accountant General (Audit), Goa', url: '/ag/goa' }],
+    aeDetails: [{ label: 'Office of the Principal Accountant General (A&E), Goa', url: '/ae/goa' }]
+  },
+  {
     id: 'gujarat',
     name: 'Gujarat',
     nameHindi: 'गुजरात',
@@ -379,6 +396,13 @@ export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
     nameHindi: 'जम्मू एवं कश्मीर राज्य',
     auditDetails: [{ label: 'PAG (Audit), Jammu & Kashmir', url: '/ag/jammu-and-kashmir' }],
     aeDetails: [{ label: 'PAG (A&E), Srinagar & Jammu', url: '/ae/jammu-and-kashmir' }]
+  },
+  {
+    id: 'ladakh',
+    name: 'Ladakh (UT)',
+    nameHindi: 'लद्दाख',
+    auditDetails: [{ label: 'Office of the Principal Accountant General (Audit), Ladakh (UT)', url: '/ag/ladakh' }],
+    aeDetails: [{ label: 'Office of the Principal Accountant General (A&E), Ladakh (UT)', url: '/ae/ladakh' }]
   },
   {
     id: 'jharkhand',
@@ -461,6 +485,13 @@ export const DEFAULT_STATE_OFFICES: StateOfficeCard[] = [
     nameHindi: 'ओडिशा',
     auditDetails: [{ label: 'PAG (Audit), Bhubaneswar', url: '/ag/odisha' }],
     aeDetails: [{ label: 'PAG (A&E), Bhubaneswar', url: '/ae/odisha' }]
+  },
+  {
+    id: 'pondicherry',
+    name: 'Pondicherry',
+    nameHindi: 'पुडुचेरी',
+    auditDetails: [{ label: 'Office of the Principal Accountant General (Audit), Pondicherry', url: '/ag/pondicherry' }],
+    aeDetails: [{ label: 'Office of the Principal Accountant General (A&E), Pondicherry', url: '/ae/pondicherry' }]
   },
   {
     id: 'punjab',
@@ -1478,18 +1509,7 @@ export const dataManager = {
         .then(data => {
           if (data && Array.isArray(data.states) && data.states.length > 0) {
             const current = this.getStateOffices();
-            const merged = data.states.map((st: any) => {
-              const existing = current.find(c => String(c.id) === String(st.id) || c.name.toLowerCase() === st.name.toLowerCase());
-              const def = DEFAULT_STATE_OFFICES.find(d => String(d.id) === String(st.id) || d.name.toLowerCase() === st.name.toLowerCase());
-              return {
-                id: String(st.id),
-                name: st.name,
-                nameHindi: existing?.nameHindi || def?.nameHindi || '',
-                auditDetails: existing?.auditDetails || def?.auditDetails || [{ label: `Office of the Principal Accountant General (Audit), ${st.name}`, url: '' }],
-                aeDetails: existing?.aeDetails || def?.aeDetails || [{ label: `Office of the Principal Accountant General (A&E), ${st.name}`, url: '' }]
-              };
-            });
-            localStorage.setItem('cag_state_offices', JSON.stringify(merged));
+            localStorage.setItem('cag_state_offices', JSON.stringify(current));
             window.dispatchEvent(new Event('stateOfficesChange'));
           }
         }).catch(() => {});
@@ -1618,55 +1638,45 @@ export const dataManager = {
         } catch {}
       }
 
-      const migrated = list.map((item: any, idx: number) => {
-        const itemId = String(item.id || '').toLowerCase().trim();
-        const itemName = String(item.name || '').toLowerCase().trim();
-        const defMatch = DEFAULT_STATE_OFFICES.find(d => {
-          const dId = d.id.toLowerCase();
-          const dName = d.name.toLowerCase();
+      // Merge on canonical DEFAULT_STATE_OFFICES to ensure all states exist with correct IDs and slugs
+      const result: StateOfficeCard[] = DEFAULT_STATE_OFFICES.map(def => {
+        const dId = def.id.toLowerCase();
+        const dName = def.name.toLowerCase();
+        const found = list.find((item: any) => {
+          const itemId = String(item.id || '').toLowerCase().trim();
+          const itemName = String(item.name || '').toLowerCase().trim();
           return (
-            dId === itemId ||
-            dName === itemName ||
-            (itemId === 'chattisgarh' && dId === 'chhattisgarh') ||
-            (itemName === 'chattisgarh' && dName === 'chhattisgarh') ||
-            (itemId === 'jammu-kashmir' && dId === 'jammu-and-kashmir') ||
-            (itemId === 'sikkin' && dId === 'sikkim') ||
-            (itemId === 'maharastra' && dId === 'maharashtra')
+            itemId === dId ||
+            itemName === dName ||
+            (dId === 'chhattisgarh' && (itemId === 'chattisgarh' || itemName === 'chattisgarh')) ||
+            (dId === 'jammu-and-kashmir' && (itemId === 'jammu-kashmir' || itemName === 'jammu & kashmir')) ||
+            (dId === 'sikkim' && (itemId === 'sikkin' || itemName === 'sikkin')) ||
+            (dId === 'maharashtra' && (itemId === 'maharastra' || itemName === 'maharastra'))
           );
         });
 
-        // Always sanitize aeDetails to point to /ae/[state-slug]
-        const cleanAeDetails = (defMatch?.aeDetails && defMatch.aeDetails.length > 0)
-          ? defMatch.aeDetails
-          : (Array.isArray(item.aeDetails) && item.aeDetails.length > 0
-              ? item.aeDetails.map((sub: any) => ({
-                  ...sub,
-                  url: sub.url && sub.url.startsWith('/ae/') ? sub.url : `/ae/${defMatch?.id || item.id || 'andhra-pradesh'}`
-                }))
-              : [{ label: `Office of the Principal Accountant General (A&E), ${defMatch?.name || item.name || 'State'}`, url: `/ae/${defMatch?.id || item.id || 'andhra-pradesh'}` }]);
+        if (!found) {
+          return def;
+        }
 
-        // Always sanitize auditDetails to point to /ag/[state-slug]
-        const cleanAuditDetails = (defMatch?.auditDetails && defMatch.auditDetails.length > 0)
-          ? defMatch.auditDetails
-          : (Array.isArray(item.auditDetails) && item.auditDetails.length > 0
-              ? item.auditDetails.map((sub: any) => ({
-                  ...sub,
-                  url: sub.url && sub.url.startsWith('/ag/') ? sub.url : `/ag/${defMatch?.id || item.id || 'andhra-pradesh'}`
-                }))
-              : [{ label: `Office of the Principal Accountant General (Audit), ${defMatch?.name || item.name || 'State'}`, url: `/ag/${defMatch?.id || item.id || 'andhra-pradesh'}` }]);
+        const nameHindi = found.nameHindi || def.nameHindi;
+        const auditDetails = (found.auditDetails && Array.isArray(found.auditDetails) && found.auditDetails.length > 0 && !found.auditDetails[0].label.includes('State'))
+          ? found.auditDetails
+          : def.auditDetails;
+        const aeDetails = (found.aeDetails && Array.isArray(found.aeDetails) && found.aeDetails.length > 0 && !found.aeDetails[0].label.includes('State'))
+          ? found.aeDetails
+          : def.aeDetails;
 
         return {
-          id: defMatch?.id || String(item.id || `state-${idx + 1}`),
-          name: defMatch?.name || item.name || 'State Office',
-          nameHindi: defMatch?.nameHindi || item.nameHindi || '',
-          auditDetails: cleanAuditDetails,
-          aeDetails: cleanAeDetails
+          ...def,
+          nameHindi,
+          auditDetails,
+          aeDetails
         };
       });
 
-      // Update localStorage with migrated data
-      localStorage.setItem('cag_state_offices', JSON.stringify(migrated));
-      return migrated;
+      localStorage.setItem('cag_state_offices', JSON.stringify(result));
+      return result;
     } catch (e) {
       console.error('Error reading state offices from localStorage:', e);
       return DEFAULT_STATE_OFFICES;

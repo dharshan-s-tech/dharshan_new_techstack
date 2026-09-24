@@ -1,7 +1,15 @@
+export interface NavMenuItem {
+  title: string;
+  titleHi?: string;
+  href?: string;
+  children?: NavMenuItem[];
+}
+
 export interface SubmenuItem {
   title: string;
   titleHi?: string;
   href?: string;
+  children?: NavMenuItem[];
 }
 
 export interface SubmenuColumn {
@@ -15,6 +23,7 @@ export interface TopNavItem {
   title: string;
   titleHi: string;
   href?: string;
+  items?: NavMenuItem[];
   columns?: SubmenuColumn[];
 }
 
@@ -23,19 +32,42 @@ export interface TopNavItem {
  */
 export const STATE_CITIZEN_CHARTER_PDFS: Record<string, string> = {
   'andhra-pradesh': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-english-updated-0643e81853c6471-79510511.pdf',
+  'telangana': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-english-updated-0643e81853c6471-79510511-065af673f958e56-69735414.pdf',
+  'assam': '/uploads/media/Citizen-Charter-assam.pdf',
   'bihar': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-Appd-20200812133247.pdf',
+  'chhattisgarh': '/uploads/media/Citizen-Charter-chhattisgarh.pdf',
+  'chattisgarh': '/uploads/media/Citizen-Charter-chhattisgarh.pdf',
   'gujarat': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-charter-draft-20200604163433.pdf',
+  'haryana': '/uploads/media/Citizen-Charter-haryana.pdf',
+  'himachal-pradesh': '/uploads/media/Citizen-Charter-himachal-pradesh.pdf',
+  'jammu-and-kashmir': '/uploads/media/Citizen-Charter-jammu-and-kashmir.pdf',
+  'jammu-kashmir': '/uploads/media/Citizen-Charter-jammu-and-kashmir.pdf',
+  'jharkhand': '/uploads/media/Citizen-Charter-jharkhand.pdf',
+  'karnataka': '/uploads/media/Citizen-Charter-karnataka.pdf',
+  'kerala': '/uploads/media/Citizen-Charter-kerala.pdf',
+  'gwalior-i': '/uploads/media/Citizen-Charter-gwalior-i.pdf',
   'gwalior-ii': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-english-updated-0670f5f2ca08657-22520009.pdf',
   'madhya-pradesh': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-english-updated-0670f5f2ca08657-22520009.pdf',
   'mumbai': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-English-20200914135753.pdf',
+  'nagpur': '/uploads/media/Citizen-Charter-nagpur.pdf',
   'maharashtra': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-English-20200914135753.pdf',
+  'manipur': '/uploads/media/Citizen-Charter-manipur.pdf',
+  'meghalaya': '/uploads/media/Citizen-Charter-meghalaya.pdf',
+  'mizoram': '/uploads/media/Citizen-Charter-mizoram.pdf',
+  'nagaland': '/uploads/media/Citizen-Charter-nagaland.pdf',
+  'odisha': '/uploads/media/Citizen-Charter-odisha.pdf',
   'punjab': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-english-updated-065c5ce6d10ce03-85669313.pdf',
+  'rajasthan': '/uploads/media/Citizen-Charter-rajasthan.pdf',
+  'sikkim': '/uploads/media/Citizen-Charter-sikkim.pdf',
   'tamil-nadu': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/citizen-charter-pdf-069d6432a6bde45-29448626.pdf',
-  'telangana': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-Charter-english-updated-0643e81853c6471-79510511-065af673f958e56-69735414.pdf',
+  'tripura': '/uploads/media/Citizen-Charter-tripura.pdf',
+  'allahabad': '/uploads/media/Citizen-Charter-allahabad.pdf',
   'allahabad-ii': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/charter-english-064be54d1637303-15810192-06666afd287ffb4-35134378-0684c131e8027d9-68245729.pdf',
   'uttar-pradesh': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/charter-english-064be54d1637303-15810192-06666afd287ffb4-35134378-0684c131e8027d9-68245729.pdf',
+  'uttarakhand': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/citizen-charter-063fc49b24c74e2-64144570.pdf',
+  'west-bengal': '/uploads/media/Citizen-Charter-west-bengal.pdf',
   'arunachal-pradesh': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/Citizen-charter-draft-20200625152654.pdf',
-  'uttarakhand': 'http://d7i5wg8xwe4hf.cloudfront.net/uploads/media/citizen-charter-063fc49b24c74e2-64144570.pdf'
+  'goa': '/uploads/media/Citizen-Charter-goa.pdf',
 };
 
 export const ANDHRA_PRADESH_NAV_ITEMS: TopNavItem[] = [
@@ -339,10 +371,60 @@ export const ANDHRA_PRADESH_NAV_ITEMS: TopNavItem[] = [
   }
 ];
 
+import { HIMACHAL_PRADESH_NAV_ITEMS } from './himachalPradeshNav';
+
 export function getStateNavItems(stateSlug: string = 'andhra-pradesh', prefix: 'ae' | 'ag' = 'ae'): TopNavItem[] {
   const base = `/${prefix}/${stateSlug}`;
   const cleanSlug = stateSlug.toLowerCase();
   const customCharterUrl = STATE_CITIZEN_CHARTER_PDFS[cleanSlug];
+
+  function resolveMenuItems(items?: NavMenuItem[]): NavMenuItem[] | undefined {
+    if (!items) return undefined;
+    return items.map((item) => {
+      let itemHref = item.href;
+      if (itemHref && !itemHref.startsWith('http') && !itemHref.endsWith('.pdf')) {
+        itemHref = itemHref
+          .replace('/ae/himachal-pradesh', base)
+          .replace('/states/andhra-pradesh', base)
+          .replace(`/states/${stateSlug}`, base)
+          .replace('/ae/andhra-pradesh', base)
+          .replace('/ag/andhra-pradesh', base);
+      }
+      return {
+        ...item,
+        href: itemHref,
+        children: resolveMenuItems(item.children)
+      };
+    });
+  }
+
+  if (cleanSlug === 'himachal-pradesh' || cleanSlug === 'hp') {
+    return HIMACHAL_PRADESH_NAV_ITEMS.map((item) => {
+      let resolvedHref = item.href;
+      if (resolvedHref && !resolvedHref.startsWith('http') && !resolvedHref.endsWith('.pdf')) {
+        resolvedHref = resolvedHref.replace('/ae/himachal-pradesh', base);
+      }
+      return {
+        ...item,
+        href: resolvedHref,
+        items: resolveMenuItems(item.items),
+        columns: item.columns?.map((col) => ({
+          ...col,
+          items: col.items?.map((sub) => {
+            let subHref = sub.href;
+            if (subHref && !subHref.startsWith('http') && !subHref.endsWith('.pdf')) {
+              subHref = subHref.replace('/ae/himachal-pradesh', base);
+            }
+            return {
+              ...sub,
+              href: subHref,
+              children: resolveMenuItems(sub.children)
+            };
+          })
+        }))
+      };
+    });
+  }
 
   return ANDHRA_PRADESH_NAV_ITEMS.map((item) => {
     let resolvedHref = item.href;
@@ -362,6 +444,7 @@ export function getStateNavItems(stateSlug: string = 'andhra-pradesh', prefix: '
     return {
       ...item,
       href: resolvedHref,
+      items: resolveMenuItems(item.items),
       columns: item.columns?.map((col) => ({
         ...col,
         items: col.items?.map((sub) => {
@@ -375,7 +458,8 @@ export function getStateNavItems(stateSlug: string = 'andhra-pradesh', prefix: '
           }
           return {
             ...sub,
-            href: subHref
+            href: subHref,
+            children: resolveMenuItems(sub.children)
           };
         })
       }))

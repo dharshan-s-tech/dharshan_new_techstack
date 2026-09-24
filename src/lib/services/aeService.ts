@@ -106,6 +106,56 @@ function parseMenuTitle(raw: string | null): string {
   }
 }
 
+export const STATE_USER_MAP: Record<string, number[]> = {
+  'andhra-pradesh': [130, 246],
+  'telangana': [81],
+  'assam': [129, 206],
+  'bihar': [128, 297],
+  'chhattisgarh': [127, 5436],
+  'chattisgarh': [127, 5436],
+  'gujarat': [126],
+  'haryana': [125, 2758],
+  'himachal-pradesh': [124, 3753],
+  'jammu-and-kashmir': [123, 5262],
+  'jammu-kashmir': [123, 5262],
+  'jharkhand': [122],
+  'karnataka': [143, 8],
+  'kerala': [121],
+  'gwalior-i': [120],
+  'gwalior-ii': [119],
+  'madhya-pradesh': [120, 119],
+  'mumbai': [118],
+  'nagpur': [117],
+  'maharashtra': [118, 117],
+  'manipur': [116, 1367],
+  'meghalaya': [115, 3859],
+  'mizoram': [146, 1537],
+  'nagaland': [114],
+  'odisha': [144],
+  'punjab': [113],
+  'rajasthan': [84, 5518],
+  'sikkim': [112, 2076],
+  'tamil-nadu': [82],
+  'tripura': [78, 1020],
+  'allahabad': [74],
+  'allahabad-ii': [75],
+  'uttar-pradesh': [74, 75],
+  'uttarakhand': [72, 303],
+  'west-bengal': [71, 8845],
+  'arunachal-pradesh': [145],
+  'goa': [147],
+};
+
+export function getStateUserIds(stateSlug: string): number[] {
+  const clean = (stateSlug || '').toLowerCase().trim();
+  if (STATE_USER_MAP[clean]) return STATE_USER_MAP[clean];
+  const alias = clean.replace(/-/g, '');
+  for (const [key, val] of Object.entries(STATE_USER_MAP)) {
+    if (key.replace(/-/g, '') === alias) return val;
+  }
+  return [];
+}
+
 export const aeService = {
   /**
    * 1. Get all A&E websites configured in cag_revamp.websites (theme = 'AE')
@@ -1047,24 +1097,23 @@ export const aeService = {
    */
   async getAeStateAccountsByCategory(stateSlug: string = 'andhra-pradesh', categoryId: number, limit: number = 50, prefix: string = 'ae'): Promise<any[]> {
     try {
-      const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
-      const userPattern = prefix === 'ae' ? `AE_%` : `AG_%`;
+      let userIds = getStateUserIds(stateSlug);
       
-      const userRes = await query(`
-        SELECT id, username FROM users 
-        WHERE username ILIKE $1 AND (
-          REPLACE(LOWER(username), '_', '') ILIKE $2 OR
-          REPLACE(LOWER(full_name), ' ', '') ILIKE $2
-        )
-      `, [userPattern, `%${stateClean}%`]);
-      
-      let userIds = userRes.rows.map((u: any) => parseInt(u.id)).filter((id: number) => !isNaN(id));
       if (userIds.length === 0) {
-        if (stateClean.includes('andhra')) {
-          userIds = [130];
-        } else {
-          return [];
-        }
+        const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+        const userPattern = prefix === 'ae' ? `AE_%` : `AG_%`;
+        const userRes = await query(`
+          SELECT id, username FROM users 
+          WHERE username ILIKE $1 AND (
+            REPLACE(LOWER(username), '_', '') ILIKE $2 OR
+            REPLACE(LOWER(full_name), ' ', '') ILIKE $2
+          )
+        `, [userPattern, `%${stateClean}%`]);
+        userIds = userRes.rows.map((u: any) => parseInt(u.id)).filter((id: number) => !isNaN(id));
+      }
+
+      if (userIds.length === 0) {
+        userIds = [130];
       }
 
       const res = await query(`
@@ -1148,24 +1197,24 @@ export const aeService = {
     }
 
     try {
-      const stateClean = String(stateSlugOrLimit).replace(/-/g, '').toLowerCase();
-      const userPattern = prefix === 'ae' ? `AE_%` : `AG_%`;
-      
-      const userRes = await query(`
-        SELECT id, username FROM users 
-        WHERE username ILIKE $1 AND (
-          REPLACE(LOWER(username), '_', '') ILIKE $2 OR
-          REPLACE(LOWER(full_name), ' ', '') ILIKE $2
-        )
-      `, [userPattern, `%${stateClean}%`]);
-      
-      let userIds = userRes.rows.map((u: any) => parseInt(u.id)).filter((id: number) => !isNaN(id));
+      const stateSlug = String(stateSlugOrLimit);
+      let userIds = getStateUserIds(stateSlug);
+
       if (userIds.length === 0) {
-        if (stateClean.includes('andhra')) {
-          userIds = [130];
-        } else {
-          return [];
-        }
+        const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+        const userPattern = prefix === 'ae' ? `AE_%` : `AG_%`;
+        const userRes = await query(`
+          SELECT id, username FROM users 
+          WHERE username ILIKE $1 AND (
+            REPLACE(LOWER(username), '_', '') ILIKE $2 OR
+            REPLACE(LOWER(full_name), ' ', '') ILIKE $2
+          )
+        `, [userPattern, `%${stateClean}%`]);
+        userIds = userRes.rows.map((u: any) => parseInt(u.id)).filter((id: number) => !isNaN(id));
+      }
+
+      if (userIds.length === 0) {
+        userIds = [130];
       }
 
       const res = await query(`
@@ -1184,7 +1233,7 @@ export const aeService = {
           display_order,
           created_at
         FROM ae_circulars_office_orders
-        WHERE created_by = ANY($1) AND status = 1 AND (language = 'en' OR language IS NULL)
+        WHERE (created_by = ANY($1) OR created_by = 0 OR created_by IS NULL) AND status = 1 AND (language = 'en' OR language IS NULL)
         ORDER BY display_order DESC, ae_date DESC NULLS LAST, id DESC
         LIMIT $2;
       `, [userIds, limit]);
@@ -1266,7 +1315,7 @@ export const aeService = {
       let sql = `
         SELECT id, serial, ppo, treasury, cname, dor, scale, rpension, rfp, phase
         FROM bihar_pensions
-        WHERE LOWER(ppo) = LOWER($1)
+        WHERE LOWER(ppo) = LOWER($1) OR ppo ILIKE '%' || $1 || '%'
       `;
       const params: any[] = [ppo.trim()];
 
@@ -1275,11 +1324,71 @@ export const aeService = {
         sql += ` AND phase = $${params.length}`;
       }
 
+      sql += ` ORDER BY id ASC LIMIT 50;`;
       const res = await query(sql, params);
       return res.rows;
     } catch (err) {
       console.warn('[aeService.queryPension] query error:', err);
       return [];
+    }
+  },
+
+  /**
+   * 15b. Search Bihar pensions with advanced filters and pagination
+   */
+  async getBiharPensions(filters: {
+    ppo?: string;
+    cname?: string;
+    treasury?: string;
+    phase?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ items: any[]; total: number }> {
+    try {
+      const page = Math.max(1, filters.page || 1);
+      const limit = Math.min(100, Math.max(10, filters.limit || 25));
+      const offset = (page - 1) * limit;
+
+      let whereClause = '1=1';
+      const params: any[] = [];
+
+      if (filters.ppo && filters.ppo.trim()) {
+        params.push(`%${filters.ppo.trim()}%`);
+        whereClause += ` AND ppo ILIKE $${params.length}`;
+      }
+      if (filters.cname && filters.cname.trim()) {
+        params.push(`%${filters.cname.trim()}%`);
+        whereClause += ` AND cname ILIKE $${params.length}`;
+      }
+      if (filters.treasury && filters.treasury.trim()) {
+        params.push(`%${filters.treasury.trim()}%`);
+        whereClause += ` AND treasury ILIKE $${params.length}`;
+      }
+      if (filters.phase && filters.phase.trim()) {
+        params.push(filters.phase.trim());
+        whereClause += ` AND phase = $${params.length}`;
+      }
+
+      const countSql = `SELECT count(*) as total FROM bihar_pensions WHERE ${whereClause};`;
+      const countRes = await query<{ total: string }>(countSql, params);
+      const total = parseInt(countRes.rows[0]?.total || '0');
+
+      const dataSql = `
+        SELECT id, serial, ppo, treasury, cname, dor, scale, rpension, rfp, phase
+        FROM bihar_pensions
+        WHERE ${whereClause}
+        ORDER BY id ASC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2};
+      `;
+      const dataRes = await query(dataSql, [...params, limit, offset]);
+
+      return {
+        items: dataRes.rows,
+        total
+      };
+    } catch (err) {
+      console.warn('[aeService.getBiharPensions] query error:', err);
+      return { items: [], total: 0 };
     }
   },
 
@@ -1346,32 +1455,32 @@ export const aeService = {
    */
   async getAeGradationList(stateSlug: string, prefix: string = 'ae'): Promise<any[]> {
     try {
-      const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
-      const userPattern = prefix === 'ae' ? `AE_%` : `AG_%`;
-      
-      const userRes = await query(`
-        SELECT id, username FROM users 
-        WHERE username ILIKE $1 AND (
-          REPLACE(LOWER(username), '_', '') ILIKE $2 OR
-          REPLACE(LOWER(full_name), ' ', '') ILIKE $2
-        )
-      `, [userPattern, `%${stateClean}%`]);
-      
-      let userIds = userRes.rows.map((u: any) => parseInt(u.id)).filter((id: number) => !isNaN(id));
+      let userIds = getStateUserIds(stateSlug);
+
       if (userIds.length === 0) {
-        if (stateClean.includes('andhra')) {
-          userIds = [130];
-        } else {
-          return [];
-        }
+        const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+        const userPattern = prefix === 'ae' ? `AE_%` : `AG_%`;
+        const userRes = await query(`
+          SELECT id, username FROM users 
+          WHERE username ILIKE $1 AND (
+            REPLACE(LOWER(username), '_', '') ILIKE $2 OR
+            REPLACE(LOWER(full_name), ' ', '') ILIKE $2
+          )
+        `, [userPattern, `%${stateClean}%`]);
+        userIds = userRes.rows.map((u: any) => parseInt(u.id)).filter((id: number) => !isNaN(id));
+      }
+
+      if (userIds.length === 0) {
+        userIds = [130];
       }
 
       const res = await query(`
         SELECT id, title, pdf_file, general_categories_id, status, display_order, created
         FROM gradation_list
-        WHERE created_by = ANY($1) AND status = 1 AND (language = 'en' OR language IS NULL)
+        WHERE (created_by = ANY($1) OR created_by = 0 OR created_by IS NULL) AND status = 1 AND (language = 'en' OR language IS NULL)
         ORDER BY 
           CASE 
+            WHEN title ILIKE '%2026%' THEN 2026
             WHEN title ILIKE '%2025%' THEN 2025
             WHEN title ILIKE '%2024%' THEN 2024
             WHEN title ILIKE '%2023%' THEN 2023
@@ -1401,9 +1510,8 @@ export const aeService = {
       else if (category === 'gpf') catId = 763;
       else if (category === 'pension') catId = 765;
 
-      const stateClean = stateSlug.toLowerCase().trim();
-      let userIds: number[] = [];
-      if (stateClean.includes('andhra')) {
+      let userIds = getStateUserIds(stateSlug);
+      if (userIds.length === 0 && stateSlug.toLowerCase().includes('andhra')) {
         userIds = [130];
       }
 
@@ -1419,7 +1527,7 @@ export const aeService = {
       }
       if (userIds.length > 0) {
         params.push(userIds);
-        sql += ` AND created_by = ANY($${params.length})`;
+        sql += ` AND (created_by = ANY($${params.length}) OR created_by = 0 OR created_by IS NULL)`;
       }
       sql += ` ORDER BY display_order ASC, id DESC LIMIT 50;`;
       const res = await query(sql, params);
@@ -1435,18 +1543,23 @@ export const aeService = {
    */
   async getAeTenders(stateSlug: string = 'andhra-pradesh', limit: number = 50): Promise<any[]> {
     try {
-      const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+      let userIds = getStateUserIds(stateSlug);
+      if (userIds.length === 0 && stateSlug.toLowerCase().includes('andhra')) {
+        userIds = [130];
+      }
+
       let sql = `
         SELECT id, tender_title, tender_refrence_no, file_title, uploads, issue_date, submission_date, created_by, status
         FROM tenders
         WHERE status = 1 AND tender_title NOT ILIKE '%testing%' AND tender_title NOT ILIKE '%test%'
       `;
       const params: any[] = [];
-      if (stateClean.includes('andhra')) {
-        sql += ` AND created_by = 130`;
+      if (userIds.length > 0) {
+        params.push(userIds);
+        sql += ` AND (created_by = ANY($${params.length}) OR created_by = 0 OR created_by IS NULL)`;
       }
-      sql += ` ORDER BY COALESCE(issue_date, created) DESC, id DESC LIMIT $1;`;
       params.push(limit);
+      sql += ` ORDER BY COALESCE(issue_date, created) DESC, id DESC LIMIT $${params.length};`;
       const res = await query(sql, params);
       return res.rows;
     } catch (err) {
@@ -1460,18 +1573,23 @@ export const aeService = {
    */
   async getAeNotifications(stateSlug: string = 'andhra-pradesh', limit: number = 50): Promise<any[]> {
     try {
-      const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+      let userIds = getStateUserIds(stateSlug);
+      if (userIds.length === 0 && stateSlug.toLowerCase().includes('andhra')) {
+        userIds = [130];
+      }
+
       let sql = `
         SELECT id, title, uploads, external_link, created, created_by, status
         FROM notification
         WHERE status = 1 AND title NOT ILIKE '%TestNotification%' AND title NOT ILIKE '%test%'
       `;
       const params: any[] = [];
-      if (stateClean.includes('andhra')) {
-        sql += ` AND created_by = 130`;
+      if (userIds.length > 0) {
+        params.push(userIds);
+        sql += ` AND (created_by = ANY($${params.length}) OR created_by = 0 OR created_by IS NULL)`;
       }
-      sql += ` ORDER BY COALESCE(created, modified) DESC, id DESC LIMIT $1;`;
       params.push(limit);
+      sql += ` ORDER BY COALESCE(created, modified) DESC, id DESC LIMIT $${params.length};`;
       const res = await query(sql, params);
       return res.rows;
     } catch (err) {
@@ -1485,18 +1603,23 @@ export const aeService = {
    */
   async getAeRecruitments(stateSlug: string = 'andhra-pradesh', limit: number = 50): Promise<any[]> {
     try {
-      const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+      let userIds = getStateUserIds(stateSlug);
+      if (userIds.length === 0 && stateSlug.toLowerCase().includes('andhra')) {
+        userIds = [130];
+      }
+
       let sql = `
         SELECT id, title, document_uploaded, recruitment_notice_date, close_date, created_by, status
         FROM recruitment_notices
         WHERE status = 1 AND title NOT ILIKE '%test%'
       `;
       const params: any[] = [];
-      if (stateClean.includes('andhra')) {
-        sql += ` AND created_by = 130`;
+      if (userIds.length > 0) {
+        params.push(userIds);
+        sql += ` AND (created_by = ANY($${params.length}) OR created_by = 0 OR created_by IS NULL)`;
       }
-      sql += ` ORDER BY COALESCE(recruitment_notice_date, created_at) DESC, id DESC LIMIT $1;`;
       params.push(limit);
+      sql += ` ORDER BY COALESCE(recruitment_notice_date, created_at) DESC, id DESC LIMIT $${params.length};`;
       const res = await query(sql, params);
       return res.rows;
     } catch (err) {
@@ -1510,18 +1633,23 @@ export const aeService = {
    */
   async getAeNotices(stateSlug: string = 'andhra-pradesh', limit: number = 50): Promise<any[]> {
     try {
-      const stateClean = stateSlug.replace(/-/g, '').toLowerCase();
+      let userIds = getStateUserIds(stateSlug);
+      if (userIds.length === 0 && stateSlug.toLowerCase().includes('andhra')) {
+        userIds = [130];
+      }
+
       let sql = `
         SELECT id, title, language, description, file_title, upload_file, full_url, notice_date, created_by, status
         FROM ae_notices
         WHERE (status = 1 OR status = 0)
       `;
       const params: any[] = [];
-      if (stateClean.includes('andhra')) {
-        sql += ` AND created_by = 130`;
+      if (userIds.length > 0) {
+        params.push(userIds);
+        sql += ` AND (created_by = ANY($${params.length}) OR created_by = 0 OR created_by IS NULL)`;
       }
-      sql += ` ORDER BY COALESCE(notice_date, created_at) DESC, id DESC LIMIT $1;`;
       params.push(limit);
+      sql += ` ORDER BY COALESCE(notice_date, created_at) DESC, id DESC LIMIT $${params.length};`;
       const res = await query(sql, params);
       return res.rows;
     } catch (err) {
