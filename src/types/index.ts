@@ -34,6 +34,7 @@ export interface Office {
   lat: number;
   lng: number;
   type: 'central' | 'state' | 'training';
+  subsite_url?: string;
 }
 
 export interface Officer {

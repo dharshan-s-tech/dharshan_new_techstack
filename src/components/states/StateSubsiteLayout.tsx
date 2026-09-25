@@ -14,10 +14,18 @@ import GrievanceFormTemplate from './templates/GrievanceFormTemplate';
 interface StateSubsiteLayoutProps {
   pageData: SubsitePageData;
   stateSlug?: string;
-  prefix?: 'ae' | 'ag';
+  prefix?: 'ae' | 'ag' | 'pda' | string;
+  officePrefix?: string;
+  officePrefixHi?: string;
   officeLocation?: string;
   officeLocationHi?: string;
+  officeTitle?: string;
+  officeTitleHi?: string;
   logoUrl?: string;
+  navItemsOverride?: any[];
+  homeUrl?: string;
+  initialLang?: 'English' | 'हिन्दी';
+  primaryColor?: string;
   children?: React.ReactNode;
 }
 
@@ -25,14 +33,23 @@ export default function StateSubsiteLayout({
   pageData,
   stateSlug = 'andhra-pradesh',
   prefix = 'ae',
+  officePrefix,
+  officePrefixHi,
   officeLocation,
   officeLocationHi,
+  officeTitle,
+  officeTitleHi,
   logoUrl,
+  navItemsOverride,
+  homeUrl,
+  initialLang,
+  primaryColor,
   children
 }: StateSubsiteLayoutProps) {
-  const [lang, setLang] = useState<'English' | 'हिन्दी'>('English');
+  const [lang, setLang] = useState<'English' | 'हिन्दी'>(initialLang || 'English');
 
   const isHindi = lang === 'हिन्दी';
+  const resolvedPrimaryColor = primaryColor || (prefix === 'pda' ? '#1D2E6B' : undefined);
 
   const toggleLanguage = () => {
     setLang((prev) => (prev === 'English' ? 'हिन्दी' : 'English'));
@@ -42,15 +59,15 @@ export default function StateSubsiteLayout({
     if (children) return children;
     switch (pageData.templateType) {
       case 'photo-content':
-        return <PhotoContentTemplate page={pageData} isHindi={isHindi} />;
+        return <PhotoContentTemplate page={pageData} isHindi={isHindi} primaryColor={resolvedPrimaryColor} />;
       case 'document-list':
-        return <DocumentListTemplate page={pageData} isHindi={isHindi} />;
+        return <DocumentListTemplate page={pageData} isHindi={isHindi} primaryColor={resolvedPrimaryColor} />;
       case 'reports-grid':
         return <ReportsGridTemplate page={pageData} isHindi={isHindi} />;
       case 'form':
         return <GrievanceFormTemplate isHindi={isHindi} />;
       default:
-        return <PhotoContentTemplate page={pageData} isHindi={isHindi} />;
+        return <PhotoContentTemplate page={pageData} isHindi={isHindi} primaryColor={resolvedPrimaryColor} />;
     }
   };
 
@@ -62,13 +79,18 @@ export default function StateSubsiteLayout({
         onToggleLanguage={toggleLanguage}
         stateSlug={stateSlug}
         prefix={prefix}
+        officePrefix={officePrefix}
+        officePrefixHi={officePrefixHi}
         officeLocation={officeLocation}
         officeLocationHi={officeLocationHi}
         logoUrl={logoUrl}
+        navItemsOverride={navItemsOverride}
+        homeUrl={homeUrl}
+        primaryColor={resolvedPrimaryColor}
       />
 
       {/* 2. Breadcrumbs */}
-      <StateSubsiteBreadcrumbs items={pageData.breadcrumbs} isHindi={isHindi} />
+      <StateSubsiteBreadcrumbs items={pageData.breadcrumbs} isHindi={isHindi} primaryColor={resolvedPrimaryColor} />
 
       {/* 3. Main Body Container */}
       <main className="w-full flex-1 max-w-[1440px] mx-auto py-8 px-4 lg:px-6">
@@ -83,6 +105,7 @@ export default function StateSubsiteLayout({
               headingHi={pageData.sidebar.headingHi}
               items={pageData.sidebar.items}
               isHindi={isHindi}
+              primaryColor={resolvedPrimaryColor}
             />
             <div className="flex-1 w-full min-w-0">
               {renderTemplate()}
@@ -94,9 +117,11 @@ export default function StateSubsiteLayout({
       {/* 4. Subsite Footer */}
       <StateSubsiteFooter 
         isHindi={isHindi} 
-        officeTitle={officeLocation ? `Principal Accountant General (A&E), ${officeLocation}` : undefined}
-        officeTitleHi={officeLocationHi}
+        officeTitle={officeTitle || (officeLocation ? `${officePrefix || 'Principal Accountant General (A&E),'} ${officeLocation}` : undefined)}
+        officeTitleHi={officeTitleHi}
+        primaryColor={resolvedPrimaryColor}
       />
+
     </div>
   );
 }

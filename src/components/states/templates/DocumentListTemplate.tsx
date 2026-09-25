@@ -6,9 +6,11 @@ import { SubsitePageData } from '@/data/stateSubsites/andhraPradeshPages';
 interface DocumentListTemplateProps {
   page: SubsitePageData;
   isHindi?: boolean;
+  primaryColor?: string;
 }
 
-export default function DocumentListTemplate({ page, isHindi = false }: DocumentListTemplateProps) {
+export default function DocumentListTemplate({ page, isHindi = false, primaryColor }: DocumentListTemplateProps) {
+  const isNavy = primaryColor === '#1D2E6B';
   const [showArchive, setShowArchive] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -23,12 +25,13 @@ export default function DocumentListTemplate({ page, isHindi = false }: Document
   const currentDocs = isTableMode ? documents.slice(startIndex, startIndex + pageSize) : documents;
 
   const isNotice = page.slug?.toLowerCase().includes('notice') || title.toLowerCase().includes('notice');
+  const thBorderClass = isNavy ? 'border-[#2A3F88]' : 'border-[#8C1E47]';
 
   return (
     <div className="w-full bg-white rounded-[8px] p-6 lg:p-8 border border-[#E5E7EB] shadow-[0px_2px_12px_rgba(0,0,0,0.04)] font-['Noto_Sans',sans-serif]">
       {/* Header with Title & Archive Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#F0F0F0] pb-5 mb-6">
-        <h1 className="text-[26px] md:text-[30px] leading-[36px] font-bold text-[#751639]">
+        <h1 className={`text-[26px] md:text-[30px] leading-[36px] font-bold ${isNavy ? 'text-[#1D2E6B]' : 'text-[#751639]'}`}>
           {title}
         </h1>
 
@@ -36,7 +39,7 @@ export default function DocumentListTemplate({ page, isHindi = false }: Document
         {!page.hideArchiveButton && !page.slug?.toLowerCase().includes('gradation') && (
           <button
             onClick={() => setShowArchive(!showArchive)}
-            className="bg-[#751639] hover:bg-[#5E112E] text-white text-[13px] font-medium px-4 py-1.5 rounded-[4px] flex items-center gap-2 transition-colors cursor-pointer shadow-sm shrink-0"
+            className={`${isNavy ? 'bg-[#1D2E6B] hover:bg-[#152250]' : 'bg-[#751639] hover:bg-[#5E112E]'} text-white text-[13px] font-medium px-4 py-1.5 rounded-[4px] flex items-center gap-2 transition-colors cursor-pointer shadow-sm shrink-0`}
           >
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -48,7 +51,7 @@ export default function DocumentListTemplate({ page, isHindi = false }: Document
 
       {documents.length === 0 ? (
         <div className="p-8 text-center text-[#6B7280] bg-[#F9FAFB] rounded-[6px] border border-dashed border-[#D1D5DB]">
-          {isHindi ? 'वर्तमान में कोई दस्तावेज़ उपलब्ध नहीं है।' : 'No documents currently available in this section.'}
+          ${isHindi ? 'वर्तमान में कोई दस्तावेज़ उपलब्ध नहीं है।' : 'No documents currently available in this section.'}
         </div>
       ) : isTableMode ? (
         /* Tabular Column Format matching live CAG portal */
@@ -56,20 +59,20 @@ export default function DocumentListTemplate({ page, isHindi = false }: Document
           <div className="overflow-x-auto w-full border border-[#E5E7EB] rounded-[4px]">
             <table className="w-full text-left border-collapse text-[13px] md:text-[14px]">
               <thead>
-                <tr className="bg-[#751639] text-white font-semibold text-[13px] tracking-wide">
-                  <th className="py-3 px-3.5 border border-[#8C1E47] w-[60px] text-center">{isNotice ? 'S. No.' : 'S.No.'}</th>
-                  <th className="py-3 px-4 border border-[#8C1E47] min-w-[300px]">Title</th>
+                <tr className={`${isNavy ? 'bg-[#1D2E6B]' : 'bg-[#751639]'} text-white font-semibold text-[13px] tracking-wide`}>
+                  <th className={`py-3 px-3.5 border ${thBorderClass} w-[60px] text-center`}>{isNotice ? 'S. No.' : 'S.No.'}</th>
+                  <th className={`py-3 px-4 border ${thBorderClass} min-w-[300px]`}>Title</th>
                   {isNotice ? (
                     <>
-                      <th className="py-3 px-4 border border-[#8C1E47] w-[220px] text-center">Document</th>
-                      <th className="py-3 px-3 border border-[#8C1E47] w-[90px] text-center">Link</th>
-                      <th className="py-3 px-3.5 border border-[#8C1E47] w-[130px] text-center">Notice Date</th>
+                      <th className={`py-3 px-4 border ${thBorderClass} w-[220px] text-center`}>Document</th>
+                      <th className={`py-3 px-3 border ${thBorderClass} w-[90px] text-center`}>Link</th>
+                      <th className={`py-3 px-3.5 border ${thBorderClass} w-[130px] text-center`}>Notice Date</th>
                     </>
                   ) : (
                     <>
-                      <th className="py-3 px-3.5 border border-[#8C1E47] w-[130px] text-center">Date of Order</th>
-                      <th className="py-3 px-4 border border-[#8C1E47] w-[200px] text-center">Document</th>
-                      <th className="py-3 px-3 border border-[#8C1E47] w-[90px] text-center">Full Url</th>
+                      <th className={`py-3 px-3.5 border ${thBorderClass} w-[130px] text-center`}>Date of Order</th>
+                      <th className={`py-3 px-4 border ${thBorderClass} w-[200px] text-center`}>Document</th>
+                      <th className={`py-3 px-3 border ${thBorderClass} w-[90px] text-center`}>Full Url</th>
                     </>
                   )}
                 </tr>
@@ -195,7 +198,9 @@ export default function DocumentListTemplate({ page, isHindi = false }: Document
                   onClick={() => setCurrentPage(pageNum)}
                   className={`px-3 py-1 text-[13px] rounded-[4px] border ${
                     currentPage === pageNum
-                      ? 'bg-[#751639] text-white border-[#751639] font-semibold'
+                      ? isNavy
+                        ? 'bg-[#1D2E6B] text-white border-[#1D2E6B] font-semibold'
+                        : 'bg-[#751639] text-white border-[#751639] font-semibold'
                       : 'border-[#D1D5DB] text-[#374151] hover:bg-[#F3F4F6]'
                   }`}
                 >
@@ -221,7 +226,7 @@ export default function DocumentListTemplate({ page, isHindi = false }: Document
             return (
               <div
                 key={doc.id}
-                className="bg-white rounded-[6px] p-5 border border-[#E5E7EB] border-l-[4px] border-l-[#751639] shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow"
+                className={`bg-white rounded-[6px] p-5 border border-[#E5E7EB] border-l-[4px] ${isNavy ? 'border-l-[#1D2E6B]' : 'border-l-[#751639]'} shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow`}
               >
                 {/* Left: Title & Meta */}
                 <div className="flex flex-col gap-1">

@@ -7,9 +7,10 @@ interface StateSubsiteFooterProps {
   isHindi?: boolean;
   officeTitle?: string;
   officeTitleHi?: string;
+  primaryColor?: string;
 }
 
-export default function StateSubsiteFooter({ isHindi = false, officeTitle, officeTitleHi }: StateSubsiteFooterProps) {
+export default function StateSubsiteFooter({ isHindi = false, officeTitle, officeTitleHi, primaryColor }: StateSubsiteFooterProps) {
   const t = {
     copyrightPolicy: isHindi ? 'कॉपीराइट नीति' : 'Copyright Policy',
     disclaimer: isHindi ? 'अस्वीकरण' : 'Disclaimer',
@@ -28,7 +29,10 @@ export default function StateSubsiteFooter({ isHindi = false, officeTitle, offic
   return (
     <footer className="w-full flex flex-col font-['Noto_Sans',sans-serif] mt-auto">
       {/* Top Footer Bar */}
-      <div className="w-full bg-[#0A3D30] py-[20px] px-4 md:px-[64px] flex justify-center items-center box-border">
+      <div
+        className="w-full py-[20px] px-4 md:px-[64px] flex justify-center items-center box-border"
+        style={{ backgroundColor: primaryColor || '#0A3D30' }}
+      >
         <div className="max-w-[1312px] w-full flex flex-wrap justify-center items-center gap-[16px] md:gap-[24px] text-[14px] md:text-[15px] font-normal text-white">
           <Link href="/" className="hover:underline">{t.copyrightPolicy}</Link>
           <span className="text-white/40">|</span>

@@ -7567,3 +7567,41 @@ a.grm-desc-box__cta:focus-visible {
   order: 1 !important;
   margin: 0 !important;
 }
+
+/* Database dynamic page content styling */
+.db-page-content table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 1.5rem 0 !important;
+  font-size: 0.875rem !important;
+}
+
+.db-page-content th,
+.db-page-content td {
+  border: 1px solid #d7d7d7 !important;
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+}
+
+.db-page-content th {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+.db-page-content tr:nth-child(even) {
+  background-color: #f8fafc !important;
+}
+
+.db-page-content a {
+  color: #047857 !important;
+  text-decoration: underline !important;
+}
+
+.db-page-content h2,
+.db-page-content h3 {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}

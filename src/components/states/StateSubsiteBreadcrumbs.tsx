@@ -7,12 +7,16 @@ import { SubsiteBreadcrumb } from '@/data/stateSubsites/andhraPradeshPages';
 interface StateSubsiteBreadcrumbsProps {
   items: SubsiteBreadcrumb[];
   isHindi?: boolean;
+  primaryColor?: string;
 }
 
 export default function StateSubsiteBreadcrumbs({
   items,
-  isHindi = false
+  isHindi = false,
+  primaryColor
 }: StateSubsiteBreadcrumbsProps) {
+  const isNavy = primaryColor === '#1D2E6B';
+
   return (
     <div className="w-full bg-[#F4F6F8] border-b border-[#E5E7EB] py-[10px] px-4 lg:px-6">
       <div className="max-w-[1440px] mx-auto flex items-center gap-[8px] text-[13px] leading-[18px] text-[#6B7280] font-['Noto_Sans',sans-serif]">
@@ -30,7 +34,10 @@ export default function StateSubsiteBreadcrumbs({
 
           return (
             <React.Fragment key={idx}>
-              <Link href={item.href} className="hover:text-[#751639] hover:underline transition-colors">
+              <Link
+                href={item.href}
+                className={`${isNavy ? 'hover:text-[#1D2E6B]' : 'hover:text-[#751639]'} hover:underline transition-colors`}
+              >
                 {label}
               </Link>
               <span className="text-[#9CA3AF] text-[11px]">/</span>

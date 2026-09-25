@@ -1260,15 +1260,40 @@ const DEFAULT_OFFICES: Office[] = [
     type: 'central'
   },
   {
-    id: 'c-over',
-    state: 'London',
+    id: 'c-over-ldn',
+    state: 'London (UK)',
     name: 'Office of the Director General of Audit, London (Overseas Office)',
-    address: 'High Commission of India, India House, Aldwych, London WC2B 4NA',
-    phone: '+44-20-76323000',
-    email: 'london-audit@cag.gov.in',
+    address: 'High Commission of India, India House, Aldwych, London WC2B 4NA, United Kingdom',
+    phone: '+44-20-78360680 / 76323000',
+    email: 'pdaldn@cag.gov.in',
     lat: 51.5126,
     lng: -0.1182,
-    type: 'central'
+    type: 'central',
+    subsite_url: '/pda/ldn/en'
+  },
+  {
+    id: 'c-over-kul',
+    state: 'Kuala Lumpur (Malaysia)',
+    name: 'Principal Director of Audit, Kuala Lumpur (Overseas Office)',
+    address: "Level 28, Menara 1 Mon't Kiara, No. 1, Jalan Kiara, Mont Kiara, 50480 Kuala Lumpur, Malaysia",
+    phone: '+60-3-62052340 / 2341',
+    email: 'pdakul@cag.gov.in',
+    lat: 3.1678,
+    lng: 101.6525,
+    type: 'central',
+    subsite_url: '/pda/kul/en'
+  },
+  {
+    id: 'c-over-wdc',
+    state: 'Washington DC (USA)',
+    name: 'Principal Director of Audit, Washington DC (Overseas Office)',
+    address: 'Embassy of India, 2107 Massachusetts Avenue NW, Washington, DC 20008, United States',
+    phone: '+1-202-939-7000 / 7088',
+    email: 'pdawdc@cag.gov.in',
+    lat: 38.9136,
+    lng: -77.0471,
+    type: 'central',
+    subsite_url: '/pda/wdc/en'
   },
   {
     id: 'c-1',

@@ -23,6 +23,7 @@ __pycache__/
 
 # scratch and system logs
 scratch/
+scripts/
 .system_generated/
 *.cjs
 *.txt

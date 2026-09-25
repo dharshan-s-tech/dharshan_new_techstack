@@ -179,7 +179,63 @@ export const api = {
     return fetchJson<{ items: any[]; total: number; page?: number; page_size?: number }>(
       `/api/resources/${slug}${query ? `?${query}` : ''}`
     );
+  },
+  getOverseasSubsite: async (code: string, culture = 'en') => {
+    return fetchJson<{
+      code: string;
+      website_id: number;
+      title: string;
+      title_hi?: string;
+      short_title?: string;
+      theme: string;
+      phone: string;
+      email: string;
+      address: string;
+      address_hi?: string;
+      working_hours: string;
+      working_hours_hi?: string;
+      google_maps_url: string;
+      menus: {
+        main: any[];
+        footer: any[];
+        top: any[];
+      };
+    }>(`/api/subsites/${code}?culture=${culture}`);
+  },
+  getOverseasMenus: async (code: string, culture = 'en') => {
+    return fetchJson<{
+      main: any[];
+      footer: any[];
+      top: any[];
+    }>(`/api/subsites/${code}/menus?culture=${culture}`);
+  },
+  getOverseasPage: async (code: string, slug: string, culture = 'en') => {
+    return fetchJson<{
+      id: number;
+      slug: string;
+      title: string;
+      excerpt?: string;
+      content: string;
+      file_title?: string;
+      upload_file?: string;
+      upload_file_url?: string;
+    }>(`/api/subsites/${code}/pages/${slug}?culture=${culture}`);
+  },
+  getOverseasPhotos: async (code: string, culture = 'en') => {
+    return fetchJson<{
+      items: Array<{
+        id: number;
+        title: string;
+        title_en: string;
+        title_hi: string;
+        slug: string;
+        image_url: string;
+        date: string;
+      }>;
+      total: number;
+    }>(`/api/subsites/${code}/photos?culture=${culture}`);
   }
 };
+
 
 

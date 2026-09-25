@@ -10,7 +10,7 @@ interface NamesDetailsCardProps {
 
 export default function NamesDetailsCard({ image, title, content, href, linkText }: NamesDetailsCardProps) {
   const CardWrapper = href ? 'a' : 'div';
-  const isExternal = href?.startsWith('http');
+  const isExternal = href?.startsWith('http') || href?.startsWith('/pda/');
   
   return (
     <CardWrapper 

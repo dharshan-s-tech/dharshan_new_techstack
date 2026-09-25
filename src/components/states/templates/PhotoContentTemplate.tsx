@@ -6,9 +6,11 @@ import { SubsitePageData } from '@/data/stateSubsites/andhraPradeshPages';
 interface PhotoContentTemplateProps {
   page: SubsitePageData;
   isHindi?: boolean;
+  primaryColor?: string;
 }
 
-export default function PhotoContentTemplate({ page, isHindi = false }: PhotoContentTemplateProps) {
+export default function PhotoContentTemplate({ page, isHindi = false, primaryColor }: PhotoContentTemplateProps) {
+  const isNavy = primaryColor === '#1D2E6B';
   const content = page.content;
   const title = isHindi && page.titleHi ? page.titleHi : page.title;
   const introParagraphs = isHindi && content?.introParagraphsHi ? content.introParagraphsHi : content?.introParagraphs || [];
@@ -117,7 +119,7 @@ export default function PhotoContentTemplate({ page, isHindi = false }: PhotoCon
         {(isHindi && content?.contentHtmlHi) || content?.contentHtml ? (
           <div
             ref={containerRef}
-            className="prose max-w-none text-[#374151] space-y-4 overflow-x-auto 
+            className={`prose max-w-none text-[#374151] space-y-4 overflow-x-auto 
               [&_table]:w-full [&_table]:border-collapse [&_table]:my-4 
               [&_th]:border [&_th]:border-[#D1D5DB] [&_th]:p-2.5 [&_th]:bg-[#F3F4F6] [&_th]:text-left 
               [&_td]:border [&_td]:border-[#E5E7EB] [&_td]:p-2 [&_td]:text-sm 
@@ -128,18 +130,26 @@ export default function PhotoContentTemplate({ page, isHindi = false }: PhotoCon
               [&_.r-tabs-nav]:flex [&_.r-tabs-nav]:flex-wrap [&_.r-tabs-nav]:gap-2 [&_.r-tabs-nav]:border-b-2 [&_.r-tabs-nav]:border-[#E5E7EB] [&_.r-tabs-nav]:pb-3 [&_.r-tabs-nav]:mb-6 [&_.r-tabs-nav]:list-none [&_.r-tabs-nav]:pl-0
               [&_.r-tabs-tab]:list-none [&_.r-tabs-tab]:m-0
               [&_.r-tabs-anchor]:inline-block [&_.r-tabs-anchor]:px-4 [&_.r-tabs-anchor]:py-2 [&_.r-tabs-anchor]:rounded-[6px] [&_.r-tabs-anchor]:font-semibold [&_.r-tabs-anchor]:text-[14px] [&_.r-tabs-anchor]:no-underline [&_.r-tabs-anchor]:text-[#4B5563] [&_.r-tabs-anchor]:bg-[#F3F4F6] [&_.r-tabs-anchor]:transition-all [&_.r-tabs-anchor]:cursor-pointer [&_.r-tabs-anchor:hover]:bg-[#E5E7EB]
-              [&_.r-tabs-state-active_.r-tabs-anchor]:bg-[#751639] [&_.r-tabs-state-active_.r-tabs-anchor]:text-white [&_.r-tabs-state-active_.r-tabs-anchor]:shadow-sm
-              [&_.accTrigger]:bg-[#FAF5ED] [&_.accTrigger]:border [&_.accTrigger]:border-[#E5E7EB] [&_.accTrigger]:border-l-4 [&_.accTrigger]:border-l-[#751639] [&_.accTrigger]:rounded-[6px] [&_.accTrigger]:p-3.5 [&_.accTrigger]:my-2 [&_.accTrigger]:font-bold [&_.accTrigger]:text-[15px] [&_.accTrigger]:text-[#751639] [&_.accTrigger]:cursor-pointer [&_.accTrigger]:flex [&_.accTrigger]:justify-between [&_.accTrigger]:items-center [&_.accTrigger]:transition-all [&_.accTrigger:hover]:bg-[#F5EADB]
-              [&_.accTrigger::after]:content-['+'] [&_.accTrigger::after]:text-[20px] [&_.accTrigger::after]:font-bold [&_.accTrigger::after]:text-[#751639]
-              [&_.accTrigger.active::after]:content-['−'] [&_.accTrigger.active::after]:text-[20px] [&_.accTrigger.active::after]:font-bold [&_.accTrigger.active::after]:text-[#751639]
+              ${
+                isNavy
+                  ? `[&_.r-tabs-state-active_.r-tabs-anchor]:bg-[#1D2E6B] [&_.r-tabs-state-active_.r-tabs-anchor]:text-white [&_.r-tabs-state-active_.r-tabs-anchor]:shadow-sm
+                     [&_.accTrigger]:bg-[#EDF2FE] [&_.accTrigger]:border [&_.accTrigger]:border-[#E5E7EB] [&_.accTrigger]:border-l-4 [&_.accTrigger]:border-l-[#1D2E6B] [&_.accTrigger]:rounded-[6px] [&_.accTrigger]:p-3.5 [&_.accTrigger]:my-2 [&_.accTrigger]:font-bold [&_.accTrigger]:text-[15px] [&_.accTrigger]:text-[#1D2E6B] [&_.accTrigger]:cursor-pointer [&_.accTrigger]:flex [&_.accTrigger]:justify-between [&_.accTrigger]:items-center [&_.accTrigger]:transition-all [&_.accTrigger:hover]:bg-[#E2EBFC]
+                     [&_.accTrigger::after]:content-['+'] [&_.accTrigger::after]:text-[20px] [&_.accTrigger::after]:font-bold [&_.accTrigger::after]:text-[#1D2E6B]
+                     [&_.accTrigger.active::after]:content-['−'] [&_.accTrigger.active::after]:text-[20px] [&_.accTrigger.active::after]:font-bold [&_.accTrigger.active::after]:text-[#1D2E6B]
+                     [&_.guidelinesPdfIcons_a]:inline-flex [&_.guidelinesPdfIcons_a]:items-center [&_.guidelinesPdfIcons_a]:gap-1.5 [&_.guidelinesPdfIcons_a]:px-3 [&_.guidelinesPdfIcons_a]:py-1.5 [&_.guidelinesPdfIcons_a]:rounded-[4px] [&_.guidelinesPdfIcons_a]:text-[12px] [&_.guidelinesPdfIcons_a]:font-semibold [&_.guidelinesPdfIcons_a]:no-underline [&_.guidelinesPdfIcons_a]:text-white [&_.guidelinesPdfIcons_a]:bg-[#1D2E6B] [&_.guidelinesPdfIcons_a:hover]:bg-[#152250] [&_.guidelinesPdfIcons_a]:transition-colors`
+                  : `[&_.r-tabs-state-active_.r-tabs-anchor]:bg-[#751639] [&_.r-tabs-state-active_.r-tabs-anchor]:text-white [&_.r-tabs-state-active_.r-tabs-anchor]:shadow-sm
+                     [&_.accTrigger]:bg-[#FAF5ED] [&_.accTrigger]:border [&_.accTrigger]:border-[#E5E7EB] [&_.accTrigger]:border-l-4 [&_.accTrigger]:border-l-[#751639] [&_.accTrigger]:rounded-[6px] [&_.accTrigger]:p-3.5 [&_.accTrigger]:my-2 [&_.accTrigger]:font-bold [&_.accTrigger]:text-[15px] [&_.accTrigger]:text-[#751639] [&_.accTrigger]:cursor-pointer [&_.accTrigger]:flex [&_.accTrigger]:justify-between [&_.accTrigger]:items-center [&_.accTrigger]:transition-all [&_.accTrigger:hover]:bg-[#F5EADB]
+                     [&_.accTrigger::after]:content-['+'] [&_.accTrigger::after]:text-[20px] [&_.accTrigger::after]:font-bold [&_.accTrigger::after]:text-[#751639]
+                     [&_.accTrigger.active::after]:content-['−'] [&_.accTrigger.active::after]:text-[20px] [&_.accTrigger.active::after]:font-bold [&_.accTrigger.active::after]:text-[#751639]
+                     [&_.guidelinesPdfIcons_a]:inline-flex [&_.guidelinesPdfIcons_a]:items-center [&_.guidelinesPdfIcons_a]:gap-1.5 [&_.guidelinesPdfIcons_a]:px-3 [&_.guidelinesPdfIcons_a]:py-1.5 [&_.guidelinesPdfIcons_a]:rounded-[4px] [&_.guidelinesPdfIcons_a]:text-[12px] [&_.guidelinesPdfIcons_a]:font-semibold [&_.guidelinesPdfIcons_a]:no-underline [&_.guidelinesPdfIcons_a]:text-white [&_.guidelinesPdfIcons_a]:bg-[#751639] [&_.guidelinesPdfIcons_a:hover]:bg-[#5E112E] [&_.guidelinesPdfIcons_a]:transition-colors`
+              }
               [&_.accordDetail]:p-4 [&_.accordDetail]:bg-white [&_.accordDetail]:border [&_.accordDetail]:border-[#E5E7EB] [&_.accordDetail]:border-t-0 [&_.accordDetail]:rounded-b-[6px] [&_.accordDetail]:mb-3
               [&_.guidelinesList]:list-none [&_.guidelinesList]:p-0 [&_.guidelinesList]:m-0
               [&_.guidelinesList_li]:flex [&_.guidelinesList_li]:flex-wrap [&_.guidelinesList_li]:justify-between [&_.guidelinesList_li]:items-center [&_.guidelinesList_li]:p-3 [&_.guidelinesList_li]:border-b [&_.guidelinesList_li]:border-[#F3F4F6] [&_.guidelinesList_li]:gap-3
               [&_.guidelinesList_li:last-child]:border-b-0
               [&_.guidelinesList_li_h5]:text-[14px] [&_.guidelinesList_li_h5]:font-semibold [&_.guidelinesList_li_h5]:text-[#1F2937] [&_.guidelinesList_li_h5]:m-0
               [&_.guidelinesPdfIcons]:flex [&_.guidelinesPdfIcons]:items-center [&_.guidelinesPdfIcons]:gap-2 [&_.guidelinesPdfIcons]:shrink-0
-              [&_.guidelinesPdfIcons_sub]:flex [&_.guidelinesPdfIcons_sub]:items-center [&_.guidelinesPdfIcons_sub]:gap-2
-              [&_.guidelinesPdfIcons_a]:inline-flex [&_.guidelinesPdfIcons_a]:items-center [&_.guidelinesPdfIcons_a]:gap-1.5 [&_.guidelinesPdfIcons_a]:px-3 [&_.guidelinesPdfIcons_a]:py-1.5 [&_.guidelinesPdfIcons_a]:rounded-[4px] [&_.guidelinesPdfIcons_a]:text-[12px] [&_.guidelinesPdfIcons_a]:font-semibold [&_.guidelinesPdfIcons_a]:no-underline [&_.guidelinesPdfIcons_a]:text-white [&_.guidelinesPdfIcons_a]:bg-[#751639] [&_.guidelinesPdfIcons_a:hover]:bg-[#5E112E] [&_.guidelinesPdfIcons_a]:transition-colors"
+              [&_.guidelinesPdfIcons_sub]:flex [&_.guidelinesPdfIcons_sub]:items-center [&_.guidelinesPdfIcons_sub]:gap-2`}
             dangerouslySetInnerHTML={{ __html: (isHindi && content?.contentHtmlHi) || content?.contentHtml || '' }}
           />
         ) : (
@@ -164,11 +174,11 @@ export default function PhotoContentTemplate({ page, isHindi = false }: PhotoCon
 
                   {/* Officer Details Card if present */}
                   {content.officerDetails && (
-                    <div className="mt-4 p-4 rounded-[6px] bg-[#FDF2F4] border border-[#F9D8DE] text-[13px] leading-[20px] text-[#2A2A2A]">
-                      <p className="font-bold text-[#751639] text-[14px] mb-1">{content.officerDetails.name}</p>
+                    <div className={`mt-4 p-4 rounded-[6px] ${isNavy ? 'bg-[#EDF2FE] border border-[#C5D5F5]' : 'bg-[#FDF2F4] border border-[#F9D8DE]'} text-[13px] leading-[20px] text-[#2A2A2A]`}>
+                      <p className={`font-bold ${isNavy ? 'text-[#1D2E6B]' : 'text-[#751639]'} text-[14px] mb-1`}>{content.officerDetails.name}</p>
                       <p className="font-medium text-[#4B5563]">{content.officerDetails.designation}</p>
                       <p className="text-[#6B7280]">{content.officerDetails.cadre}</p>
-                      <div className="mt-2 pt-2 border-t border-[#F5C2CB] space-y-1 text-[#374151]">
+                      <div className={`mt-2 pt-2 border-t ${isNavy ? 'border-[#C5D5F5]' : 'border-[#F5C2CB]'} space-y-1 text-[#374151]`}>
                         <p><span className="font-semibold">Email:</span> {content.officerDetails.email}</p>
                         <p><span className="font-semibold">Phone:</span> {content.officerDetails.phone}</p>
                       </div>
@@ -185,7 +195,7 @@ export default function PhotoContentTemplate({ page, isHindi = false }: PhotoCon
                   ))}
 
                   {accentHighlight && (
-                    <div className="p-4 rounded-[6px] bg-[#FAF5ED] border-l-4 border-[#751639] text-[#751639] font-semibold italic text-[15px] leading-[26px]">
+                    <div className={`p-4 rounded-[6px] ${isNavy ? 'bg-[#EDF2FE] border-l-4 border-[#1D2E6B] text-[#1D2E6B]' : 'bg-[#FAF5ED] border-l-4 border-[#751639] text-[#751639]'} font-semibold italic text-[15px] leading-[26px]`}>
                       {accentHighlight}
                     </div>
                   )}
@@ -200,7 +210,7 @@ export default function PhotoContentTemplate({ page, isHindi = false }: PhotoCon
                 ))}
 
                 {accentHighlight && (
-                  <div className="p-4 rounded-[6px] bg-[#FAF5ED] border-l-4 border-[#751639] text-[#751639] font-semibold italic text-[15px] leading-[26px]">
+                  <div className={`p-4 rounded-[6px] ${isNavy ? 'bg-[#EDF2FE] border-l-4 border-[#1D2E6B] text-[#1D2E6B]' : 'bg-[#FAF5ED] border-l-4 border-[#751639] text-[#751639]'} font-semibold italic text-[15px] leading-[26px]`}>
                     {accentHighlight}
                   </div>
                 )}

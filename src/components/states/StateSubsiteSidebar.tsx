@@ -10,16 +10,19 @@ interface StateSubsiteSidebarProps {
   headingHi?: string;
   items: SubsiteSidebarItem[];
   isHindi?: boolean;
+  primaryColor?: string;
 }
 
 export default function StateSubsiteSidebar({
   heading,
   headingHi,
   items,
-  isHindi = false
+  isHindi = false,
+  primaryColor
 }: StateSubsiteSidebarProps) {
   const pathname = usePathname();
   const decodedPathname = decodeURIComponent(pathname || '').replace(/\/$/, '').toLowerCase();
+  const isNavy = primaryColor === '#1D2E6B';
 
   return (
     <aside className="w-full lg:w-[280px] shrink-0 font-['Noto_Sans',sans-serif]">
@@ -44,8 +47,12 @@ export default function StateSubsiteSidebar({
                 href={item.href}
                 className={`text-[14px] leading-[22px] px-[14px] py-[10px] rounded-[6px] transition-all block ${
                   isActive
-                    ? 'bg-[#FDF2F4] text-[#751639] font-semibold border-l-4 border-[#751639]'
-                    : 'text-[#4D4D4D] hover:bg-[#F9FAFB] hover:text-[#751639] font-normal'
+                    ? isNavy
+                      ? 'bg-[#EDF2FE] text-[#1D2E6B] font-semibold border-l-4 border-[#1D2E6B]'
+                      : 'bg-[#FDF2F4] text-[#751639] font-semibold border-l-4 border-[#751639]'
+                    : isNavy
+                      ? 'text-[#4D4D4D] hover:bg-[#F9FAFB] hover:text-[#1D2E6B] font-normal'
+                      : 'text-[#4D4D4D] hover:bg-[#F9FAFB] hover:text-[#751639] font-normal'
                 }`}
               >
                 {label}

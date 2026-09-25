@@ -98,6 +98,7 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
   const isUnPanel = slugDecoded === 'un panel of external auditors';
   const isPresentAudits = slugDecoded === 'present international audits';
   const isPastAudits = slugDecoded === 'past international audits';
+  const isOverseas = slugDecoded === 'overseas audit offices';
 
   let pageTitle = rawSlug;
   let heroTitle = rawSlug;
@@ -125,6 +126,10 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
     breadcrumbParent = isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements';
   } else if (isPastAudits) {
     pageTitle = isHindi ? 'विगत अंतर्राष्ट्रीय लेखा परीक्षा' : 'Past International Audits';
+    heroTitle = pageTitle;
+    breadcrumbParent = isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements';
+  } else if (isOverseas) {
+    pageTitle = isHindi ? 'विदेशी लेखा परीक्षा कार्यालय' : 'Overseas Audit Offices';
     heroTitle = pageTitle;
     breadcrumbParent = isHindi ? 'लेखा परीक्षा सहभागिता' : 'Audit Engagements';
   }
@@ -531,6 +536,119 @@ export default function GlobalRelationsDynamicPage({ params }: { params: Promise
                   className="w-full text-[#2A2A2A] font-['Noto_Sans'] space-y-4 leading-[24px]"
                   dangerouslySetInnerHTML={{ __html: transformHtmlAssetUrls(dbContent) }}
                 />
+              ) : isOverseas ? (
+                /* OVERSEAS AUDIT OFFICES DIRECTORY */
+                <div className="space-y-6 text-left not-prose font-['Noto_Sans']">
+                  <p className="text-[14px] leading-[24px] text-[#2A2A2A]">
+                    {isHindi
+                      ? 'भारत के संविधान के अनुच्छेद 148, 149 और 151 के अंतर्गत नियंत्रक एवं महालेखापरीक्षक (सीएजी) विदेश स्थित भारत सरकार के सभी लेन-देन का सर्वोच्च संवैधानिक लेखापरीक्षक है। विदेशी मिशनों, कल्याणकारी निधियों (आईसीडब्ल्यूएफ) और विदेशी संपत्तियों के लेखापरीक्षा हेतु तीन क्षेत्रीय कमान मुख्यालय कार्यरत हैं:'
+                      : 'Under Articles 148, 149, and 151 of the Constitution of India, read with the CAG (DPC) Act 1971, the Comptroller and Auditor General of India is the supreme constitutional auditor of all transactions of the Government of India abroad. Overseas audit operations are executed through three strategic regional command directorates overseeing 180+ diplomatic missions, consulates general, and specialized representations worldwide:'}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
+                    {/* London Card */}
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+                          <span className="font-bold text-emerald-800">LDN</span>
+                          <span className="bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 rounded text-[11px]">
+                            98 Missions
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-base mb-1">
+                          {isHindi ? 'महानिदेशक लेखापरीक्षा का कार्यालय, लंदन' : 'Office of the Director General of Audit, London'}
+                        </h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mt-2">
+                          {isHindi
+                            ? 'यूनाइटेड किंगडम, यूरोप, रूस, मध्य पूर्व और अफ्रीका में 98 राजनयिक एवं रक्षा खरीद मिशन।'
+                            : '98 diplomatic and defence procurement missions across the UK, Europe, Russia, Africa, and Middle East.'}
+                        </p>
+                        <div className="text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-100">
+                          <strong>Location:</strong> India House, Aldwych, London
+                        </div>
+                      </div>
+                      <div className="pt-4 mt-4">
+                        <Link
+                          href="/pda/ldn/en"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center w-full py-2 px-3 rounded-md bg-[#0a3d30] hover:bg-[#124235] text-white text-xs font-bold transition-colors shadow-sm"
+                        >
+                          <span>{isHindi ? 'लंदन उप-साइट खोलें' : 'Visit London Subsite'}</span>
+                          <span className="ml-1">➔</span>
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Kuala Lumpur Card */}
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+                          <span className="font-bold text-emerald-800">KUL</span>
+                          <span className="bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 rounded text-[11px]">
+                            54 Missions
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-base mb-1">
+                          {isHindi ? 'प्रधान निदेशक लेखापरीक्षा का कार्यालय, कुआलालंपुर' : 'Office of the Principal Director of Audit, Kuala Lumpur'}
+                        </h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mt-2">
+                          {isHindi
+                            ? 'दक्षिण-पूर्व एशिया, पूर्व एशिया, ऑस्ट्रेलेशिया और ओशिनिया में 54 राजनयिक मिशन एवं एक्ट ईस्ट अनुदान।'
+                            : '54 diplomatic missions, Act East grants, and ICWF welfare funds across Southeast Asia, East Asia, and Australasia.'}
+                        </p>
+                        <div className="text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-100">
+                          <strong>Location:</strong> Mont Kiara, Kuala Lumpur
+                        </div>
+                      </div>
+                      <div className="pt-4 mt-4">
+                        <Link
+                          href="/pda/kul/en"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center w-full py-2 px-3 rounded-md bg-[#0a3d30] hover:bg-[#124235] text-white text-xs font-bold transition-colors shadow-sm"
+                        >
+                          <span>{isHindi ? 'कुआलालंपुर उप-साइट खोलें' : 'Visit Kuala Lumpur Subsite'}</span>
+                          <span className="ml-1">➔</span>
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Washington DC Card */}
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+                          <span className="font-bold text-emerald-800">WDC</span>
+                          <span className="bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 rounded text-[11px]">
+                            68 Missions
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-base mb-1">
+                          {isHindi ? 'प्रधान निदेशक लेखापरीक्षा का कार्यालय, वाशिंगटन डीसी' : 'Office of the Principal Director of Audit, Washington DC'}
+                        </h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mt-2">
+                          {isHindi
+                            ? 'उत्तरी व दक्षिणी अमेरिका, संयुक्त राष्ट्र मिशन (पीएमआई न्यूयॉर्क) और एफएमएस रक्षा खरीद एस्क्रो।'
+                            : '68 diplomatic missions across the Americas, UN Missions (PMI NY), and Foreign Military Sales (FMS) escrows.'}
+                        </p>
+                        <div className="text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-100">
+                          <strong>Location:</strong> Embassy Row, Washington, DC
+                        </div>
+                      </div>
+                      <div className="pt-4 mt-4">
+                        <Link
+                          href="/pda/wdc/en"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center w-full py-2 px-3 rounded-md bg-[#0a3d30] hover:bg-[#124235] text-white text-xs font-bold transition-colors shadow-sm"
+                        >
+                          <span>{isHindi ? 'वाशिंगटन डीसी उप-साइट खोलें' : 'Visit Washington DC Subsite'}</span>
+                          <span className="ml-1">➔</span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : isPastAudits ? (
                 /* PAST INTERNATIONAL AUDITS PAGE CONTENT */
                 isHindi ? (

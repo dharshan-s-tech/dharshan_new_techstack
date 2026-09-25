@@ -13,8 +13,9 @@ export default function RootLayoutWrapper({ children }: { children: React.ReactN
     pathname?.startsWith('/states') ||
     pathname?.startsWith('/ag') ||
     pathname?.startsWith('/ae');
+  const isOverseasSubsite = pathname?.startsWith('/pda');
 
-  if (isAdmin || isStateSubsite) {
+  if (isAdmin || isStateSubsite || isOverseasSubsite) {
     return <main className="min-h-screen bg-white">{children}</main>;
   }
 

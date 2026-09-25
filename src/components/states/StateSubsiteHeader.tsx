@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+
 
 export {
   ANDHRA_PRADESH_NAV_ITEMS,
@@ -10,18 +12,21 @@ export {
   type SubmenuColumn,
   type TopNavItem
 } from '@/data/stateSubsites/andhraPradeshNav';
-import { getStateNavItems } from '@/data/stateSubsites/andhraPradeshNav';
+import { getStateNavItems, TopNavItem } from '@/data/stateSubsites/andhraPradeshNav';
 
 interface StateSubsiteHeaderProps {
   lang?: 'English' | 'हिन्दी';
   onToggleLanguage?: () => void;
   stateSlug?: string;
-  prefix?: 'ae' | 'ag';
+  prefix?: 'ae' | 'ag' | 'pda' | string;
   officePrefix?: string;
   officePrefixHi?: string;
   officeLocation?: string;
   officeLocationHi?: string;
   logoUrl?: string;
+  navItemsOverride?: TopNavItem[];
+  homeUrl?: string;
+  primaryColor?: string;
 }
 
 export default function StateSubsiteHeader({
@@ -33,16 +38,24 @@ export default function StateSubsiteHeader({
   officePrefixHi,
   officeLocation,
   officeLocationHi,
-  logoUrl
+  logoUrl,
+  navItemsOverride,
+  homeUrl,
+  primaryColor
 }: StateSubsiteHeaderProps) {
+  const resolvedColor = primaryColor || (prefix === 'pda' ? '#1D2E6B' : '#0A3D30');
+  const isNavy = resolvedColor === '#1D2E6B';
   const [currentLang, setCurrentLang] = useState<'English' | 'हिन्दी'>(lang);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [activeSubIndex, setActiveSubIndex] = useState<number | null>(null);
   const [activeSubSubIndex, setActiveSubSubIndex] = useState<number | null>(null);
-  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const navItems = getStateNavItems(stateSlug, prefix);
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const navItems = navItemsOverride || getStateNavItems(stateSlug, prefix as any);
 
   useEffect(() => {
     setCurrentLang(lang);
@@ -98,25 +111,39 @@ export default function StateSubsiteHeader({
   const toggleLanguage = () => {
     const nextLang = currentLang === 'English' ? 'हिन्दी' : 'English';
     setCurrentLang(nextLang);
-    if (onToggleLanguage) onToggleLanguage();
+    if (onToggleLanguage) {
+      onToggleLanguage();
+    } else if (prefix === 'pda' && pathname) {
+      const targetLang = nextLang === 'हिन्दी' ? 'hi' : 'en';
+      const curLang = nextLang === 'हिन्दी' ? 'en' : 'hi';
+      if (pathname.includes(`/${curLang}/`)) {
+        router.push(pathname.replace(`/${curLang}/`, `/${targetLang}/`));
+      } else if (pathname.endsWith(`/${curLang}`)) {
+        router.push(pathname.replace(new RegExp(`/${curLang}$`), `/${targetLang}`));
+      } else {
+        router.push(`/pda/${stateSlug}/${targetLang}`);
+      }
+    }
   };
+
 
   return (
     <header className="site-header w-full relative z-40 shadow-sm state-nav-container font-['Noto_Sans',sans-serif]">
       {/* Emblem Logo */}
       <Link
-        href={`/${prefix}/${stateSlug}`}
+        href={homeUrl || (prefix === 'pda' ? `/${prefix}/${stateSlug}/en` : `/${prefix}/${stateSlug}`)}
         className="cag-logo"
         aria-label="CAG Subsite Home"
       >
+
         <img
           src="/assets/Images/CAG Logo.svg"
           alt="Comptroller and Auditor General of India crest logo"
         />
       </Link>
 
-      {/* Top Dark Green Sub-Header Bar */}
-      <div className="w-full bg-[#0A3D30]">
+      {/* Top Header Bar */}
+      <div className="w-full" style={{ backgroundColor: resolvedColor }}>
         <div
           className="max-w-[1440px] mx-auto h-[40px] flex items-center justify-between text-xs box-border px-4 lg:px-6"
           style={{ paddingLeft: '180px', paddingRight: '64px' }}
@@ -204,14 +231,14 @@ export default function StateSubsiteHeader({
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#4D4D4D] font-normal hover:text-[#751639] transition-colors whitespace-nowrap"
+                        className={`text-[#4D4D4D] font-normal ${isNavy ? 'hover:text-[#1D2E6B]' : 'hover:text-[#751639]'} transition-colors whitespace-nowrap`}
                       >
                         {label}
                       </a>
                     ) : (
                       <Link
                         href={item.href}
-                        className="text-[#4D4D4D] font-normal hover:text-[#751639] transition-colors whitespace-nowrap"
+                        className={`text-[#4D4D4D] font-normal ${isNavy ? 'hover:text-[#1D2E6B]' : 'hover:text-[#751639]'} transition-colors whitespace-nowrap`}
                       >
                         {label}
                       </Link>
@@ -237,7 +264,7 @@ export default function StateSubsiteHeader({
                     className={
                       isOpen
                         ? "text-[#1a1a1a] font-medium tracking-normal whitespace-nowrap"
-                        : "text-[#4D4D4D] font-normal tracking-normal hover:text-[#751639] transition-colors whitespace-nowrap"
+                        : `text-[#4D4D4D] font-normal tracking-normal ${isNavy ? 'hover:text-[#1D2E6B]' : 'hover:text-[#751639]'} transition-colors whitespace-nowrap`
                     }
                     aria-expanded={isOpen}
                   >
@@ -262,7 +289,7 @@ export default function StateSubsiteHeader({
                       onMouseLeave={handleNavLeave}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {item.items.map((subItem, sIdx) => {
+                      {item.items.map((subItem: any, sIdx: number) => {
                         const hasChildren = Boolean(subItem.children && subItem.children.length > 0);
                         const isSubActive = activeSubIndex === sIdx;
                         const isSubExtOrPdf = subItem.href?.startsWith('http') || subItem.href?.endsWith('.pdf');
@@ -271,7 +298,13 @@ export default function StateSubsiteHeader({
                           <div
                             key={sIdx}
                             className={`relative group/sub px-4 py-2.5 text-[13.5px] cursor-pointer flex items-center justify-between border-b border-[#F0F0F0] last:border-b-0 transition-colors ${
-                              isSubActive ? 'bg-[#F4F4F4] text-[#751639] font-medium' : 'text-[#333333] hover:bg-[#F8F8F8] hover:text-[#751639]'
+                              isSubActive
+                                ? isNavy
+                                  ? 'bg-[#EDF2FE] text-[#1D2E6B] font-medium'
+                                  : 'bg-[#F4F4F4] text-[#751639] font-medium'
+                                : isNavy
+                                  ? 'text-[#333333] hover:bg-[#F8F8F8] hover:text-[#1D2E6B]'
+                                  : 'text-[#333333] hover:bg-[#F8F8F8] hover:text-[#751639]'
                             }`}
                             onMouseEnter={() => {
                               setActiveSubIndex(sIdx);
@@ -315,7 +348,7 @@ export default function StateSubsiteHeader({
                                   right: isRightSide ? '100%' : 'auto'
                                 }}
                               >
-                                {subItem.children.map((child, cIdx) => {
+                                {subItem.children.map((child: any, cIdx: number) => {
                                   const hasSubChildren = Boolean(child.children && child.children.length > 0);
                                   const isChildActive = activeSubSubIndex === cIdx;
                                   const isChildExtOrPdf = child.href?.startsWith('http') || child.href?.endsWith('.pdf');
@@ -324,7 +357,13 @@ export default function StateSubsiteHeader({
                                     <div
                                       key={cIdx}
                                       className={`relative group/subsub px-4 py-2 text-[13px] cursor-pointer flex items-center justify-between border-b border-[#F0F0F0] last:border-b-0 transition-colors ${
-                                        isChildActive ? 'bg-[#F4F4F4] text-[#751639] font-medium' : 'text-[#333333] hover:bg-[#F8F8F8] hover:text-[#751639]'
+                                        isChildActive
+                                          ? isNavy
+                                            ? 'bg-[#EDF2FE] text-[#1D2E6B] font-medium'
+                                            : 'bg-[#F4F4F4] text-[#751639] font-medium'
+                                          : isNavy
+                                            ? 'text-[#333333] hover:bg-[#F8F8F8] hover:text-[#1D2E6B]'
+                                            : 'text-[#333333] hover:bg-[#F8F8F8] hover:text-[#751639]'
                                       }`}
                                       onMouseEnter={() => setActiveSubSubIndex(cIdx)}
                                     >
@@ -365,12 +404,12 @@ export default function StateSubsiteHeader({
                                             right: isRightSide ? '100%' : 'auto'
                                           }}
                                         >
-                                          {child.children.map((subChild, scIdx) => {
+                                          {child.children.map((subChild: any, scIdx: number) => {
                                             const isSubChildExtOrPdf = subChild.href?.startsWith('http') || subChild.href?.endsWith('.pdf');
                                             return (
                                               <div
                                                 key={scIdx}
-                                                className="px-4 py-2 text-[13px] text-[#333333] hover:bg-[#F8F8F8] hover:text-[#751639] cursor-pointer transition-colors border-b border-[#F0F0F0] last:border-b-0"
+                                                className={`px-4 py-2 text-[13px] text-[#333333] ${isNavy ? 'hover:bg-[#F8F8F8] hover:text-[#1D2E6B]' : 'hover:bg-[#F8F8F8] hover:text-[#751639]'} cursor-pointer transition-colors border-b border-[#F0F0F0] last:border-b-0`}
                                               >
                                                 {isSubChildExtOrPdf ? (
                                                   <a
@@ -451,7 +490,7 @@ export default function StateSubsiteHeader({
                           alignItems: 'stretch'
                         }}
                       >
-                        {item.columns.map((col, colIdx) => (
+                        {item.columns.map((col: any, colIdx: number) => (
                           <div key={colIdx} className="grm-column" style={{ display: 'flex', flexDirection: 'column', flex: '1 0 0', minWidth: 0 }}>
                             {col.heading && (
                               <p className="grm-column__heading text-left">
@@ -459,7 +498,7 @@ export default function StateSubsiteHeader({
                               </p>
                             )}
                             <div className="grm-link-group">
-                              {col.items?.map((subItem, sIdx) => {
+                              {col.items?.map((subItem: any, sIdx: number) => {
                                 const isSubExtOrPdf = subItem.href?.startsWith('http') || subItem.href?.endsWith('.pdf');
                                 if (isSubExtOrPdf) {
                                   return (
